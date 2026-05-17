@@ -78,7 +78,22 @@ export async function POST(request: NextRequest) {
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Error creando Customer";
-      console.error("[create-subscription] customers.create:", msg);
+      // Dump exhaustivo para diagnosticar errores de SDK en serverless
+      console.error("[create-subscription] customers.create FAILED:", {
+        msg,
+        name: (err as { name?: string })?.name,
+        code: (err as { code?: string })?.code,
+        type: (err as { type?: string })?.type,
+        statusCode: (err as { statusCode?: number })?.statusCode,
+        requestId: (err as { requestId?: string })?.requestId,
+        cause: (err as { cause?: unknown })?.cause,
+        envPresent: {
+          STRIPE_SECRET_KEY: !!process.env.STRIPE_SECRET_KEY,
+          STRIPE_SECRET_KEY_len: process.env.STRIPE_SECRET_KEY?.length ?? 0,
+          STRIPE_SECRET_KEY_prefix: process.env.STRIPE_SECRET_KEY?.slice(0, 8),
+          PRICE_ID: process.env.STRIPE_DAP_SUBSCRIPTION_PRICE_ID,
+        },
+      });
       return NextResponse.json({ error: msg }, { status: 500 });
     }
   }
