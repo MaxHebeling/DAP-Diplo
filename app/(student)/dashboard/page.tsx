@@ -23,6 +23,7 @@ type SubscriptionRow = {
   status: string;
   current_period_end: string | null;
   cancel_at_period_end: boolean;
+  cancel_at: string | null;
   months_paid_total: number;
 };
 
@@ -59,7 +60,9 @@ export default async function DashboardPage() {
   // Suscripción real (puede no existir, estar activa, cancelada, etc.)
   const { data: sub } = await supabase
     .from("subscriptions")
-    .select("status, current_period_end, cancel_at_period_end, months_paid_total")
+    .select(
+      "status, current_period_end, cancel_at_period_end, cancel_at, months_paid_total",
+    )
     .eq("user_id", user.id)
     .order("started_at", { ascending: false })
     .limit(1)
@@ -124,8 +127,8 @@ export default async function DashboardPage() {
                   {sub?.status === "trialing" ? "En prueba" : "Activa"}
                 </p>
                 <p className="mb-5 text-sm text-muted-foreground">
-                  {sub?.cancel_at_period_end
-                    ? `Se cancelará el ${formatDate(sub.current_period_end)}.`
+                  {sub?.cancel_at_period_end || sub?.cancel_at
+                    ? `Se cancelará el ${formatDate(sub.cancel_at ?? sub.current_period_end)}.`
                     : `Próximo cobro: ${formatDate(sub?.current_period_end ?? null) ?? "—"}.`}
                 </p>
                 <form action="/api/billing/portal" method="POST">

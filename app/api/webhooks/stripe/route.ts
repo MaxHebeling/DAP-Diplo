@@ -172,6 +172,7 @@ async function upsertSubscription(
       current_period_start: tsToIso(subscriptionPeriod(sub).start),
       current_period_end: tsToIso(subscriptionPeriod(sub).end),
       cancel_at_period_end: sub.cancel_at_period_end ?? false,
+      cancel_at: tsToIso(sub.cancel_at),
       canceled_at: tsToIso(sub.canceled_at),
       months_paid_total: existing?.months_paid_total ?? 0,
     },
