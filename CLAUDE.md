@@ -27,10 +27,11 @@ DAP es una plataforma web de educación online (LMS) para pastores que quieren f
 
 | Capa | Herramienta | Notas |
 |------|-------------|-------|
-| Framework | **Next.js 15** (App Router) | TypeScript estricto. Server Components por defecto. |
-| Estilos | **Tailwind CSS** + **shadcn/ui** | shadcn se copia al repo (no es dependencia externa). |
+| Framework | **Next.js 16** (App Router, Turbopack) | TypeScript estricto. Server Components por defecto. El archivo `middleware.ts` se llama ahora `proxy.ts` y exporta `proxy()`. |
+| UI runtime | **React 19.2** | Server Components, Server Actions, `use()` hook. |
+| Estilos | **Tailwind CSS v4** + **shadcn/ui** (preset `base-nova`) | Tailwind v4 sin `tailwind.config.js` (config en `app/globals.css` con `@theme`). shadcn usa **Base UI** (`@base-ui/react`), no Radix — los componentes exponen `render` (no `asChild`). |
 | Base de datos | **Supabase (Postgres)** | Auth + DB + Storage en el mismo servicio. |
-| Auth | **Supabase Auth** | Email + password al inicio. Magic link opcional luego. |
+| Auth | **Supabase Auth** + `@supabase/ssr` | Email + password al inicio. Tres clientes: `lib/supabase/{server,client,middleware,admin}.ts`. |
 | Video | **Mux** | Player y streaming. NUNCA hostear video en Supabase Storage. |
 | Pagos | **Stripe** | Checkout sessions + webhooks. Modo test al desarrollar. |
 | Email transaccional | **Resend** | Compras, certificados, recuperación de password. |
@@ -38,7 +39,7 @@ DAP es una plataforma web de educación online (LMS) para pastores que quieren f
 | Dominio | (TBD) | Probablemente dap.com.[tld] del usuario. |
 | Tutor IA (Fase 5) | **Claude API + Supabase pgvector** | RAG con materiales del usuario. |
 
-**Versiones mínimas:** Node 20+, npm o pnpm, Postgres 15+ (lo que use Supabase).
+**Versiones instaladas:** Node 25, pnpm 10, Postgres 15+ (lo que use Supabase). Versiones mínimas soportadas: Node 20+, pnpm 9+.
 
 ---
 
