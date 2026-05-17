@@ -67,6 +67,33 @@ export async function createStripeCustomer(opts: {
   return stripeRequest<StripeCustomer>("/customers", body);
 }
 
+// --- Billing Portal Sessions ----------------------------------------
+
+export type StripeBillingPortalSession = {
+  id: string;
+  url: string;
+  customer: string;
+};
+
+/**
+ * Crea una Customer Portal session hosted por Stripe. El alumno
+ * puede ver facturas, actualizar tarjeta y cancelar la suscripción.
+ *
+ * Requiere que el Customer Portal esté CONFIGURADO en Stripe Dashboard
+ * (Settings → Billing → Customer Portal). Sin esa configuración, este
+ * call falla con error explícito.
+ */
+export async function createBillingPortalSession(opts: {
+  customerId: string;
+  returnUrl: string;
+}): Promise<StripeBillingPortalSession> {
+  return stripeRequest<StripeBillingPortalSession>("/billing_portal/sessions", {
+    customer: opts.customerId,
+    return_url: opts.returnUrl,
+    locale: "es",
+  });
+}
+
 // --- Checkout Sessions ----------------------------------------------
 
 export type StripeCheckoutSession = {

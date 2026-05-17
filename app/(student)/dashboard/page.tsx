@@ -128,9 +128,14 @@ export default async function DashboardPage() {
                     ? `Se cancelará el ${formatDate(sub.current_period_end)}.`
                     : `Próximo cobro: ${formatDate(sub?.current_period_end ?? null) ?? "—"}.`}
                 </p>
-                <Button variant="outline" render={<Link href="/bloques" />}>
-                  Ver mis bloques
-                </Button>
+                <form action="/api/billing/portal" method="POST">
+                  <Button type="submit" className="w-full sm:w-auto">
+                    Gestionar mi suscripción
+                  </Button>
+                </form>
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Cambia tu tarjeta, ve facturas o cancela cuando quieras.
+                </p>
               </>
             ) : sub ? (
               <>
