@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sendWelcomeEmail } from "@/lib/email/send-welcome";
 import { constructStripeEvent } from "@/lib/stripe/webhook";
 
 export const runtime = "nodejs";
@@ -58,7 +59,25 @@ export async function POST(request: NextRequest) {
   let result: EventResult;
   try {
     switch (event.type) {
-      case "customer.subscription.created":
+      case "customer.subscription.created": {
+        const sub = event.data.object as Stripe.Subscription;
+        result = await upsertSubscription(sub);
+        // Email de bienvenida (fire-and-forget: si falla logueamos pero
+        // no rompemos el procesado del evento).
+        if (result.userId) {
+          const emailRes = await sendWelcomeEmail(result.userId);
+          if (!emailRes.ok) {
+            console.error(
+              `[stripe.webhook] sendWelcomeEmail FAILED userId=${result.userId}: ${emailRes.error}`,
+            );
+          } else {
+            console.log(
+              `[stripe.webhook] welcome email sent userId=${result.userId} resend_id=${emailRes.id}`,
+            );
+          }
+        }
+        break;
+      }
       case "customer.subscription.updated":
         result = await upsertSubscription(event.data.object as Stripe.Subscription);
         break;
