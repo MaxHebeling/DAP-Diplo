@@ -57,7 +57,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
       )}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        <Logo size="sm" priority />
+        <Logo size="sm" variant="light" priority />
 
         <nav className="hidden items-center gap-9 md:flex">
           {NAV_ITEMS.map((item) => (

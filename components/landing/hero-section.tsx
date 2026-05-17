@@ -18,15 +18,10 @@ export function HeroSection() {
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(80%_60%_at_50%_30%,rgba(30,58,138,0.22),transparent)]" />
 
       <div className="mx-auto w-full max-w-5xl px-6 py-20 text-center">
-        <p className="mb-7 text-xs font-medium uppercase tracking-[0.32em] text-brand-coral">
+        <h1 className="mb-7 text-xs font-medium uppercase tracking-[0.32em] text-brand-coral">
           Diplomado Apostólico Pastoral
-        </p>
-        <h1 className="mb-8 font-serif text-balance text-5xl font-semibold leading-[1.05] tracking-tight text-neutral-50 sm:text-6xl md:text-7xl lg:text-[5rem]">
-          Forma pastores integrales
-          <br className="hidden sm:block" />
-          que transformen su generación.
         </h1>
-        <p className="mx-auto mb-12 max-w-2xl text-balance text-base leading-relaxed text-neutral-300 sm:text-lg md:text-xl">
+        <p className="mx-auto mb-12 max-w-2xl text-balance text-xl leading-relaxed text-neutral-200 sm:text-2xl md:text-3xl">
           18 meses. 200 módulos. 9 rangos ministeriales. Una formación que une
           revelación espiritual con liderazgo, gobierno, finanzas, empresas y
           tecnología.

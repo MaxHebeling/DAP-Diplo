@@ -11,12 +11,21 @@ const sizeMap = {
 
 type LogoSize = keyof typeof sizeMap;
 
+type LogoVariant = "dark" | "light";
+
 type LogoProps = {
   size?: LogoSize;
   href?: string | null;
   priority?: boolean;
   className?: string;
   showWordmark?: boolean;
+  /**
+   * "dark" (default) → logo con letras navy sobre fondo claro. Úsalo
+   * cuando el contenedor sea claro (cards de auth, dashboard).
+   * "light" → logo blanco sobre transparente. Úsalo cuando el
+   * contenedor sea oscuro (header/footer de la landing).
+   */
+  variant?: LogoVariant;
 };
 
 export function Logo({
@@ -25,24 +34,44 @@ export function Logo({
   priority = false,
   className,
   showWordmark = false,
+  variant = "dark",
 }: LogoProps) {
   const px = sizeMap[size];
+  const src = variant === "light" ? "/dap-logo-white.png" : "/dap-logo.png";
+  const wordmarkColor =
+    variant === "light" ? "text-neutral-50" : "text-foreground";
+  const wordmarkSubColor =
+    variant === "light" ? "text-neutral-400" : "text-muted-foreground";
+  // El variant "dark" tiene fondo claro propio → rounded-md para tarjeta;
+  // el "light" es transparente → sin rounded.
+  const imgClass = variant === "light" ? "" : "rounded-md";
+
   const content = (
     <span className={cn("inline-flex items-center gap-3", className)}>
       <Image
-        src="/dap-logo.png"
-        alt="DAP — Diplomado Apostólico para Pastores"
+        src={src}
+        alt="DAP — Diplomado Apostólico Pastoral"
         width={px}
         height={px}
         priority={priority}
-        className="rounded-md"
+        className={imgClass}
       />
       {showWordmark && (
         <span className="flex flex-col leading-tight">
-          <span className="text-base font-semibold tracking-tight text-foreground">
+          <span
+            className={cn(
+              "text-base font-semibold tracking-tight",
+              wordmarkColor,
+            )}
+          >
             DAP
           </span>
-          <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+          <span
+            className={cn(
+              "text-[10px] font-medium uppercase tracking-widest",
+              wordmarkSubColor,
+            )}
+          >
             Diplomado Apostólico
           </span>
         </span>
