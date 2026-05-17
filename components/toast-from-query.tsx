@@ -4,9 +4,21 @@ import { useEffect, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
-const MESSAGES: Record<string, string> = {
-  "already-subscribed": "Ya tienes una suscripción activa.",
-  "subscription-canceled": "Tu suscripción fue cancelada.",
+const MESSAGES: Record<string, { msg: string; type?: "success" | "info" | "warning" }> = {
+  "already-subscribed": { msg: "Ya tienes una suscripción activa.", type: "info" },
+  "subscription-canceled": { msg: "Tu suscripción fue cancelada.", type: "info" },
+  "block-locked": {
+    msg: "Aún no tienes acceso a este bloque. Se desbloquea cada 2 meses de suscripción.",
+    type: "warning",
+  },
+  "module-completed": {
+    msg: "¡Módulo completado! Sigue al siguiente.",
+    type: "success",
+  },
+  "block-completed": {
+    msg: "¡Bloque completado! Pronto recibirás tu rango.",
+    type: "success",
+  },
 };
 
 /**
@@ -25,8 +37,13 @@ export function ToastFromQuery() {
     if (firedRef.current === key) return;
     firedRef.current = key;
 
-    const msg = MESSAGES[key];
-    if (msg) toast(msg);
+    const entry = MESSAGES[key];
+    if (entry) {
+      if (entry.type === "success") toast.success(entry.msg);
+      else if (entry.type === "warning") toast.warning(entry.msg);
+      else if (entry.type === "info") toast.info(entry.msg);
+      else toast(entry.msg);
+    }
 
     const next = new URLSearchParams(params.toString());
     next.delete("toast");

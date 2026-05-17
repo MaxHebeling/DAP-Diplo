@@ -1,0 +1,314 @@
+import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
+import { Logo } from "@/components/brand/logo";
+import { SignOutButton } from "@/components/auth/sign-out-button";
+import { ModuleSidebar, type SidebarModule } from "@/components/module/sidebar";
+import {
+  ModuleStepper,
+  type SectionKind,
+  type StepperSection,
+} from "@/components/module/stepper";
+import { SectionContent } from "@/components/module/section-content";
+import { SectionTeaching } from "@/components/module/section-teaching";
+import { createClient } from "@/lib/supabase/server";
+
+const SECTION_KINDS: SectionKind[] = [
+  "intro",
+  "teaching",
+  "activation",
+  "evaluation",
+  "impartation",
+];
+
+const SECTION_TITLE: Record<SectionKind, string> = {
+  intro: "Introducción",
+  teaching: "Enseñanza",
+  activation: "Activación",
+  evaluation: "Evaluación",
+  impartation: "Frase de impartición",
+};
+
+type PageProps = {
+  params: Promise<{ blockSlug: string; moduleSlug: string }>;
+  searchParams: Promise<{ section?: string }>;
+};
+
+type DbSectionProgress = { completed: boolean | null; last_position_seconds: number | null };
+type DbSection = {
+  id: string;
+  kind: SectionKind;
+  order_index: number;
+  title: string;
+  body_md: string | null;
+  mux_playback_id: string | null;
+  duration_seconds: number | null;
+  progress: DbSectionProgress[] | null;
+};
+type DbResource = {
+  id: string;
+  title: string;
+  kind: "pdf" | "audio" | "link" | "slides" | "other";
+  url: string;
+  order_index: number;
+};
+type DbModule = {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle: string | null;
+  description: string | null;
+  objective: string | null;
+  main_revelation: string | null;
+  impartation_phrase: string | null;
+  duration_minutes: number | null;
+  block: {
+    id: string;
+    slug: string;
+    order_index: number;
+    title: string;
+    published: boolean;
+  } | null;
+  sections: DbSection[] | null;
+  resources: DbResource[] | null;
+};
+
+export async function generateMetadata({ params }: PageProps) {
+  const { moduleSlug } = await params;
+  return {
+    title: `${moduleSlug} — DAP`,
+  };
+}
+
+export default async function ModulePlayerPage({
+  params,
+  searchParams,
+}: PageProps) {
+  const { blockSlug, moduleSlug } = await params;
+  const { section: sectionParam } = await searchParams;
+  const currentSection: SectionKind = SECTION_KINDS.includes(
+    sectionParam as SectionKind,
+  )
+    ? (sectionParam as SectionKind)
+    : "intro";
+
+  const supabase = await createClient();
+
+  // 1) Auth (esta ruta no está en proxy.ts PROTECTED_PREFIXES → check manual)
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    redirect(
+      `/login?redirectTo=/bloques/${blockSlug}/modulos/${moduleSlug}?section=${currentSection}`,
+    );
+  }
+
+  // 2) Perfil para header + check admin
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name, role")
+    .eq("id", user.id)
+    .maybeSingle();
+  const isAdmin = profile?.role === "admin";
+
+  // 3) Módulo + bloque + secciones + recursos + progreso (filtrado por RLS self)
+  const { data: mod, error: modErr } = await supabase
+    .from("modules")
+    .select(
+      `id, slug, title, subtitle, description, objective, main_revelation,
+       impartation_phrase, duration_minutes,
+       block:blocks(id, slug, order_index, title, published),
+       sections:module_sections(
+         id, kind, order_index, title, body_md, mux_playback_id,
+         duration_seconds,
+         progress:section_progress(completed, last_position_seconds)
+       ),
+       resources:module_resources(id, title, kind, url, order_index)`,
+    )
+    .eq("slug", moduleSlug)
+    .maybeSingle<DbModule>();
+
+  if (modErr) {
+    throw new Error(`No se pudo cargar el módulo: ${modErr.message}`);
+  }
+  if (!mod || !mod.block || mod.block.slug !== blockSlug) notFound();
+
+  // 4) Block published / admin override
+  if (!mod.block.published && !isAdmin) notFound();
+
+  // 5) Gating por suscripción / drip
+  const { data: hasAccess } = await supabase.rpc("has_block_access", {
+    p_block_id: mod.block.id,
+  });
+  if (!hasAccess && !isAdmin) {
+    redirect(`/bloques/${blockSlug}?toast=block-locked`);
+  }
+
+  // 6) Sidebar: módulos hermanos + progreso
+  const { data: siblings } = await supabase
+    .from("modules")
+    .select(
+      "id, slug, order_index, title, module_progress(completed)",
+    )
+    .eq("block_id", mod.block.id)
+    .order("order_index", { ascending: true });
+
+  const sidebarModules: SidebarModule[] = (siblings ?? []).map(
+    (s: {
+      id: string;
+      slug: string;
+      order_index: number;
+      title: string;
+      module_progress: { completed: boolean | null }[] | null;
+    }) => ({
+      id: s.id,
+      slug: s.slug,
+      order_index: s.order_index,
+      title: s.title,
+      completed: !!s.module_progress?.[0]?.completed,
+    }),
+  );
+
+  // 7) Secciones del stepper (orden canónico por order_index)
+  const sectionsByKind = new Map<SectionKind, DbSection>();
+  for (const s of mod.sections ?? []) sectionsByKind.set(s.kind, s);
+
+  const stepperSections: StepperSection[] = SECTION_KINDS.map((kind) => {
+    const s = sectionsByKind.get(kind);
+    const completed = !!s?.progress?.[0]?.completed;
+    return {
+      kind,
+      title: SECTION_TITLE[kind],
+      completed,
+    };
+  });
+
+  const activeSection = sectionsByKind.get(currentSection);
+  if (!activeSection) {
+    // El trigger de 0001 crea las 5 secciones por módulo. Si falta alguna
+    // es un bug de seed. Tirar 404.
+    notFound();
+  }
+
+  const startPosition = activeSection.progress?.[0]?.last_position_seconds ?? 0;
+
+  return (
+    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[300px_1fr]">
+      <ModuleSidebar
+        blockTitle={mod.block.title}
+        blockOrderIndex={mod.block.order_index}
+        blockSlug={mod.block.slug}
+        modules={sidebarModules}
+        currentModuleSlug={mod.slug}
+      />
+
+      <div className="flex min-h-screen flex-col">
+        {/* Top bar mini */}
+        <header className="flex items-center justify-between border-b px-6 py-4">
+          <nav
+            aria-label="Breadcrumb"
+            className="flex items-center gap-2 text-xs text-muted-foreground"
+          >
+            <Link href="/dashboard" className="hover:text-foreground">
+              Diplomado
+            </Link>
+            <span className="text-border">/</span>
+            <Link
+              href={`/bloques/${mod.block.slug}`}
+              className="hover:text-foreground"
+            >
+              Bloque {String(mod.block.order_index).padStart(2, "0")}
+            </Link>
+            <span className="text-border">/</span>
+            <span className="text-foreground">{mod.title}</span>
+          </nav>
+          <div className="flex items-center gap-3">
+            <Logo size="sm" />
+            <SignOutButton variant="ghost" />
+          </div>
+        </header>
+
+        <main className="flex-1 px-6 py-10">
+          <div className="mx-auto max-w-3xl">
+            <Link
+              href={`/bloques/${mod.block.slug}`}
+              className="mb-6 inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-brand-coral"
+            >
+              <ArrowLeft className="size-3.5" />
+              Volver al bloque
+            </Link>
+
+            <header className="mb-8">
+              {mod.subtitle && (
+                <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
+                  {mod.subtitle}
+                </p>
+              )}
+              <h1 className="font-serif text-3xl font-semibold leading-tight sm:text-4xl">
+                {mod.title}
+              </h1>
+              <p className="mt-2 text-sm text-muted-foreground">
+                ≈ {mod.duration_minutes ?? 50} minutos · 5 partes
+              </p>
+            </header>
+
+            <div className="mb-10">
+              <ModuleStepper
+                sections={stepperSections}
+                current={currentSection}
+                blockSlug={mod.block.slug}
+                moduleSlug={mod.slug}
+              />
+            </div>
+
+            <section aria-labelledby="section-heading">
+              <h2
+                id="section-heading"
+                className="mb-6 font-serif text-2xl font-semibold"
+              >
+                {SECTION_TITLE[currentSection]}
+              </h2>
+
+              {currentSection === "teaching" ? (
+                <SectionTeaching
+                  sectionId={activeSection.id}
+                  moduleId={mod.id}
+                  blockSlug={mod.block.slug}
+                  moduleSlug={mod.slug}
+                  muxPlaybackId={activeSection.mux_playback_id}
+                  bodyMd={activeSection.body_md}
+                  durationSeconds={activeSection.duration_seconds}
+                  startPositionSeconds={startPosition}
+                  resources={(mod.resources ?? [])
+                    .slice()
+                    .sort((a, b) => a.order_index - b.order_index)
+                    .map(({ id, title, kind, url }) => ({
+                      id,
+                      title,
+                      kind,
+                      url,
+                    }))}
+                />
+              ) : (
+                <SectionContent
+                  kind={currentSection}
+                  sectionId={activeSection.id}
+                  moduleId={mod.id}
+                  blockSlug={mod.block.slug}
+                  moduleSlug={mod.slug}
+                  bodyMd={activeSection.body_md}
+                  module={{
+                    objective: mod.objective,
+                    main_revelation: mod.main_revelation,
+                    impartation_phrase: mod.impartation_phrase,
+                  }}
+                />
+              )}
+            </section>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}

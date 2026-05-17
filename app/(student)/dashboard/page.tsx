@@ -1,11 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/brand/logo";
 import { SignOutButton } from "@/components/auth/sign-out-button";
-import { ToastFromQuery } from "@/components/toast-from-query";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = {
@@ -82,9 +80,6 @@ export default async function DashboardPage() {
 
   return (
     <main className="flex flex-1 flex-col px-6 py-10">
-      <Suspense fallback={null}>
-        <ToastFromQuery />
-      </Suspense>
       <div className="mx-auto w-full max-w-4xl">
         <nav className="mb-10 flex items-center justify-between">
           <Logo size="sm" />

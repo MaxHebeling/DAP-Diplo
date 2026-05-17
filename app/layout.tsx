@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
+import { Suspense } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { ToastFromQuery } from "@/components/toast-from-query";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -39,6 +41,9 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         {children}
         <Toaster richColors position="top-center" />
+        <Suspense fallback={null}>
+          <ToastFromQuery />
+        </Suspense>
       </body>
     </html>
   );
