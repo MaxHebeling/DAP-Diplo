@@ -19,6 +19,10 @@ const MESSAGES: Record<string, { msg: string; type?: "success" | "info" | "warni
     msg: "¡Bloque completado! Pronto recibirás tu rango.",
     type: "success",
   },
+  "block-saved": {
+    msg: "Bloque guardado correctamente.",
+    type: "success",
+  },
 };
 
 /**
