@@ -18,6 +18,10 @@ export function getStripe(): Stripe {
   }
   _stripe = new Stripe(apiKey, {
     typescript: true,
+    // En serverless (Vercel) el httpClient default (Node http) sufre
+    // "connection error retried 2 times" tras cold start por keepAlive
+    // sockets caídos. fetch evita el problema.
+    httpClient: Stripe.createFetchHttpClient(),
     appInfo: {
       name: "DAP — Diplomado Apostólico Pastoral",
       url: process.env.NEXT_PUBLIC_APP_URL,
