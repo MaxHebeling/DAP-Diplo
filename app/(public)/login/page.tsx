@@ -25,7 +25,7 @@ export default async function LoginPage({
   const { redirectTo } = await searchParams;
 
   if (user) {
-    redirect(redirectTo && redirectTo.startsWith("/") ? redirectTo : "/modulos");
+    redirect(redirectTo && redirectTo.startsWith("/") ? redirectTo : "/diplomado");
   }
 
   return (

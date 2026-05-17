@@ -12,7 +12,7 @@ export type AuthFormState = {
   fieldErrors?: Record<string, string[]>;
 };
 
-const FALLBACK_REDIRECT = "/modulos";
+const FALLBACK_REDIRECT = "/diplomado";
 
 function safeRedirectTo(value: FormDataEntryValue | null): string {
   if (typeof value !== "string") return FALLBACK_REDIRECT;
@@ -41,29 +41,23 @@ export async function signUpAction(
 
   const supabase = await createClient();
 
-  const { data, error } = await supabase.auth.signUp({
+  const { error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
-      data: { full_name: parsed.data.fullName },
+      // El trigger handle_new_user() lee full_name, ministry_name y country
+      // desde raw_user_meta_data y los inserta en profiles en un solo paso.
+      data: {
+        full_name: parsed.data.fullName,
+        ministry_name: parsed.data.ministryName ?? null,
+        country: parsed.data.country,
+      },
       emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/login`,
     },
   });
 
   if (error) {
     return { ok: false, error: error.message };
-  }
-
-  // El trigger handle_new_user() ya creó la fila en profiles con full_name.
-  // Completamos los campos extra que el trigger no conoce.
-  if (data.user) {
-    await supabase
-      .from("profiles")
-      .update({
-        ministry_name: parsed.data.ministryName ?? null,
-        country: parsed.data.country,
-      })
-      .eq("id", data.user.id);
   }
 
   const redirectTo = safeRedirectTo(formData.get("redirectTo"));

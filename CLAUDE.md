@@ -1,4 +1,4 @@
-# CLAUDE.md — DAP (Diplomado Apostólico para Pastores)
+# CLAUDE.md — DAP (Diplomado Apostólico Pastoral)
 
 > **Lee este archivo COMPLETO al inicio de cada sesión antes de escribir código.**
 > Si algo aquí entra en conflicto con lo que el usuario te pida, pregunta antes de seguir.
@@ -7,150 +7,171 @@
 
 ## 1. Qué es DAP
 
-DAP es una plataforma web de educación online (LMS) para pastores que quieren formarse en doctrina apostólica. El producto es propiedad 100% del usuario (Max Hebeling) — no es un wrapper de Thinkific/Kajabi. El código vive en este repo y se despliega como app independiente.
+DAP (Diplomado Apostólico Pastoral) es una plataforma web de educación premium para pastores y líderes ministeriales hispanohablantes. Es un programa de formación integral de **18 meses** que combina formación espiritual, liderazgo, gobierno, finanzas, empresas y tecnología.
 
-**Audiencia:** pastores y líderes ministeriales hispanohablantes (LATAM y España principalmente).
+El producto es propiedad 100% del usuario (Max Hebeling) — no es un wrapper de SaaS. Código propio, base de datos propia, marca propia.
 
-**Idioma del producto:** español (UI, emails, documentación visible al usuario). El código y los nombres de variables/tablas van en inglés (convención estándar).
+**Idioma del producto:** español (UI, emails, documentación visible al usuario). El código y los nombres de variables/tablas van en inglés.
+
+**Posicionamiento visual:** premium — Netflix / MasterClass / Apple Education / Hillsong College moderno. No es un Moodle más.
 
 ---
 
 ## 2. Modelo de negocio
 
-- **Venta por módulo / nivel.** Cada módulo del diplomado se vende por separado vía Stripe checkout. Un alumno puede comprar un módulo, varios, o todos.
-- **Autoinscripción a su propio ritmo.** No hay cohortes con fechas fijas. Cada alumno avanza cuando puede.
-- **Acceso permanente** tras la compra (no expira). Si en el futuro se cambia esto, modificar `enrollments.expires_at`.
+- **Suscripción mensual de $25 USD** vía Stripe Subscription.
+- **Duración total:** 18 meses (= 9 bloques × 2 meses cada uno).
+- **Costo total del diplomado:** $450 USD si paga los 18 meses completos.
+- **Drip por bloque:** se desbloquea 1 bloque nuevo cada 2 meses de suscripción activa.
+- **Modelo "Netflix":** si cancela la suscripción pierde acceso a los bloques. Puede reactivar y retoma desde donde iba (su progreso queda guardado).
+- **Acceso a contenido grabado + sesiones en vivo + mentoría grupal mensual.**
+- **No hay venta de bloques sueltos** (decisión inicial; puede añadirse después como modalidad alternativa).
 
 ---
 
-## 3. Stack técnico (no cambiar sin consultar)
+## 3. Estructura del producto
+
+```
+Diplomado (18 meses)
+  ├── Bloque 1: Fundamentos Espirituales (2 meses, 22 módulos)
+  │     └── Módulo: una "clase" de 45–60 min
+  │           ├── Parte 1 — Introducción (objetivo, revelación, aplicación)
+  │           ├── Parte 2 — Enseñanza (bíblica, práctica, moderna)
+  │           ├── Parte 3 — Activación (ejercicio práctico)
+  │           ├── Parte 4 — Evaluación (test / quiz)
+  │           └── Parte 5 — Frase de impartición
+  ├── Bloque 2: Identidad y Carácter (2 meses, 22 módulos)
+  ├── Bloque 3: Liderazgo y Discipulado (2 meses, 22 módulos)
+  ├── Bloque 4: Ministerio y Pastorado (2 meses, 22 módulos)
+  ├── Bloque 5: Administración y Gobierno (2 meses, 22 módulos)
+  ├── Bloque 6: Finanzas y Economía del Reino (2 meses, 22 módulos)
+  ├── Bloque 7: Empresas y Expansión (2 meses, 22 módulos)
+  ├── Bloque 8: Tecnología, IA y Comunicación (2 meses, 22 módulos)
+  └── Bloque 9: Gobierno Apostólico y Reforma (2 meses, 24 módulos)
+                                                Total: 200 módulos
+```
+
+### Cronograma semanal (sesiones en vivo, opcionales)
+- **Lunes** — Clase principal (grabada, premium).
+- **Miércoles** — MasterClass en vivo.
+- **Viernes** — Activación práctica.
+- **Mensual** — Mentoría grupal.
+
+> El alumno avanza **a su propio ritmo** por el contenido grabado. Las sesiones en vivo son opcionales (se graban para quien no asistió).
+
+### Sistema de rangos (1 por bloque completado)
+
+| Bloque | Rango desbloqueado |
+|--------|---------------------|
+| 1 | Discípulo |
+| 2 | Hijo |
+| 3 | Líder |
+| 4 | Pastor |
+| 5 | Administrador |
+| 6 | Mayordomo |
+| 7 | Reformador |
+| 8 | Arquitecto |
+| 9 | Enviado |
+
+Cada bloque completado entrega: insignia digital, certificado PDF descargable, rango visible en el perfil, y "autoridad" (acceso a contenido o privilegios extra en la comunidad — definir después).
+
+---
+
+## 4. Stack técnico (no cambiar sin consultar)
 
 | Capa | Herramienta | Notas |
 |------|-------------|-------|
-| Framework | **Next.js 16** (App Router, Turbopack) | TypeScript estricto. Server Components por defecto. El archivo `middleware.ts` se llama ahora `proxy.ts` y exporta `proxy()`. |
+| Framework | **Next.js 16** (App Router, Turbopack) | TypeScript estricto. Server Components por defecto. `middleware.ts` renombrado a `proxy.ts` (convención Next 16). |
 | UI runtime | **React 19.2** | Server Components, Server Actions, `use()` hook. |
-| Estilos | **Tailwind CSS v4** + **shadcn/ui** (preset `base-nova`) | Tailwind v4 sin `tailwind.config.js` (config en `app/globals.css` con `@theme`). shadcn usa **Base UI** (`@base-ui/react`), no Radix — los componentes exponen `render` (no `asChild`). |
+| Estilos | **Tailwind CSS v4** + **shadcn/ui** (preset `base-nova`) | shadcn copiado al repo. Usa **Base UI** (`@base-ui/react`), no Radix — los componentes exponen `render` (no `asChild`). |
 | Base de datos | **Supabase (Postgres)** | Auth + DB + Storage en el mismo servicio. |
-| Auth | **Supabase Auth** + `@supabase/ssr` | Email + password al inicio. Tres clientes: `lib/supabase/{server,client,middleware,admin}.ts`. |
+| Auth | **Supabase Auth** + `@supabase/ssr` | Email + password al inicio. Confirmación de correo desactivada para MVP. |
 | Video | **Mux** | Player y streaming. NUNCA hostear video en Supabase Storage. |
-| Pagos | **Stripe** | Checkout sessions + webhooks. Modo test al desarrollar. |
-| Email transaccional | **Resend** | Compras, certificados, recuperación de password. |
-| Hosting | **Vercel** | Deploy automático desde `main`. Preview en cada PR. |
-| Dominio | (TBD) | Probablemente dap.com.[tld] del usuario. |
-| Tutor IA (Fase 5) | **Claude API + Supabase pgvector** | RAG con materiales del usuario. |
+| Pagos | **Stripe Subscriptions** | Subscription recurrente $25/mes. Webhook para actualizar `months_paid_total` y desbloquear bloques. |
+| Email transaccional | **Resend** | Bienvenida, confirmación de pago, desbloqueo de bloque, certificados, recuperación de password. |
+| Hosting | **Vercel** | Deploy automático desde `main`. |
+| Tutor IA (Fase 8) | **Claude API + Supabase pgvector** | RAG con materiales del DAP. |
 
-**Versiones instaladas:** Node 25, pnpm 10, Postgres 15+ (lo que use Supabase). Versiones mínimas soportadas: Node 20+, pnpm 9+.
+**Versiones mínimas:** Node 20+, pnpm preferido.
 
 ---
 
-## 4. Convenciones de código
+## 5. Convenciones de código
 
 ### Estructura de carpetas
 ```
-/app                      # Rutas Next.js (App Router)
-  /(public)               # Rutas públicas (landing, login, signup)
-  /(student)              # Rutas autenticadas del alumno
-  /(admin)                # Rutas del admin (Max)
-  /api                    # Route handlers (webhooks, etc.)
+/app
+  /(public)               # Landing, login, signup, página de venta
+  /(student)              # Área del alumno (dashboard, bloques, módulos, comunidad, tutor IA)
+  /(admin)                # Backoffice (CRUD de bloques, módulos, secciones, en vivo, etc.)
+  /api                    # Route handlers (webhooks Stripe, Mux, etc.)
 /components
-  /ui                     # Componentes shadcn (no editar a mano)
-  /[feature]              # Componentes por feature (course, lesson, quiz)
+  /ui                     # Componentes shadcn (gestionados por CLI)
+  /brand                  # Logo y elementos de marca
+  /auth                   # signup-form, login-form, sign-out-button
+  /[feature]              # Componentes por feature
 /lib
-  /supabase               # Cliente Supabase (server y browser)
-  /stripe                 # Helpers Stripe
-  /mux                    # Helpers Mux
-  /utils                  # Utilities sueltos
-/types                    # Tipos TypeScript compartidos
+  /supabase
+  /stripe
+  /mux
+  /auth                   # schemas zod + Server Actions
+  /utils.ts
+  /format.ts
+/types
 /supabase
-  /migrations             # SQL migrations versionadas
-  /seed.sql               # Datos de ejemplo para desarrollo
+  /migrations
+  /seed.sql               # Pre-carga de bloques, módulos, rangos
 ```
 
 ### Reglas firmes
-- **TypeScript estricto.** `strict: true` en tsconfig. Nada de `any` sin un comentario justificándolo.
-- **Server Components por defecto.** Solo agregar `"use client"` cuando se necesite interactividad real.
-- **Datos del lado servidor.** Lectura desde Supabase se hace en Server Components con `createServerClient`. Nunca exponer `service_role_key` al cliente.
-- **RLS (Row Level Security) activado en TODAS las tablas.** Si una nueva tabla no tiene policies, no se mergea.
-- **Validación con Zod.** Todos los inputs de formulario y API se validan con Zod antes de tocar DB.
-- **Nombres en inglés.** Tablas, columnas, funciones, variables: inglés. Textos visibles al usuario: español.
-- **Imports absolutos.** Usar alias `@/` desde la raíz (configurado en tsconfig).
-- **Sin librerías exóticas.** Antes de instalar algo nuevo, preguntar si se puede resolver con el stack actual.
-- **Tests cuando hay lógica de negocio.** No exigir tests para UI pura. Sí para: cálculos de progreso, generación de certificados, webhooks de Stripe, cualquier cosa que cobre dinero.
-
-### Estilo de commits
-Conventional Commits:
-- `feat: añadir página de detalle de módulo`
-- `fix: corregir cálculo de progreso cuando lección no tiene quiz`
-- `chore: actualizar dependencias`
-- `docs: ampliar plan de implementación`
+- **TypeScript estricto.** `strict: true`. Sin `any`.
+- **Server Components por defecto.**
+- **RLS activado en todas las tablas.** Sin policies = no se mergea.
+- **Validación con Zod en todos los inputs.**
+- **Nombres en inglés (código), textos en español (UI).**
+- **Imports absolutos con `@/`.**
+- **Sin librerías nuevas sin preguntar.**
 
 ---
 
-## 5. Modelo de datos (resumen)
+## 6. Modelo de datos (resumen)
 
-Tablas principales. El esquema completo está en `/supabase/migrations/`.
+Tablas principales. Detalle completo en `/supabase/migrations/0001_initial_schema.sql`.
 
-- **profiles** — extiende `auth.users` con datos del pastor (nombre, ministerio, país, teléfono, etc).
-- **modules** — módulos del diplomado (ej. "Fundamentos Apostólicos", "Liderazgo Pastoral"). Tienen `price_cents`, `stripe_price_id`, `order`.
-- **lessons** — lecciones dentro de un módulo. Tienen `mux_playback_id` para el video y `order`.
-- **lesson_resources** — PDFs, audios, links descargables por lección.
-- **enrollments** — registro de qué módulos compró cada alumno. Una fila por alumno+módulo.
-- **lesson_progress** — qué lecciones ha completado cada alumno y cuándo.
-- **quizzes** — un quiz por lección (opcional) o por módulo (examen).
-- **quiz_questions** — preguntas del quiz (multiple choice o V/F al inicio).
-- **quiz_attempts** — intentos del alumno con puntaje.
-- **certificates** — generados cuando termina un módulo. Tienen un código único verificable.
-- **forum_threads** / **forum_posts** — comunidad entre pastores (Fase 3).
-- **live_sessions** — clases en vivo programadas (Fase 4).
-- **ai_conversations** / **ai_messages** — historial del tutor IA (Fase 5).
-- **ai_documents** — documentos vectorizados para RAG del tutor IA (Fase 5).
-
----
-
-## 6. Cómo trabajar conmigo (Claude Code)
-
-### Reglas para mí cuando me pidan código:
-
-1. **Antes de tocar código, leer este archivo y el README.** Si una tarea contradice estas reglas, preguntar primero.
-2. **Una feature a la vez.** No "implementa todo el LMS". Una pantalla, una API, un flujo.
-3. **Mostrar el plan antes del código** si la tarea toca más de 3 archivos. El usuario aprueba, después implemento.
-4. **Migraciones de DB son inmutables.** Una vez creada y aplicada, no editarla — crear una nueva.
-5. **Nunca commitear secretos.** Variables sensibles van en `.env.local` (gitignored) y en Vercel/GitHub Secrets.
-6. **Nunca correr `npm install` sin confirmar la librería.** El usuario revisa qué se agrega al `package.json`.
-7. **Cuando agrego un componente shadcn**, usar el CLI oficial: `npx shadcn@latest add [componente]`. No copiar manualmente.
-8. **Si rompo algo, decirlo.** No esconder un error. No usar `try/catch` para silenciar excepciones — siempre loguear o re-lanzar.
-9. **Comentarios en código solo cuando explican el "por qué", no el "qué".** El qué se lee del código.
-
-### Cosas que SÍ puedo hacer sin pedir permiso:
-- Crear o editar archivos dentro del scope de la tarea pedida.
-- Correr el dev server (`npm run dev`).
-- Correr migraciones de Supabase en local.
-- Correr linter, formatter, tests.
-- Hacer commits descriptivos en una rama de trabajo.
-
-### Cosas que NO puedo hacer sin pedir permiso:
-- Instalar dependencias nuevas.
-- Tocar archivos fuera del scope (especialmente CLAUDE.md, package.json, schema SQL ya aplicado).
-- Hacer push a `main` directo.
-- Borrar archivos.
-- Cambiar variables de entorno o configuración de despliegue.
+| Tabla | Para qué |
+|-------|----------|
+| **profiles** | Datos del pastor (extiende auth.users). |
+| **blocks** | Los 9 bloques del diplomado. |
+| **ranks** | Los 9 rangos (Discípulo, Hijo, …, Enviado). |
+| **modules** | Las clases de 45–60 min (200 en total). Pertenecen a un bloque. |
+| **module_sections** | Las 5 partes obligatorias de cada módulo (intro, teaching, activation, evaluation, impartation). |
+| **module_resources** | PDFs, audios, plantillas descargables por módulo. |
+| **subscriptions** | Registro de Stripe Subscription por usuario. Mantiene `months_paid_total`. |
+| **block_access** | Qué bloques tiene desbloqueado cada usuario y desde cuándo. |
+| **module_progress** | Estado del módulo por usuario (visto, completado). |
+| **section_progress** | Estado de cada una de las 5 partes por usuario. |
+| **student_ranks** | Rangos obtenidos por cada alumno. |
+| **quizzes / quiz_questions / quiz_attempts** | Evaluación de cada módulo (sección 4). |
+| **certificates** | Certificados emitidos por bloque completado. |
+| **live_sessions** | MasterClass de los miércoles, Activaciones de los viernes, Mentorías mensuales. |
+| **forum_threads / forum_posts** | Comunidad entre pastores. |
+| **ai_conversations / ai_messages** | Tutor IA (Fase 8). |
 
 ---
 
 ## 7. Variables de entorno
 
-Lista de variables que el repo necesita. Las reales viven en `.env.local` (gitignored) y en Vercel.
-
 ```env
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=          # solo server, nunca al cliente
+SUPABASE_SERVICE_ROLE_KEY=
 
 # Stripe
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+STRIPE_DAP_SUBSCRIPTION_PRICE_ID=        # el Price ID del subscription de $25/mes
 
 # Mux
 MUX_TOKEN_ID=
@@ -162,47 +183,77 @@ RESEND_API_KEY=
 EMAIL_FROM=DAP <hola@dap.tudominio>
 
 # App
-NEXT_PUBLIC_APP_URL=http://localhost:3000  # cambia en prod
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-# Claude (Fase 5)
+# Claude (Fase 8)
 ANTHROPIC_API_KEY=
 ```
 
 ---
 
-## 8. Estado actual del proyecto
+## 8. Reglas para Claude Code
 
-> Actualizar este apartado al final de cada fase. Mantiene a Claude Code orientado.
+1. **Antes de tocar código, leer este archivo y el PLAN-IMPLEMENTACION.md.**
+2. **Una feature a la vez.** No "implementa todo el LMS".
+3. **Mostrar el plan antes del código** si toca más de 3 archivos.
+4. **Migraciones de DB son inmutables** una vez aplicadas a producción real con datos.
+5. **Nunca commitear secretos.**
+6. **Nunca correr `pnpm install` sin confirmar la librería.**
+7. **Componentes shadcn vía CLI oficial.**
+8. **Si rompo algo, decirlo.** Sin silenciar excepciones.
+9. **Comentarios solo para el "por qué", no el "qué".**
 
-- [ ] **Fase 0** — Setup base (repo, Next.js, Supabase, Vercel)
-- [ ] **Fase 1** — MVP core (auth, módulos, video, progreso, pago Stripe)
-- [ ] **Fase 2** — Exámenes y certificados
-- [ ] **Fase 3** — Comunidad / foro
-- [ ] **Fase 4** — Sesiones en vivo
-- [ ] **Fase 5** — Tutor IA con RAG
+### SÍ puedo hacer sin pedir permiso:
+- Crear/editar archivos dentro del scope de la tarea.
+- Correr dev server, linter, tests.
+- Hacer commits descriptivos en rama de trabajo.
+
+### NO puedo sin pedir permiso:
+- Instalar dependencias.
+- Tocar CLAUDE.md, package.json, migrations aplicadas.
+- Push directo a `main`.
+- Borrar archivos.
 
 ---
 
-## 9. Glosario del dominio
+## 9. Estado actual
 
-- **Pastor / alumno** — usuario final, comprador.
-- **Módulo** — bloque temático del diplomado (se vende como unidad). Equivale a un "curso" en otros LMS.
-- **Lección** — unidad de contenido dentro de un módulo (video + recursos + quiz opcional).
-- **Diplomado** — el programa completo (suma de todos los módulos). El alumno se "diploma" cuando completa todos.
-- **Inscripción (enrollment)** — registro de compra de un módulo por un alumno.
-- **Examen** — quiz final de un módulo, obligatorio para obtener el certificado.
-- **Certificado** — PDF descargable con código verificable, emitido al completar un módulo.
+- [x] **Fase 0** — Setup base (repo, Next.js, Supabase, Vercel)
+- [ ] **Fase 1** — Autenticación (signup, login, logout, middleware)
+- [ ] **Fase 2** — Vista pública del diplomado y bloques
+- [ ] **Fase 3** — Suscripción Stripe + desbloqueo de bloques
+- [ ] **Fase 4** — Reproductor de módulo con las 5 partes + progreso
+- [ ] **Fase 5** — Quizzes, certificados y rangos
+- [ ] **Fase 6** — Comunidad / foro
+- [ ] **Fase 7** — Sesiones en vivo (MasterClass / Activación / Mentoría)
+- [ ] **Fase 8** — Tutor IA con RAG
 
 ---
 
-## 10. Decisiones tomadas (y por qué)
+## 10. Glosario del dominio
+
+- **Pastor / alumno** — usuario final, suscriptor.
+- **Diplomado** — el programa completo de 18 meses.
+- **Bloque** — uno de los 9 grandes temas (2 meses cada uno). Equivale a un "trimestre" en otros LMS.
+- **Módulo** — una clase de 45–60 min con 5 partes fijas. Hay 200 en total (22 por bloque, 24 en el último).
+- **Sección / parte** — una de las 5 partes obligatorias de cada módulo (intro, enseñanza, activación, evaluación, impartición).
+- **Rango** — título ministerial otorgado al completar un bloque (Discípulo → Enviado).
+- **MasterClass** — sesión en vivo de los miércoles.
+- **Activación** — sesión práctica en vivo de los viernes.
+- **Mentoría grupal** — sesión mensual con grupo reducido.
+- **Suscripción** — la subscription de Stripe del alumno ($25/mes).
+- **Drip** — sistema de liberación gradual: cada 2 meses pagados se desbloquea 1 bloque.
+
+---
+
+## 11. Decisiones tomadas
 
 | Decisión | Por qué |
 |----------|---------|
-| Next.js sobre Remix/Astro | Mejor soporte para apps full-stack con auth/pagos, mayor ecosistema, Server Components. |
-| Supabase sobre Firebase/Neon | Postgres real, RLS robusto, auth integrado, storage. |
-| Mux sobre Vimeo/Cloudflare Stream | Mejor analítica, player más limpio, API más madura. Se puede cambiar a Cloudflare más tarde si baja presupuesto. |
-| RLS en lugar de checks en código | Una sola fuente de verdad de quién puede leer qué. Imposible saltarse desde el cliente. |
-| Stripe checkout hosted vs custom | Más rápido de implementar, PCI-compliant out of the box, mejor en LATAM con métodos locales. |
-| Sin cohortes en MVP | El usuario eligió autoinscripción. Si después se quiere cohortes, se añade una tabla `cohorts` y FK opcional en `enrollments`. |
-| Comunidad y tutor IA dentro del mismo repo | No fragmentar el producto. Si más adelante crece, se puede separar el tutor a un microservicio. |
+| Suscripción mensual sobre pago por bloque | Más accesible para pastor latinoamericano. MRR predecible. Alineado con el ritmo de consumo del programa. |
+| Modelo Netflix (cancela = pierde acceso) | Más simple operacionalmente. Progreso del alumno se conserva si reactiva. |
+| Drip por bloque (1 cada 2 meses) | Evita que el alumno consuma todo en un mes y cancele. Mantiene la disciplina del diplomado. |
+| 5 partes fijas por módulo | Estandariza la experiencia. Permite plantillas, métricas comparables, certificación clara. |
+| Lanzamiento con los 9 bloques completos | Decisión del usuario. Implica 12–18 meses de producción antes del lanzamiento. Ver PLAN-IMPLEMENTACION sección "Estrategia de lanzamiento" para riesgos. |
+| Stripe Subscriptions sobre Checkout one-time | El modelo de cobro lo requiere. Stripe maneja renovaciones, fallos de tarjeta, cancelaciones. |
+| Mux sobre Cloudflare Stream | Mejor player, analítica más detallada, posicionamiento premium del producto lo justifica. |
