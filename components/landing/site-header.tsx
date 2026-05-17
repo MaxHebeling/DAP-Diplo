@@ -25,10 +25,10 @@ export type HeaderUser = {
 } | null;
 
 const NAV_ITEMS = [
-  { href: "#diplomado", label: "El Diplomado" },
-  { href: "#bloques", label: "Bloques" },
-  { href: "#rangos", label: "Rangos" },
-  { href: "#faq", label: "Preguntas" },
+  { href: "/#diplomado", label: "El Diplomado" },
+  { href: "/#bloques", label: "Bloques" },
+  { href: "/#rangos", label: "Rangos" },
+  { href: "/#faq", label: "Preguntas" },
 ];
 
 function initialsOf(name: string | null): string {
