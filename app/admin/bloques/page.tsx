@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Check, X, Pencil } from "lucide-react";
+import { Check, X, Layers, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -76,7 +76,7 @@ export default async function AdminBlocksPage() {
                   Módulos
                 </TableHead>
                 <TableHead className="w-28 text-center">Publicado</TableHead>
-                <TableHead className="w-24 text-right" />
+                <TableHead className="w-56 text-right" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -139,16 +139,27 @@ export default async function AdminBlocksPage() {
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        render={
-                          <Link href={`/admin/bloques/${b.id}/editar`} />
-                        }
-                      >
-                        <Pencil className="size-3.5" />
-                        Editar
-                      </Button>
+                      <div className="inline-flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          render={
+                            <Link href={`/admin/bloques/${b.id}/modulos`} />
+                          }
+                        >
+                          <Layers className="size-3.5" />
+                          Módulos
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          render={
+                            <Link href={`/admin/bloques/${b.id}/editar`} />
+                          }
+                        >
+                          <Pencil className="size-3.5" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );

@@ -1,0 +1,169 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { ArrowLeft, Check, Pencil, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { createClient } from "@/lib/supabase/server";
+
+type PageProps = { params: Promise<{ id: string; mid: string }> };
+
+type SectionRow = {
+  id: string;
+  kind: "intro" | "teaching" | "activation" | "evaluation" | "impartation";
+  order_index: number;
+  title: string;
+  body_md: string | null;
+  mux_playback_id: string | null;
+};
+
+const KIND_LABEL: Record<SectionRow["kind"], string> = {
+  intro: "Introducción",
+  teaching: "Enseñanza",
+  activation: "Activación",
+  evaluation: "Evaluación",
+  impartation: "Frase de impartición",
+};
+
+export const metadata = { title: "Secciones del módulo — Admin DAP" };
+
+export default async function AdminModuleSectionsPage({ params }: PageProps) {
+  const { id, mid } = await params;
+  const supabase = await createClient();
+
+  const { data: block } = await supabase
+    .from("blocks")
+    .select("id, order_index, title")
+    .eq("id", id)
+    .maybeSingle();
+  if (!block) notFound();
+
+  const { data: mod } = await supabase
+    .from("modules")
+    .select("id, block_id, order_index, title")
+    .eq("id", mid)
+    .maybeSingle();
+  if (!mod || mod.block_id !== id) notFound();
+
+  const { data, error } = await supabase
+    .from("module_sections")
+    .select("id, kind, order_index, title, body_md, mux_playback_id")
+    .eq("module_id", mid)
+    .order("order_index", { ascending: true })
+    .returns<SectionRow[]>();
+  if (error) {
+    throw new Error(`No se pudieron cargar las secciones: ${error.message}`);
+  }
+  const sections = data ?? [];
+
+  return (
+    <main className="px-6 py-10 sm:px-10">
+      <div className="mx-auto max-w-5xl">
+        <Link
+          href={`/admin/bloques/${id}/modulos`}
+          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-brand-coral"
+        >
+          <ArrowLeft className="size-4" />
+          Volver a módulos
+        </Link>
+
+        <header className="mb-8 flex items-end justify-between gap-4">
+          <div>
+            <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
+              Bloque {String(block.order_index).padStart(2, "0")} · Módulo{" "}
+              {String(mod.order_index).padStart(2, "0")} · {mod.title}
+            </p>
+            <h1 className="font-serif text-3xl font-semibold">Secciones</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Las 5 secciones fijas del módulo. La sección de enseñanza incluye
+              video Mux.
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            render={<Link href={`/admin/bloques/${id}/modulos/${mid}/editar`} />}
+          >
+            <Pencil className="size-4" />
+            Editar módulo
+          </Button>
+        </header>
+
+        <div className="overflow-hidden rounded-xl border bg-card">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-14">#</TableHead>
+                <TableHead className="w-40">Tipo</TableHead>
+                <TableHead>Título</TableHead>
+                <TableHead className="w-32 text-center">Cuerpo</TableHead>
+                <TableHead className="w-32 text-center">Video</TableHead>
+                <TableHead className="w-28 text-right" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sections.map((s) => {
+                const hasBody =
+                  Boolean(s.body_md) && s.body_md!.trim().length > 0;
+                const hasVideo =
+                  Boolean(s.mux_playback_id) && s.mux_playback_id!.length > 0;
+                const isTeaching = s.kind === "teaching";
+                return (
+                  <TableRow key={s.id}>
+                    <TableCell className="font-serif text-brand-coral tabular-nums">
+                      {String(s.order_index).padStart(2, "0")}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="font-normal">
+                        {KIND_LABEL[s.kind]}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="font-medium">{s.title}</TableCell>
+                    <TableCell className="text-center">
+                      {hasBody ? (
+                        <Check className="mx-auto size-4 text-emerald-500" />
+                      ) : (
+                        <X className="mx-auto size-4 text-muted-foreground/40" />
+                      )}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {isTeaching ? (
+                        hasVideo ? (
+                          <Check className="mx-auto size-4 text-emerald-500" />
+                        ) : (
+                          <X className="mx-auto size-4 text-muted-foreground/40" />
+                        )
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        render={
+                          <Link
+                            href={`/admin/bloques/${id}/modulos/${mid}/secciones/${s.id}/editar`}
+                          />
+                        }
+                      >
+                        <Pencil className="size-3.5" />
+                        Editar
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+    </main>
+  );
+}

@@ -23,6 +23,14 @@ const MESSAGES: Record<string, { msg: string; type?: "success" | "info" | "warni
     msg: "Bloque guardado correctamente.",
     type: "success",
   },
+  "module-saved": {
+    msg: "Módulo guardado correctamente.",
+    type: "success",
+  },
+  "section-saved": {
+    msg: "Sección guardada correctamente.",
+    type: "success",
+  },
 };
 
 /**
