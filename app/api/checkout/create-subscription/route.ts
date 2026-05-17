@@ -52,6 +52,29 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // DIAG: test fetch directo a Stripe para aislar si es problema del SDK o de red
+  try {
+    const sk = process.env.STRIPE_SECRET_KEY ?? "";
+    const t0 = Date.now();
+    const r = await fetch("https://api.stripe.com/v1/customers?limit=1", {
+      method: "GET",
+      headers: { Authorization: `Bearer ${sk}` },
+    });
+    console.log(
+      "[create-subscription] DIAG direct-fetch:",
+      r.status,
+      "in",
+      Date.now() - t0,
+      "ms",
+    );
+  } catch (e) {
+    console.error("[create-subscription] DIAG direct-fetch FAILED:", {
+      name: (e as { name?: string })?.name,
+      message: (e as { message?: string })?.message,
+      cause: (e as { cause?: unknown })?.cause,
+    });
+  }
+
   const stripe = getStripe();
   let stripeCustomerId = profile.stripe_customer_id as string | null;
 
