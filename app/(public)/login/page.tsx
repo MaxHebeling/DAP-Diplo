@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   Card,
@@ -8,6 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { LoginForm } from "@/components/auth/login-form";
+import { Logo } from "@/components/brand/logo";
 import { createClient } from "@/lib/supabase/server";
 
 type SearchParams = Promise<{ redirectTo?: string }>;
@@ -31,13 +31,8 @@ export default async function LoginPage({
   return (
     <main className="flex flex-1 items-center justify-center px-6 py-16">
       <Card className="w-full max-w-md">
-        <CardHeader className="space-y-2 text-center">
-          <Link
-            href="/"
-            className="text-xs font-medium uppercase tracking-widest text-muted-foreground"
-          >
-            DAP
-          </Link>
+        <CardHeader className="items-center space-y-3 text-center">
+          <Logo size="md" />
           <CardTitle className="text-2xl">Inicia sesión</CardTitle>
           <CardDescription>
             Accede a tus módulos y continúa donde lo dejaste.

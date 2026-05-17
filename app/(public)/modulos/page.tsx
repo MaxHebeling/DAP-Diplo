@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ModuleCard, type ModuleCardData } from "@/components/modules/module-card";
+import { Logo } from "@/components/brand/logo";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = {
@@ -47,10 +48,10 @@ export default async function ModulosPage() {
   return (
     <main className="flex flex-1 flex-col px-6 py-16">
       <div className="mx-auto w-full max-w-6xl">
-        <header className="mb-12 text-center">
-          <p className="mb-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            DAP
-          </p>
+        <header className="mb-12 flex flex-col items-center text-center">
+          <div className="mb-4">
+            <Logo size="lg" />
+          </div>
           <h1 className="mb-4 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
             Módulos del diplomado
           </h1>
