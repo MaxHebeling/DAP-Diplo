@@ -7,9 +7,10 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
+  --font-serif: var(--font-serif);
   /* DAP brand colors — derivados del logo (paleta navy-purple + magenta + coral) */
   --color-brand: var(--brand);
   --color-brand-foreground: var(--brand-foreground);
@@ -17,6 +18,10 @@
   --color-brand-magenta-foreground: var(--brand-magenta-foreground);
   --color-brand-coral: var(--brand-coral);
   --color-brand-coral-foreground: var(--brand-coral-foreground);
+  --color-brand-gold: var(--brand-gold);
+  --color-brand-gold-foreground: var(--brand-gold-foreground);
+  --color-brand-burgundy: var(--brand-burgundy);
+  --color-brand-burgundy-foreground: var(--brand-burgundy-foreground);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -88,6 +93,11 @@
   --brand-magenta-foreground: oklch(0.985 0 0);
   --brand-coral: oklch(0.810 0.136 64.7);     /* coral #fdad5a */
   --brand-coral-foreground: oklch(0.225 0.025 60);
+  /* DAP landing — premium gold + burgundy */
+  --brand-gold: oklch(0.762 0.105 82);        /* warm gold #C9A961 */
+  --brand-gold-foreground: oklch(0.145 0 0);  /* casi negro sobre dorado */
+  --brand-burgundy: oklch(0.330 0.130 18);    /* borgoña #7A1F2B */
+  --brand-burgundy-foreground: oklch(0.985 0 0);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.259 0.085 287.5);
@@ -129,6 +139,10 @@
   --brand-magenta-foreground: oklch(0.165 0.020 287);
   --brand-coral: oklch(0.810 0.136 64.7);
   --brand-coral-foreground: oklch(0.225 0.025 60);
+  --brand-gold: oklch(0.785 0.115 82);
+  --brand-gold-foreground: oklch(0.145 0 0);
+  --brand-burgundy: oklch(0.420 0.150 18);
+  --brand-burgundy-foreground: oklch(0.985 0 0);
   --sidebar: oklch(0.225 0.030 287);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.700 0.130 290);
