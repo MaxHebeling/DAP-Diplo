@@ -68,7 +68,7 @@ export function FaqSection() {
               <AccordionTrigger className="py-6 text-left font-serif text-lg font-medium text-neutral-50 hover:no-underline">
                 {item.q}
               </AccordionTrigger>
-              <AccordionContent className="text-base leading-relaxed text-neutral-400">
+              <AccordionContent className="text-justify text-base leading-relaxed text-neutral-400 hyphens-auto">
                 {item.a}
               </AccordionContent>
             </AccordionItem>

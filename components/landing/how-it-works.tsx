@@ -49,7 +49,7 @@ export function HowItWorks() {
                   <h3 className="mb-3 font-serif text-2xl font-semibold text-neutral-50">
                     {step.title}
                   </h3>
-                  <p className="text-sm leading-relaxed text-neutral-400">
+                  <p className="text-justify text-sm leading-relaxed text-neutral-400 hyphens-auto">
                     {step.body}
                   </p>
                 </div>

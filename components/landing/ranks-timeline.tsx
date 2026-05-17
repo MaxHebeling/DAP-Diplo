@@ -35,7 +35,7 @@ export async function RanksTimeline() {
             <h2 className="font-serif text-balance text-4xl font-semibold leading-tight text-neutral-50 sm:text-5xl">
               Discípulo. Hijo. Líder. Pastor. Hasta Enviado.
             </h2>
-            <p className="mt-6 text-base leading-relaxed text-neutral-400">
+            <p className="mt-6 text-justify text-base leading-relaxed text-neutral-400 hyphens-auto">
               Cada bloque completado entrega un rango ministerial verificable.
               No son títulos honoríficos: son etapas de proceso reconocidas
               dentro del gobierno apostólico del DAP.

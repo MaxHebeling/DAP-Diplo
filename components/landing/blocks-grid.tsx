@@ -43,7 +43,7 @@ export async function BlocksGrid() {
                 Nueve dimensiones de la unción apostólica.
               </h2>
             </div>
-            <p className="max-w-md text-sm leading-relaxed text-neutral-400">
+            <p className="max-w-md text-justify text-sm leading-relaxed text-neutral-400 hyphens-auto">
               Un bloque cada 2 meses. Cada bloque otorga un rango y prepara
               para el siguiente. Al final, los 9 forman al líder enviado.
             </p>
@@ -73,7 +73,7 @@ export async function BlocksGrid() {
                       {b.title}
                     </h3>
                     {b.subtitle && (
-                      <p className="text-sm leading-relaxed text-neutral-400">
+                      <p className="text-justify text-sm leading-relaxed text-neutral-400 hyphens-auto">
                         {b.subtitle}
                       </p>
                     )}

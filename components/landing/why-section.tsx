@@ -17,7 +17,7 @@ export function WhySection() {
         </Reveal>
 
         <Reveal delay={0.05}>
-          <div className="space-y-7 text-lg leading-relaxed text-neutral-300">
+          <div className="space-y-7 text-justify text-lg leading-relaxed text-neutral-300 hyphens-auto">
             <p>
               La mayoría de las escuelas ministeriales del mundo hispano solo
               forman <span className="text-neutral-50">predicadores</span>. El

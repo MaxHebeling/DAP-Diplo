@@ -44,7 +44,7 @@ export function SiteFooter() {
         <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
             <Logo size="md" variant="light" />
-            <p className="mt-5 max-w-xs text-sm leading-relaxed text-neutral-400">
+            <p className="mt-5 max-w-xs text-justify text-sm leading-relaxed text-neutral-400 hyphens-auto">
               Diplomado Apostólico Pastoral. Formación integral de 18 meses
               para pastores y líderes hispanohablantes.
             </p>
