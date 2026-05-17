@@ -4,12 +4,12 @@ import { Reveal } from "@/components/landing/reveal";
 
 export function FinalCta() {
   return (
-    <section className="relative isolate overflow-hidden bg-brand-navy px-6 py-28 sm:py-36">
+    <section className="relative isolate overflow-hidden bg-brand-coral px-6 py-28 sm:py-36">
       <div
         aria-hidden
         className="absolute inset-0 -z-10 bg-[radial-gradient(60%_60%_at_50%_50%,rgba(255,255,255,0.18),transparent)]"
       />
-      <div className="mx-auto max-w-3xl text-center text-brand-navy-foreground">
+      <div className="mx-auto max-w-3xl text-center text-brand-coral-foreground">
         <Reveal>
           <h2 className="mb-6 font-serif text-balance text-4xl font-semibold leading-tight sm:text-6xl">
             Empieza tu formación apostólica hoy.

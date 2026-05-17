@@ -15,21 +15,16 @@ export function HeroSection() {
         className="-z-20 object-cover opacity-55"
       />
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-neutral-950 via-neutral-950/80 to-neutral-950" />
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(80%_60%_at_50%_30%,rgba(30,58,138,0.22),transparent)]" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(80%_60%_at_50%_30%,rgba(253,173,90,0.18),transparent)]" />
 
       <div className="mx-auto w-full max-w-5xl px-6 py-20 text-center">
-        <h1 className="mb-7 text-xs font-medium uppercase tracking-[0.32em] text-brand-coral">
+        <h1 className="mb-12 text-xs font-medium uppercase tracking-[0.32em] text-brand-coral">
           Diplomado Apostólico Pastoral
         </h1>
-        <p className="mx-auto mb-12 max-w-2xl text-balance text-xl leading-relaxed text-neutral-200 sm:text-2xl md:text-3xl">
-          18 meses. 200 módulos. 9 rangos ministeriales. Una formación que une
-          revelación espiritual con liderazgo, gobierno, finanzas, empresas y
-          tecnología.
-        </p>
         <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
           <Button
             size="lg"
-            className="h-12 w-full bg-brand-navy px-7 text-base font-medium text-brand-navy-foreground hover:bg-brand-navy/90 sm:w-auto"
+            className="h-12 w-full bg-brand-coral px-7 text-base font-medium text-brand-coral-foreground hover:bg-brand-coral/90 sm:w-auto"
             render={<Link href="/suscribirme" />}
           >
             Inscríbete ahora — $25/mes
