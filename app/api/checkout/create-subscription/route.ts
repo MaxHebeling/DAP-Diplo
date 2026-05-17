@@ -1,8 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getStripe } from "@/lib/stripe/server";
-import { createSubscriptionCheckoutSession } from "@/lib/stripe/checkout";
+import {
+  createStripeCustomer,
+  createSubscriptionCheckoutSession,
+} from "@/lib/stripe/api";
 
 export const runtime = "nodejs";
 
@@ -52,40 +54,15 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // DIAG: test fetch directo a Stripe para aislar si es problema del SDK o de red
-  try {
-    const sk = process.env.STRIPE_SECRET_KEY ?? "";
-    const t0 = Date.now();
-    const r = await fetch("https://api.stripe.com/v1/customers?limit=1", {
-      method: "GET",
-      headers: { Authorization: `Bearer ${sk}` },
-    });
-    console.log(
-      "[create-subscription] DIAG direct-fetch:",
-      r.status,
-      "in",
-      Date.now() - t0,
-      "ms",
-    );
-  } catch (e) {
-    console.error("[create-subscription] DIAG direct-fetch FAILED:", {
-      name: (e as { name?: string })?.name,
-      message: (e as { message?: string })?.message,
-      cause: (e as { cause?: unknown })?.cause,
-    });
-  }
-
-  const stripe = getStripe();
   let stripeCustomerId = profile.stripe_customer_id as string | null;
 
-  // Crea Stripe Customer la primera vez. Persiste en profiles para
-  // reutilizar en futuros checkouts y vincular con el webhook.
+  // Primer checkout: crea el Customer y persíntelo en el profile.
   if (!stripeCustomerId) {
     try {
-      const customer = await stripe.customers.create({
+      const customer = await createStripeCustomer({
         email: user.email,
         name: profile.full_name ?? undefined,
-        metadata: { userId: user.id },
+        userId: user.id,
       });
       stripeCustomerId = customer.id;
       const admin = createAdminClient();
@@ -95,28 +72,13 @@ export async function POST(request: NextRequest) {
         .eq("id", user.id);
       if (updateErr) {
         console.error(
-          "[create-subscription] no se pudo guardar stripe_customer_id en profile:",
+          "[create-subscription] no se pudo guardar stripe_customer_id:",
           updateErr.message,
         );
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Error creando Customer";
-      // Dump exhaustivo para diagnosticar errores de SDK en serverless
-      console.error("[create-subscription] customers.create FAILED:", {
-        msg,
-        name: (err as { name?: string })?.name,
-        code: (err as { code?: string })?.code,
-        type: (err as { type?: string })?.type,
-        statusCode: (err as { statusCode?: number })?.statusCode,
-        requestId: (err as { requestId?: string })?.requestId,
-        cause: (err as { cause?: unknown })?.cause,
-        envPresent: {
-          STRIPE_SECRET_KEY: !!process.env.STRIPE_SECRET_KEY,
-          STRIPE_SECRET_KEY_len: process.env.STRIPE_SECRET_KEY?.length ?? 0,
-          STRIPE_SECRET_KEY_prefix: process.env.STRIPE_SECRET_KEY?.slice(0, 8),
-          PRICE_ID: process.env.STRIPE_DAP_SUBSCRIPTION_PRICE_ID,
-        },
-      });
+      console.error("[create-subscription] createStripeCustomer FAILED:", msg);
       return NextResponse.json({ error: msg }, { status: 500 });
     }
   }
@@ -139,7 +101,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.redirect(session.url, { status: 303 });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Error creando sesión.";
-    console.error("[create-subscription] sessions.create:", msg);
+    console.error("[create-subscription] sessions.create FAILED:", msg);
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
