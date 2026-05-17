@@ -50,7 +50,7 @@ export function FaqSection() {
     >
       <div className="mx-auto max-w-3xl">
         <div className="mb-12">
-          <p className="mb-5 text-xs font-medium uppercase tracking-[0.32em] text-brand-gold">
+          <p className="mb-5 text-xs font-medium uppercase tracking-[0.32em] text-brand-coral">
             Preguntas frecuentes
           </p>
           <h2 className="font-serif text-balance text-4xl font-semibold leading-tight text-neutral-50 sm:text-5xl">

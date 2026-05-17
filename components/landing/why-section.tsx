@@ -8,7 +8,7 @@ export function WhySection() {
     >
       <div className="mx-auto max-w-3xl">
         <Reveal>
-          <p className="mb-5 text-xs font-medium uppercase tracking-[0.32em] text-brand-gold">
+          <p className="mb-5 text-xs font-medium uppercase tracking-[0.32em] text-brand-coral">
             Por qué el DAP
           </p>
           <h2 className="mb-12 font-serif text-balance text-4xl font-semibold leading-tight text-neutral-50 sm:text-5xl">

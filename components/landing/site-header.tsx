@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { LogOut, LayoutDashboard, ShieldCheck } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/brand/logo";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,12 +57,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
       )}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        <Link
-          href="/"
-          className="font-serif text-2xl font-semibold tracking-tight text-neutral-50"
-        >
-          DAP<span className="text-brand-gold">.</span>
-        </Link>
+        <Logo size="sm" priority />
 
         <nav className="hidden items-center gap-9 md:flex">
           {NAV_ITEMS.map((item) => (
@@ -80,7 +76,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
             <DropdownMenu>
               <DropdownMenuTrigger
                 aria-label="Abrir menú de cuenta"
-                className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/60"
+                className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-brand-coral/60"
               >
                 <Avatar className="size-9 border border-white/10">
                   {user.avatarUrl && (
@@ -131,7 +127,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
               </Button>
               <Button
                 size="sm"
-                className="bg-brand-gold text-brand-gold-foreground hover:bg-brand-gold/90"
+                className="bg-brand-magenta text-brand-magenta-foreground hover:bg-brand-magenta/90"
                 render={<Link href="/signup" />}
               >
                 Inscribirme

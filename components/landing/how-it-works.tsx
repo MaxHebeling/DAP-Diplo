@@ -25,7 +25,7 @@ export function HowItWorks() {
       <div className="mx-auto max-w-6xl">
         <Reveal>
           <div className="mb-16 max-w-2xl">
-            <p className="mb-5 text-xs font-medium uppercase tracking-[0.32em] text-brand-gold">
+            <p className="mb-5 text-xs font-medium uppercase tracking-[0.32em] text-brand-coral">
               Cómo funciona
             </p>
             <h2 className="font-serif text-balance text-4xl font-semibold leading-tight text-neutral-50 sm:text-5xl">
@@ -40,7 +40,7 @@ export function HowItWorks() {
             return (
               <Reveal key={step.title} delay={i * 0.08}>
                 <div className="h-full bg-neutral-950 p-8 sm:p-10">
-                  <div className="mb-5 inline-flex size-12 items-center justify-center rounded-xl bg-brand-gold/10 text-brand-gold">
+                  <div className="mb-5 inline-flex size-12 items-center justify-center rounded-xl bg-brand-coral/15 text-brand-coral">
                     <Icon className="size-6" strokeWidth={1.5} />
                   </div>
                   <div className="mb-2 text-xs font-medium uppercase tracking-widest text-neutral-500">

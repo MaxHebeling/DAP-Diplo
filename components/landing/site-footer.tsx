@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/components/brand/logo";
 
 const COLUMNS = [
   {
@@ -42,12 +43,7 @@ export function SiteFooter() {
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
-            <Link
-              href="/"
-              className="font-serif text-3xl font-semibold tracking-tight text-neutral-50"
-            >
-              DAP<span className="text-brand-gold">.</span>
-            </Link>
+            <Logo size="md" />
             <p className="mt-5 max-w-xs text-sm leading-relaxed text-neutral-400">
               Diplomado Apostólico Pastoral. Formación integral de 18 meses
               para pastores y líderes hispanohablantes.

@@ -15,10 +15,10 @@ export function HeroSection() {
         className="-z-20 object-cover opacity-40"
       />
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-neutral-950 via-neutral-950/80 to-neutral-950" />
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(80%_60%_at_50%_30%,rgba(201,169,97,0.18),transparent)]" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(80%_60%_at_50%_30%,rgba(196,62,110,0.22),transparent)]" />
 
       <div className="mx-auto w-full max-w-5xl px-6 py-20 text-center">
-        <p className="mb-7 text-xs font-medium uppercase tracking-[0.32em] text-brand-gold">
+        <p className="mb-7 text-xs font-medium uppercase tracking-[0.32em] text-brand-coral">
           Diplomado Apostólico Pastoral
         </p>
         <h1 className="mb-8 font-serif text-balance text-5xl font-semibold leading-[1.05] tracking-tight text-neutral-50 sm:text-6xl md:text-7xl lg:text-[5rem]">
@@ -34,7 +34,7 @@ export function HeroSection() {
         <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
           <Button
             size="lg"
-            className="h-12 w-full bg-brand-gold px-7 text-base font-medium text-brand-gold-foreground hover:bg-brand-gold/90 sm:w-auto"
+            className="h-12 w-full bg-brand-magenta px-7 text-base font-medium text-brand-magenta-foreground hover:bg-brand-magenta/90 sm:w-auto"
             render={<Link href="/suscribirme" />}
           >
             Inscríbete ahora — $25/mes

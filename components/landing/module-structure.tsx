@@ -37,7 +37,7 @@ export function ModuleStructure() {
       <div className="mx-auto max-w-6xl">
         <Reveal>
           <div className="mb-16 max-w-2xl">
-            <p className="mb-5 text-xs font-medium uppercase tracking-[0.32em] text-brand-gold">
+            <p className="mb-5 text-xs font-medium uppercase tracking-[0.32em] text-brand-coral">
               Cada módulo, 5 partes
             </p>
             <h2 className="font-serif text-balance text-4xl font-semibold leading-tight text-neutral-50 sm:text-5xl">
@@ -49,8 +49,8 @@ export function ModuleStructure() {
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
           {PARTS.map((part, i) => (
             <Reveal key={part.number} delay={i * 0.05}>
-              <div className="h-full rounded-2xl border border-white/10 bg-neutral-900/40 p-7 transition-colors hover:border-brand-gold/30">
-                <div className="mb-6 font-serif text-3xl font-semibold text-brand-gold">
+              <div className="h-full rounded-2xl border border-white/10 bg-neutral-900/40 p-7 transition-colors hover:border-brand-coral/30">
+                <div className="mb-6 font-serif text-3xl font-semibold text-brand-coral">
                   {part.number}
                 </div>
                 <h3 className="mb-3 font-serif text-xl font-semibold text-neutral-50">

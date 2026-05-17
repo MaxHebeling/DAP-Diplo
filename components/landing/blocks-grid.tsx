@@ -36,7 +36,7 @@ export async function BlocksGrid() {
         <Reveal>
           <div className="mb-16 flex flex-col items-start gap-6 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-2xl">
-              <p className="mb-5 text-xs font-medium uppercase tracking-[0.32em] text-brand-gold">
+              <p className="mb-5 text-xs font-medium uppercase tracking-[0.32em] text-brand-coral">
                 Los 9 Bloques
               </p>
               <h2 className="font-serif text-balance text-4xl font-semibold leading-tight text-neutral-50 sm:text-5xl">
@@ -61,11 +61,11 @@ export async function BlocksGrid() {
                 >
                   <div>
                     <div className="mb-8 flex items-start justify-between">
-                      <span className="font-serif text-5xl font-semibold text-brand-gold">
+                      <span className="font-serif text-5xl font-semibold text-brand-coral">
                         {String(b.order_index).padStart(2, "0")}
                       </span>
                       <ArrowUpRight
-                        className="size-5 text-neutral-600 transition-colors group-hover:text-brand-gold"
+                        className="size-5 text-neutral-600 transition-colors group-hover:text-brand-coral"
                         strokeWidth={1.5}
                       />
                     </div>
@@ -80,7 +80,7 @@ export async function BlocksGrid() {
                   </div>
 
                   <div className="flex items-center justify-between border-t border-white/5 pt-5 text-xs">
-                    <span className="font-medium uppercase tracking-wider text-brand-gold">
+                    <span className="font-medium uppercase tracking-wider text-brand-coral">
                       {b.rank?.name ?? "—"}
                     </span>
                     <span className="text-neutral-500">
