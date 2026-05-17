@@ -127,7 +127,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
               </Button>
               <Button
                 size="sm"
-                className="bg-brand-magenta text-brand-magenta-foreground hover:bg-brand-magenta/90"
+                className="bg-brand-navy text-brand-navy-foreground hover:bg-brand-navy/90"
                 render={<Link href="/signup" />}
               >
                 Inscribirme
