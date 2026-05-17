@@ -7,12 +7,12 @@ export function HeroSection() {
     <section className="relative isolate flex min-h-[92vh] items-center overflow-hidden bg-neutral-950 pt-24 sm:pt-16">
       {/* Imagen de fondo + capas de oscuridad sobre ella */}
       <Image
-        src="https://images.unsplash.com/photo-1507692049790-de58290a4334?auto=format&fit=crop&w=2400&q=85"
-        alt=""
+        src="/hero.jpg"
+        alt="Conferencia apostólica con audiencia atenta y predicador en el escenario"
         priority
         fill
         sizes="100vw"
-        className="-z-20 object-cover opacity-40"
+        className="-z-20 object-cover opacity-55"
       />
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-neutral-950 via-neutral-950/80 to-neutral-950" />
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(80%_60%_at_50%_30%,rgba(30,58,138,0.22),transparent)]" />
