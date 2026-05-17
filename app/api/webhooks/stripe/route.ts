@@ -255,37 +255,21 @@ async function handleInvoicePaid(
     .eq("stripe_subscription_id", subId);
   if (updErr) throw new Error(`Update months falló: ${updErr.message}`);
 
-  // TODO (Prompt 3.3): reemplazar este bloque por
-  //   await admin.rpc("unlock_next_block_if_needed", { p_user_id: subRow.user_id });
-  // Mismo efecto: drip cada 2 meses paga → 1 bloque nuevo.
-  // Mes 1 → bloque 1; mes 3 → bloque 2; …; mes 17 → bloque 9.
-  const unlockedCount = Math.min(9, Math.ceil(newCount / 2));
-  const { data: blocks, error: blocksErr } = await admin
-    .from("blocks")
-    .select("id, order_index")
-    .lte("order_index", unlockedCount)
-    .order("order_index", { ascending: true });
-  if (blocksErr) throw new Error(`Read blocks falló: ${blocksErr.message}`);
-  if (blocks && blocks.length > 0) {
-    const rows = blocks.map((b) => ({
-      user_id: subRow.user_id,
-      block_id: b.id,
-      source: "subscription" as const,
-    }));
-    const { error: accessErr } = await admin
-      .from("block_access")
-      .upsert(rows, {
-        onConflict: "user_id,block_id",
-        ignoreDuplicates: true,
-      });
-    if (accessErr) {
-      throw new Error(`Upsert block_access falló: ${accessErr.message}`);
-    }
+  // Drip via SQL function (migration 0005). La función calcula
+  // target = ceil(months/2) capped a 9 e inserta los bloques faltantes.
+  // Idempotente: si ya alcanzó target → 0 inserts.
+  const { data: unlocked, error: rpcErr } = await admin.rpc(
+    "unlock_next_block_if_needed",
+    { p_user_id: subRow.user_id },
+  );
+  if (rpcErr) {
+    throw new Error(`unlock_next_block_if_needed falló: ${rpcErr.message}`);
   }
+  const unlockedNow = typeof unlocked === "number" ? unlocked : 0;
 
   return {
     ok: true,
     userId: subRow.user_id,
-    detail: `reason=${reason} months=${newCount} unlocked=${unlockedCount}/9`,
+    detail: `reason=${reason} months=${newCount} unlocked_now=${unlockedNow}`,
   };
 }
