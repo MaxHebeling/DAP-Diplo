@@ -9,8 +9,17 @@ export const runtime = "nodejs";
 //   customer.subscription.{created,updated,deleted}
 //   invoice.{paid,payment_failed}
 //
-// Idempotente: usa upsert con onConflict para soportar reintentos
-// de Stripe sin duplicar filas ni romper el drip.
+// Idempotencia: rastreo explícito vía tabla stripe_events_processed.
+// Antes de procesar un evento, chequeamos si su id ya está en la tabla;
+// si sí, no-op y devolvemos 200. Después de procesar exitosamente,
+// INSERT del id. Si Stripe reenvía el mismo evento (timeout, reintento),
+// el segundo proceso es no-op.
+
+type EventResult = {
+  ok: true;
+  userId?: string | null;
+  detail?: string;
+};
 
 export async function POST(request: NextRequest) {
   const signature = request.headers.get("stripe-signature");
@@ -31,32 +40,68 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: msg }, { status: 400 });
   }
 
+  const admin = createAdminClient();
+
+  // Idempotency check
+  const { data: already } = await admin
+    .from("stripe_events_processed")
+    .select("id")
+    .eq("id", event.id)
+    .maybeSingle();
+  if (already) {
+    console.log(
+      `[stripe.webhook] event=${event.id} type=${event.type} → SKIP (already processed)`,
+    );
+    return NextResponse.json({ received: true, idempotent: true });
+  }
+
+  let result: EventResult;
   try {
     switch (event.type) {
       case "customer.subscription.created":
       case "customer.subscription.updated":
-        await upsertSubscription(event.data.object as Stripe.Subscription);
+        result = await upsertSubscription(event.data.object as Stripe.Subscription);
         break;
       case "customer.subscription.deleted":
-        await markSubscriptionCanceled(event.data.object as Stripe.Subscription);
+        result = await markSubscriptionCanceled(
+          event.data.object as Stripe.Subscription,
+        );
         break;
       case "invoice.paid":
-        await handleInvoicePaid(event.data.object as Stripe.Invoice);
+        result = await handleInvoicePaid(event.data.object as Stripe.Invoice);
         break;
       case "invoice.payment_failed":
-        await markSubscriptionPastDue(event.data.object as Stripe.Invoice);
+        result = await markSubscriptionPastDue(event.data.object as Stripe.Invoice);
         break;
       default:
-        // No-op para eventos no esperados.
+        result = { ok: true, detail: "no-handler" };
         break;
     }
-    return NextResponse.json({ received: true });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Error procesando webhook";
-    console.error("[stripe.webhook] handler error:", msg);
+    console.error(
+      `[stripe.webhook] event=${event.id} type=${event.type} → FAILED: ${msg}`,
+    );
     // 500 → Stripe reintenta automáticamente.
     return NextResponse.json({ error: msg }, { status: 500 });
   }
+
+  console.log(
+    `[stripe.webhook] event=${event.id} type=${event.type} userId=${result.userId ?? "—"} → OK${result.detail ? ` (${result.detail})` : ""}`,
+  );
+
+  // Mark processed (no fallar si ya existe por race condition).
+  const { error: insErr } = await admin
+    .from("stripe_events_processed")
+    .insert({ id: event.id, event_type: event.type });
+  if (insErr && !/duplicate|already exists/i.test(insErr.message)) {
+    // Otro error de DB: log pero responde 200 (ya procesamos).
+    console.error(
+      `[stripe.webhook] event=${event.id} no se pudo marcar como procesado: ${insErr.message}`,
+    );
+  }
+
+  return NextResponse.json({ received: true });
 }
 
 // --- helpers ---------------------------------------------------------
@@ -66,8 +111,7 @@ function tsToIso(unixSeconds: number | null | undefined): string | null {
   return new Date(unixSeconds * 1000).toISOString();
 }
 
-// En Stripe 22 los periodos viven en items.data[0], no en la Subscription
-// directamente (cambio para soportar items con periodos distintos).
+// En Stripe 22 los periodos viven en items.data[0], no en la Subscription.
 function subscriptionPeriod(sub: Stripe.Subscription): {
   start: number | null;
   end: number | null;
@@ -80,7 +124,7 @@ function subscriptionPeriod(sub: Stripe.Subscription): {
   };
 }
 
-// Invoice.subscription top-level fue removido en Stripe 22.
+// invoice.subscription top-level fue removido en Stripe 22.
 // Ahora vive en invoice.parent.subscription_details.subscription.
 function invoiceSubscriptionId(invoice: Stripe.Invoice): string | null {
   const ref = invoice.parent?.subscription_details?.subscription;
@@ -88,7 +132,9 @@ function invoiceSubscriptionId(invoice: Stripe.Invoice): string | null {
   return typeof ref === "string" ? ref : (ref.id ?? null);
 }
 
-async function upsertSubscription(sub: Stripe.Subscription): Promise<void> {
+async function upsertSubscription(
+  sub: Stripe.Subscription,
+): Promise<EventResult> {
   const userId = sub.metadata?.userId;
   if (!userId) {
     throw new Error(
@@ -109,8 +155,7 @@ async function upsertSubscription(sub: Stripe.Subscription): Promise<void> {
 
   const admin = createAdminClient();
 
-  // Mantenemos months_paid_total si ya existe la fila (lo incrementa
-  // invoice.paid). Solo lo seteamos a 0 si es INSERT nuevo.
+  // Mantenemos months_paid_total si ya existe la fila (lo incrementa invoice.paid).
   const { data: existing } = await admin
     .from("subscriptions")
     .select("months_paid_total")
@@ -133,11 +178,13 @@ async function upsertSubscription(sub: Stripe.Subscription): Promise<void> {
     { onConflict: "stripe_subscription_id", ignoreDuplicates: false },
   );
   if (error) throw new Error(`Upsert subscriptions falló: ${error.message}`);
+
+  return { ok: true, userId, detail: `status=${sub.status}` };
 }
 
 async function markSubscriptionCanceled(
   sub: Stripe.Subscription,
-): Promise<void> {
+): Promise<EventResult> {
   const admin = createAdminClient();
   const { error } = await admin
     .from("subscriptions")
@@ -147,21 +194,42 @@ async function markSubscriptionCanceled(
     })
     .eq("stripe_subscription_id", sub.id);
   if (error) throw new Error(`Cancel subscription falló: ${error.message}`);
+  return {
+    ok: true,
+    userId: sub.metadata?.userId ?? null,
+    detail: "block_access preservado",
+  };
 }
 
-async function markSubscriptionPastDue(invoice: Stripe.Invoice): Promise<void> {
+async function markSubscriptionPastDue(
+  invoice: Stripe.Invoice,
+): Promise<EventResult> {
   const subId = invoiceSubscriptionId(invoice);
-  if (!subId) return;
+  if (!subId) return { ok: true, detail: "invoice sin subscription" };
   const admin = createAdminClient();
   await admin
     .from("subscriptions")
     .update({ status: "past_due" })
     .eq("stripe_subscription_id", subId);
+  return { ok: true, detail: `sub=${subId} → past_due` };
 }
 
-async function handleInvoicePaid(invoice: Stripe.Invoice): Promise<void> {
+async function handleInvoicePaid(
+  invoice: Stripe.Invoice,
+): Promise<EventResult> {
   const subId = invoiceSubscriptionId(invoice);
-  if (!subId) return; // invoice no asociada a subscription
+  if (!subId) return { ok: true, detail: "invoice sin subscription, ignorado" };
+
+  // Solo contamos invoices que corresponden a un nuevo período de cobro.
+  // Otros billing_reason (manual, subscription_update, etc.) no incrementan
+  // months_paid_total ni disparan el drip.
+  const reason = invoice.billing_reason;
+  if (reason !== "subscription_create" && reason !== "subscription_cycle") {
+    return {
+      ok: true,
+      detail: `billing_reason=${reason} ignorado (solo cuentan create/cycle)`,
+    };
+  }
 
   const admin = createAdminClient();
   const { data: subRow, error: selErr } = await admin
@@ -171,8 +239,9 @@ async function handleInvoicePaid(invoice: Stripe.Invoice): Promise<void> {
     .maybeSingle();
   if (selErr) throw new Error(`Lookup subscription falló: ${selErr.message}`);
   if (!subRow) {
-    // El evento de subscription.created todavía no ha sido procesado:
-    // Stripe reintentará este invoice.paid. 500 → retry.
+    // El evento subscription.created todavía no se ha procesado:
+    // Stripe reintentará este invoice.paid. 500 → retry. Idempotency
+    // table no se marca, así que el retry sí re-procesará.
     throw new Error(
       `Subscription ${subId} no existe aún — invoice.paid llegó antes de subscription.created`,
     );
@@ -186,30 +255,37 @@ async function handleInvoicePaid(invoice: Stripe.Invoice): Promise<void> {
     .eq("stripe_subscription_id", subId);
   if (updErr) throw new Error(`Update months falló: ${updErr.message}`);
 
-  // Drip: cada 2 meses paga, se desbloquea 1 bloque más.
-  // Mes 1 → bloque 1; mes 3 → bloque 2; mes 5 → bloque 3; …; mes 17 → bloque 9.
+  // TODO (Prompt 3.3): reemplazar este bloque por
+  //   await admin.rpc("unlock_next_block_if_needed", { p_user_id: subRow.user_id });
+  // Mismo efecto: drip cada 2 meses paga → 1 bloque nuevo.
+  // Mes 1 → bloque 1; mes 3 → bloque 2; …; mes 17 → bloque 9.
   const unlockedCount = Math.min(9, Math.ceil(newCount / 2));
-
   const { data: blocks, error: blocksErr } = await admin
     .from("blocks")
     .select("id, order_index")
     .lte("order_index", unlockedCount)
     .order("order_index", { ascending: true });
   if (blocksErr) throw new Error(`Read blocks falló: ${blocksErr.message}`);
-  if (!blocks || blocks.length === 0) return;
-
-  const rows = blocks.map((b) => ({
-    user_id: subRow.user_id,
-    block_id: b.id,
-    source: "subscription" as const,
-  }));
-  const { error: accessErr } = await admin
-    .from("block_access")
-    .upsert(rows, {
-      onConflict: "user_id,block_id",
-      ignoreDuplicates: true,
-    });
-  if (accessErr) {
-    throw new Error(`Upsert block_access falló: ${accessErr.message}`);
+  if (blocks && blocks.length > 0) {
+    const rows = blocks.map((b) => ({
+      user_id: subRow.user_id,
+      block_id: b.id,
+      source: "subscription" as const,
+    }));
+    const { error: accessErr } = await admin
+      .from("block_access")
+      .upsert(rows, {
+        onConflict: "user_id,block_id",
+        ignoreDuplicates: true,
+      });
+    if (accessErr) {
+      throw new Error(`Upsert block_access falló: ${accessErr.message}`);
+    }
   }
+
+  return {
+    ok: true,
+    userId: subRow.user_id,
+    detail: `reason=${reason} months=${newCount} unlocked=${unlockedCount}/9`,
+  };
 }
