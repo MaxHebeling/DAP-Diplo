@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 export function HeroSection() {
   return (
-    <section className="relative isolate flex min-h-[92vh] items-center overflow-hidden bg-neutral-950 pt-24 sm:pt-16">
+    <section className="relative isolate flex min-h-[92vh] flex-col justify-between overflow-hidden bg-neutral-950 pt-28 pb-12 sm:pt-32 sm:pb-16">
       {/* Imagen de fondo + capas de oscuridad sobre ella */}
       <Image
         src="/hero.jpg"
@@ -12,15 +12,21 @@ export function HeroSection() {
         priority
         fill
         sizes="100vw"
-        className="-z-20 object-cover opacity-55"
+        className="-z-20 object-cover opacity-70"
       />
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-neutral-950 via-neutral-950/80 to-neutral-950" />
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(80%_60%_at_50%_30%,rgba(253,173,90,0.18),transparent)]" />
+      {/* Vignette: oscuro arriba y abajo, foto más visible al centro */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-neutral-950 via-neutral-950/35 to-neutral-950" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(60%_45%_at_50%_18%,rgba(253,173,90,0.22),transparent)]" />
 
-      <div className="mx-auto w-full max-w-5xl px-6 py-20 text-center">
-        <h1 className="mb-12 text-xs font-medium uppercase tracking-[0.32em] text-brand-coral">
+      {/* TOP: eyebrow */}
+      <div className="mx-auto w-full max-w-5xl px-6 text-center">
+        <h1 className="text-[0.7rem] font-medium uppercase tracking-[0.36em] text-brand-coral sm:text-xs">
           Diplomado Apostólico Pastoral
         </h1>
+      </div>
+
+      {/* BOTTOM: CTAs + microcopy */}
+      <div className="mx-auto w-full max-w-5xl px-6 text-center">
         <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
           <Button
             size="lg"
@@ -38,15 +44,10 @@ export function HeroSection() {
             Ver el diplomado
           </Button>
         </div>
-        <p className="mt-6 text-xs text-neutral-400">
+        <p className="mt-5 text-xs text-neutral-300">
           Cancela cuando quieras. Sin compromiso.
         </p>
       </div>
-
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-neutral-950"
-      />
     </section>
   );
 }
