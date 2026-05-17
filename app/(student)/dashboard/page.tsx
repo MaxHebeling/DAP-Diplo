@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/brand/logo";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { ToastFromQuery } from "@/components/toast-from-query";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = {
@@ -16,6 +18,22 @@ type ProfileRow = {
   country: string | null;
   role: "student" | "admin";
 };
+
+type SubscriptionRow = {
+  status: string;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
+  months_paid_total: number;
+};
+
+function formatDate(iso: string | null): string | null {
+  if (!iso) return null;
+  return new Date(iso).toLocaleDateString("es-MX", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -38,8 +56,32 @@ export default async function DashboardPage() {
     throw new Error("Tu perfil no existe en la base de datos.");
   }
 
+  // Suscripción real (puede no existir, estar activa, cancelada, etc.)
+  const { data: sub } = await supabase
+    .from("subscriptions")
+    .select("status, current_period_end, cancel_at_period_end, months_paid_total")
+    .eq("user_id", user.id)
+    .order("started_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<SubscriptionRow>();
+
+  const hasActive =
+    !!sub &&
+    (sub.status === "active" || sub.status === "trialing") &&
+    (sub.current_period_end === null ||
+      new Date(sub.current_period_end) > new Date());
+
+  // Conteo de bloques desbloqueados (drip)
+  const { count: unlockedBlocks } = await supabase
+    .from("block_access")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id);
+
   return (
     <main className="flex flex-1 flex-col px-6 py-10">
+      <Suspense fallback={null}>
+        <ToastFromQuery />
+      </Suspense>
       <div className="mx-auto w-full max-w-4xl">
         <nav className="mb-10 flex items-center justify-between">
           <Logo size="sm" />
@@ -71,36 +113,83 @@ export default async function DashboardPage() {
         </header>
 
         <section className="grid gap-4 md:grid-cols-2">
+          {/* Suscripción */}
           <div className="rounded-xl border bg-card p-6">
             <h2 className="mb-1 text-sm font-medium uppercase tracking-widest text-muted-foreground">
               Tu suscripción
             </h2>
-            <p className="mb-3 text-2xl font-semibold">Sin suscripción activa</p>
-            <p className="mb-5 text-sm text-muted-foreground">
-              Acceso al Bloque 1 y a las sesiones en vivo desde $25 USD/mes.
-            </p>
-            <Button render={<Link href="/diplomado" />}>
-              Ver el diplomado
-            </Button>
+            {hasActive ? (
+              <>
+                <p className="mb-1 text-2xl font-semibold capitalize">
+                  {sub?.status === "trialing" ? "En prueba" : "Activa"}
+                </p>
+                <p className="mb-5 text-sm text-muted-foreground">
+                  {sub?.cancel_at_period_end
+                    ? `Se cancelará el ${formatDate(sub.current_period_end)}.`
+                    : `Próximo cobro: ${formatDate(sub?.current_period_end ?? null) ?? "—"}.`}
+                </p>
+                <Button variant="outline" render={<Link href="/bloques" />}>
+                  Ver mis bloques
+                </Button>
+              </>
+            ) : sub ? (
+              <>
+                <p className="mb-1 text-2xl font-semibold capitalize">
+                  {sub.status === "past_due"
+                    ? "Pago pendiente"
+                    : sub.status === "canceled"
+                      ? "Cancelada"
+                      : sub.status}
+                </p>
+                <p className="mb-5 text-sm text-muted-foreground">
+                  Reactiva tu suscripción para recuperar el acceso. Tu progreso
+                  está guardado.
+                </p>
+                <Button render={<Link href="/suscribirme" />}>
+                  Reactivar suscripción
+                </Button>
+              </>
+            ) : (
+              <>
+                <p className="mb-3 text-2xl font-semibold">
+                  Sin suscripción activa
+                </p>
+                <p className="mb-5 text-sm text-muted-foreground">
+                  Acceso al Bloque 1 y a las sesiones en vivo desde $25 USD/mes.
+                </p>
+                <Button render={<Link href="/suscribirme" />}>
+                  Suscribirme — $25/mes
+                </Button>
+              </>
+            )}
           </div>
 
+          {/* Progreso */}
           <div className="rounded-xl border bg-card p-6">
             <h2 className="mb-1 text-sm font-medium uppercase tracking-widest text-muted-foreground">
               Tu progreso
             </h2>
-            <p className="mb-3 text-2xl font-semibold">0 de 9 bloques</p>
-            <p className="mb-5 text-sm text-muted-foreground">
-              Cada bloque completado te otorga un rango ministerial.
+            <p className="mb-3 text-2xl font-semibold">
+              {unlockedBlocks ?? 0} de 9 bloques
             </p>
-            <Button variant="outline" disabled>
-              Aún sin avance
+            <p className="mb-5 text-sm text-muted-foreground">
+              {(unlockedBlocks ?? 0) === 0
+                ? "Cada bloque completado te otorga un rango ministerial."
+                : `Cada 2 meses se desbloquea un bloque nuevo.${sub ? ` Llevas ${sub.months_paid_total} ${sub.months_paid_total === 1 ? "mes" : "meses"}.` : ""}`}
+            </p>
+            <Button
+              variant="outline"
+              render={<Link href="/#bloques" />}
+              disabled={!hasActive}
+            >
+              {(unlockedBlocks ?? 0) > 0 ? "Continuar" : "Ver el diplomado"}
             </Button>
           </div>
         </section>
 
         <p className="mt-10 text-xs text-muted-foreground">
-          Esta vista es mínima — se expandirá en fases posteriores (suscripción
-          real, bloques desbloqueados, calendario de sesiones, rango actual).
+          Esta vista se expandirá: calendario de sesiones en vivo, último módulo
+          visto, certificados emitidos, rango actual.
         </p>
       </div>
     </main>
