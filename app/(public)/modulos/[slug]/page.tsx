@@ -215,13 +215,20 @@ export default async function ModuleDetailPage({ params }: PageProps) {
                     </Button>
                   )
                 ) : user ? (
-                  <Button
+                  <form
+                    action="/api/checkout/create-session"
+                    method="POST"
                     className="w-full"
-                    disabled
-                    title="Checkout disponible cuando se conecte Stripe (prompt 1.4)"
                   >
-                    Comprar — {formatPrice(module_.price_cents)}
-                  </Button>
+                    <input
+                      type="hidden"
+                      name="moduleId"
+                      value={module_.module_id}
+                    />
+                    <Button type="submit" className="w-full">
+                      Comprar — {formatPrice(module_.price_cents)}
+                    </Button>
+                  </form>
                 ) : (
                   <Button
                     className="w-full"
