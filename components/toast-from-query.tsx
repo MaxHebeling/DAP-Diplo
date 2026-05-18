@@ -47,6 +47,14 @@ const MESSAGES: Record<string, { msg: string; type?: "success" | "info" | "warni
     msg: "La comunidad es solo para suscriptores activos del DAP.",
     type: "warning",
   },
+  "live-created": {
+    msg: "Sesión creada.",
+    type: "success",
+  },
+  "live-saved": {
+    msg: "Sesión actualizada.",
+    type: "success",
+  },
 };
 
 /**

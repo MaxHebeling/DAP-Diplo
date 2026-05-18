@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Layers, LayoutDashboard, LogOut, Users } from "lucide-react";
+import {
+  Layers,
+  LayoutDashboard,
+  LogOut,
+  MessagesSquare,
+  Radio,
+} from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -11,8 +17,8 @@ import { signOutAction } from "@/lib/auth/actions";
 const NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/admin/bloques", label: "Bloques", icon: Layers, exact: false },
-  // Placeholders para fases futuras (descomentar cuando exista la ruta):
-  // { href: "/admin/usuarios", label: "Alumnos", icon: Users, exact: false },
+  { href: "/admin/comunidad", label: "Comunidad", icon: MessagesSquare, exact: false },
+  { href: "/admin/en-vivo", label: "En vivo", icon: Radio, exact: false },
 ];
 
 export function AdminSidebar({ fullName }: { fullName: string | null }) {
