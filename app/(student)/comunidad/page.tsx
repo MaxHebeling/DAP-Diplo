@@ -46,6 +46,7 @@ export default async function ComunidadPage({ searchParams }: PageProps) {
        block:blocks!forum_threads_block_id_fkey(id, order_index, title),
        posts_count:forum_posts(count)`,
     )
+    .eq("hidden", false)
     .order("pinned", { ascending: false })
     .order("updated_at", { ascending: false })
     .limit(100);

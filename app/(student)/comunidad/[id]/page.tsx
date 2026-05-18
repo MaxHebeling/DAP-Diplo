@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Markdown } from "@/components/module/markdown";
 import { ReplyForm } from "@/components/forum/reply-form";
+import { ReportPostButton } from "@/components/forum/report-post-button";
 import { ThreadAuthorActions } from "@/components/forum/thread-author-actions";
 import { createClient } from "@/lib/supabase/server";
 import { requireForumAccess } from "@/lib/forum/gate";
@@ -18,6 +19,7 @@ type ThreadRow = {
   body: string;
   pinned: boolean;
   closed: boolean;
+  hidden: boolean;
   author_id: string;
   created_at: string;
   updated_at: string;
@@ -46,7 +48,7 @@ export default async function ThreadPage({ params }: PageProps) {
   const { data: thread, error: tErr } = await supabase
     .from("forum_threads")
     .select(
-      `id, title, body, pinned, closed, author_id, created_at, updated_at,
+      `id, title, body, pinned, closed, hidden, author_id, created_at, updated_at,
        author:profiles!forum_threads_author_id_fkey(id, full_name, avatar_url),
        block:blocks!forum_threads_block_id_fkey(id, order_index, title)`,
     )
@@ -54,6 +56,8 @@ export default async function ThreadPage({ params }: PageProps) {
     .maybeSingle<ThreadRow>();
   if (tErr) throw new Error(`No se pudo cargar el hilo: ${tErr.message}`);
   if (!thread) notFound();
+  // Hidden threads: solo admin puede entrar (para moderar/restaurar).
+  if (thread.hidden && !isAdmin) notFound();
 
   const { data: posts, error: pErr } = await supabase
     .from("forum_posts")
@@ -146,32 +150,39 @@ export default async function ThreadPage({ params }: PageProps) {
             </p>
           ) : (
             <ul className="space-y-6">
-              {replies.map((p) => (
-                <li
-                  key={p.id}
-                  className="rounded-xl border bg-card px-5 py-4"
-                >
-                  <div className="mb-3 flex items-center gap-3">
-                    <Avatar className="size-8">
-                      <AvatarImage src={p.author?.avatar_url ?? undefined} />
-                      <AvatarFallback>
-                        {(p.author?.full_name ?? "?").slice(0, 1).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="text-sm">
-                      <span className="font-medium">
-                        {p.author?.full_name ?? "—"}
-                      </span>
-                      <span className="ml-2 text-xs text-muted-foreground">
-                        {timeAgo(p.created_at)}
-                      </span>
+              {replies.map((p) => {
+                const isOwnPost = p.author_id === userId;
+                return (
+                  <li
+                    key={p.id}
+                    id={`post-${p.id}`}
+                    className="scroll-mt-20 rounded-xl border bg-card px-5 py-4"
+                  >
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="size-8">
+                          <AvatarImage src={p.author?.avatar_url ?? undefined} />
+                          <AvatarFallback>
+                            {(p.author?.full_name ?? "?").slice(0, 1).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="text-sm">
+                          <span className="font-medium">
+                            {p.author?.full_name ?? "—"}
+                          </span>
+                          <span className="ml-2 text-xs text-muted-foreground">
+                            {timeAgo(p.created_at)}
+                          </span>
+                        </div>
+                      </div>
+                      {!isOwnPost && <ReportPostButton postId={p.id} />}
                     </div>
-                  </div>
-                  <div className="prose prose-sm prose-neutral max-w-none dark:prose-invert">
-                    <Markdown>{p.body}</Markdown>
-                  </div>
-                </li>
-              ))}
+                    <div className="prose prose-sm prose-neutral max-w-none dark:prose-invert">
+                      <Markdown>{p.body}</Markdown>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           )}
 

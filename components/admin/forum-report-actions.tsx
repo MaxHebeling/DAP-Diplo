@@ -1,0 +1,28 @@
+"use client";
+
+import { useTransition } from "react";
+import { Check } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { resolveReportAction } from "@/lib/forum/admin-actions";
+
+export function ResolveReportButton({ reportId }: { reportId: string }) {
+  const [pending, startTransition] = useTransition();
+
+  function onClick() {
+    const fd = new FormData();
+    fd.set("id", reportId);
+    startTransition(async () => {
+      const res = await resolveReportAction(undefined, fd);
+      if (!res.ok) toast.error(res.error);
+      else toast.success("Reporte resuelto.");
+    });
+  }
+
+  return (
+    <Button size="sm" variant="outline" disabled={pending} onClick={onClick}>
+      <Check className="size-3.5" />
+      {pending ? "Resolviendo…" : "Resolver"}
+    </Button>
+  );
+}
