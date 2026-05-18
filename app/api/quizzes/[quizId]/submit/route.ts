@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { issueCertificatePdf } from "@/lib/certificates/issue";
 
 export const runtime = "nodejs";
 
@@ -304,10 +305,26 @@ export async function POST(
         !Array.isArray(blockResult)
       ) {
         blockCompletion = blockResult as Record<string, unknown>;
-        // Si se emitió certificado, invalida el dashboard para reflejar el nuevo rango/cert.
         if (blockCompletion.newly_completed === true) {
           revalidatePath(`/dashboard`);
           revalidatePath(`/bloques/${blockSlug}`);
+
+          // Genera + sube el PDF del certificado. Síncrono porque tarda 1-3s
+          // y este endpoint solo se llama 9 veces en la vida del alumno
+          // (una por bloque). Si falla, el certificado SQL ya quedó emitido
+          // y se puede re-generar manualmente con issueCertificatePdf(certId).
+          const certId = blockCompletion.certificate_id as string | undefined;
+          if (certId) {
+            try {
+              const { path } = await issueCertificatePdf(certId);
+              blockCompletion.pdf_path = path;
+            } catch (err) {
+              const msg =
+                err instanceof Error ? err.message : String(err);
+              console.error("[quiz.submit] issueCertificatePdf failed:", msg);
+              blockCompletion.pdf_error = msg;
+            }
+          }
         }
       }
     }
