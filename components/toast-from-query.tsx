@@ -31,6 +31,22 @@ const MESSAGES: Record<string, { msg: string; type?: "success" | "info" | "warni
     msg: "Sección guardada correctamente.",
     type: "success",
   },
+  "thread-saved": {
+    msg: "Hilo actualizado.",
+    type: "success",
+  },
+  "thread-closed": {
+    msg: "Hilo cerrado. Ya no acepta respuestas.",
+    type: "info",
+  },
+  "post-created": {
+    msg: "Respuesta publicada.",
+    type: "success",
+  },
+  "community-needs-sub": {
+    msg: "La comunidad es solo para suscriptores activos del DAP.",
+    type: "warning",
+  },
 };
 
 /**
