@@ -2,19 +2,25 @@ import { NextResponse, type NextRequest } from "next/server";
 import type Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendWelcomeEmail } from "@/lib/email/send-welcome";
+import { sendMonthAdvancedEmail } from "@/lib/email/send-month-advanced";
+import { sendSubscriptionPausedEmail } from "@/lib/email/send-subscription-paused";
+import { sendPaymentFailedEmail } from "@/lib/email/send-payment-failed";
 import { constructStripeEvent } from "@/lib/stripe/webhook";
+import { pauseSubscriptionCollection } from "@/lib/stripe/api";
 
 export const runtime = "nodejs";
 
-// Maneja los 5 eventos configurados en Stripe Dashboard:
-//   customer.subscription.{created,updated,deleted}
-//   invoice.{paid,payment_failed}
+// Modelo mensual con gating académico (CLAUDE.md v3, migrations 0008/0009).
 //
-// Idempotencia: rastreo explícito vía tabla stripe_events_processed.
-// Antes de procesar un evento, chequeamos si su id ya está en la tabla;
-// si sí, no-op y devolvemos 200. Después de procesar exitosamente,
-// INSERT del id. Si Stripe reenvía el mismo evento (timeout, reintento),
-// el segundo proceso es no-op.
+// 6 eventos manejados:
+//   customer.subscription.created  → crea fila + welcome email
+//   customer.subscription.updated  → sincroniza + detecta pause_collection
+//   customer.subscription.deleted  → status=canceled + limpia paused_at
+//   invoice.paid                   → +1 months_paid_total + try_advance_month
+//   invoice.payment_failed         → status=past_due + email
+//   invoice.upcoming               → si should_pause: pausa Stripe + email
+//
+// Idempotencia: tabla stripe_events_processed (check antes + insert después).
 
 type EventResult = {
   ok: true;
@@ -61,25 +67,18 @@ export async function POST(request: NextRequest) {
     switch (event.type) {
       case "customer.subscription.created": {
         const sub = event.data.object as Stripe.Subscription;
-        result = await upsertSubscription(sub);
-        // Email de bienvenida (fire-and-forget: si falla logueamos pero
-        // no rompemos el procesado del evento).
+        result = await upsertSubscription(sub, { isCreate: true });
         if (result.userId) {
           const emailRes = await sendWelcomeEmail(result.userId);
-          if (!emailRes.ok) {
-            console.error(
-              `[stripe.webhook] sendWelcomeEmail FAILED userId=${result.userId}: ${emailRes.error}`,
-            );
-          } else {
-            console.log(
-              `[stripe.webhook] welcome email sent userId=${result.userId} resend_id=${emailRes.id}`,
-            );
-          }
+          logEmail("welcome", result.userId, emailRes);
         }
         break;
       }
       case "customer.subscription.updated":
-        result = await upsertSubscription(event.data.object as Stripe.Subscription);
+        result = await upsertSubscription(
+          event.data.object as Stripe.Subscription,
+          { isCreate: false },
+        );
         break;
       case "customer.subscription.deleted":
         result = await markSubscriptionCanceled(
@@ -90,7 +89,14 @@ export async function POST(request: NextRequest) {
         result = await handleInvoicePaid(event.data.object as Stripe.Invoice);
         break;
       case "invoice.payment_failed":
-        result = await markSubscriptionPastDue(event.data.object as Stripe.Invoice);
+        result = await handleInvoicePaymentFailed(
+          event.data.object as Stripe.Invoice,
+        );
+        break;
+      case "invoice.upcoming":
+        result = await handleInvoiceUpcoming(
+          event.data.object as Stripe.Invoice,
+        );
         break;
       default:
         result = { ok: true, detail: "no-handler" };
@@ -109,12 +115,11 @@ export async function POST(request: NextRequest) {
     `[stripe.webhook] event=${event.id} type=${event.type} userId=${result.userId ?? "—"} → OK${result.detail ? ` (${result.detail})` : ""}`,
   );
 
-  // Mark processed (no fallar si ya existe por race condition).
+  // Mark processed (no fallar si ya existe por race condition)
   const { error: insErr } = await admin
     .from("stripe_events_processed")
     .insert({ id: event.id, event_type: event.type });
   if (insErr && !/duplicate|already exists/i.test(insErr.message)) {
-    // Otro error de DB: log pero responde 200 (ya procesamos).
     console.error(
       `[stripe.webhook] event=${event.id} no se pudo marcar como procesado: ${insErr.message}`,
     );
@@ -151,8 +156,25 @@ function invoiceSubscriptionId(invoice: Stripe.Invoice): string | null {
   return typeof ref === "string" ? ref : (ref.id ?? null);
 }
 
+function logEmail(
+  kind: string,
+  userId: string,
+  res: { ok: boolean; id?: string; error?: string },
+): void {
+  if (res.ok) {
+    console.log(
+      `[stripe.webhook] email=${kind} userId=${userId} sent resend_id=${res.id}`,
+    );
+  } else {
+    console.error(
+      `[stripe.webhook] email=${kind} userId=${userId} FAILED: ${res.error}`,
+    );
+  }
+}
+
 async function upsertSubscription(
   sub: Stripe.Subscription,
+  opts: { isCreate: boolean },
 ): Promise<EventResult> {
   const userId = sub.metadata?.userId;
   if (!userId) {
@@ -174,32 +196,73 @@ async function upsertSubscription(
 
   const admin = createAdminClient();
 
-  // Mantenemos months_paid_total si ya existe la fila (lo incrementa invoice.paid).
+  // Mantenemos contadores y current_month_number si la fila ya existe.
+  // En subscription.updated NUNCA reiniciamos esos campos.
   const { data: existing } = await admin
     .from("subscriptions")
-    .select("months_paid_total")
+    .select("months_paid_total, current_month_number, paused_at, pause_reason")
     .eq("stripe_subscription_id", sub.id)
     .maybeSingle();
 
-  const { error } = await admin.from("subscriptions").upsert(
-    {
-      user_id: userId,
-      stripe_customer_id: customerId,
-      stripe_subscription_id: sub.id,
-      stripe_price_id: priceId,
-      status: sub.status,
-      current_period_start: tsToIso(subscriptionPeriod(sub).start),
-      current_period_end: tsToIso(subscriptionPeriod(sub).end),
-      cancel_at_period_end: sub.cancel_at_period_end ?? false,
-      cancel_at: tsToIso(sub.cancel_at),
-      canceled_at: tsToIso(sub.canceled_at),
-      months_paid_total: existing?.months_paid_total ?? 0,
-    },
-    { onConflict: "stripe_subscription_id", ignoreDuplicates: false },
-  );
+  // Detectar pause_collection cambios desde Stripe (Customer Portal o API
+  // manual). Si Stripe trae pause_collection != null y nosotros no tenemos
+  // paused_at: marca como pausa "manual". Si Stripe trae null y nosotros
+  // tenemos paused_at: limpia (la pausa se resolvió externamente).
+  const stripeHasPause = sub.pause_collection != null;
+  const dbHasPause = existing?.paused_at != null;
+
+  let pausedAtNew: string | null | undefined;
+  let pauseReasonNew: string | null | undefined;
+  if (stripeHasPause && !dbHasPause) {
+    pausedAtNew = new Date().toISOString();
+    pauseReasonNew = "manual";
+  } else if (!stripeHasPause && dbHasPause) {
+    pausedAtNew = null;
+    pauseReasonNew = null;
+  } else {
+    pausedAtNew = undefined; // sin cambio
+    pauseReasonNew = undefined;
+  }
+
+  const payload: Record<string, unknown> = {
+    user_id: userId,
+    stripe_customer_id: customerId,
+    stripe_subscription_id: sub.id,
+    stripe_price_id: priceId,
+    status: sub.status,
+    current_period_start: tsToIso(subscriptionPeriod(sub).start),
+    current_period_end: tsToIso(subscriptionPeriod(sub).end),
+    cancel_at_period_end: sub.cancel_at_period_end ?? false,
+    cancel_at: tsToIso(sub.cancel_at),
+    canceled_at: tsToIso(sub.canceled_at),
+    months_paid_total: existing?.months_paid_total ?? 0,
+    // En create: arranca en mes 1. En update: preserva lo que haya en DB.
+    current_month_number:
+      existing?.current_month_number ?? (opts.isCreate ? 1 : 1),
+    month_started_at: opts.isCreate ? new Date().toISOString() : undefined,
+  };
+  if (pausedAtNew !== undefined) payload.paused_at = pausedAtNew;
+  if (pauseReasonNew !== undefined) payload.pause_reason = pauseReasonNew;
+
+  // Limpia keys undefined (Supabase los manda como NULL si los dejamos)
+  for (const k of Object.keys(payload)) {
+    if (payload[k] === undefined) delete payload[k];
+  }
+
+  const { error } = await admin
+    .from("subscriptions")
+    .upsert(payload, {
+      onConflict: "stripe_subscription_id",
+      ignoreDuplicates: false,
+    });
   if (error) throw new Error(`Upsert subscriptions falló: ${error.message}`);
 
-  return { ok: true, userId, detail: `status=${sub.status}` };
+  let detail = `status=${sub.status}`;
+  if (pausedAtNew === null) detail += " | pause cleared (Stripe → DB)";
+  if (pausedAtNew && pausedAtNew !== undefined)
+    detail += " | pause set (Stripe → DB, manual)";
+
+  return { ok: true, userId, detail };
 }
 
 async function markSubscriptionCanceled(
@@ -211,27 +274,45 @@ async function markSubscriptionCanceled(
     .update({
       status: "canceled",
       canceled_at: tsToIso(sub.canceled_at) ?? new Date().toISOString(),
+      paused_at: null,
+      pause_reason: null,
     })
     .eq("stripe_subscription_id", sub.id);
   if (error) throw new Error(`Cancel subscription falló: ${error.message}`);
   return {
     ok: true,
     userId: sub.metadata?.userId ?? null,
-    detail: "phase_access preservado",
+    detail: "canceled (progreso del alumno preservado)",
   };
 }
 
-async function markSubscriptionPastDue(
+async function handleInvoicePaymentFailed(
   invoice: Stripe.Invoice,
 ): Promise<EventResult> {
   const subId = invoiceSubscriptionId(invoice);
   if (!subId) return { ok: true, detail: "invoice sin subscription" };
   const admin = createAdminClient();
+  const { data: sub } = await admin
+    .from("subscriptions")
+    .select("user_id")
+    .eq("stripe_subscription_id", subId)
+    .maybeSingle();
+  if (!sub) {
+    return { ok: true, detail: `sub=${subId} no existe en DB todavía` };
+  }
   await admin
     .from("subscriptions")
     .update({ status: "past_due" })
     .eq("stripe_subscription_id", subId);
-  return { ok: true, detail: `sub=${subId} → past_due` };
+
+  const emailRes = await sendPaymentFailedEmail(sub.user_id);
+  logEmail("payment-failed", sub.user_id, emailRes);
+
+  return {
+    ok: true,
+    userId: sub.user_id,
+    detail: `sub=${subId} → past_due`,
+  };
 }
 
 async function handleInvoicePaid(
@@ -240,9 +321,7 @@ async function handleInvoicePaid(
   const subId = invoiceSubscriptionId(invoice);
   if (!subId) return { ok: true, detail: "invoice sin subscription, ignorado" };
 
-  // Solo contamos invoices que corresponden a un nuevo período de cobro.
-  // Otros billing_reason (manual, subscription_update, etc.) no incrementan
-  // months_paid_total ni disparan el drip.
+  // Solo contamos invoices de nuevo período de cobro.
   const reason = invoice.billing_reason;
   if (reason !== "subscription_create" && reason !== "subscription_cycle") {
     return {
@@ -254,20 +333,19 @@ async function handleInvoicePaid(
   const admin = createAdminClient();
   const { data: subRow, error: selErr } = await admin
     .from("subscriptions")
-    .select("user_id, months_paid_total")
+    .select("user_id, months_paid_total, current_month_number")
     .eq("stripe_subscription_id", subId)
     .maybeSingle();
   if (selErr) throw new Error(`Lookup subscription falló: ${selErr.message}`);
   if (!subRow) {
-    // El evento subscription.created todavía no se ha procesado:
-    // Stripe reintentará este invoice.paid. 500 → retry. Idempotency
-    // table no se marca, así que el retry sí re-procesará.
+    // subscription.created todavía no se procesó: 500 → Stripe retry.
     throw new Error(
       `Subscription ${subId} no existe aún — invoice.paid llegó antes de subscription.created`,
     );
   }
 
   const newCount = (subRow.months_paid_total ?? 0) + 1;
+  const monthBefore = subRow.current_month_number;
 
   const { error: updErr } = await admin
     .from("subscriptions")
@@ -275,21 +353,111 @@ async function handleInvoicePaid(
     .eq("stripe_subscription_id", subId);
   if (updErr) throw new Error(`Update months falló: ${updErr.message}`);
 
-  // Drip via SQL function (migration 0005). La función calcula
-  // target = ceil(months/2) capped a 9 e inserta las fases faltantes.
-  // Idempotente: si ya alcanzó target → 0 inserts.
-  const { data: unlocked, error: rpcErr } = await admin.rpc(
-    "unlock_next_phase_if_needed",
+  // try_advance_month: avanza si pagó + completó el mes actual.
+  // Si todavía no completó el mes actual, queda en monthBefore (Stripe
+  // ya cobró pero el alumno no avanza hasta aprobar — gating académico).
+  const { data: newMonth, error: rpcErr } = await admin.rpc(
+    "try_advance_month",
     { p_user_id: subRow.user_id },
   );
   if (rpcErr) {
-    throw new Error(`unlock_next_block_if_needed falló: ${rpcErr.message}`);
+    throw new Error(`try_advance_month falló: ${rpcErr.message}`);
   }
-  const unlockedNow = typeof unlocked === "number" ? unlocked : 0;
+  const monthAfter = typeof newMonth === "number" ? newMonth : monthBefore;
+  const advanced = monthAfter > monthBefore;
+
+  // Email "Bienvenido al Mes N" si avanzó
+  if (advanced) {
+    const emailRes = await sendMonthAdvancedEmail(subRow.user_id, monthAfter);
+    logEmail("month-advanced", subRow.user_id, emailRes);
+  }
 
   return {
     ok: true,
     userId: subRow.user_id,
-    detail: `reason=${reason} months=${newCount} unlocked_now=${unlockedNow}`,
+    detail: `reason=${reason} months_paid=${newCount} month=${monthBefore}→${monthAfter}${advanced ? " (advanced)" : ""}`,
+  };
+}
+
+async function handleInvoiceUpcoming(
+  invoice: Stripe.Invoice,
+): Promise<EventResult> {
+  const subId = invoiceSubscriptionId(invoice);
+  if (!subId) return { ok: true, detail: "invoice sin subscription" };
+
+  const admin = createAdminClient();
+  const { data: subRow } = await admin
+    .from("subscriptions")
+    .select("user_id, current_month_number, paused_at")
+    .eq("stripe_subscription_id", subId)
+    .maybeSingle();
+  if (!subRow) {
+    return { ok: true, detail: `sub=${subId} no existe en DB todavía` };
+  }
+
+  // Si ya está pausada, no hacemos nada (evita Stripe double-pause y email dup)
+  if (subRow.paused_at) {
+    return {
+      ok: true,
+      userId: subRow.user_id,
+      detail: "ya estaba pausada, no-op",
+    };
+  }
+
+  // ¿Debe pausarse? (RPC: mes actual incompleto?)
+  const { data: shouldPause, error: rpcErr } = await admin.rpc(
+    "should_pause_for_incomplete_month",
+    { p_user_id: subRow.user_id },
+  );
+  if (rpcErr) {
+    throw new Error(`should_pause_for_incomplete_month falló: ${rpcErr.message}`);
+  }
+  if (shouldPause !== true) {
+    return {
+      ok: true,
+      userId: subRow.user_id,
+      detail: "mes completado, no pausa, cobro normal",
+    };
+  }
+
+  // (a) Pausa en Stripe (fail-loud: si Stripe falla, NO marcamos paused_at
+  //     local para que el siguiente tick lo reintente).
+  await pauseSubscriptionCollection(subId, "mark_uncollectible");
+
+  // (b) Marca en nuestra DB
+  const { error: markErr } = await admin.rpc("mark_subscription_paused", {
+    p_user_id: subRow.user_id,
+    p_reason: "incomplete_month",
+  });
+  if (markErr) {
+    throw new Error(`mark_subscription_paused falló: ${markErr.message}`);
+  }
+
+  // (c) Email con counts del mes actual
+  const [{ data: approved }, { count: totalCount }] = await Promise.all([
+    admin.rpc("count_approved_modules_in_month", {
+      p_user_id: subRow.user_id,
+      p_month: subRow.current_month_number,
+    }),
+    admin
+      .from("modules")
+      .select("id", { count: "exact", head: true })
+      .eq("course_month", subRow.current_month_number),
+  ]);
+  const approvedCount = typeof approved === "number" ? approved : 0;
+  const total = totalCount ?? 0;
+
+  const emailRes = await sendSubscriptionPausedEmail(
+    subRow.user_id,
+    subRow.current_month_number,
+    approvedCount,
+    total,
+  );
+  logEmail("subscription-paused", subRow.user_id, emailRes);
+
+  return {
+    ok: true,
+    userId: subRow.user_id,
+    detail: `paused mes=${subRow.current_month_number} ${approvedCount}/${total}`,
   };
 }
