@@ -23,7 +23,7 @@ export default async function SignUpPage({
   } = await supabase.auth.getUser();
 
   if (user) {
-    redirect("/diplomado");
+    redirect("/dashboard");
   }
 
   const { redirectTo } = await searchParams;
