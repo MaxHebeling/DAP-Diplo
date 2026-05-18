@@ -4,6 +4,7 @@ import {
   certificateStoragePath,
   uploadCertificatePdf,
 } from "@/lib/certificates/upload";
+import { sendCertificateEmail } from "@/lib/email/send-certificate";
 
 /**
  * Genera el PDF, lo sube a Storage y actualiza certificates.pdf_url.
@@ -44,8 +45,17 @@ export async function issueCertificatePdf(
     );
   }
 
-  // Idempotente: si ya hay pdf_url, no regenera
+  // Idempotente: si ya hay pdf_url, no regenera PDF — pero igual intenta
+  // enviar el email (sendCertificateEmail es idempotente vía email_sent_at,
+  // así que reintentos solo cubren el caso de email fallido en intento previo).
   if (cert.pdf_url) {
+    const retry = await sendCertificateEmail(cert.id);
+    if (!retry.ok) {
+      console.error(
+        "[issueCertificatePdf] reintento de email falló:",
+        retry.error,
+      );
+    }
     return { path: cert.pdf_url, skipped: true };
   }
   if (!cert.user || !cert.block || !cert.rank) {
@@ -73,6 +83,18 @@ export async function issueCertificatePdf(
   if (updateErr) {
     throw new Error(
       `No se pudo actualizar certificates.pdf_url: ${updateErr.message}`,
+    );
+  }
+
+  // Email al alumno. Fail-soft: si Resend falla el certificado ya está
+  // emitido y el PDF subido — solo logueamos. sendCertificateEmail es
+  // idempotente vía email_sent_at, así que re-ejecutar issueCertificatePdf
+  // no genera duplicados.
+  const emailResult = await sendCertificateEmail(cert.id);
+  if (!emailResult.ok) {
+    console.error(
+      "[issueCertificatePdf] email falló:",
+      emailResult.error,
     );
   }
 
