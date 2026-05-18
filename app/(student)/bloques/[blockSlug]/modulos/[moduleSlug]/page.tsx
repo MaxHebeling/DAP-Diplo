@@ -11,6 +11,10 @@ import {
 } from "@/components/module/stepper";
 import { SectionContent } from "@/components/module/section-content";
 import { SectionTeaching } from "@/components/module/section-teaching";
+import type {
+  PlayerQuestion,
+  PlayerQuiz,
+} from "@/components/module/quiz-player";
 import { createClient } from "@/lib/supabase/server";
 
 const SECTION_KINDS: SectionKind[] = [
@@ -193,6 +197,61 @@ export default async function ModulePlayerPage({
 
   const startPosition = activeSection.progress?.[0]?.last_position_seconds ?? 0;
 
+  // Carga del quiz solo si estamos viendo la sección de evaluación
+  let evaluationQuiz: PlayerQuiz | null = null;
+  let evaluationQuestions: PlayerQuestion[] = [];
+  let evaluationAttemptCount = 0;
+  let evaluationBestScore: number | null = null;
+  let evaluationPassed = false;
+  if (currentSection === "evaluation") {
+    const { data: q } = await supabase
+      .from("quizzes")
+      .select(
+        "id, title, description, pass_threshold, max_attempts, shuffle_questions",
+      )
+      .eq("module_section_id", activeSection.id)
+      .maybeSingle<PlayerQuiz>();
+    if (q) {
+      evaluationQuiz = q;
+      const { data: qs } = await supabase
+        .from("quiz_questions")
+        .select("id, prompt, kind, payload, order_index")
+        .eq("quiz_id", q.id)
+        .order("order_index", { ascending: true })
+        .returns<
+          {
+            id: string;
+            prompt: string;
+            kind: "multiple_choice" | "true_false";
+            payload: Record<string, unknown>;
+            order_index: number;
+          }[]
+        >();
+      evaluationQuestions = (qs ?? []).map((row) => ({
+        id: row.id,
+        prompt: row.prompt,
+        kind: row.kind,
+        // El alumno NUNCA recibe correct_index/correct. Solo options visibles.
+        options:
+          row.kind === "multiple_choice"
+            ? ((row.payload?.options as string[] | undefined) ?? [])
+            : undefined,
+      }));
+
+      const { data: attempts } = await supabase
+        .from("quiz_attempts")
+        .select("score_percent, passed")
+        .eq("user_id", user.id)
+        .eq("quiz_id", q.id);
+      evaluationAttemptCount = attempts?.length ?? 0;
+      evaluationPassed = (attempts ?? []).some((a) => a.passed);
+      evaluationBestScore =
+        attempts && attempts.length > 0
+          ? Math.max(...attempts.map((a) => a.score_percent))
+          : null;
+    }
+  }
+
   return (
     <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[300px_1fr]">
       <ModuleSidebar
@@ -303,6 +362,17 @@ export default async function ModulePlayerPage({
                     main_revelation: mod.main_revelation,
                     impartation_phrase: mod.impartation_phrase,
                   }}
+                  evaluation={
+                    currentSection === "evaluation"
+                      ? {
+                          quiz: evaluationQuiz,
+                          questions: evaluationQuestions,
+                          attemptCount: evaluationAttemptCount,
+                          passed: evaluationPassed,
+                          bestScore: evaluationBestScore,
+                        }
+                      : undefined
+                  }
                 />
               )}
             </section>

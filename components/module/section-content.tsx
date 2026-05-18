@@ -1,7 +1,21 @@
 import { AdvanceButton } from "@/components/module/advance-button";
 import { Markdown } from "@/components/module/markdown";
+import {
+  QuizPlayer,
+  QuizAlreadyPassed,
+  type PlayerQuestion,
+  type PlayerQuiz,
+} from "@/components/module/quiz-player";
 
 type SectionKind = "intro" | "activation" | "evaluation" | "impartation";
+
+export type EvaluationProps = {
+  quiz: PlayerQuiz | null;
+  questions: PlayerQuestion[];
+  attemptCount: number;
+  passed: boolean;
+  bestScore: number | null;
+};
 
 type SectionContentProps = {
   kind: SectionKind;
@@ -15,6 +29,7 @@ type SectionContentProps = {
     main_revelation: string | null;
     impartation_phrase: string | null;
   };
+  evaluation?: EvaluationProps;
 };
 
 const NEXT: Record<SectionKind, SectionTeachingKind> = {
@@ -41,6 +56,8 @@ const NEXT_LABEL: Record<SectionKind, string> = {
 
 export function SectionContent(props: SectionContentProps) {
   const next = NEXT[props.kind];
+  const isEvaluation = props.kind === "evaluation";
+  const hasQuiz = isEvaluation && props.evaluation?.quiz;
 
   return (
     <div className="space-y-8">
@@ -52,9 +69,14 @@ export function SectionContent(props: SectionContentProps) {
         />
       )}
 
-      {props.bodyMd ? (
-        <Markdown>{props.bodyMd}</Markdown>
-      ) : (
+      {/* Cuerpo Markdown (intro/activation/impartation y arriba del quiz en evaluation) */}
+      {props.bodyMd && !isEvaluation && <Markdown>{props.bodyMd}</Markdown>}
+      {props.bodyMd && isEvaluation && (
+        <div className="mb-2">
+          <Markdown>{props.bodyMd}</Markdown>
+        </div>
+      )}
+      {!props.bodyMd && !isEvaluation && (
         <EmptyBodyPlaceholder kind={props.kind} />
       )}
 
@@ -62,29 +84,50 @@ export function SectionContent(props: SectionContentProps) {
         <ImpartationPhrase phrase={props.module.impartation_phrase} />
       )}
 
-      {props.kind === "evaluation" && (
-        <div className="rounded-2xl border border-dashed border-brand-coral/40 bg-brand-coral/5 p-8">
-          <p className="text-xs font-medium uppercase tracking-widest text-brand-coral">
-            Evaluación
-          </p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            El quiz interactivo se habilita en la <strong>Fase 5</strong>{" "}
-            del desarrollo. Por ahora puedes saltar a la impartición.
-          </p>
+      {/* Evaluación: quiz o estado vacío */}
+      {isEvaluation &&
+        (hasQuiz && props.evaluation!.quiz ? (
+          props.evaluation!.passed ? (
+            <QuizAlreadyPassed
+              quiz={props.evaluation!.quiz}
+              bestScore={props.evaluation!.bestScore ?? 100}
+              blockSlug={props.blockSlug}
+              moduleSlug={props.moduleSlug}
+            />
+          ) : (
+            <QuizPlayer
+              quiz={props.evaluation!.quiz}
+              questions={props.evaluation!.questions}
+              attemptCount={props.evaluation!.attemptCount}
+              blockSlug={props.blockSlug}
+              moduleSlug={props.moduleSlug}
+            />
+          )
+        ) : (
+          <div className="rounded-2xl border border-dashed border-brand-coral/40 bg-brand-coral/5 p-8 text-center">
+            <p className="text-xs font-medium uppercase tracking-widest text-brand-coral">
+              Evaluación
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              El equipo aún no ha publicado las preguntas de esta evaluación.
+            </p>
+          </div>
+        ))}
+
+      {/* AdvanceButton: oculto en evaluation (el QuizPlayer maneja su propio CTA) */}
+      {!isEvaluation && (
+        <div className="pt-2">
+          <AdvanceButton
+            sectionId={props.sectionId}
+            moduleId={props.moduleId}
+            blockSlug={props.blockSlug}
+            moduleSlug={props.moduleSlug}
+            nextSection={next}
+            label={NEXT_LABEL[props.kind]}
+            done={props.kind === "impartation"}
+          />
         </div>
       )}
-
-      <div className="pt-2">
-        <AdvanceButton
-          sectionId={props.sectionId}
-          moduleId={props.moduleId}
-          blockSlug={props.blockSlug}
-          moduleSlug={props.moduleSlug}
-          nextSection={next}
-          label={NEXT_LABEL[props.kind]}
-          done={props.kind === "impartation"}
-        />
-      </div>
     </div>
   );
 }
