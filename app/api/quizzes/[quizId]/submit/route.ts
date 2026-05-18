@@ -244,8 +244,9 @@ export async function POST(
     return NextResponse.json({ error: attemptErr.message }, { status: 500 });
   }
 
-  // Si pasó: marcar sección completada + cascadear módulo
+  // Si pasó: marcar sección completada + cascadear módulo + bloque
   let moduleCompleted = false;
+  let blockCompletion: Record<string, unknown> | null = null;
   if (passed) {
     const { error: spErr } = await supabase.from("section_progress").upsert(
       {
@@ -286,6 +287,29 @@ export async function POST(
         { onConflict: "user_id,module_id" },
       );
       moduleCompleted = true;
+
+      // Cascada: ¿bloque completo? otorga rank + certificate.
+      const { data: blockResult, error: cbErr } = await supabase.rpc(
+        "complete_block_if_done",
+        { p_user_id: user.id, p_block_id: blockId },
+      );
+      if (cbErr) {
+        console.error(
+          "[quiz.submit] complete_block_if_done failed:",
+          cbErr.message,
+        );
+      } else if (
+        blockResult &&
+        typeof blockResult === "object" &&
+        !Array.isArray(blockResult)
+      ) {
+        blockCompletion = blockResult as Record<string, unknown>;
+        // Si se emitió certificado, invalida el dashboard para reflejar el nuevo rango/cert.
+        if (blockCompletion.newly_completed === true) {
+          revalidatePath(`/dashboard`);
+          revalidatePath(`/bloques/${blockSlug}`);
+        }
+      }
     }
 
     revalidatePath(`/bloques/${blockSlug}/modulos/${moduleSlug}`);
@@ -306,6 +330,7 @@ export async function POST(
     max_attempts: quizRow.max_attempts,
     attempt_count: attemptCount ?? 1,
     module_completed: moduleCompleted,
+    block_completion: blockCompletion,
     graded,
   });
 }
