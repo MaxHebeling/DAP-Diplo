@@ -36,19 +36,20 @@ export async function ingestPdf(opts: {
   }
   const buffer = Buffer.from(await blob.arrayBuffer());
 
-  // 2) Extracción de texto (pdf-parse v2 usa clase PDFParse)
-  const { PDFParse } = await import("pdf-parse");
-  const parser = new PDFParse({ data: new Uint8Array(buffer) });
-  const textResult = await parser.getText();
-  await parser.destroy();
-  const fullText = textResult.text;
-  const pagesCount = textResult.total;
+  // 2) Extracción de texto con unpdf (serverless-friendly, sin DOMMatrix)
+  const { extractText, getDocumentProxy } = await import("unpdf");
+  const pdf = await getDocumentProxy(new Uint8Array(buffer));
+  const { totalPages, text: pages } = await extractText(pdf, {
+    mergePages: false,
+  });
+  const fullText = Array.isArray(pages) ? pages.join("\n\n") : pages;
   const totalChars = fullText.length;
   if (totalChars < 50) {
     throw new Error(
       `PDF parece vacío o escaneado (${totalChars} chars extraídos).`,
     );
   }
+  const pagesCount = totalPages;
 
   // 3) Chunking
   const chunks = chunkText(fullText);
