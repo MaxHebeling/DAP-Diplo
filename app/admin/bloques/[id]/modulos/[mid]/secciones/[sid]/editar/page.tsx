@@ -5,6 +5,11 @@ import {
   SectionEditForm,
   type SectionFormSection,
 } from "@/components/admin/section-edit-form";
+import {
+  QuizEditor,
+  type QuizRow,
+} from "@/components/admin/quiz-editor";
+import type { QuestionRow } from "@/components/admin/quiz-question-form";
 import { createClient } from "@/lib/supabase/server";
 
 type PageProps = {
@@ -51,6 +56,55 @@ export default async function AdminSectionEditPage({ params }: PageProps) {
     duration_seconds: section.duration_seconds,
   };
 
+  // Para secciones de evaluación: asegurar que existe un quiz 1:1 y cargar sus preguntas.
+  let quiz: QuizRow | null = null;
+  let questions: QuestionRow[] = [];
+  if (section.kind === "evaluation") {
+    const { data: existing } = await supabase
+      .from("quizzes")
+      .select(
+        "id, module_section_id, title, description, pass_threshold, max_attempts, shuffle_questions",
+      )
+      .eq("module_section_id", section.id)
+      .maybeSingle();
+
+    if (existing) {
+      quiz = existing as QuizRow;
+    } else {
+      const { data: created, error: createErr } = await supabase
+        .from("quizzes")
+        .insert({
+          module_section_id: section.id,
+          title: `Evaluación: ${mod.title}`,
+          pass_threshold: 70,
+          shuffle_questions: true,
+        })
+        .select(
+          "id, module_section_id, title, description, pass_threshold, max_attempts, shuffle_questions",
+        )
+        .single();
+      if (createErr) {
+        throw new Error(
+          `No se pudo crear el quiz: ${createErr.message}`,
+        );
+      }
+      quiz = created as QuizRow;
+    }
+
+    const { data: qs, error: qsErr } = await supabase
+      .from("quiz_questions")
+      .select("id, quiz_id, prompt, kind, payload, explanation, order_index")
+      .eq("quiz_id", quiz.id)
+      .order("order_index", { ascending: true })
+      .returns<QuestionRow[]>();
+    if (qsErr) {
+      throw new Error(
+        `No se pudieron cargar las preguntas: ${qsErr.message}`,
+      );
+    }
+    questions = qs ?? [];
+  }
+
   return (
     <main className="px-6 py-10 sm:px-10">
       <div className="mx-auto max-w-4xl">
@@ -77,6 +131,16 @@ export default async function AdminSectionEditPage({ params }: PageProps) {
         </header>
 
         <SectionEditForm section={formSection} />
+
+        {section.kind === "evaluation" && quiz && (
+          <div className="mt-10">
+            <QuizEditor
+              quiz={quiz}
+              questions={questions}
+              ctx={{ blockId: id, moduleId: mid, sectionId: sid }}
+            />
+          </div>
+        )}
       </div>
     </main>
   );
