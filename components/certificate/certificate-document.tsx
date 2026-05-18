@@ -1,210 +1,182 @@
 import {
   Document,
+  Font,
+  Image,
   Page,
   Text,
   View,
   StyleSheet,
 } from "@react-pdf/renderer";
 
-// Paleta DAP (navy + coral + neutros). Helvetica/Times-Roman son built-in
-// y soportan Latin extendido (incluye acentos del español).
+// Diseño basado en el template aportado por Max:
+// - Fondo púrpura halftone + panel cream + columna navy + cinta + logo DAP
+//   (todo dentro de public/cert/background-template.png).
+// - Sobre ese background superponemos solo los campos dinámicos.
+// - Tapamos la frase placeholder "quien favorablemente participó del
+//   Discipulado en la ciudad de Salta, Argentina, ..." con un rectángulo
+//   del color exacto del panel (#e0e0e0) y escribimos el body propio del
+//   bloque/rango.
+//
+// Allura (script Google Font) se sirve desde public/cert/fonts/ del mismo
+// dominio en producción — autosuficiente, sin CDN externo, evita 401 / fetch
+// fallido en serverless.
 
-const COLOR_NAVY = "#1a1430";
-const COLOR_NAVY_DEEP = "#0d0820";
-const COLOR_CORAL = "#fdad5a";
-const COLOR_PAPER = "#fbfaf6";
-const COLOR_INK = "#2a2438";
-const COLOR_MUTED = "#6b6480";
+const APP_URL =
+  process.env.NEXT_PUBLIC_APP_URL ?? "https://dap-diplo.vercel.app";
+
+Font.register({
+  family: "Allura",
+  src: `${APP_URL}/cert/fonts/Allura-Regular.ttf`,
+});
+
+// Colores muestreados del template
+const PANEL_CREAM = "#e0e0e0";
+const NAVY_DEEP = "#1a1430";
+const INK = "#2a2438";
+const MUTED = "#6b6480";
+
+// Letter landscape: 792 x 612 pt
+// Imagen base: 2200 x 1700 px @ 200 DPI = mismo aspect ratio exacto
+const PAGE_W = 792;
+const PAGE_H = 612;
+
+// Helpers para px → pt (image space → page space): pt = px * 792/2200
+const px2pt = (px: number) => px * (PAGE_W / 2200);
 
 const styles = StyleSheet.create({
-  // Página
-  page: {
-    backgroundColor: COLOR_PAPER,
-    padding: 0,
-    color: COLOR_INK,
-  },
+  page: { backgroundColor: PANEL_CREAM, padding: 0, color: INK },
 
-  // Borde decorativo doble
-  outerBorder: {
+  // Background: la imagen cubre toda la página (mismo aspect ratio)
+  bgImage: {
     position: "absolute",
-    top: 18,
-    left: 18,
-    right: 18,
-    bottom: 18,
-    borderWidth: 1,
-    borderColor: COLOR_NAVY,
+    top: 0,
+    left: 0,
+    width: PAGE_W,
+    height: PAGE_H,
   },
-  innerBorder: {
+
+  // Mask: tapa la frase placeholder "quien favorablemente participó..."
+  // del background. Coords px en el original 2200x1700: x≈755-2030,
+  // y≈660-820 → convertimos a pt.
+  bodyMask: {
     position: "absolute",
-    top: 30,
-    left: 30,
-    right: 30,
-    bottom: 30,
-    borderWidth: 0.5,
-    borderColor: COLOR_CORAL,
+    left: px2pt(740),
+    top: px2pt(640),
+    width: px2pt(1300),
+    height: px2pt(200),
+    backgroundColor: PANEL_CREAM,
   },
 
-  // Contenido
-  body: {
-    flexDirection: "column",
-    alignItems: "center",
-    paddingTop: 70,
-    paddingHorizontal: 80,
-    paddingBottom: 60,
-    height: "100%",
+  // Mask del área de firma para poner "Apóstol DAP" en lugar de
+  // "Ap. Max Hebeling / Revival & Kingdom Ministries, INC".
+  // No tapamos el subrayado (queda intacto a y≈980).
+  signatureMask: {
+    position: "absolute",
+    left: px2pt(740),
+    top: px2pt(1010),
+    width: px2pt(700),
+    height: px2pt(90),
+    backgroundColor: PANEL_CREAM,
   },
 
-  // Header: logo + banner
-  brandWordmark: {
-    fontFamily: "Times-Bold",
-    fontSize: 32,
-    letterSpacing: 8,
-    color: COLOR_NAVY_DEEP,
-  },
-  banner: {
-    marginTop: 6,
-    fontFamily: "Helvetica",
-    fontSize: 9,
-    letterSpacing: 4,
-    color: COLOR_CORAL,
-    textTransform: "uppercase",
-  },
-
-  divider: {
-    width: 90,
-    height: 1,
-    backgroundColor: COLOR_CORAL,
-    marginVertical: 28,
-  },
-
-  certifiesLabel: {
-    fontFamily: "Times-Italic",
-    fontSize: 14,
-    color: COLOR_MUTED,
-    marginBottom: 18,
-  },
-
-  // Nombre — pieza principal
-  fullName: {
-    fontFamily: "Times-Roman",
+  // Nombre del alumno: va sobre el área vacía entre "El presente
+  // certificado se otorga a:" (y≈430) y el subrayado (y≈600).
+  recipientName: {
+    position: "absolute",
+    left: px2pt(740),
+    top: px2pt(460),
+    width: px2pt(1320),
+    fontFamily: "Allura",
     fontSize: 56,
-    color: COLOR_NAVY_DEEP,
+    color: NAVY_DEEP,
     textAlign: "center",
     lineHeight: 1.1,
-    marginBottom: 14,
-  },
-  nameUnderline: {
-    width: 320,
-    height: 0.75,
-    backgroundColor: COLOR_NAVY,
-    marginBottom: 32,
   },
 
-  // Statement
-  statement: {
-    fontFamily: "Helvetica",
-    fontSize: 12,
-    color: COLOR_INK,
-    textAlign: "center",
-    maxWidth: 520,
-    lineHeight: 1.5,
-    marginBottom: 18,
-  },
-  blockTitleEmph: {
-    fontFamily: "Helvetica-Bold",
-    color: COLOR_NAVY_DEEP,
-  },
-
-  rankLine: {
-    fontFamily: "Times-Italic",
-    fontSize: 18,
-    color: COLOR_NAVY_DEEP,
-    textAlign: "center",
-    marginBottom: 8,
-  },
-  rankName: {
-    fontFamily: "Times-Bold",
-    fontSize: 24,
-    color: COLOR_CORAL,
-    textAlign: "center",
-    letterSpacing: 1.5,
-    textTransform: "uppercase",
-  },
-
-  // Footer
-  footer: {
+  // Body propio: completa el masking
+  bodyText: {
     position: "absolute",
-    left: 80,
-    right: 80,
-    bottom: 70,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
+    left: px2pt(740),
+    top: px2pt(660),
+    width: px2pt(1300),
+    fontFamily: "Allura",
+    fontSize: 22,
+    color: INK,
+    textAlign: "center",
+    lineHeight: 1.45,
   },
-  footerCol: {
-    flexDirection: "column",
-    minWidth: 200,
+  bodyTextHi: {
+    fontFamily: "Times-Bold",
+    fontSize: 18,
+    color: NAVY_DEEP,
   },
-  footerColRight: {
-    alignItems: "flex-end",
-  },
-  footerLabel: {
-    fontFamily: "Helvetica",
-    fontSize: 7,
-    color: COLOR_MUTED,
-    letterSpacing: 1.4,
-    textTransform: "uppercase",
-    marginBottom: 4,
-  },
-  footerValue: {
+
+  // Firma renombrada
+  signatureName: {
+    position: "absolute",
+    left: px2pt(745),
+    top: px2pt(1020),
     fontFamily: "Helvetica-Bold",
-    fontSize: 10,
-    color: COLOR_INK,
+    fontSize: 11,
+    color: INK,
   },
-  verificationCode: {
+  signatureTitle: {
+    position: "absolute",
+    left: px2pt(745),
+    top: px2pt(1058),
+    fontFamily: "Helvetica-Oblique",
+    fontSize: 9,
+    color: MUTED,
+  },
+
+  // Verification code: esquina inferior derecha del panel cream.
+  verifyBlock: {
+    position: "absolute",
+    right: px2pt(160),
+    top: px2pt(1450),
+    flexDirection: "column",
+    alignItems: "flex-end",
+  },
+  verifyLabel: {
+    fontFamily: "Helvetica",
+    fontSize: 6.5,
+    color: MUTED,
+    letterSpacing: 1.3,
+    textTransform: "uppercase",
+    marginBottom: 2,
+  },
+  verifyCode: {
     fontFamily: "Courier-Bold",
-    fontSize: 13,
-    color: COLOR_NAVY_DEEP,
-    letterSpacing: 2,
-    marginBottom: 4,
+    fontSize: 12,
+    color: NAVY_DEEP,
+    letterSpacing: 2.5,
+    marginBottom: 1,
   },
   verifyUrl: {
     fontFamily: "Helvetica",
-    fontSize: 7,
-    color: COLOR_MUTED,
+    fontSize: 6,
+    color: MUTED,
   },
 
-  // Firma
-  signatureLine: {
-    width: 200,
-    height: 0.75,
-    backgroundColor: COLOR_NAVY,
-    marginBottom: 6,
+  // Fecha de emisión: esquina inferior izquierda del panel cream.
+  issuedBlock: {
+    position: "absolute",
+    left: px2pt(780),
+    top: px2pt(1450),
+    flexDirection: "column",
   },
-  signatureName: {
+  issuedLabel: {
+    fontFamily: "Helvetica",
+    fontSize: 6.5,
+    color: MUTED,
+    letterSpacing: 1.3,
+    textTransform: "uppercase",
+    marginBottom: 2,
+  },
+  issuedValue: {
     fontFamily: "Helvetica-Bold",
     fontSize: 10,
-    color: COLOR_INK,
-  },
-  signatureTitle: {
-    fontFamily: "Helvetica",
-    fontSize: 8,
-    color: COLOR_MUTED,
-    marginTop: 2,
-  },
-
-  // Watermark sutil al fondo
-  watermark: {
-    position: "absolute",
-    bottom: 18,
-    left: 0,
-    right: 0,
-    textAlign: "center",
-    fontFamily: "Helvetica",
-    fontSize: 6,
-    color: COLOR_MUTED,
-    letterSpacing: 2,
-    textTransform: "uppercase",
+    color: INK,
   },
 });
 
@@ -258,64 +230,49 @@ export function CertificateDocument({
       subject={`Bloque ${blockNumber}: ${blockTitle}`}
     >
       <Page size="LETTER" orientation="landscape" style={styles.page}>
-        <View style={styles.outerBorder} />
-        <View style={styles.innerBorder} />
+        {/* 1. Fondo del template */}
+        <Image
+          src={`${APP_URL}/cert/background-template.png`}
+          style={styles.bgImage}
+        />
 
-        <View style={styles.body}>
-          <Text style={styles.brandWordmark}>DAP</Text>
-          <Text style={styles.banner}>
-            Diplomado Apostólico Pastoral
-          </Text>
+        {/* 2. Máscaras de las áreas a reemplazar */}
+        <View style={styles.bodyMask} />
+        <View style={styles.signatureMask} />
 
-          <View style={styles.divider} />
+        {/* 3. Nombre del alumno (script Allura sobre el subrayado existente) */}
+        <Text style={styles.recipientName}>{fullName}</Text>
 
-          <Text style={styles.certifiesLabel}>Certifica que</Text>
-          <Text style={styles.fullName}>{fullName}</Text>
-          <View style={styles.nameUnderline} />
-
-          <Text style={styles.statement}>
-            Ha completado satisfactoriamente el{" "}
-            <Text style={styles.blockTitleEmph}>
+        {/* 4. Body propio DAP */}
+        <View style={styles.bodyText}>
+          <Text>
+            Por haber completado satisfactoriamente el{" "}
+            <Text style={styles.bodyTextHi}>
               Bloque {blockNumber}: {blockTitle}
             </Text>
-            , cumpliendo con todos los módulos, evaluaciones y prácticas
-            requeridas por el programa.
+            ,{"\n"}alcanzando el rango apostólico de{" "}
+            <Text style={styles.bodyTextHi}>{rankName}</Text>.
           </Text>
-
-          <Text style={styles.rankLine}>Por lo tanto, alcanza el rango de</Text>
-          <Text style={styles.rankName}>{rankName}</Text>
         </View>
 
-        {/* FOOTER */}
-        <View style={styles.footer}>
-          {/* IZQ — verification */}
-          <View style={styles.footerCol}>
-            <Text style={styles.footerLabel}>Código de verificación</Text>
-            <Text style={styles.verificationCode}>{verificationCode}</Text>
-            <Text style={styles.verifyUrl}>{verifyUrl}</Text>
-          </View>
-
-          {/* CENTRO — fecha */}
-          <View style={[styles.footerCol, { alignItems: "center" }]}>
-            <Text style={styles.footerLabel}>Emitido</Text>
-            <Text style={styles.footerValue}>
-              {formatIssuedAt(issuedAt)}
-            </Text>
-          </View>
-
-          {/* DER — firma */}
-          <View style={[styles.footerCol, styles.footerColRight]}>
-            <View style={styles.signatureLine} />
-            <Text style={styles.signatureName}>Apóstol responsable</Text>
-            <Text style={styles.signatureTitle}>
-              Director · Diplomado Apostólico Pastoral
-            </Text>
-          </View>
-        </View>
-
-        <Text style={styles.watermark}>
-          dap-diplo · documento generado digitalmente
+        {/* 5. Firma renombrada */}
+        <Text style={styles.signatureName}>Apóstol responsable</Text>
+        <Text style={styles.signatureTitle}>
+          Director · Diplomado Apostólico Pastoral
         </Text>
+
+        {/* 6. Fecha de emisión (footer izq) */}
+        <View style={styles.issuedBlock}>
+          <Text style={styles.issuedLabel}>Emitido</Text>
+          <Text style={styles.issuedValue}>{formatIssuedAt(issuedAt)}</Text>
+        </View>
+
+        {/* 7. Verification code (footer der) */}
+        <View style={styles.verifyBlock}>
+          <Text style={styles.verifyLabel}>Código de verificación</Text>
+          <Text style={styles.verifyCode}>{verificationCode}</Text>
+          <Text style={styles.verifyUrl}>{verifyUrl}</Text>
+        </View>
       </Page>
     </Document>
   );
