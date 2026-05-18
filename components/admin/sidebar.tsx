@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Brain,
   Layers,
   LayoutDashboard,
   LogOut,
@@ -19,6 +20,7 @@ const NAV = [
   { href: "/admin/bloques", label: "Bloques", icon: Layers, exact: false },
   { href: "/admin/comunidad", label: "Comunidad", icon: MessagesSquare, exact: false },
   { href: "/admin/en-vivo", label: "En vivo", icon: Radio, exact: false },
+  { href: "/admin/tutor/documentos", label: "Tutor IA", icon: Brain, exact: false },
 ];
 
 export function AdminSidebar({ fullName }: { fullName: string | null }) {
