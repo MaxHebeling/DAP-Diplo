@@ -17,7 +17,7 @@ type Resource = {
 type SectionTeachingProps = {
   sectionId: string;
   moduleId: string;
-  blockSlug: string;
+  phaseSlug: string;
   moduleSlug: string;
   muxPlaybackId: string | null;
   bodyMd: string | null;
@@ -124,7 +124,7 @@ export function SectionTeaching(props: SectionTeachingProps) {
         <AdvanceButton
           sectionId={props.sectionId}
           moduleId={props.moduleId}
-          blockSlug={props.blockSlug}
+          phaseSlug={props.phaseSlug}
           moduleSlug={props.moduleSlug}
           nextSection="activation"
           label="Marcar como visto y continuar"

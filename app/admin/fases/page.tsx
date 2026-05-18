@@ -14,10 +14,10 @@ import {
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = {
-  title: "Bloques — Admin DAP",
+  title: "Fases — Admin DAP",
 };
 
-type BlockRow = {
+type PhaseRow = {
   id: string;
   order_index: number;
   slug: string;
@@ -25,25 +25,25 @@ type BlockRow = {
   subtitle: string | null;
   cover_image_url: string | null;
   published: boolean;
-  rank: { name: string } | null;
+  dimension: { name: string } | null;
   modules: { count: number }[] | null;
 };
 
 export default async function AdminBlocksPage() {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("blocks")
+    .from("phases")
     .select(
       `id, order_index, slug, title, subtitle, cover_image_url, published,
-       rank:ranks(name),
+       dimension:dimensions(name),
        modules(count)`,
     )
     .order("order_index", { ascending: true })
-    .returns<BlockRow[]>();
+    .returns<PhaseRow[]>();
   if (error) {
-    throw new Error(`No se pudo cargar bloques: ${error.message}`);
+    throw new Error(`No se pudo cargar fases: ${error.message}`);
   }
-  const blocks = data ?? [];
+  const phases = data ?? [];
 
   return (
     <main className="px-6 py-10 sm:px-10">
@@ -53,14 +53,14 @@ export default async function AdminBlocksPage() {
             <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
               Admin
             </p>
-            <h1 className="font-serif text-3xl font-semibold">Bloques</h1>
+            <h1 className="font-serif text-3xl font-semibold">Fases</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Los 9 bloques del diplomado. Edita metadatos, sube portada y
+              Los 9 fases del diplomado. Edita metadatos, sube portada y
               publica/despublica.
             </p>
           </div>
           <p className="text-xs text-muted-foreground">
-            {blocks.filter((b) => b.published).length} / {blocks.length} publicados
+            {phases.filter((b) => b.published).length} / {phases.length} publicados
           </p>
         </header>
 
@@ -70,8 +70,8 @@ export default async function AdminBlocksPage() {
               <TableRow>
                 <TableHead className="w-14">#</TableHead>
                 <TableHead className="w-20">Portada</TableHead>
-                <TableHead>Bloque</TableHead>
-                <TableHead className="hidden md:table-cell">Rango</TableHead>
+                <TableHead>Fase</TableHead>
+                <TableHead className="hidden md:table-cell">Dimensión</TableHead>
                 <TableHead className="hidden sm:table-cell w-24 text-center">
                   Módulos
                 </TableHead>
@@ -80,7 +80,7 @@ export default async function AdminBlocksPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {blocks.map((b) => {
+              {phases.map((b) => {
                 const count = b.modules?.[0]?.count ?? 0;
                 return (
                   <TableRow key={b.id}>
@@ -114,9 +114,9 @@ export default async function AdminBlocksPage() {
                       )}
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      {b.rank?.name ? (
+                      {b.dimension?.name ? (
                         <Badge variant="secondary" className="font-normal">
-                          {b.rank.name}
+                          {b.dimension.name}
                         </Badge>
                       ) : (
                         <span className="text-xs text-muted-foreground">—</span>
@@ -144,7 +144,7 @@ export default async function AdminBlocksPage() {
                           size="sm"
                           variant="outline"
                           render={
-                            <Link href={`/admin/bloques/${b.id}/modulos`} />
+                            <Link href={`/admin/fases/${b.id}/modulos`} />
                           }
                         >
                           <Layers className="size-3.5" />
@@ -154,7 +154,7 @@ export default async function AdminBlocksPage() {
                           size="sm"
                           variant="ghost"
                           render={
-                            <Link href={`/admin/bloques/${b.id}/editar`} />
+                            <Link href={`/admin/fases/${b.id}/editar`} />
                           }
                         >
                           <Pencil className="size-3.5" />

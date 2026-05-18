@@ -34,7 +34,7 @@ type SessionRow = {
   meeting_url: string;
   recording_url: string | null;
   recording_mux_playback_id: string | null;
-  block: { order_index: number; title: string } | null;
+  phase: { order_index: number; title: string } | null;
 };
 
 type PageProps = {
@@ -72,7 +72,7 @@ export default async function AdminEnVivoPage({ searchParams }: PageProps) {
     .select(
       `id, kind, title, scheduled_at, duration_minutes, host_name,
        meeting_url, recording_url, recording_mux_playback_id,
-       block:blocks!live_sessions_block_id_fkey(order_index, title)`,
+       phase:phases!live_sessions_phase_id_fkey(order_index, title)`,
     )
     .limit(200);
 
@@ -188,10 +188,10 @@ export default async function AdminEnVivoPage({ searchParams }: PageProps) {
                               >
                                 {LIVE_KIND_LABEL[s.kind]}
                               </Badge>
-                              {s.block && (
+                              {s.phase && (
                                 <Badge variant="secondary" className="font-normal">
-                                  Bloque{" "}
-                                  {String(s.block.order_index).padStart(2, "0")}
+                                  Fase{" "}
+                                  {String(s.phase.order_index).padStart(2, "0")}
                                 </Badge>
                               )}
                             </div>

@@ -19,14 +19,14 @@ export default async function EditarSesionPage({ params }: PageProps) {
   const { data: session } = await supabase
     .from("live_sessions")
     .select(
-      "id, kind, title, description, scheduled_at, duration_minutes, meeting_url, host_name, block_id, recording_url, recording_mux_playback_id",
+      "id, kind, title, description, scheduled_at, duration_minutes, meeting_url, host_name, phase_id, recording_url, recording_mux_playback_id",
     )
     .eq("id", id)
     .maybeSingle();
   if (!session) notFound();
 
-  const { data: blocks } = await supabase
-    .from("blocks")
+  const { data: phases } = await supabase
+    .from("phases")
     .select("id, order_index, title")
     .order("order_index", { ascending: true });
 
@@ -39,7 +39,7 @@ export default async function EditarSesionPage({ params }: PageProps) {
     duration_minutes: session.duration_minutes,
     meeting_url: session.meeting_url,
     host_name: session.host_name,
-    block_id: session.block_id,
+    phase_id: session.phase_id,
     recording_url: session.recording_url,
     recording_mux_playback_id: session.recording_mux_playback_id,
   };
@@ -63,8 +63,8 @@ export default async function EditarSesionPage({ params }: PageProps) {
         </header>
 
         <LiveSessionForm
-          blocks={
-            (blocks ?? []) as {
+          phases={
+            (phases ?? []) as {
               id: string;
               order_index: number;
               title: string;

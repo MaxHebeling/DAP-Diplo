@@ -34,7 +34,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 export type ModuleFormModule = {
   id: string;
-  block_id: string;
+  phase_id: string;
   title: string;
   subtitle: string | null;
   description: string | null;
@@ -70,7 +70,7 @@ export function ModuleEditForm({ mod }: { mod: ModuleFormModule }) {
   function onSubmit(values: FormValues) {
     const fd = new FormData();
     fd.set("id", mod.id);
-    fd.set("blockId", mod.block_id);
+    fd.set("phaseId", mod.phase_id);
     fd.set("title", values.title);
     fd.set("subtitle", values.subtitle ?? "");
     fd.set("description", values.description ?? "");
@@ -236,7 +236,7 @@ export function ModuleEditForm({ mod }: { mod: ModuleFormModule }) {
         <Button
           variant="outline"
           render={
-            <Link href={`/admin/bloques/${mod.block_id}/modulos`} />
+            <Link href={`/admin/fases/${mod.phase_id}/modulos`} />
           }
         >
           Cancelar

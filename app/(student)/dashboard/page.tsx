@@ -72,9 +72,9 @@ export default async function DashboardPage() {
     (sub.current_period_end === null ||
       new Date(sub.current_period_end) > new Date());
 
-  // Conteo de bloques desbloqueados (drip)
+  // Conteo de fases desbloqueados (drip)
   const { count: unlockedBlocks } = await supabase
-    .from("block_access")
+    .from("phase_access")
     .select("id", { count: "exact", head: true })
     .eq("user_id", user.id);
 
@@ -158,7 +158,7 @@ export default async function DashboardPage() {
                   Sin suscripción activa
                 </p>
                 <p className="mb-5 text-sm text-muted-foreground">
-                  Acceso al Bloque 1 y a las sesiones en vivo desde $25 USD/mes.
+                  Acceso a la Fase 1 y a las sesiones en vivo desde $25 USD/mes.
                 </p>
                 <Button render={<Link href="/suscribirme" />}>
                   Suscribirme — $25/mes
@@ -173,16 +173,16 @@ export default async function DashboardPage() {
               Tu progreso
             </h2>
             <p className="mb-3 text-2xl font-semibold">
-              {unlockedBlocks ?? 0} de 9 bloques
+              {unlockedBlocks ?? 0} de 9 fases
             </p>
             <p className="mb-5 text-sm text-muted-foreground">
               {(unlockedBlocks ?? 0) === 0
-                ? "Cada bloque completado te otorga un rango ministerial."
-                : `Cada 2 meses se desbloquea un bloque nuevo.${sub ? ` Llevas ${sub.months_paid_total} ${sub.months_paid_total === 1 ? "mes" : "meses"}.` : ""}`}
+                ? "Cada fase completado te otorga una dimensión ministerial."
+                : `Cada 2 meses se desbloquea una fase nuevo.${sub ? ` Llevas ${sub.months_paid_total} ${sub.months_paid_total === 1 ? "mes" : "meses"}.` : ""}`}
             </p>
             <Button
               variant="outline"
-              render={<Link href="/#bloques" />}
+              render={<Link href="/#fases" />}
               disabled={!hasActive}
             >
               {(unlockedBlocks ?? 0) > 0 ? "Continuar" : "Ver el diplomado"}
@@ -192,7 +192,7 @@ export default async function DashboardPage() {
 
         <p className="mt-10 text-xs text-muted-foreground">
           Esta vista se expandirá: calendario de sesiones en vivo, último módulo
-          visto, certificados emitidos, rango actual.
+          visto, certificados emitidos, dimensión actual.
         </p>
       </div>
     </main>

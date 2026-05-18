@@ -18,7 +18,7 @@ export type StepperSection = {
 type ModuleStepperProps = {
   sections: StepperSection[];
   current: SectionKind;
-  blockSlug: string;
+  phaseSlug: string;
   moduleSlug: string;
 };
 
@@ -41,7 +41,7 @@ const LABEL: Record<SectionKind, string> = {
 export function ModuleStepper({
   sections,
   current,
-  blockSlug,
+  phaseSlug,
   moduleSlug,
 }: ModuleStepperProps) {
   // Keep canonical order even if DB returns them in different order
@@ -57,7 +57,7 @@ export function ModuleStepper({
           return (
             <li key={kind} className="flex items-center gap-1.5 sm:gap-3">
               <Link
-                href={`/bloques/${blockSlug}/modulos/${moduleSlug}?section=${kind}`}
+                href={`/fases/${phaseSlug}/modulos/${moduleSlug}?section=${kind}`}
                 className={cn(
                   "group flex items-center gap-2.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
                   isCurrent

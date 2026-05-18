@@ -5,7 +5,7 @@ const STEPS = [
   {
     icon: CreditCard,
     title: "Te suscribes",
-    body: "$25 USD/mes vía Stripe. Acceso inmediato al Bloque 1 y a todas las sesiones en vivo. Cancela cuando quieras.",
+    body: "$25 USD/mes vía Stripe. Acceso inmediato a la Fase 1 y a todas las sesiones en vivo. Cancela cuando quieras.",
   },
   {
     icon: CalendarClock,
@@ -14,8 +14,8 @@ const STEPS = [
   },
   {
     icon: Trophy,
-    title: "Avanzas y desbloqueas rangos",
-    body: "Cada 2 meses se libera un nuevo bloque. Al completarlo recibes certificado, insignia y un rango ministerial — de Discípulo hasta Enviado.",
+    title: "Avanzas y desbloqueas dimensiones",
+    body: "Cada 2 meses se libera un nuevo fase. Al completarlo recibes certificado, insignia y una dimensión ministerial — de Discípulo hasta Enviado.",
   },
 ];
 

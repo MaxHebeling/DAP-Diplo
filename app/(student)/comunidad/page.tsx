@@ -3,7 +3,7 @@ import { MessageCircle, MessagesSquare, Pin, Plus } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CommunityBlockFilter } from "@/components/forum/community-block-filter";
+import { CommunityPhaseFilter } from "@/components/forum/community-phase-filter";
 import { createClient } from "@/lib/supabase/server";
 import { requireForumAccess } from "@/lib/forum/gate";
 import { snippet, timeAgo } from "@/lib/forum/format";
@@ -18,23 +18,23 @@ type ThreadRow = {
   closed: boolean;
   updated_at: string;
   author: { id: string; full_name: string; avatar_url: string | null } | null;
-  block: { id: string; order_index: number; title: string } | null;
+  phase: { id: string; order_index: number; title: string } | null;
   posts_count: { count: number }[] | null;
 };
 
 type PageProps = {
-  searchParams: Promise<{ block?: string }>;
+  searchParams: Promise<{ phase?: string }>;
 };
 
 export default async function ComunidadPage({ searchParams }: PageProps) {
   await requireForumAccess("/comunidad");
-  const { block: blockFilter } = await searchParams;
+  const { phase: blockFilter } = await searchParams;
 
   const supabase = await createClient();
 
-  // Catálogo de bloques para el filtro
-  const { data: blocks } = await supabase
-    .from("blocks")
+  // Catálogo de fases para el filtro
+  const { data: phases } = await supabase
+    .from("phases")
     .select("id, order_index, title")
     .order("order_index", { ascending: true });
 
@@ -43,7 +43,7 @@ export default async function ComunidadPage({ searchParams }: PageProps) {
     .select(
       `id, title, body, pinned, closed, updated_at,
        author:profiles!forum_threads_author_id_fkey(id, full_name, avatar_url),
-       block:blocks!forum_threads_block_id_fkey(id, order_index, title),
+       phase:phases!forum_threads_phase_id_fkey(id, order_index, title),
        posts_count:forum_posts(count)`,
     )
     .eq("hidden", false)
@@ -52,7 +52,7 @@ export default async function ComunidadPage({ searchParams }: PageProps) {
     .limit(100);
 
   if (blockFilter && blockFilter !== "all") {
-    query = query.eq("block_id", blockFilter);
+    query = query.eq("phase_id", blockFilter);
   }
 
   const { data, error } = await query.returns<ThreadRow[]>();
@@ -84,8 +84,8 @@ export default async function ComunidadPage({ searchParams }: PageProps) {
         </header>
 
         <div className="mb-6">
-          <CommunityBlockFilter
-            blocks={(blocks ?? []) as { id: string; order_index: number; title: string }[]}
+          <CommunityPhaseFilter
+            phases={(phases ?? []) as { id: string; order_index: number; title: string }[]}
             current={blockFilter ?? "all"}
           />
         </div>
@@ -155,13 +155,13 @@ export default async function ComunidadPage({ searchParams }: PageProps) {
                             {postsCount}{" "}
                             {postsCount === 1 ? "respuesta" : "respuestas"}
                           </span>
-                          {t.block && (
+                          {t.phase && (
                             <>
                               <span className="text-border">·</span>
                               <Badge variant="outline" className="font-normal">
-                                Bloque{" "}
-                                {String(t.block.order_index).padStart(2, "0")}
-                                : {t.block.title}
+                                Fase{" "}
+                                {String(t.phase.order_index).padStart(2, "0")}
+                                : {t.phase.title}
                               </Badge>
                             </>
                           )}

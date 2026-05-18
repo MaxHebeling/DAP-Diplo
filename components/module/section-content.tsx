@@ -21,7 +21,7 @@ type SectionContentProps = {
   kind: SectionKind;
   sectionId: string;
   moduleId: string;
-  blockSlug: string;
+  phaseSlug: string;
   moduleSlug: string;
   bodyMd: string | null;
   module: {
@@ -91,7 +91,7 @@ export function SectionContent(props: SectionContentProps) {
             <QuizAlreadyPassed
               quiz={props.evaluation!.quiz}
               bestScore={props.evaluation!.bestScore ?? 100}
-              blockSlug={props.blockSlug}
+              phaseSlug={props.phaseSlug}
               moduleSlug={props.moduleSlug}
             />
           ) : (
@@ -99,7 +99,7 @@ export function SectionContent(props: SectionContentProps) {
               quiz={props.evaluation!.quiz}
               questions={props.evaluation!.questions}
               attemptCount={props.evaluation!.attemptCount}
-              blockSlug={props.blockSlug}
+              phaseSlug={props.phaseSlug}
               moduleSlug={props.moduleSlug}
             />
           )
@@ -120,7 +120,7 @@ export function SectionContent(props: SectionContentProps) {
           <AdvanceButton
             sectionId={props.sectionId}
             moduleId={props.moduleId}
-            blockSlug={props.blockSlug}
+            phaseSlug={props.phaseSlug}
             moduleSlug={props.moduleSlug}
             nextSection={next}
             label={NEXT_LABEL[props.kind]}

@@ -21,7 +21,7 @@ type SectionKind = (typeof sectionKinds)[number];
 const markCompletedSchema = z.object({
   sectionId: z.uuid(),
   moduleId: z.uuid(),
-  blockSlug: z.string(),
+  phaseSlug: z.string(),
   moduleSlug: z.string(),
   // Si se pasa, navega ahí tras marcar; si no, ahí mismo.
   next: z.enum(sectionKinds).nullable().optional(),
@@ -39,7 +39,7 @@ export async function markSectionCompleted(
   const parsed = markCompletedSchema.safeParse({
     sectionId: formData.get("sectionId"),
     moduleId: formData.get("moduleId"),
-    blockSlug: formData.get("blockSlug"),
+    phaseSlug: formData.get("phaseSlug"),
     moduleSlug: formData.get("moduleSlug"),
     next: formData.get("next") || null,
   });
@@ -98,28 +98,28 @@ export async function markSectionCompleted(
     if (mErr) return { ok: false, error: mErr.message };
     moduleCompleted = true;
 
-    // ¿Todos los módulos del bloque completados?
+    // ¿Todos los módulos de la fase completados?
     const { data: modRow } = await supabase
       .from("modules")
-      .select("block_id")
+      .select("phase_id")
       .eq("id", parsed.data.moduleId)
       .maybeSingle();
-    if (modRow?.block_id) {
+    if (modRow?.phase_id) {
       const [{ count: totalModules }, { count: completedModules }] =
         await Promise.all([
           supabase
             .from("modules")
             .select("id", { count: "exact", head: true })
-            .eq("block_id", modRow.block_id),
+            .eq("phase_id", modRow.phase_id),
           supabase
             .from("module_progress")
             .select(
-              "module:modules!inner(block_id)",
+              "module:modules!inner(phase_id)",
               { count: "exact", head: true },
             )
             .eq("user_id", user.id)
             .eq("completed", true)
-            .eq("module.block_id", modRow.block_id),
+            .eq("module.phase_id", modRow.phase_id),
         ]);
       if (
         totalModules !== null &&
@@ -132,17 +132,17 @@ export async function markSectionCompleted(
   }
 
   revalidatePath(
-    `/bloques/${parsed.data.blockSlug}/modulos/${parsed.data.moduleSlug}`,
+    `/fases/${parsed.data.phaseSlug}/modulos/${parsed.data.moduleSlug}`,
   );
 
   if (parsed.data.next) {
     const toastParam = blockCompleted
-      ? "?toast=block-completed"
+      ? "?toast=phase-completed"
       : moduleCompleted
         ? "?toast=module-completed"
         : "";
     redirect(
-      `/bloques/${parsed.data.blockSlug}/modulos/${parsed.data.moduleSlug}?section=${parsed.data.next}${toastParam.replace("?", "&")}`,
+      `/fases/${parsed.data.phaseSlug}/modulos/${parsed.data.moduleSlug}?section=${parsed.data.next}${toastParam.replace("?", "&")}`,
     );
   }
 

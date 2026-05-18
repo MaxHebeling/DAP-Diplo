@@ -217,7 +217,7 @@ async function markSubscriptionCanceled(
   return {
     ok: true,
     userId: sub.metadata?.userId ?? null,
-    detail: "block_access preservado",
+    detail: "phase_access preservado",
   };
 }
 
@@ -276,10 +276,10 @@ async function handleInvoicePaid(
   if (updErr) throw new Error(`Update months falló: ${updErr.message}`);
 
   // Drip via SQL function (migration 0005). La función calcula
-  // target = ceil(months/2) capped a 9 e inserta los bloques faltantes.
+  // target = ceil(months/2) capped a 9 e inserta las fases faltantes.
   // Idempotente: si ya alcanzó target → 0 inserts.
   const { data: unlocked, error: rpcErr } = await admin.rpc(
-    "unlock_next_block_if_needed",
+    "unlock_next_phase_if_needed",
     { p_user_id: subRow.user_id },
   );
   if (rpcErr) {

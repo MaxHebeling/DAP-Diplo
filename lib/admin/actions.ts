@@ -49,7 +49,7 @@ export async function updateBlockAction(
 
   const { admin, supabase } = await ensureAdmin();
   if (!admin) {
-    return { ok: false, error: "Solo admin puede editar bloques." };
+    return { ok: false, error: "Solo admin puede editar fases." };
   }
 
   const {
@@ -61,12 +61,12 @@ export async function updateBlockAction(
     description,
     cover_image_url,
     months_duration,
-    rank_id,
+    dimension_id,
     published,
   } = parsed.data;
 
   const { error } = await supabase
-    .from("blocks")
+    .from("phases")
     .update({
       order_index,
       slug,
@@ -75,7 +75,7 @@ export async function updateBlockAction(
       description,
       cover_image_url,
       months_duration,
-      rank_id,
+      dimension_id,
       published,
     })
     .eq("id", id);
@@ -84,13 +84,13 @@ export async function updateBlockAction(
     return { ok: false, error: error.message };
   }
 
-  // Revalida páginas que dependen de bloques
+  // Revalida páginas que dependen de fases
   revalidatePath("/");
-  revalidatePath(`/bloques/${slug}`);
-  revalidatePath("/admin/bloques");
-  revalidatePath(`/admin/bloques/${id}/editar`);
+  revalidatePath(`/fases/${slug}`);
+  revalidatePath("/admin/fases");
+  revalidatePath(`/admin/fases/${id}/editar`);
 
-  redirect("/admin/bloques?toast=block-saved");
+  redirect("/admin/fases?toast=phase-saved");
 }
 
 // =====================================================================
@@ -102,7 +102,7 @@ export async function updateModuleAction(
   formData: FormData,
 ): Promise<ActionResult> {
   const raw = Object.fromEntries(formData.entries());
-  const blockId = (raw.blockId as string) ?? "";
+  const phaseId = (raw.phaseId as string) ?? "";
   const parsed = moduleUpdateSchema.safeParse({
     ...raw,
     is_free_preview:
@@ -124,14 +124,14 @@ export async function updateModuleAction(
   if (error) return { ok: false, error: error.message };
 
   // Revalida páginas dependientes
-  revalidatePath("/admin/bloques");
-  if (blockId) {
-    revalidatePath(`/admin/bloques/${blockId}/modulos`);
-    revalidatePath(`/admin/bloques/${blockId}/modulos/${id}/editar`);
+  revalidatePath("/admin/fases");
+  if (phaseId) {
+    revalidatePath(`/admin/fases/${phaseId}/modulos`);
+    revalidatePath(`/admin/fases/${phaseId}/modulos/${id}/editar`);
   }
 
   redirect(
-    `/admin/bloques/${blockId}/modulos/${id}/editar?toast=module-saved`,
+    `/admin/fases/${phaseId}/modulos/${id}/editar?toast=module-saved`,
   );
 }
 
@@ -144,7 +144,7 @@ export async function updateSectionAction(
   formData: FormData,
 ): Promise<ActionResult> {
   const raw = Object.fromEntries(formData.entries());
-  const blockId = (raw.blockId as string) ?? "";
+  const phaseId = (raw.phaseId as string) ?? "";
   const moduleId = (raw.moduleId as string) ?? "";
   const parsed = sectionUpdateSchema.safeParse(raw);
   if (!parsed.success) {
@@ -166,17 +166,17 @@ export async function updateSectionAction(
   if (error) return { ok: false, error: error.message };
 
   // Revalida páginas dependientes
-  if (blockId && moduleId) {
+  if (phaseId && moduleId) {
     revalidatePath(
-      `/admin/bloques/${blockId}/modulos/${moduleId}/secciones`,
+      `/admin/fases/${phaseId}/modulos/${moduleId}/secciones`,
     );
     revalidatePath(
-      `/admin/bloques/${blockId}/modulos/${moduleId}/secciones/${id}/editar`,
+      `/admin/fases/${phaseId}/modulos/${moduleId}/secciones/${id}/editar`,
     );
   }
 
   redirect(
-    `/admin/bloques/${blockId}/modulos/${moduleId}/secciones?toast=section-saved`,
+    `/admin/fases/${phaseId}/modulos/${moduleId}/secciones?toast=section-saved`,
   );
 }
 

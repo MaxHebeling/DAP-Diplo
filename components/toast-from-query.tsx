@@ -7,20 +7,20 @@ import { toast } from "sonner";
 const MESSAGES: Record<string, { msg: string; type?: "success" | "info" | "warning" }> = {
   "already-subscribed": { msg: "Ya tienes una suscripción activa.", type: "info" },
   "subscription-canceled": { msg: "Tu suscripción fue cancelada.", type: "info" },
-  "block-locked": {
-    msg: "Aún no tienes acceso a este bloque. Se desbloquea cada 2 meses de suscripción.",
+  "phase-locked": {
+    msg: "Aún no tienes acceso a esta fase. Se desbloquea cada 2 meses de suscripción.",
     type: "warning",
   },
   "module-completed": {
     msg: "¡Módulo completado! Sigue al siguiente.",
     type: "success",
   },
-  "block-completed": {
-    msg: "¡Bloque completado! Pronto recibirás tu rango.",
+  "phase-completed": {
+    msg: "¡Fase completado! Pronto recibirás tu dimensión.",
     type: "success",
   },
-  "block-saved": {
-    msg: "Bloque guardado correctamente.",
+  "phase-saved": {
+    msg: "Fase guardado correctamente.",
     type: "success",
   },
   "module-saved": {

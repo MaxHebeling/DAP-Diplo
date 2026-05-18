@@ -38,7 +38,7 @@ export type QuestionRow = {
   order_index: number;
 };
 
-type Ctx = { blockId: string; moduleId: string; sectionId: string };
+type Ctx = { phaseId: string; moduleId: string; sectionId: string };
 
 const formSchema = z
   .object({

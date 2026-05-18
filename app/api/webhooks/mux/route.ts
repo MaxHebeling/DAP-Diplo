@@ -132,8 +132,8 @@ export async function POST(request: NextRequest) {
         }
 
         // Invalida páginas admin y student para reflejar el video inmediatamente.
-        revalidatePath("/admin/bloques", "layout");
-        revalidatePath("/bloques", "layout");
+        revalidatePath("/admin/fases", "layout");
+        revalidatePath("/fases", "layout");
         return NextResponse.json({ received: true, sectionId: section.id });
       }
 

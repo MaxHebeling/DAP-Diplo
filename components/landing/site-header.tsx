@@ -26,8 +26,8 @@ export type HeaderUser = {
 
 const NAV_ITEMS = [
   { href: "/#diplomado", label: "El Diplomado" },
-  { href: "/#bloques", label: "Bloques" },
-  { href: "/#rangos", label: "Rangos" },
+  { href: "/#fases", label: "Fases" },
+  { href: "/#dimensiones", label: "Dimensiones" },
   { href: "/#faq", label: "Preguntas" },
 ];
 

@@ -7,8 +7,8 @@ export const metadata = { title: "Nueva sesión — Admin DAP" };
 
 export default async function NuevaSesionPage() {
   const supabase = await createClient();
-  const { data: blocks } = await supabase
-    .from("blocks")
+  const { data: phases } = await supabase
+    .from("phases")
     .select("id, order_index, title")
     .order("order_index", { ascending: true });
 
@@ -35,8 +35,8 @@ export default async function NuevaSesionPage() {
         </header>
 
         <LiveSessionForm
-          blocks={
-            (blocks ?? []) as {
+          phases={
+            (phases ?? []) as {
               id: string;
               order_index: number;
               title: string;

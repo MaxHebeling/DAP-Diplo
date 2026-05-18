@@ -24,7 +24,7 @@ type ThreadRow = {
   created_at: string;
   updated_at: string;
   author: { id: string; full_name: string; avatar_url: string | null } | null;
-  block: { id: string; order_index: number; title: string } | null;
+  phase: { id: string; order_index: number; title: string } | null;
 };
 
 type PostRow = {
@@ -50,7 +50,7 @@ export default async function ThreadPage({ params }: PageProps) {
     .select(
       `id, title, body, pinned, closed, hidden, author_id, created_at, updated_at,
        author:profiles!forum_threads_author_id_fkey(id, full_name, avatar_url),
-       block:blocks!forum_threads_block_id_fkey(id, order_index, title)`,
+       phase:phases!forum_threads_phase_id_fkey(id, order_index, title)`,
     )
     .eq("id", id)
     .maybeSingle<ThreadRow>();
@@ -96,10 +96,10 @@ export default async function ThreadPage({ params }: PageProps) {
             {thread.closed && (
               <Badge variant="secondary">Cerrado</Badge>
             )}
-            {thread.block && (
+            {thread.phase && (
               <Badge variant="outline" className="font-normal">
-                Bloque {String(thread.block.order_index).padStart(2, "0")}:{" "}
-                {thread.block.title}
+                Fase {String(thread.phase.order_index).padStart(2, "0")}:{" "}
+                {thread.phase.title}
               </Badge>
             )}
           </div>

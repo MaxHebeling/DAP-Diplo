@@ -3,9 +3,9 @@ import { CertificateDocument } from "@/components/certificate/certificate-docume
 
 export type CertificateData = {
   fullName: string;
-  blockOrderIndex: number;
-  blockTitle: string;
-  rankName: string;
+  phaseOrderIndex: number;
+  phaseTitle: string;
+  dimensionName: string;
   verificationCode: string;
   issuedAt: Date;
 };

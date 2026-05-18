@@ -19,7 +19,7 @@ const PARTS = [
   {
     number: "04",
     title: "Evaluación",
-    body: "Test que mide comprensión. Aprobar es requisito para completar el módulo y, al final del bloque, recibir el rango.",
+    body: "Test que mide comprensión. Aprobar es requisito para completar el módulo y, al final de la fase, recibir la dimensión.",
   },
   {
     number: "05",

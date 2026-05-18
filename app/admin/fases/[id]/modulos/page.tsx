@@ -28,25 +28,25 @@ type ModuleRow = {
   }[];
 };
 
-export const metadata = { title: "Módulos del bloque — Admin DAP" };
+export const metadata = { title: "Módulos de la fase — Admin DAP" };
 
 export default async function AdminBlockModulesPage({ params }: PageProps) {
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: block } = await supabase
-    .from("blocks")
+  const { data: phase } = await supabase
+    .from("phases")
     .select("id, order_index, title")
     .eq("id", id)
     .maybeSingle();
-  if (!block) notFound();
+  if (!phase) notFound();
 
   const { data, error } = await supabase
     .from("modules")
     .select(
       "id, order_index, slug, title, subtitle, is_free_preview, sections:module_sections(body_md, mux_playback_id)",
     )
-    .eq("block_id", id)
+    .eq("phase_id", id)
     .order("order_index", { ascending: true })
     .returns<ModuleRow[]>();
   if (error) {
@@ -58,21 +58,21 @@ export default async function AdminBlockModulesPage({ params }: PageProps) {
     <main className="px-6 py-10 sm:px-10">
       <div className="mx-auto max-w-6xl">
         <Link
-          href="/admin/bloques"
+          href="/admin/fases"
           className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-brand-coral"
         >
           <ArrowLeft className="size-4" />
-          Volver a bloques
+          Volver a fases
         </Link>
 
         <header className="mb-8 flex items-end justify-between gap-4">
           <div>
             <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
-              Bloque {String(block.order_index).padStart(2, "0")} · {block.title}
+              Fase {String(phase.order_index).padStart(2, "0")} · {phase.title}
             </p>
             <h1 className="font-serif text-3xl font-semibold">Módulos</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {modules.length} módulos en este bloque. Edita metadatos o entra a
+              {modules.length} módulos en esta fase. Edita metadatos o entra a
               las 5 secciones para poblar contenido.
             </p>
           </div>
@@ -141,7 +141,7 @@ export default async function AdminBlockModulesPage({ params }: PageProps) {
                           variant="outline"
                           render={
                             <Link
-                              href={`/admin/bloques/${id}/modulos/${m.id}/secciones`}
+                              href={`/admin/fases/${id}/modulos/${m.id}/secciones`}
                             />
                           }
                         >
@@ -153,7 +153,7 @@ export default async function AdminBlockModulesPage({ params }: PageProps) {
                           variant="ghost"
                           render={
                             <Link
-                              href={`/admin/bloques/${id}/modulos/${m.id}/editar`}
+                              href={`/admin/fases/${id}/modulos/${m.id}/editar`}
                             />
                           }
                         >

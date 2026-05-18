@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { signedCertificateUrl } from "@/lib/certificates/upload";
 
 /**
- * Envía email de felicitación al alumno cuando completa un bloque y se
+ * Envía email de felicitación al alumno cuando completa una fase y se
  * emite su certificado. Idempotente vía certificates.email_sent_at: si
  * ya está populated, no reenvía.
  *
@@ -21,8 +21,8 @@ export async function sendCertificateEmail(
     .select(
       `id, user_id, verification_code, pdf_url, email_sent_at, issued_at,
        user:profiles!certificates_user_id_fkey(full_name),
-       block:blocks!certificates_block_id_fkey(order_index, title),
-       rank:ranks!certificates_rank_id_fkey(name)`,
+       phase:phases!certificates_phase_id_fkey(order_index, title),
+       dimension:dimensions!certificates_dimension_id_fkey(name)`,
     )
     .eq("id", certificateId)
     .maybeSingle<{
@@ -33,8 +33,8 @@ export async function sendCertificateEmail(
       email_sent_at: string | null;
       issued_at: string;
       user: { full_name: string } | null;
-      block: { order_index: number; title: string } | null;
-      rank: { name: string } | null;
+      phase: { order_index: number; title: string } | null;
+      dimension: { name: string } | null;
     }>();
   if (error || !cert) {
     return {
@@ -51,10 +51,10 @@ export async function sendCertificateEmail(
     };
   }
 
-  if (!cert.user || !cert.block) {
+  if (!cert.user || !cert.phase) {
     return {
       ok: false,
-      error: `Certificado ${certificateId} incompleto (faltan user/block).`,
+      error: `Certificado ${certificateId} incompleto (faltan user/phase).`,
     };
   }
 
@@ -68,10 +68,10 @@ export async function sendCertificateEmail(
     };
   }
 
-  const firstName = cert.user.full_name?.split(" ")[0] ?? "Pastor";
+  const firstName = cert.user.full_name?.split(" ")[0] ?? "Ministro";
   const appUrl =
     process.env.NEXT_PUBLIC_APP_URL ?? "https://dap-diplo.vercel.app";
-  const blockN = String(cert.block.order_index).padStart(2, "0");
+  const blockN = String(cert.phase.order_index).padStart(2, "0");
   const verifyUrl = `${appUrl}/verificar/${cert.verification_code}`;
 
   // PDF signed URL (1h TTL — el email puede abrirse después del momento del envío)
@@ -89,9 +89,9 @@ export async function sendCertificateEmail(
 
   const html = renderCertificateHtml({
     firstName,
-    blockNumber: blockN,
-    blockTitle: cert.block.title,
-    rankName: cert.rank?.name ?? null,
+    phaseNumber: blockN,
+    phaseTitle: cert.phase.title,
+    dimensionName: cert.dimension?.name ?? null,
     verificationCode: cert.verification_code,
     verifyUrl,
     pdfUrl,
@@ -100,9 +100,9 @@ export async function sendCertificateEmail(
 
   const result = await sendEmail({
     to: userData.user.email,
-    subject: cert.rank
-      ? `Completaste el Bloque ${blockN} — eres ${cert.rank.name}.`
-      : `Completaste el Bloque ${blockN} del DAP.`,
+    subject: cert.dimension
+      ? `Completaste la Fase ${blockN} — eres ${cert.dimension.name}.`
+      : `Completaste la Fase ${blockN} del DAP.`,
     html,
   });
 
@@ -128,9 +128,9 @@ export async function sendCertificateEmail(
 
 function renderCertificateHtml(opts: {
   firstName: string;
-  blockNumber: string;
-  blockTitle: string;
-  rankName: string | null;
+  phaseNumber: string;
+  phaseTitle: string;
+  dimensionName: string | null;
   verificationCode: string;
   verifyUrl: string;
   pdfUrl: string | null;
@@ -138,9 +138,9 @@ function renderCertificateHtml(opts: {
 }): string {
   const {
     firstName,
-    blockNumber,
-    blockTitle,
-    rankName,
+    phaseNumber,
+    phaseTitle,
+    dimensionName,
     verificationCode,
     verifyUrl,
     pdfUrl,
@@ -158,7 +158,7 @@ function renderCertificateHtml(opts: {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
-    <title>Completaste el Bloque ${escapeHtml(blockNumber)}</title>
+    <title>Completaste la Fase ${escapeHtml(phaseNumber)}</title>
   </head>
   <body style="margin:0;padding:0;background:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#e5e5e5;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0a0a0a;">
@@ -177,16 +177,16 @@ function renderCertificateHtml(opts: {
             <tr>
               <td style="padding:0 8px;">
                 <p style="margin:0 0 14px;font-size:11px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:#fdad5a;">
-                  Bloque completado · Certificado emitido
+                  Fase completado · Certificado emitido
                 </p>
                 <h1 style="margin:0 0 24px;font-family:Georgia,'Playfair Display',serif;font-size:34px;line-height:1.15;font-weight:600;color:#fafafa;">
                   Felicidades, ${escapeHtml(firstName)}.
                 </h1>
                 <p style="margin:0 0 20px;font-size:16px;line-height:1.6;color:#d4d4d4;">
-                  Acabas de completar el <strong style="color:#fafafa;">Bloque ${escapeHtml(blockNumber)} — ${escapeHtml(blockTitle)}</strong>
+                  Acabas de completar el <strong style="color:#fafafa;">Fase ${escapeHtml(phaseNumber)} — ${escapeHtml(phaseTitle)}</strong>
                   ${
-                    rankName
-                      ? `y has alcanzado el rango ministerial de <strong style="color:#fdad5a;">${escapeHtml(rankName)}</strong>.`
+                    dimensionName
+                      ? `y has alcanzado la dimensión ministerial de <strong style="color:#fdad5a;">${escapeHtml(dimensionName)}</strong>.`
                       : "del Diplomado Apostólico Pastoral."
                   }
                 </p>
@@ -204,7 +204,7 @@ function renderCertificateHtml(opts: {
                   <tr>
                     <td align="center" bgcolor="#fdad5a" style="background:#fdad5a;border-radius:8px;">
                       <a href="${primaryHref}" target="_blank"
-                         style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:600;color:#0a0a0a;text-decoration:none;font-family:inherit;">
+                         style="display:inline-phase;padding:14px 32px;font-size:15px;font-weight:600;color:#0a0a0a;text-decoration:none;font-family:inherit;">
                         ${primaryLabel}
                       </a>
                     </td>
@@ -232,8 +232,8 @@ function renderCertificateHtml(opts: {
                 </p>
                 <p style="margin:0 0 24px;font-size:12px;line-height:1.6;color:#737373;">
                   Compártelo con quien quiera validar tu credencial. La
-                  verificación es pública y muestra tu nombre, bloque
-                  completado, rango y fecha de emisión.
+                  verificación es pública y muestra tu nombre, fase
+                  completado, dimensión y fecha de emisión.
                 </p>
               </td>
             </tr>

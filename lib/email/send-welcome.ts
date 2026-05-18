@@ -37,7 +37,7 @@ export async function sendWelcomeEmail(userId: string): Promise<SendEmailResult>
     };
   }
 
-  const firstName = profile.full_name?.split(" ")[0] ?? "Pastor";
+  const firstName = profile.full_name?.split(" ")[0] ?? "Ministro";
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://dap-diplo.vercel.app";
 
   const html = renderWelcomeHtml({ firstName, appUrl });
@@ -89,12 +89,12 @@ function renderWelcomeHtml(opts: {
                 </h1>
                 <p style="margin:0 0 18px;font-size:16px;line-height:1.6;color:#d4d4d4;">
                   Tu suscripción de <strong style="color:#fafafa;">$25 USD/mes</strong> está activa.
-                  Ya tienes acceso al <strong style="color:#fafafa;">Bloque 1 — Fundamentos Espirituales</strong>,
+                  Ya tienes acceso al <strong style="color:#fafafa;">Fase 1 — Fundamentos Espirituales</strong>,
                   con sus 22 módulos.
                 </p>
                 <p style="margin:0 0 32px;font-size:16px;line-height:1.6;color:#d4d4d4;">
-                  Cada 2 meses se libera un bloque nuevo. En 18 meses completas
-                  los 9 bloques y obtienes los 9 rangos ministeriales — de
+                  Cada 2 meses se libera una fase nuevo. En 18 meses completas
+                  los 9 fases y obtienes los 9 dimensiones ministeriales — de
                   Discípulo hasta Enviado.
                 </p>
               </td>
@@ -106,7 +106,7 @@ function renderWelcomeHtml(opts: {
                   <tr>
                     <td align="center" bgcolor="#fdad5a" style="background:#fdad5a;border-radius:8px;">
                       <a href="${appUrl}/dashboard" target="_blank"
-                         style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:600;color:#0a0a0a;text-decoration:none;font-family:inherit;">
+                         style="display:inline-phase;padding:14px 32px;font-size:15px;font-weight:600;color:#0a0a0a;text-decoration:none;font-family:inherit;">
                         Ir a mi dashboard →
                       </a>
                     </td>

@@ -31,7 +31,7 @@ type FormValues = z.infer<typeof formSchema>;
 export type SectionFormSection = {
   id: string;
   module_id: string;
-  block_id: string;
+  phase_id: string;
   kind: "intro" | "teaching" | "activation" | "evaluation" | "impartation";
   title: string;
   body_md: string | null;
@@ -77,7 +77,7 @@ export function SectionEditForm({
   function onSubmit(values: FormValues) {
     const fd = new FormData();
     fd.set("id", section.id);
-    fd.set("blockId", section.block_id);
+    fd.set("phaseId", section.phase_id);
     fd.set("moduleId", section.module_id);
     fd.set("title", values.title);
     fd.set("body_md", values.body_md ?? "");
@@ -210,7 +210,7 @@ export function SectionEditForm({
           variant="outline"
           render={
             <Link
-              href={`/admin/bloques/${section.block_id}/modulos/${section.module_id}/secciones`}
+              href={`/admin/fases/${section.phase_id}/modulos/${section.module_id}/secciones`}
             />
           }
         >

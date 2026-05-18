@@ -132,7 +132,7 @@ function renderReminderHtml(opts: {
                   <tr>
                     <td align="center" bgcolor="#fdad5a" style="background:#fdad5a;border-radius:8px;">
                       <a href="${session.meeting_url}" target="_blank"
-                         style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:600;color:#0a0a0a;text-decoration:none;font-family:inherit;">
+                         style="display:inline-phase;padding:14px 32px;font-size:15px;font-weight:600;color:#0a0a0a;text-decoration:none;font-family:inherit;">
                         Unirme a la sesión →
                       </a>
                     </td>

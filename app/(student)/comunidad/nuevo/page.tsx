@@ -10,8 +10,8 @@ export default async function NuevoHiloPage() {
   await requireForumAccess("/comunidad/nuevo");
 
   const supabase = await createClient();
-  const { data: blocks } = await supabase
-    .from("blocks")
+  const { data: phases } = await supabase
+    .from("phases")
     .select("id, order_index, title")
     .order("order_index", { ascending: true });
 
@@ -38,7 +38,7 @@ export default async function NuevoHiloPage() {
         </header>
 
         <NewThreadForm
-          blocks={(blocks ?? []) as { id: string; order_index: number; title: string }[]}
+          phases={(phases ?? []) as { id: string; order_index: number; title: string }[]}
         />
       </div>
     </main>

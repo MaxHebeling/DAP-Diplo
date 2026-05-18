@@ -35,7 +35,7 @@ type BlockDetail = {
   cover_image_url: string | null;
   months_duration: number;
   published: boolean;
-  rank: RankRef;
+  dimension: RankRef;
   modules: ModuleRow[] | null;
 };
 
@@ -49,7 +49,7 @@ type PageProps = { params: Promise<{ slug: string }> };
 
 // Pre-renderiza los 9 slugs publicados al build.
 // (dynamicParams = true por default → admins pueden previsualizar
-// bloques no publicados via render on-demand.)
+// fases no publicados via render on-demand.)
 // Usa un cliente Supabase plano (sin cookies) porque generateStaticParams
 // corre al build sin contexto HTTP — createClient de @/lib/supabase/server
 // invocaría cookies() y rompería.
@@ -60,7 +60,7 @@ export async function generateStaticParams() {
     { auth: { autoRefreshToken: false, persistSession: false } },
   );
   const { data } = await supabase
-    .from("blocks")
+    .from("phases")
     .select("slug")
     .eq("published", true)
     .order("order_index", { ascending: true });
@@ -71,12 +71,12 @@ export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
   const supabase = await createClient();
   const { data } = await supabase
-    .from("blocks")
+    .from("phases")
     .select("title, subtitle, description")
     .eq("slug", slug)
     .eq("published", true)
     .maybeSingle();
-  if (!data) return { title: "Bloque no encontrado — DAP" };
+  if (!data) return { title: "Fase no encontrado — DAP" };
   return {
     title: `${data.title} — DAP`,
     description: data.subtitle ?? data.description ?? undefined,
@@ -87,23 +87,23 @@ export default async function BlockDetailPage({ params }: PageProps) {
   const { slug } = await params;
   const supabase = await createClient();
 
-  // Bloque + rango + módulos en una sola query (sin filtrar published acá
+  // Fase + dimensión + módulos en una sola query (sin filtrar published acá
   // para permitir admin bypass más abajo).
-  const { data: block, error } = await supabase
-    .from("blocks")
+  const { data: phase, error } = await supabase
+    .from("phases")
     .select(
       `id, order_index, slug, title, subtitle, description, cover_image_url,
        months_duration, published,
-       rank:ranks(name, order_index),
+       dimension:dimensions(name, order_index),
        modules(id, order_index, slug, title, subtitle, duration_minutes)`,
     )
     .eq("slug", slug)
     .maybeSingle<BlockDetail>();
 
   if (error) {
-    throw new Error(`No se pudo cargar el bloque: ${error.message}`);
+    throw new Error(`No se pudo cargar la fase: ${error.message}`);
   }
-  if (!block) notFound();
+  if (!phase) notFound();
 
   // Sesión del visitante (también pinta el header con su avatar/role).
   const {
@@ -128,26 +128,26 @@ export default async function BlockDetailPage({ params }: PageProps) {
     }
   }
 
-  // Gate: bloque no publicado → 404 a no ser que sea admin.
-  if (!block.published && !isAdmin) {
+  // Gate: fase no publicado → 404 a no ser que sea admin.
+  if (!phase.published && !isAdmin) {
     notFound();
   }
 
   // Supabase no ordena el embed por defecto.
-  const modules = [...(block.modules ?? [])].sort(
+  const modules = [...(phase.modules ?? [])].sort(
     (a, b) => a.order_index - b.order_index,
   );
 
-  // Vecinos prev/next entre los 9 bloques publicados.
+  // Vecinos prev/next entre los 9 fases publicados.
   const { data: allBlocks } = await supabase
-    .from("blocks")
+    .from("phases")
     .select("slug, order_index, title")
     .eq("published", true)
     .order("order_index", { ascending: true })
     .returns<NeighborBlock[]>();
 
   const list = allBlocks ?? [];
-  const here = list.findIndex((b) => b.order_index === block.order_index);
+  const here = list.findIndex((b) => b.order_index === phase.order_index);
   const prev: NeighborBlock | null = here > 0 ? list[here - 1] : null;
   const next: NeighborBlock | null =
     here >= 0 && here < list.length - 1 ? list[here + 1] : null;
@@ -163,9 +163,9 @@ export default async function BlockDetailPage({ params }: PageProps) {
       <main className="flex flex-1 flex-col">
         {/* HERO */}
         <section className="relative isolate overflow-hidden pt-32 pb-20 sm:pt-36 sm:pb-24">
-          {block.cover_image_url ? (
+          {phase.cover_image_url ? (
             <Image
-              src={block.cover_image_url}
+              src={phase.cover_image_url}
               alt=""
               fill
               priority
@@ -182,33 +182,33 @@ export default async function BlockDetailPage({ params }: PageProps) {
           <div className="mx-auto max-w-5xl px-6">
             <Reveal>
               <Link
-                href="/#bloques"
+                href="/#fases"
                 className="mb-10 inline-flex items-center gap-2 text-sm text-neutral-400 transition-colors hover:text-brand-coral"
               >
                 <ArrowLeft className="size-4" />
-                Volver a los bloques
+                Volver a las fases
               </Link>
 
-              {!block.published && (
+              {!phase.published && (
                 <Badge className="mb-6 bg-amber-500/15 text-amber-300 hover:bg-amber-500/20">
-                  Preview admin — bloque sin publicar
+                  Preview admin — fase sin publicar
                 </Badge>
               )}
 
               <p className="mb-2 font-serif text-7xl font-semibold leading-none text-brand-coral sm:text-8xl">
-                {String(block.order_index).padStart(2, "0")}
+                {String(phase.order_index).padStart(2, "0")}
               </p>
-              {block.subtitle && (
+              {phase.subtitle && (
                 <p className="mb-4 text-xs font-medium uppercase tracking-[0.3em] text-brand-coral">
-                  {block.subtitle}
+                  {phase.subtitle}
                 </p>
               )}
               <h1 className="mb-7 font-serif text-balance text-5xl font-semibold leading-[1.05] text-neutral-50 sm:text-6xl">
-                {block.title}
+                {phase.title}
               </h1>
-              {block.description && (
+              {phase.description && (
                 <p className="mb-10 max-w-3xl text-justify text-lg leading-relaxed text-neutral-300 hyphens-auto">
-                  {block.description}
+                  {phase.description}
                 </p>
               )}
 
@@ -222,8 +222,8 @@ export default async function BlockDetailPage({ params }: PageProps) {
                 </Badge>
                 <span className="text-neutral-700">·</span>
                 <span>
-                  {block.months_duration}{" "}
-                  {block.months_duration === 1 ? "mes" : "meses"}
+                  {phase.months_duration}{" "}
+                  {phase.months_duration === 1 ? "mes" : "meses"}
                 </span>
                 {totalMinutes > 0 && (
                   <>
@@ -231,11 +231,11 @@ export default async function BlockDetailPage({ params }: PageProps) {
                     <span>{formatDuration(totalMinutes * 60)} de contenido</span>
                   </>
                 )}
-                {block.rank && (
+                {phase.dimension && (
                   <>
                     <span className="text-neutral-700">·</span>
                     <Badge className="bg-brand-coral text-brand-coral-foreground hover:bg-brand-coral/90">
-                      Rango: {block.rank.name}
+                      Dimensión: {phase.dimension.name}
                     </Badge>
                   </>
                 )}
@@ -252,13 +252,13 @@ export default async function BlockDetailPage({ params }: PageProps) {
                 ¿Qué aprenderás?
               </p>
               <h2 className="mb-10 font-serif text-balance text-3xl font-semibold leading-tight text-neutral-50 sm:text-4xl">
-                Los objetivos clave de este bloque.
+                Los objetivos clave de esta fase.
               </h2>
               <div className="rounded-2xl border border-dashed border-white/10 bg-neutral-900/30 p-8 sm:p-10">
                 <p className="text-justify text-sm leading-relaxed text-neutral-400 hyphens-auto">
                   El detalle de objetivos de aprendizaje, palabras clave del
-                  bloque y entregables esperados se editan desde el panel
-                  administrativo. Cada bloque tendrá aquí su descripción
+                  fase y entregables esperados se editan desde el panel
+                  administrativo. Cada fase tendrá aquí su descripción
                   curricular completa antes del lanzamiento público.
                 </p>
               </div>
@@ -271,7 +271,7 @@ export default async function BlockDetailPage({ params }: PageProps) {
           <div className="mx-auto max-w-4xl">
             <Reveal>
               <p className="mb-4 text-xs font-medium uppercase tracking-[0.32em] text-brand-coral">
-                Módulos de este bloque
+                Módulos de esta fase
               </p>
               <h2 className="mb-12 font-serif text-balance text-3xl font-semibold leading-tight text-neutral-50 sm:text-4xl">
                 {modules.length}{" "}
@@ -282,7 +282,7 @@ export default async function BlockDetailPage({ params }: PageProps) {
 
             {modules.length === 0 ? (
               <p className="rounded-2xl border border-dashed border-white/10 bg-white/5 p-8 text-center text-sm text-neutral-400">
-                Este bloque aún no tiene módulos publicados.
+                esta fase aún no tiene módulos publicados.
               </p>
             ) : (
               <ol className="grid gap-2 sm:grid-cols-2">
@@ -323,7 +323,7 @@ export default async function BlockDetailPage({ params }: PageProps) {
           <div className="mx-auto max-w-3xl text-center text-brand-coral-foreground">
             <Reveal>
               <h2 className="mb-5 font-serif text-balance text-4xl font-semibold leading-tight sm:text-5xl">
-                Suscríbete para acceder a este bloque.
+                Suscríbete para acceder a esta fase.
               </h2>
               <p className="mb-10 text-balance text-base sm:text-lg">
                 $25 USD/mes. Acceso al contenido grabado, las sesiones en vivo y
@@ -343,18 +343,18 @@ export default async function BlockDetailPage({ params }: PageProps) {
         {/* PREV / NEXT */}
         {(prev || next) && (
           <nav
-            aria-label="Navegación entre bloques"
+            aria-label="Navegación entre fases"
             className="border-t border-white/5 px-6 py-16"
           >
             <div className="mx-auto flex max-w-5xl flex-col gap-4 sm:flex-row sm:justify-between">
               {prev ? (
                 <Link
-                  href={`/bloques/${prev.slug}`}
+                  href={`/fases/${prev.slug}`}
                   className="group flex flex-col gap-1 rounded-xl border border-white/5 bg-neutral-900/30 px-6 py-5 transition-colors hover:border-brand-coral/30"
                 >
                   <span className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-neutral-500">
                     <ArrowLeft className="size-3.5" />
-                    Bloque {String(prev.order_index).padStart(2, "0")}
+                    Fase {String(prev.order_index).padStart(2, "0")}
                   </span>
                   <span className="font-serif text-lg font-medium text-neutral-50 group-hover:text-brand-coral">
                     {prev.title}
@@ -365,11 +365,11 @@ export default async function BlockDetailPage({ params }: PageProps) {
               )}
               {next ? (
                 <Link
-                  href={`/bloques/${next.slug}`}
+                  href={`/fases/${next.slug}`}
                   className="group flex flex-col items-end gap-1 rounded-xl border border-white/5 bg-neutral-900/30 px-6 py-5 transition-colors hover:border-brand-coral/30"
                 >
                   <span className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-neutral-500">
-                    Bloque {String(next.order_index).padStart(2, "0")}
+                    Fase {String(next.order_index).padStart(2, "0")}
                     <ArrowRight className="size-3.5" />
                   </span>
                   <span className="font-serif text-lg font-medium text-neutral-50 group-hover:text-brand-coral">

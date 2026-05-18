@@ -30,7 +30,7 @@ export const blockUpdateSchema = z.object({
     .nullable()
     .or(z.literal("").transform(() => null)),
   months_duration: z.coerce.number().int().min(1).max(12),
-  rank_id: z.uuid().nullable().or(z.literal("").transform(() => null)),
+  dimension_id: z.uuid().nullable().or(z.literal("").transform(() => null)),
   published: z.coerce.boolean(),
 });
 

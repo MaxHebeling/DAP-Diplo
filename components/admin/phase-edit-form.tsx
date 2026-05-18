@@ -44,7 +44,7 @@ const formSchema = z.object({
   description: z.string().trim().max(4000).nullable(),
   cover_image_url: z.string().trim().nullable(),
   months_duration: z.number().int().min(1).max(12),
-  rank_id: z.uuid().nullable(),
+  dimension_id: z.uuid().nullable(),
   published: z.boolean(),
 });
 
@@ -59,18 +59,18 @@ export type BlockFormBlock = {
   description: string | null;
   cover_image_url: string | null;
   months_duration: number;
-  rank_id: string | null;
+  dimension_id: string | null;
   published: boolean;
 };
 
-type Rank = { id: string; order_index: number; name: string };
+type Dimension = { id: string; order_index: number; name: string };
 
-export function BlockEditForm({
-  block,
-  ranks,
+export function PhaseEditForm({
+  phase,
+  dimensions,
 }: {
-  block: BlockFormBlock;
-  ranks: Rank[];
+  phase: BlockFormBlock;
+  dimensions: Dimension[];
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -78,15 +78,15 @@ export function BlockEditForm({
   const form = useForm<FormValues>({
     resolver: standardSchemaResolver(formSchema),
     defaultValues: {
-      order_index: block.order_index,
-      slug: block.slug,
-      title: block.title,
-      subtitle: block.subtitle ?? "",
-      description: block.description ?? "",
-      cover_image_url: block.cover_image_url ?? null,
-      months_duration: block.months_duration,
-      rank_id: block.rank_id,
-      published: block.published,
+      order_index: phase.order_index,
+      slug: phase.slug,
+      title: phase.title,
+      subtitle: phase.subtitle ?? "",
+      description: phase.description ?? "",
+      cover_image_url: phase.cover_image_url ?? null,
+      months_duration: phase.months_duration,
+      dimension_id: phase.dimension_id,
+      published: phase.published,
     },
   });
 
@@ -103,7 +103,7 @@ export function BlockEditForm({
 
   function onSubmit(values: FormValues) {
     const fd = new FormData();
-    fd.set("id", block.id);
+    fd.set("id", phase.id);
     fd.set("order_index", String(values.order_index));
     fd.set("slug", values.slug);
     fd.set("title", values.title);
@@ -111,7 +111,7 @@ export function BlockEditForm({
     fd.set("description", values.description ?? "");
     fd.set("cover_image_url", values.cover_image_url ?? "");
     fd.set("months_duration", String(values.months_duration));
-    fd.set("rank_id", values.rank_id ?? "");
+    fd.set("dimension_id", values.dimension_id ?? "");
     fd.set("published", values.published ? "true" : "false");
 
     startTransition(async () => {
@@ -148,7 +148,7 @@ export function BlockEditForm({
           onChange={(url) =>
             setValue("cover_image_url", url, { shouldDirty: true })
           }
-          blockId={block.id}
+          phaseId={phase.id}
         />
       </section>
 
@@ -193,7 +193,7 @@ export function BlockEditForm({
             <FieldLabel htmlFor="slug">Slug</FieldLabel>
             <Input id="slug" {...register("slug")} />
             <p className="text-xs text-muted-foreground">
-              URL final: <code>/bloques/{watch("slug")}</code>
+              URL final: <code>/fases/{watch("slug")}</code>
             </p>
             {errors.slug && <FieldError>{errors.slug.message}</FieldError>}
           </Field>
@@ -232,16 +232,16 @@ export function BlockEditForm({
       {/* RANGO + PUBLICACIÓN */}
       <section className="rounded-xl border bg-card p-6">
         <h2 className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-          Rango y publicación
+          Dimensión y publicación
         </h2>
         <FieldGroup>
           <Field>
-            <FieldLabel htmlFor="rank_id">
-              Rango que se desbloquea al completar
+            <FieldLabel htmlFor="dimension_id">
+              Dimensión que se desbloquea al completar
             </FieldLabel>
             <Controller
               control={control}
-              name="rank_id"
+              name="dimension_id"
               render={({ field }) => (
                 <Select
                   value={field.value ?? "none"}
@@ -249,12 +249,12 @@ export function BlockEditForm({
                     field.onChange(v === "none" ? null : v)
                   }
                 >
-                  <SelectTrigger id="rank_id">
-                    <SelectValue placeholder="Selecciona un rango" />
+                  <SelectTrigger id="dimension_id">
+                    <SelectValue placeholder="Selecciona una dimensión" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Sin rango</SelectItem>
-                    {ranks.map((r) => (
+                    <SelectItem value="none">Sin dimensión</SelectItem>
+                    {dimensions.map((r) => (
                       <SelectItem key={r.id} value={r.id}>
                         {String(r.order_index).padStart(2, "0")} · {r.name}
                       </SelectItem>
@@ -270,7 +270,7 @@ export function BlockEditForm({
               <div className="space-y-0.5">
                 <FieldLabel htmlFor="published">Publicado</FieldLabel>
                 <p className="text-xs text-muted-foreground">
-                  Si está apagado, el bloque solo es visible para admins.
+                  Si está apagado, la fase solo es visible para admins.
                 </p>
               </div>
               <Controller
@@ -291,7 +291,7 @@ export function BlockEditForm({
 
       {/* SUBMIT */}
       <div className="flex items-center justify-end gap-3">
-        <Button variant="outline" render={<Link href="/admin/bloques" />}>
+        <Button variant="outline" render={<Link href="/admin/fases" />}>
           Cancelar
         </Button>
         <Button type="submit" disabled={pending || !isDirty}>

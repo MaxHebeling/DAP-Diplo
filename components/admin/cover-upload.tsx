@@ -10,10 +10,10 @@ import { createClient } from "@/lib/supabase/client";
 type CoverUploadProps = {
   value: string | null;
   onChange: (url: string | null) => void;
-  blockId: string;
+  phaseId: string;
 };
 
-export function CoverUpload({ value, onChange, blockId }: CoverUploadProps) {
+export function CoverUpload({ value, onChange, phaseId }: CoverUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -30,10 +30,10 @@ export function CoverUpload({ value, onChange, blockId }: CoverUploadProps) {
     try {
       const supabase = createClient();
       const ext = file.name.split(".").pop() ?? "jpg";
-      const path = `${blockId}/cover-${Date.now()}.${ext}`;
+      const path = `${phaseId}/cover-${Date.now()}.${ext}`;
 
       const { error: upErr } = await supabase.storage
-        .from("blocks-covers")
+        .from("phases-covers")
         .upload(path, file, { cacheControl: "3600", upsert: true });
       if (upErr) {
         toast.error(`Upload falló: ${upErr.message}`);
@@ -41,7 +41,7 @@ export function CoverUpload({ value, onChange, blockId }: CoverUploadProps) {
       }
 
       const { data: pub } = supabase.storage
-        .from("blocks-covers")
+        .from("phases-covers")
         .getPublicUrl(path);
 
       onChange(pub.publicUrl);

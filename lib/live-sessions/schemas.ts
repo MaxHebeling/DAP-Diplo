@@ -47,7 +47,7 @@ export const liveSessionCreateSchema = z.object({
     .max(120)
     .nullable()
     .transform((v) => (v && v.length > 0 ? v : null)),
-  block_id: z
+  phase_id: z
     .string()
     .uuid()
     .nullable()

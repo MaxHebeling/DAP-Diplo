@@ -44,7 +44,7 @@ const formSchema = z.object({
   duration_minutes: z.coerce.number().int().min(15).max(480),
   meeting_url: z.string().trim().url("URL inválida").max(500),
   host_name: z.string().trim().max(120),
-  block_id: z.string().optional().nullable(),
+  phase_id: z.string().optional().nullable(),
   // Solo en edición:
   recording_url: z.string().trim().max(500).optional(),
   recording_mux_playback_id: z.string().trim().max(80).optional(),
@@ -73,17 +73,17 @@ export type LiveSessionFormSession = {
   duration_minutes: number;
   meeting_url: string;
   host_name: string | null;
-  block_id: string | null;
+  phase_id: string | null;
   recording_url: string | null;
   recording_mux_playback_id: string | null;
 };
 
 type Props = {
-  blocks: { id: string; order_index: number; title: string }[];
+  phases: { id: string; order_index: number; title: string }[];
   session?: LiveSessionFormSession;
 };
 
-export function LiveSessionForm({ blocks, session }: Props) {
+export function LiveSessionForm({ phases, session }: Props) {
   const [pending, startTransition] = useTransition();
   const [pendingDelete, startDelete] = useTransition();
   const isEdit = !!session;
@@ -98,7 +98,7 @@ export function LiveSessionForm({ blocks, session }: Props) {
       duration_minutes: session?.duration_minutes ?? 60,
       meeting_url: session?.meeting_url ?? "",
       host_name: session?.host_name ?? "",
-      block_id: session?.block_id ?? NONE,
+      phase_id: session?.phase_id ?? NONE,
       recording_url: session?.recording_url ?? "",
       recording_mux_playback_id: session?.recording_mux_playback_id ?? "",
     },
@@ -120,8 +120,8 @@ export function LiveSessionForm({ blocks, session }: Props) {
     fd.set("meeting_url", values.meeting_url);
     fd.set("host_name", values.host_name);
     fd.set(
-      "block_id",
-      values.block_id && values.block_id !== NONE ? values.block_id : "",
+      "phase_id",
+      values.phase_id && values.phase_id !== NONE ? values.phase_id : "",
     );
     if (isEdit) {
       fd.set("id", session!.id);
@@ -232,25 +232,25 @@ export function LiveSessionForm({ blocks, session }: Props) {
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="block_id">
-              Bloque relacionado (opcional)
+            <FieldLabel htmlFor="phase_id">
+              Fase relacionado (opcional)
             </FieldLabel>
             <Controller
               control={control}
-              name="block_id"
+              name="phase_id"
               render={({ field }) => (
                 <Select
                   value={field.value ?? NONE}
                   onValueChange={field.onChange}
                 >
-                  <SelectTrigger id="block_id">
+                  <SelectTrigger id="phase_id">
                     <SelectValue placeholder="Ninguno" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={NONE}>Sin bloque específico</SelectItem>
-                    {blocks.map((b) => (
+                    <SelectItem value={NONE}>Sin fase específico</SelectItem>
+                    {phases.map((b) => (
                       <SelectItem key={b.id} value={b.id}>
-                        Bloque {String(b.order_index).padStart(2, "0")} ·{" "}
+                        Fase {String(b.order_index).padStart(2, "0")} ·{" "}
                         {b.title}
                       </SelectItem>
                     ))}

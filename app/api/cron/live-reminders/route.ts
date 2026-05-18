@@ -111,7 +111,7 @@ export async function GET(request: NextRequest) {
     .select("id, full_name")
     .in("id", activeUserIds);
   const fullNameById = new Map<string, string>(
-    (profilesData ?? []).map((p) => [p.id, p.full_name ?? "Pastor"]),
+    (profilesData ?? []).map((p) => [p.id, p.full_name ?? "Ministro"]),
   );
 
   // listUsers no acepta filtro por id; tenemos que paginar y filtrar
@@ -121,10 +121,10 @@ export async function GET(request: NextRequest) {
     const { data: userData, error: uErr } =
       await admin.auth.admin.getUserById(userId);
     if (uErr || !userData.user?.email) continue;
-    const fullName = fullNameById.get(userId) ?? "Pastor";
+    const fullName = fullNameById.get(userId) ?? "Ministro";
     recipients.push({
       email: userData.user.email,
-      firstName: fullName.split(" ")[0] ?? "Pastor",
+      firstName: fullName.split(" ")[0] ?? "Ministro",
     });
   }
 

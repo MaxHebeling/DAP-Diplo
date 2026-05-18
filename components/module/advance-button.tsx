@@ -9,7 +9,7 @@ import { markSectionCompleted } from "@/lib/progress/actions";
 type AdvanceButtonProps = {
   sectionId: string;
   moduleId: string;
-  blockSlug: string;
+  phaseSlug: string;
   moduleSlug: string;
   nextSection: "intro" | "teaching" | "activation" | "evaluation" | "impartation" | null;
   label: string;
@@ -42,7 +42,7 @@ export function AdvanceButton(props: AdvanceButtonProps) {
     <form action={formAction}>
       <input type="hidden" name="sectionId" value={props.sectionId} />
       <input type="hidden" name="moduleId" value={props.moduleId} />
-      <input type="hidden" name="blockSlug" value={props.blockSlug} />
+      <input type="hidden" name="phaseSlug" value={props.phaseSlug} />
       <input type="hidden" name="moduleSlug" value={props.moduleSlug} />
       {props.nextSection && (
         <input type="hidden" name="next" value={props.nextSection} />

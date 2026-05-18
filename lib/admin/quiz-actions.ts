@@ -30,18 +30,18 @@ async function ensureAdmin() {
 }
 
 function revalidateSectionPath(
-  blockId: string,
+  phaseId: string,
   moduleId: string,
   sectionId: string,
 ) {
   revalidatePath(
-    `/admin/bloques/${blockId}/modulos/${moduleId}/secciones/${sectionId}/editar`,
+    `/admin/fases/${phaseId}/modulos/${moduleId}/secciones/${sectionId}/editar`,
   );
 }
 
 export async function updateQuizAction(
   input: QuizUpdateInput,
-  ctx: { blockId: string; moduleId: string; sectionId: string },
+  ctx: { phaseId: string; moduleId: string; sectionId: string },
 ): Promise<ActionResult> {
   const parsed = quizUpdateSchema.safeParse(input);
   if (!parsed.success) {
@@ -58,13 +58,13 @@ export async function updateQuizAction(
   const { error } = await supabase.from("quizzes").update(rest).eq("id", id);
   if (error) return { ok: false, error: error.message };
 
-  revalidateSectionPath(ctx.blockId, ctx.moduleId, ctx.sectionId);
+  revalidateSectionPath(ctx.phaseId, ctx.moduleId, ctx.sectionId);
   return { ok: true };
 }
 
 export async function saveQuestionAction(
   input: QuestionSaveInput,
-  ctx: { blockId: string; moduleId: string; sectionId: string },
+  ctx: { phaseId: string; moduleId: string; sectionId: string },
 ): Promise<ActionResult> {
   const parsed = questionSaveSchema.safeParse(input);
   if (!parsed.success) {
@@ -93,13 +93,13 @@ export async function saveQuestionAction(
     if (error) return { ok: false, error: error.message };
   }
 
-  revalidateSectionPath(ctx.blockId, ctx.moduleId, ctx.sectionId);
+  revalidateSectionPath(ctx.phaseId, ctx.moduleId, ctx.sectionId);
   return { ok: true };
 }
 
 export async function deleteQuestionAction(
   input: z.input<typeof questionDeleteSchema>,
-  ctx: { blockId: string; moduleId: string; sectionId: string },
+  ctx: { phaseId: string; moduleId: string; sectionId: string },
 ): Promise<ActionResult> {
   const parsed = questionDeleteSchema.safeParse(input);
   if (!parsed.success) {
@@ -115,6 +115,6 @@ export async function deleteQuestionAction(
     .eq("id", parsed.data.id);
   if (error) return { ok: false, error: error.message };
 
-  revalidateSectionPath(ctx.blockId, ctx.moduleId, ctx.sectionId);
+  revalidateSectionPath(ctx.phaseId, ctx.moduleId, ctx.sectionId);
   return { ok: true };
 }

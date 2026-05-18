@@ -34,7 +34,7 @@ export type QuizRow = {
   shuffle_questions: boolean;
 };
 
-type Ctx = { blockId: string; moduleId: string; sectionId: string };
+type Ctx = { phaseId: string; moduleId: string; sectionId: string };
 
 const quizFormSchema = z.object({
   title: z.string().trim().min(1, "Requerido").max(160),

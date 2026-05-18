@@ -14,13 +14,13 @@ export const metadata = {
 };
 
 const INCLUDED = [
-  "Acceso al Bloque 1 desde el día 1, con un bloque nuevo cada 2 meses",
+  "Acceso a la Fase 1 desde el día 1, con una fase nuevo cada 2 meses",
   "MasterClass en vivo los miércoles",
   "Activación práctica los viernes",
   "Mentoría grupal mensual",
   "Comunidad privada de pastores en formación",
   "Material descargable por módulo (PDFs, audios, plantillas)",
-  "Certificado, insignia y rango ministerial al completar cada bloque",
+  "Certificado, insignia y dimensión ministerial al completar cada fase",
 ];
 
 export default async function SuscribirmePage() {
@@ -82,7 +82,7 @@ export default async function SuscribirmePage() {
             </h1>
             <p className="mb-10 max-w-xl text-justify text-base leading-relaxed text-neutral-300 hyphens-auto">
               Una sola suscripción mensual te da acceso al diplomado completo
-              de 18 meses. Cada 2 meses se desbloquea un bloque nuevo. Cancela
+              de 18 meses. Cada 2 meses se desbloquea una fase nuevo. Cancela
               cuando quieras desde tu dashboard — tu progreso queda guardado.
             </p>
 

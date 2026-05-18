@@ -65,13 +65,13 @@ export function QuizPlayer({
   quiz,
   questions,
   attemptCount,
-  blockSlug,
+  phaseSlug,
   moduleSlug,
 }: {
   quiz: PlayerQuiz;
   questions: PlayerQuestion[];
   attemptCount: number;
-  blockSlug: string;
+  phaseSlug: string;
   moduleSlug: string;
 }) {
   const router = useRouter();
@@ -142,7 +142,7 @@ export function QuizPlayer({
         questionsOrdered={ordered}
         attemptCountTotal={result.attempt_count}
         onRetry={retry}
-        blockSlug={blockSlug}
+        phaseSlug={phaseSlug}
         moduleSlug={moduleSlug}
       />
     );
@@ -277,7 +277,7 @@ function ResultView({
   questionsOrdered,
   attemptCountTotal,
   onRetry,
-  blockSlug,
+  phaseSlug,
   moduleSlug,
 }: {
   quiz: PlayerQuiz;
@@ -285,7 +285,7 @@ function ResultView({
   questionsOrdered: PlayerQuestion[];
   attemptCountTotal: number;
   onRetry: () => void;
-  blockSlug: string;
+  phaseSlug: string;
   moduleSlug: string;
 }) {
   // Indexamos resultado por question_id para mostrar en el orden mostrado al alumno
@@ -409,7 +409,7 @@ function ResultView({
           <Button
             render={
               <Link
-                href={`/bloques/${blockSlug}/modulos/${moduleSlug}?section=impartation`}
+                href={`/fases/${phaseSlug}/modulos/${moduleSlug}?section=impartation`}
               />
             }
           >
@@ -471,12 +471,12 @@ function AnswerSummary({
 export function QuizAlreadyPassed({
   quiz,
   bestScore,
-  blockSlug,
+  phaseSlug,
   moduleSlug,
 }: {
   quiz: PlayerQuiz;
   bestScore: number;
-  blockSlug: string;
+  phaseSlug: string;
   moduleSlug: string;
 }) {
   return (
@@ -502,7 +502,7 @@ export function QuizAlreadyPassed({
         <Button
           render={
             <Link
-              href={`/bloques/${blockSlug}/modulos/${moduleSlug}?section=impartation`}
+              href={`/fases/${phaseSlug}/modulos/${moduleSlug}?section=impartation`}
             />
           }
         >

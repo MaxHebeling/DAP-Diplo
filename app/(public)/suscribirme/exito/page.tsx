@@ -33,7 +33,7 @@ export default function SubscribeSuccessPage() {
             <p className="mb-10 text-base leading-relaxed text-neutral-300">
               Tu suscripción se está activando. En unos segundos recibirás un
               correo de Stripe con la confirmación de tu pago. Desde tu
-              dashboard podrás comenzar con el Bloque 1.
+              dashboard podrás comenzar con la Fase 1.
             </p>
             <Button
               size="lg"

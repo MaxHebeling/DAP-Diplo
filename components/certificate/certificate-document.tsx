@@ -15,7 +15,7 @@ import {
 // - Tapamos la frase placeholder "quien favorablemente participó del
 //   Discipulado en la ciudad de Salta, Argentina, ..." con un rectángulo
 //   del color exacto del panel (#e0e0e0) y escribimos el body propio del
-//   bloque/rango.
+//   fase/dimensión.
 //
 // Allura (script Google Font) se sirve desde public/cert/fonts/ del mismo
 // dominio en producción — autosuficiente, sin CDN externo, evita 401 / fetch
@@ -176,9 +176,9 @@ function formatIssuedAt(d: Date): string {
 
 type Props = {
   fullName: string;
-  blockOrderIndex: number;
-  blockTitle: string;
-  rankName: string;
+  phaseOrderIndex: number;
+  phaseTitle: string;
+  dimensionName: string;
   verificationCode: string;
   issuedAt: Date;
   verifyUrl: string;
@@ -186,20 +186,20 @@ type Props = {
 
 export function CertificateDocument({
   fullName,
-  blockOrderIndex,
-  blockTitle,
-  rankName,
+  phaseOrderIndex,
+  phaseTitle,
+  dimensionName,
   verificationCode,
   issuedAt,
   verifyUrl,
 }: Props) {
-  const blockNumber = String(blockOrderIndex).padStart(2, "0");
+  const phaseNumber = String(phaseOrderIndex).padStart(2, "0");
 
   return (
     <Document
       title={`Certificado DAP — ${fullName}`}
       author="Diplomado Apostólico Pastoral"
-      subject={`Bloque ${blockNumber}: ${blockTitle}`}
+      subject={`Fase ${phaseNumber}: ${phaseTitle}`}
     >
       <Page size="LETTER" orientation="landscape" style={styles.page}>
         {/* 1. Fondo del template */}
@@ -219,10 +219,10 @@ export function CertificateDocument({
           <Text>
             Por haber completado satisfactoriamente el{" "}
             <Text style={styles.bodyTextHi}>
-              Bloque {blockNumber}: {blockTitle}
+              Fase {phaseNumber}: {phaseTitle}
             </Text>
-            ,{"\n"}alcanzando el rango apostólico de{" "}
-            <Text style={styles.bodyTextHi}>{rankName}</Text>.
+            ,{"\n"}alcanzando la dimensión apostólico de{" "}
+            <Text style={styles.bodyTextHi}>{dimensionName}</Text>.
           </Text>
         </View>
 

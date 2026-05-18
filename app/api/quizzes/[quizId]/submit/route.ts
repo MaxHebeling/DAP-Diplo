@@ -99,14 +99,14 @@ export async function POST(
     );
   }
 
-  // Cargar quiz + sección + módulo + bloque para validar acceso
+  // Cargar quiz + sección + módulo + fase para validar acceso
   const { data: quizRow, error: quizErr } = await supabase
     .from("quizzes")
     .select(
       `id, module_section_id, pass_threshold, max_attempts,
        section:module_sections!inner(
          id, kind, module_id,
-         module:modules!inner(id, slug, block_id, block:blocks!inner(id, slug))
+         module:modules!inner(id, slug, phase_id, phase:phases!inner(id, slug))
        )`,
     )
     .eq("id", quizId)
@@ -122,8 +122,8 @@ export async function POST(
         module: {
           id: string;
           slug: string;
-          block_id: string;
-          block: { id: string; slug: string };
+          phase_id: string;
+          phase: { id: string; slug: string };
         };
       };
     }>();
@@ -140,13 +140,13 @@ export async function POST(
     );
   }
 
-  // Gating: usuario debe tener acceso al bloque (drip/subscription) o ser admin
-  const blockId = quizRow.section.module.block_id;
+  // Gating: usuario debe tener acceso a la fase (drip/subscription) o ser admin
+  const phaseId = quizRow.section.module.phase_id;
   const moduleSlug = quizRow.section.module.slug;
-  const blockSlug = quizRow.section.module.block.slug;
+  const phaseSlug = quizRow.section.module.phase.slug;
 
   const [{ data: hasAccess }, { data: profile }] = await Promise.all([
-    supabase.rpc("has_block_access", { p_block_id: blockId }),
+    supabase.rpc("has_phase_access", { p_phase_id: phaseId }),
     supabase
       .from("profiles")
       .select("role")
@@ -156,7 +156,7 @@ export async function POST(
   const isAdmin = profile?.role === "admin";
   if (!hasAccess && !isAdmin) {
     return NextResponse.json(
-      { error: "No tienes acceso a este bloque" },
+      { error: "No tienes acceso a esta fase" },
       { status: 403 },
     );
   }
@@ -245,7 +245,7 @@ export async function POST(
     return NextResponse.json({ error: attemptErr.message }, { status: 500 });
   }
 
-  // Si pasó: marcar sección completada + cascadear módulo + bloque
+  // Si pasó: marcar sección completada + cascadear módulo + fase
   let moduleCompleted = false;
   let blockCompletion: Record<string, unknown> | null = null;
   if (passed) {
@@ -289,10 +289,10 @@ export async function POST(
       );
       moduleCompleted = true;
 
-      // Cascada: ¿bloque completo? otorga rank + certificate.
+      // Cascada: ¿fase completo? otorga dimension + certificate.
       const { data: blockResult, error: cbErr } = await supabase.rpc(
-        "complete_block_if_done",
-        { p_user_id: user.id, p_block_id: blockId },
+        "complete_phase_if_done",
+        { p_user_id: user.id, p_phase_id: phaseId },
       );
       if (cbErr) {
         console.error(
@@ -307,11 +307,11 @@ export async function POST(
         blockCompletion = blockResult as Record<string, unknown>;
         if (blockCompletion.newly_completed === true) {
           revalidatePath(`/dashboard`);
-          revalidatePath(`/bloques/${blockSlug}`);
+          revalidatePath(`/fases/${phaseSlug}`);
 
           // Genera + sube el PDF del certificado. Síncrono porque tarda 1-3s
           // y este endpoint solo se llama 9 veces en la vida del alumno
-          // (una por bloque). Si falla, el certificado SQL ya quedó emitido
+          // (una por fase). Si falla, el certificado SQL ya quedó emitido
           // y se puede re-generar manualmente con issueCertificatePdf(certId).
           const certId = blockCompletion.certificate_id as string | undefined;
           if (certId) {
@@ -329,7 +329,7 @@ export async function POST(
       }
     }
 
-    revalidatePath(`/bloques/${blockSlug}/modulos/${moduleSlug}`);
+    revalidatePath(`/fases/${phaseSlug}/modulos/${moduleSlug}`);
   }
 
   // Conteo de intentos tras inserción (para UI "Volver a intentar")

@@ -26,7 +26,7 @@ export async function createThreadAction(
   const parsed = threadCreateSchema.safeParse({
     title: formData.get("title"),
     body: formData.get("body"),
-    block_id: formData.get("block_id") || null,
+    phase_id: formData.get("phase_id") || null,
   });
   if (!parsed.success) {
     return {
@@ -48,7 +48,7 @@ export async function createThreadAction(
       author_id: user.id,
       title: parsed.data.title,
       body: parsed.data.body,
-      block_id: parsed.data.block_id,
+      phase_id: parsed.data.phase_id,
     })
     .select("id")
     .single();
@@ -67,7 +67,7 @@ export async function updateThreadAction(
     id: formData.get("id"),
     title: formData.get("title"),
     body: formData.get("body"),
-    block_id: formData.get("block_id") || null,
+    phase_id: formData.get("phase_id") || null,
   });
   if (!parsed.success) {
     return {

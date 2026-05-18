@@ -10,7 +10,7 @@ import {
 const FAQS = [
   {
     q: "¿Qué incluye la suscripción de $25/mes?",
-    a: "Acceso a las clases grabadas premium del bloque que tengas desbloqueado, a todas las sesiones en vivo (MasterClass los miércoles, Activación los viernes), a la mentoría grupal mensual y a la comunidad de pastores del diplomado.",
+    a: "Acceso a las clases grabadas premium de la fase que tengas desbloqueado, a todas las sesiones en vivo (MasterClass los miércoles, Activación los viernes), a la mentoría grupal mensual y a la comunidad de pastores del diplomado.",
   },
   {
     q: "¿Puedo cancelar cuando quiera?",
@@ -18,19 +18,19 @@ const FAQS = [
   },
   {
     q: "¿Qué pasa si cancelo a la mitad?",
-    a: "Pierdes el acceso a los bloques mientras tu suscripción esté inactiva — pero tu progreso queda guardado intacto. Si vuelves a suscribirte, retomas exactamente donde lo dejaste, con los bloques que ya tenías desbloqueados.",
+    a: "Pierdes el acceso a las fases mientras tu suscripción esté inactiva — pero tu progreso queda guardado intacto. Si vuelves a suscribirte, retomas exactamente donde lo dejaste, con las fases que ya tenías desbloqueados.",
   },
   {
-    q: "¿Cuándo se desbloquea cada bloque?",
-    a: "Cada 2 meses de suscripción activa se libera un bloque nuevo. Empiezas con el Bloque 1 desde el día 1; el Bloque 2 a los 2 meses; el Bloque 3 a los 4 meses; y así hasta completar los 9 bloques en 18 meses.",
+    q: "¿Cuándo se desbloquea cada fase?",
+    a: "Cada 2 meses de suscripción activa se libera una fase nuevo. Empiezas con la Fase 1 desde el día 1; la Fase 2 a los 2 meses; la Fase 3 a los 4 meses; y así hasta completar los 9 fases en 18 meses.",
   },
   {
-    q: "¿Cuánto tiempo tengo para terminar cada bloque?",
-    a: "Tienes los 2 meses del bloque actual y el resto del diplomado para avanzar a tu ritmo. No expira mientras mantengas la suscripción activa.",
+    q: "¿Cuánto tiempo tengo para terminar cada fase?",
+    a: "Tienes los 2 meses de la fase actual y el resto del diplomado para avanzar a tu ritmo. No expira mientras mantengas la suscripción activa.",
   },
   {
     q: "¿Los certificados son válidos institucionalmente?",
-    a: "Los certificados del DAP son emitidos por la Red Apostólica Reino y Avivamiento. Son reconocidos dentro de nuestra red ministerial; no son títulos académicos universitarios. El valor está en el rango ministerial que respaldan, no en validez estatal.",
+    a: "Los certificados del DAP son emitidos por la Red Apostólica Reino y Avivamiento. Son reconocidos dentro de nuestra red ministerial; no son títulos académicos universitarios. El valor está en la dimensión ministerial que respaldan, no en validez estatal.",
   },
   {
     q: "¿Hay material descargable?",

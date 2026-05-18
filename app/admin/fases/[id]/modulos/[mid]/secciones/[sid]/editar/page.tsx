@@ -22,19 +22,19 @@ export default async function AdminSectionEditPage({ params }: PageProps) {
   const { id, mid, sid } = await params;
   const supabase = await createClient();
 
-  const { data: block } = await supabase
-    .from("blocks")
+  const { data: phase } = await supabase
+    .from("phases")
     .select("id, order_index, title")
     .eq("id", id)
     .maybeSingle();
-  if (!block) notFound();
+  if (!phase) notFound();
 
   const { data: mod } = await supabase
     .from("modules")
-    .select("id, block_id, order_index, title")
+    .select("id, phase_id, order_index, title")
     .eq("id", mid)
     .maybeSingle();
-  if (!mod || mod.block_id !== id) notFound();
+  if (!mod || mod.phase_id !== id) notFound();
 
   const { data: section } = await supabase
     .from("module_sections")
@@ -48,7 +48,7 @@ export default async function AdminSectionEditPage({ params }: PageProps) {
   const formSection: SectionFormSection = {
     id: section.id,
     module_id: section.module_id,
-    block_id: id,
+    phase_id: id,
     kind: section.kind,
     title: section.title,
     body_md: section.body_md,
@@ -109,7 +109,7 @@ export default async function AdminSectionEditPage({ params }: PageProps) {
     <main className="px-6 py-10 sm:px-10">
       <div className="mx-auto max-w-4xl">
         <Link
-          href={`/admin/bloques/${id}/modulos/${mid}/secciones`}
+          href={`/admin/fases/${id}/modulos/${mid}/secciones`}
           className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-brand-coral"
         >
           <ArrowLeft className="size-4" />
@@ -118,7 +118,7 @@ export default async function AdminSectionEditPage({ params }: PageProps) {
 
         <header className="mb-8">
           <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
-            Bloque {String(block.order_index).padStart(2, "0")} · Módulo{" "}
+            Fase {String(phase.order_index).padStart(2, "0")} · Módulo{" "}
             {String(mod.order_index).padStart(2, "0")} · {mod.title}
           </p>
           <h1 className="font-serif text-3xl font-semibold">
@@ -126,7 +126,7 @@ export default async function AdminSectionEditPage({ params }: PageProps) {
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Edita el contenido de esta sección. Los cambios son inmediatos para
-            los alumnos con acceso al bloque.
+            los alumnos con acceso a la fase.
           </p>
         </header>
 
@@ -137,7 +137,7 @@ export default async function AdminSectionEditPage({ params }: PageProps) {
             <QuizEditor
               quiz={quiz}
               questions={questions}
-              ctx={{ blockId: id, moduleId: mid, sectionId: sid }}
+              ctx={{ phaseId: id, moduleId: mid, sectionId: sid }}
             />
           </div>
         )}

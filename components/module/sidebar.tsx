@@ -11,17 +11,17 @@ export type SidebarModule = {
 };
 
 type ModuleSidebarProps = {
-  blockTitle: string;
-  blockOrderIndex: number;
-  blockSlug: string;
+  phaseTitle: string;
+  phaseOrderIndex: number;
+  phaseSlug: string;
   modules: SidebarModule[];
   currentModuleSlug: string;
 };
 
 export function ModuleSidebar({
-  blockTitle,
-  blockOrderIndex,
-  blockSlug,
+  phaseTitle,
+  phaseOrderIndex,
+  phaseSlug,
   modules,
   currentModuleSlug,
 }: ModuleSidebarProps) {
@@ -32,13 +32,13 @@ export function ModuleSidebar({
     <aside className="border-r bg-card/40">
       <div className="border-b p-5">
         <p className="mb-1 text-xs font-medium uppercase tracking-widest text-brand-coral">
-          Bloque {String(blockOrderIndex).padStart(2, "0")}
+          Fase {String(phaseOrderIndex).padStart(2, "0")}
         </p>
         <Link
-          href={`/bloques/${blockSlug}`}
+          href={`/fases/${phaseSlug}`}
           className="font-serif text-lg font-medium leading-tight hover:text-brand-coral"
         >
-          {blockTitle}
+          {phaseTitle}
         </Link>
         <div className="mt-4">
           <div className="mb-1.5 flex items-center justify-between text-xs text-muted-foreground">
@@ -57,7 +57,7 @@ export function ModuleSidebar({
       </div>
 
       <nav
-        aria-label="Módulos del bloque"
+        aria-label="Módulos de la fase"
         className="max-h-[calc(100vh-200px)] overflow-y-auto p-2"
       >
         <ol className="space-y-0.5">
@@ -66,7 +66,7 @@ export function ModuleSidebar({
             return (
               <li key={m.id}>
                 <Link
-                  href={`/bloques/${blockSlug}/modulos/${m.slug}`}
+                  href={`/fases/${phaseSlug}/modulos/${m.slug}`}
                   className={cn(
                     "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
                     isCurrent

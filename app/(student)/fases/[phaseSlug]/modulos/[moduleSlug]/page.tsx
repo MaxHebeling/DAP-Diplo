@@ -34,7 +34,7 @@ const SECTION_TITLE: Record<SectionKind, string> = {
 };
 
 type PageProps = {
-  params: Promise<{ blockSlug: string; moduleSlug: string }>;
+  params: Promise<{ phaseSlug: string; moduleSlug: string }>;
   searchParams: Promise<{ section?: string }>;
 };
 
@@ -66,7 +66,7 @@ type DbModule = {
   main_revelation: string | null;
   impartation_phrase: string | null;
   duration_minutes: number | null;
-  block: {
+  phase: {
     id: string;
     slug: string;
     order_index: number;
@@ -88,7 +88,7 @@ export default async function ModulePlayerPage({
   params,
   searchParams,
 }: PageProps) {
-  const { blockSlug, moduleSlug } = await params;
+  const { phaseSlug, moduleSlug } = await params;
   const { section: sectionParam } = await searchParams;
   const currentSection: SectionKind = SECTION_KINDS.includes(
     sectionParam as SectionKind,
@@ -104,7 +104,7 @@ export default async function ModulePlayerPage({
   } = await supabase.auth.getUser();
   if (!user) {
     redirect(
-      `/login?redirectTo=/bloques/${blockSlug}/modulos/${moduleSlug}?section=${currentSection}`,
+      `/login?redirectTo=/fases/${phaseSlug}/modulos/${moduleSlug}?section=${currentSection}`,
     );
   }
 
@@ -116,13 +116,13 @@ export default async function ModulePlayerPage({
     .maybeSingle();
   const isAdmin = profile?.role === "admin";
 
-  // 3) Módulo + bloque + secciones + recursos + progreso (filtrado por RLS self)
+  // 3) Módulo + fase + secciones + recursos + progreso (filtrado por RLS self)
   const { data: mod, error: modErr } = await supabase
     .from("modules")
     .select(
       `id, slug, title, subtitle, description, objective, main_revelation,
        impartation_phrase, duration_minutes,
-       block:blocks(id, slug, order_index, title, published),
+       phase:phases(id, slug, order_index, title, published),
        sections:module_sections(
          id, kind, order_index, title, body_md, mux_playback_id,
          duration_seconds,
@@ -136,17 +136,17 @@ export default async function ModulePlayerPage({
   if (modErr) {
     throw new Error(`No se pudo cargar el módulo: ${modErr.message}`);
   }
-  if (!mod || !mod.block || mod.block.slug !== blockSlug) notFound();
+  if (!mod || !mod.phase || mod.phase.slug !== phaseSlug) notFound();
 
   // 4) Block published / admin override
-  if (!mod.block.published && !isAdmin) notFound();
+  if (!mod.phase.published && !isAdmin) notFound();
 
   // 5) Gating por suscripción / drip
-  const { data: hasAccess } = await supabase.rpc("has_block_access", {
-    p_block_id: mod.block.id,
+  const { data: hasAccess } = await supabase.rpc("has_phase_access", {
+    p_phase_id: mod.phase.id,
   });
   if (!hasAccess && !isAdmin) {
-    redirect(`/bloques/${blockSlug}?toast=block-locked`);
+    redirect(`/fases/${phaseSlug}?toast=phase-locked`);
   }
 
   // 6) Sidebar: módulos hermanos + progreso
@@ -155,7 +155,7 @@ export default async function ModulePlayerPage({
     .select(
       "id, slug, order_index, title, module_progress(completed)",
     )
-    .eq("block_id", mod.block.id)
+    .eq("phase_id", mod.phase.id)
     .order("order_index", { ascending: true });
 
   const sidebarModules: SidebarModule[] = (siblings ?? []).map(
@@ -255,9 +255,9 @@ export default async function ModulePlayerPage({
   return (
     <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[300px_1fr]">
       <ModuleSidebar
-        blockTitle={mod.block.title}
-        blockOrderIndex={mod.block.order_index}
-        blockSlug={mod.block.slug}
+        phaseTitle={mod.phase.title}
+        phaseOrderIndex={mod.phase.order_index}
+        phaseSlug={mod.phase.slug}
         modules={sidebarModules}
         currentModuleSlug={mod.slug}
       />
@@ -274,10 +274,10 @@ export default async function ModulePlayerPage({
             </Link>
             <span className="text-border">/</span>
             <Link
-              href={`/bloques/${mod.block.slug}`}
+              href={`/fases/${mod.phase.slug}`}
               className="hover:text-foreground"
             >
-              Bloque {String(mod.block.order_index).padStart(2, "0")}
+              Fase {String(mod.phase.order_index).padStart(2, "0")}
             </Link>
             <span className="text-border">/</span>
             <span className="text-foreground">{mod.title}</span>
@@ -291,11 +291,11 @@ export default async function ModulePlayerPage({
         <main className="flex-1 px-6 py-10">
           <div className="mx-auto max-w-3xl">
             <Link
-              href={`/bloques/${mod.block.slug}`}
+              href={`/fases/${mod.phase.slug}`}
               className="mb-6 inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-brand-coral"
             >
               <ArrowLeft className="size-3.5" />
-              Volver al bloque
+              Volver a la fase
             </Link>
 
             <header className="mb-8">
@@ -316,7 +316,7 @@ export default async function ModulePlayerPage({
               <ModuleStepper
                 sections={stepperSections}
                 current={currentSection}
-                blockSlug={mod.block.slug}
+                phaseSlug={mod.phase.slug}
                 moduleSlug={mod.slug}
               />
             </div>
@@ -333,7 +333,7 @@ export default async function ModulePlayerPage({
                 <SectionTeaching
                   sectionId={activeSection.id}
                   moduleId={mod.id}
-                  blockSlug={mod.block.slug}
+                  phaseSlug={mod.phase.slug}
                   moduleSlug={mod.slug}
                   muxPlaybackId={activeSection.mux_playback_id}
                   bodyMd={activeSection.body_md}
@@ -354,7 +354,7 @@ export default async function ModulePlayerPage({
                   kind={currentSection}
                   sectionId={activeSection.id}
                   moduleId={mod.id}
-                  blockSlug={mod.block.slug}
+                  phaseSlug={mod.phase.slug}
                   moduleSlug={mod.slug}
                   bodyMd={activeSection.body_md}
                   module={{

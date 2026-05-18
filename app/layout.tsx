@@ -25,7 +25,7 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   title: "DAP — Diplomado Apostólico Pastoral",
   description:
-    "Formación apostólica integral para pastores y líderes hispanohablantes. 18 meses, 9 bloques, 200 módulos. Espiritualidad, liderazgo, gobierno, finanzas, empresas y tecnología.",
+    "Formación apostólica integral para pastores y líderes hispanohablantes. 18 meses, 9 fases, 200 módulos. Espiritualidad, liderazgo, gobierno, finanzas, empresas y tecnología.",
 };
 
 export default function RootLayout({

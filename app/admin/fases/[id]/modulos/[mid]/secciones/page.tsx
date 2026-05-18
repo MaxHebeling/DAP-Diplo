@@ -38,19 +38,19 @@ export default async function AdminModuleSectionsPage({ params }: PageProps) {
   const { id, mid } = await params;
   const supabase = await createClient();
 
-  const { data: block } = await supabase
-    .from("blocks")
+  const { data: phase } = await supabase
+    .from("phases")
     .select("id, order_index, title")
     .eq("id", id)
     .maybeSingle();
-  if (!block) notFound();
+  if (!phase) notFound();
 
   const { data: mod } = await supabase
     .from("modules")
-    .select("id, block_id, order_index, title")
+    .select("id, phase_id, order_index, title")
     .eq("id", mid)
     .maybeSingle();
-  if (!mod || mod.block_id !== id) notFound();
+  if (!mod || mod.phase_id !== id) notFound();
 
   const { data, error } = await supabase
     .from("module_sections")
@@ -67,7 +67,7 @@ export default async function AdminModuleSectionsPage({ params }: PageProps) {
     <main className="px-6 py-10 sm:px-10">
       <div className="mx-auto max-w-5xl">
         <Link
-          href={`/admin/bloques/${id}/modulos`}
+          href={`/admin/fases/${id}/modulos`}
           className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-brand-coral"
         >
           <ArrowLeft className="size-4" />
@@ -77,7 +77,7 @@ export default async function AdminModuleSectionsPage({ params }: PageProps) {
         <header className="mb-8 flex items-end justify-between gap-4">
           <div>
             <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
-              Bloque {String(block.order_index).padStart(2, "0")} · Módulo{" "}
+              Fase {String(phase.order_index).padStart(2, "0")} · Módulo{" "}
               {String(mod.order_index).padStart(2, "0")} · {mod.title}
             </p>
             <h1 className="font-serif text-3xl font-semibold">Secciones</h1>
@@ -88,7 +88,7 @@ export default async function AdminModuleSectionsPage({ params }: PageProps) {
           </div>
           <Button
             variant="outline"
-            render={<Link href={`/admin/bloques/${id}/modulos/${mid}/editar`} />}
+            render={<Link href={`/admin/fases/${id}/modulos/${mid}/editar`} />}
           >
             <Pencil className="size-4" />
             Editar módulo
@@ -149,7 +149,7 @@ export default async function AdminModuleSectionsPage({ params }: PageProps) {
                         variant="outline"
                         render={
                           <Link
-                            href={`/admin/bloques/${id}/modulos/${mid}/secciones/${s.id}/editar`}
+                            href={`/admin/fases/${id}/modulos/${mid}/secciones/${s.id}/editar`}
                           />
                         }
                       >

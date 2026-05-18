@@ -44,10 +44,10 @@ export function UpcomingSessionCard({ session }: { session: StudentSession }) {
           >
             {LIVE_KIND_LABEL[session.kind]}
           </Badge>
-          {session.block && (
+          {session.phase && (
             <Badge variant="secondary" className="font-normal">
-              Bloque {String(session.block.order_index).padStart(2, "0")}:{" "}
-              {session.block.title}
+              Fase {String(session.phase.order_index).padStart(2, "0")}:{" "}
+              {session.phase.title}
             </Badge>
           )}
         </div>

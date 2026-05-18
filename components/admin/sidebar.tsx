@@ -17,7 +17,7 @@ import { signOutAction } from "@/lib/auth/actions";
 
 const NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/admin/bloques", label: "Bloques", icon: Layers, exact: false },
+  { href: "/admin/fases", label: "Fases", icon: Layers, exact: false },
   { href: "/admin/comunidad", label: "Comunidad", icon: MessagesSquare, exact: false },
   { href: "/admin/en-vivo", label: "En vivo", icon: Radio, exact: false },
   { href: "/admin/tutor/documentos", label: "Tutor IA", icon: Brain, exact: false },

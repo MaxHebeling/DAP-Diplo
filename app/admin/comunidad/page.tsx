@@ -26,7 +26,7 @@ type ThreadRow = {
   hidden: boolean;
   updated_at: string;
   author: { full_name: string; avatar_url: string | null } | null;
-  block: { order_index: number } | null;
+  phase: { order_index: number } | null;
   posts_count: { count: number }[] | null;
 };
 
@@ -52,7 +52,7 @@ export default async function AdminComunidadPage() {
     .select(
       `id, title, pinned, closed, hidden, updated_at,
        author:profiles!forum_threads_author_id_fkey(full_name, avatar_url),
-       block:blocks!forum_threads_block_id_fkey(order_index),
+       phase:phases!forum_threads_phase_id_fkey(order_index),
        posts_count:forum_posts(count)`,
     )
     .order("pinned", { ascending: false })
@@ -116,7 +116,7 @@ export default async function AdminComunidadPage() {
                 <TableRow>
                   <TableHead>Hilo</TableHead>
                   <TableHead className="hidden md:table-cell w-24 text-center">
-                    Bloque
+                    Fase
                   </TableHead>
                   <TableHead className="hidden sm:table-cell w-20 text-center">
                     Posts
@@ -170,8 +170,8 @@ export default async function AdminComunidadPage() {
                         </div>
                       </TableCell>
                       <TableCell className="hidden md:table-cell text-center text-xs tabular-nums">
-                        {t.block
-                          ? String(t.block.order_index).padStart(2, "0")
+                        {t.phase
+                          ? String(t.phase.order_index).padStart(2, "0")
                           : "—"}
                       </TableCell>
                       <TableCell className="hidden sm:table-cell text-center tabular-nums text-sm">

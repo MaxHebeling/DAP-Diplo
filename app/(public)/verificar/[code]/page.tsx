@@ -124,12 +124,12 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
             <DataRow
               icon={null}
               label="Por completar"
-              value={`Bloque ${blockN}: ${cert.block_title}`}
+              value={`Fase ${blockN}: ${cert.block_title}`}
             />
             {cert.rank_name && (
               <DataRow
                 icon={null}
-                label="Rango alcanzado"
+                label="Dimensión alcanzado"
                 value={cert.rank_name}
                 emphColor
               />

@@ -37,7 +37,7 @@ function rawFromFormData(formData: FormData) {
     duration_minutes: formData.get("duration_minutes"),
     meeting_url: formData.get("meeting_url"),
     host_name: formData.get("host_name"),
-    block_id: formData.get("block_id") || null,
+    phase_id: formData.get("phase_id") || null,
   };
 }
 

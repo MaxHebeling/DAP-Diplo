@@ -6,8 +6,8 @@ const COLUMNS = [
     title: "Diplomado",
     links: [
       { label: "El programa", href: "#diplomado" },
-      { label: "Los 9 bloques", href: "#bloques" },
-      { label: "Rangos", href: "#rangos" },
+      { label: "Los 9 fases", href: "#fases" },
+      { label: "Dimensiones", href: "#dimensiones" },
       { label: "Preguntas", href: "#faq" },
     ],
   },

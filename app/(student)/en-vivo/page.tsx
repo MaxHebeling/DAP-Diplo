@@ -33,7 +33,7 @@ export default async function StudentEnVivoPage({ searchParams }: PageProps) {
     .select(
       `id, kind, title, description, scheduled_at, duration_minutes,
        meeting_url, host_name, recording_url, recording_mux_playback_id,
-       block:blocks!live_sessions_block_id_fkey(order_index, title)`,
+       phase:phases!live_sessions_phase_id_fkey(order_index, title)`,
     )
     .gte(
       "scheduled_at",
@@ -48,7 +48,7 @@ export default async function StudentEnVivoPage({ searchParams }: PageProps) {
     .select(
       `id, kind, title, description, scheduled_at, duration_minutes,
        meeting_url, host_name, recording_url, recording_mux_playback_id,
-       block:blocks!live_sessions_block_id_fkey(order_index, title)`,
+       phase:phases!live_sessions_phase_id_fkey(order_index, title)`,
     )
     .lt("scheduled_at", nowIso)
     .or("recording_url.not.is.null,recording_mux_playback_id.not.is.null")

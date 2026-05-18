@@ -12,10 +12,10 @@ export function FinalCta() {
       <div className="mx-auto max-w-3xl text-center text-brand-coral-foreground">
         <Reveal>
           <h2 className="mb-6 font-serif text-balance text-4xl font-semibold leading-tight sm:text-6xl">
-            Empieza tu formación apostólica hoy.
+            Empieza tu diplomado apostólico hoy.
           </h2>
           <p className="mb-10 text-balance text-base sm:text-lg">
-            $25 USD/mes. Acceso inmediato al Bloque 1 y a las sesiones en vivo.
+            $25 USD/mes. Acceso inmediato a la Fase 1 y a las sesiones en vivo.
             Cancela cuando quieras.
           </p>
           <Button

@@ -45,7 +45,7 @@ export async function retrieveChunks(
 }
 
 /**
- * Formatea los chunks como bloque de CONTEXTO para inyectar al system
+ * Formatea los chunks como fase de CONTEXTO para inyectar al system
  * prompt de Claude. Cada chunk numerado por fuente para citaciones.
  */
 export function formatChunksAsContext(chunks: RetrievedChunk[]): string {

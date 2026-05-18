@@ -28,7 +28,7 @@ import { createThreadAction } from "@/lib/forum/actions";
 const formSchema = z.object({
   title: z.string().trim().min(4, "Mínimo 4 caracteres").max(160),
   body: z.string().trim().min(10, "Cuenta un poco más").max(10000),
-  block_id: z.string().optional().nullable(),
+  phase_id: z.string().optional().nullable(),
 });
 
 type FormValues = z.input<typeof formSchema>;
@@ -36,14 +36,14 @@ type FormValues = z.input<typeof formSchema>;
 const NONE = "__none__";
 
 export function NewThreadForm({
-  blocks,
+  phases,
 }: {
-  blocks: { id: string; order_index: number; title: string }[];
+  phases: { id: string; order_index: number; title: string }[];
 }) {
   const [pending, startTransition] = useTransition();
   const form = useForm<FormValues>({
     resolver: standardSchemaResolver(formSchema),
-    defaultValues: { title: "", body: "", block_id: NONE },
+    defaultValues: { title: "", body: "", phase_id: NONE },
   });
   const {
     register,
@@ -58,8 +58,8 @@ export function NewThreadForm({
     fd.set("title", values.title);
     fd.set("body", values.body);
     fd.set(
-      "block_id",
-      values.block_id && values.block_id !== NONE ? values.block_id : "",
+      "phase_id",
+      values.phase_id && values.phase_id !== NONE ? values.phase_id : "",
     );
     startTransition(async () => {
       const res = await createThreadAction(undefined, fd);
@@ -94,25 +94,25 @@ export function NewThreadForm({
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="block_id">
-            Bloque relacionado (opcional)
+          <FieldLabel htmlFor="phase_id">
+            Fase relacionado (opcional)
           </FieldLabel>
           <Controller
             control={control}
-            name="block_id"
+            name="phase_id"
             render={({ field }) => (
               <Select
                 value={field.value ?? NONE}
                 onValueChange={field.onChange}
               >
-                <SelectTrigger id="block_id">
+                <SelectTrigger id="phase_id">
                   <SelectValue placeholder="Ninguno" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={NONE}>Sin bloque específico</SelectItem>
-                  {blocks.map((b) => (
+                  <SelectItem value={NONE}>Sin fase específico</SelectItem>
+                  {phases.map((b) => (
                     <SelectItem key={b.id} value={b.id}>
-                      Bloque {String(b.order_index).padStart(2, "0")} ·{" "}
+                      Fase {String(b.order_index).padStart(2, "0")} ·{" "}
                       {b.title}
                     </SelectItem>
                   ))}

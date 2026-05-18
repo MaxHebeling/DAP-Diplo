@@ -41,9 +41,9 @@ export function RecordingCard({ session }: { session: StudentSession }) {
             >
               {LIVE_KIND_LABEL[session.kind]}
             </Badge>
-            {session.block && (
+            {session.phase && (
               <Badge variant="secondary" className="font-normal">
-                Bloque {String(session.block.order_index).padStart(2, "0")}
+                Fase {String(session.phase.order_index).padStart(2, "0")}
               </Badge>
             )}
           </div>
@@ -132,7 +132,7 @@ function RecordingModal({
           playbackId={playbackId}
           metadata={{ video_title: title }}
           accentColor="#fdad5a"
-          style={{ aspectRatio: "16/9", width: "100%", display: "block" }}
+          style={{ aspectRatio: "16/9", width: "100%", display: "phase" }}
         />
       </div>
     </div>

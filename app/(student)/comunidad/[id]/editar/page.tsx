@@ -18,7 +18,7 @@ export default async function EditThreadPage({ params }: PageProps) {
   const supabase = await createClient();
   const { data: thread } = await supabase
     .from("forum_threads")
-    .select("id, title, body, block_id, author_id, closed")
+    .select("id, title, body, phase_id, author_id, closed")
     .eq("id", id)
     .maybeSingle();
   if (!thread) notFound();
@@ -30,8 +30,8 @@ export default async function EditThreadPage({ params }: PageProps) {
     redirect(`/comunidad/${id}`);
   }
 
-  const { data: blocks } = await supabase
-    .from("blocks")
+  const { data: phases } = await supabase
+    .from("phases")
     .select("id, order_index, title")
     .order("order_index", { ascending: true });
 
@@ -58,10 +58,10 @@ export default async function EditThreadPage({ params }: PageProps) {
             id: thread.id,
             title: thread.title,
             body: thread.body,
-            block_id: thread.block_id,
+            phase_id: thread.phase_id,
           }}
-          blocks={
-            (blocks ?? []) as {
+          phases={
+            (phases ?? []) as {
               id: string;
               order_index: number;
               title: string;

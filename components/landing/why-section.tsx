@@ -34,7 +34,7 @@ export function WhySection() {
               la unción apostólica en un solo programa.
             </p>
             <p>
-              Cada uno de los 9 bloques cubre una dimensión y otorga un rango
+              Cada uno de los 9 fases cubre una dimensión y otorga una dimensión
               ministerial real al completarlo. Al cierre de los 18 meses, eres
               un líder enviado — preparado para reformar territorios, no solo
               predicar en ellos.

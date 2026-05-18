@@ -10,20 +10,20 @@ import {
 } from "@/components/ui/select";
 
 type Props = {
-  blocks: { id: string; order_index: number; title: string }[];
+  phases: { id: string; order_index: number; title: string }[];
   current: string;
 };
 
-export function CommunityBlockFilter({ blocks, current }: Props) {
+export function CommunityPhaseFilter({ phases, current }: Props) {
   const router = useRouter();
   const params = useSearchParams();
 
   function onChange(value: string | null) {
     const next = new URLSearchParams(params.toString());
     if (!value || value === "all") {
-      next.delete("block");
+      next.delete("phase");
     } else {
-      next.set("block", value);
+      next.set("phase", value);
     }
     const qs = next.toString();
     router.push(`/comunidad${qs ? `?${qs}` : ""}`);
@@ -32,17 +32,17 @@ export function CommunityBlockFilter({ blocks, current }: Props) {
   return (
     <div className="flex items-center gap-3">
       <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-        Filtrar por bloque
+        Filtrar por fase
       </span>
       <Select value={current} onValueChange={onChange}>
         <SelectTrigger className="w-[280px]">
-          <SelectValue placeholder="Todos los bloques" />
+          <SelectValue placeholder="Todos las fases" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">Todos los bloques</SelectItem>
-          {blocks.map((b) => (
+          <SelectItem value="all">Todos las fases</SelectItem>
+          {phases.map((b) => (
             <SelectItem key={b.id} value={b.id}>
-              Bloque {String(b.order_index).padStart(2, "0")} · {b.title}
+              Fase {String(b.order_index).padStart(2, "0")} · {b.title}
             </SelectItem>
           ))}
         </SelectContent>
