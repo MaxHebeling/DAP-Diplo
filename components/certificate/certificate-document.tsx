@@ -55,78 +55,50 @@ const styles = StyleSheet.create({
     height: PAGE_H,
   },
 
-  // Mask: tapa la frase placeholder "quien favorablemente participó..."
-  // del background. Coords px en el original 2200x1700: x≈755-2030,
-  // y≈660-820 → convertimos a pt.
+  // Mask: tapa SOLO el body placeholder "quien favorablemente participó
+  // del Discipulado en la ciudad de Salta, Argentina, a los 15 días del
+  // mes de Noviembre, del año 2025.-" → bandas detectadas en y 916-992.
+  // Padding generoso top/bottom para asegurar limpieza completa.
   bodyMask: {
     position: "absolute",
     left: px2pt(740),
-    top: px2pt(640),
-    width: px2pt(1300),
-    height: px2pt(200),
-    backgroundColor: PANEL_CREAM,
-  },
-
-  // Mask del área de firma para poner "Apóstol DAP" en lugar de
-  // "Ap. Max Hebeling / Revival & Kingdom Ministries, INC".
-  // No tapamos el subrayado (queda intacto a y≈980).
-  signatureMask: {
-    position: "absolute",
-    left: px2pt(740),
-    top: px2pt(1010),
-    width: px2pt(700),
-    height: px2pt(90),
+    top: px2pt(890),
+    width: px2pt(1320),
+    height: px2pt(135),
     backgroundColor: PANEL_CREAM,
   },
 
   // Nombre del alumno: va sobre el área vacía entre "El presente
-  // certificado se otorga a:" (y≈430) y el subrayado (y≈600).
+  // certificado se otorga a:" (banda y 663-684) y el body (y 916).
+  // Centrado en y ≈ 800 px.
   recipientName: {
     position: "absolute",
     left: px2pt(740),
-    top: px2pt(460),
+    top: px2pt(740),
     width: px2pt(1320),
     fontFamily: "Allura",
-    fontSize: 56,
+    fontSize: 60,
     color: NAVY_DEEP,
     textAlign: "center",
-    lineHeight: 1.1,
+    lineHeight: 1.0,
   },
 
-  // Body propio: completa el masking
+  // Body propio DAP (sustituye el placeholder)
   bodyText: {
     position: "absolute",
-    left: px2pt(740),
-    top: px2pt(660),
-    width: px2pt(1300),
+    left: px2pt(760),
+    top: px2pt(900),
+    width: px2pt(1280),
     fontFamily: "Allura",
-    fontSize: 22,
+    fontSize: 24,
     color: INK,
     textAlign: "center",
-    lineHeight: 1.45,
+    lineHeight: 1.35,
   },
   bodyTextHi: {
     fontFamily: "Times-Bold",
     fontSize: 18,
     color: NAVY_DEEP,
-  },
-
-  // Firma renombrada
-  signatureName: {
-    position: "absolute",
-    left: px2pt(745),
-    top: px2pt(1020),
-    fontFamily: "Helvetica-Bold",
-    fontSize: 11,
-    color: INK,
-  },
-  signatureTitle: {
-    position: "absolute",
-    left: px2pt(745),
-    top: px2pt(1058),
-    fontFamily: "Helvetica-Oblique",
-    fontSize: 9,
-    color: MUTED,
   },
 
   // Verification code: esquina inferior derecha del panel cream.
@@ -236,9 +208,8 @@ export function CertificateDocument({
           style={styles.bgImage}
         />
 
-        {/* 2. Máscaras de las áreas a reemplazar */}
+        {/* 2. Máscara del body placeholder (reemplaza con texto DAP) */}
         <View style={styles.bodyMask} />
-        <View style={styles.signatureMask} />
 
         {/* 3. Nombre del alumno (script Allura sobre el subrayado existente) */}
         <Text style={styles.recipientName}>{fullName}</Text>
@@ -255,11 +226,8 @@ export function CertificateDocument({
           </Text>
         </View>
 
-        {/* 5. Firma renombrada */}
-        <Text style={styles.signatureName}>Apóstol responsable</Text>
-        <Text style={styles.signatureTitle}>
-          Director · Diplomado Apostólico Pastoral
-        </Text>
+        {/* NOTA: la firma "Ap. Max Hebeling / Revival & Kingdom Ministries"
+           se conserva del background image (Max es el apóstol firmante). */}
 
         {/* 6. Fecha de emisión (footer izq) */}
         <View style={styles.issuedBlock}>
