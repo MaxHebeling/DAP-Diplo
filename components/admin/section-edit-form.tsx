@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { MarkdownEditor } from "@/components/admin/markdown-editor";
+import { MuxSectionUploader } from "@/components/admin/mux-section-uploader";
 import { updateSectionAction } from "@/lib/admin/actions";
 
 const formSchema = z.object({
@@ -145,53 +146,61 @@ export function SectionEditForm({
           </Field>
 
           {isTeaching && (
-            <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
-              <Field>
-                <FieldLabel htmlFor="mux_playback_id">
-                  Mux Playback ID
-                </FieldLabel>
-                <Input
-                  id="mux_playback_id"
-                  {...register("mux_playback_id")}
-                  placeholder="ej. nVw01YQrLcsRZTpKxw2HmkkAFTQqyLOpRr01TR2..."
-                />
-                <p className="text-xs text-muted-foreground">
-                  Sube el video a Mux y pega aquí el Playback ID.{" "}
-                  <a
-                    href="https://dashboard.mux.com/video/assets"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-brand-coral hover:underline"
-                  >
-                    Abrir Mux Dashboard
-                    <ExternalLink className="size-3" />
-                  </a>
-                </p>
-                {errors.mux_playback_id && (
-                  <FieldError>{errors.mux_playback_id.message}</FieldError>
-                )}
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="duration_seconds">
-                  Duración (segundos)
-                </FieldLabel>
-                <Input
-                  id="duration_seconds"
-                  type="number"
-                  min={0}
-                  max={36000}
-                  {...register("duration_seconds", {
-                    setValueAs: (v) =>
-                      v === "" || v === null || v === undefined
-                        ? null
-                        : Number(v),
-                  })}
-                />
-                {errors.duration_seconds && (
-                  <FieldError>{errors.duration_seconds.message}</FieldError>
-                )}
-              </Field>
-            </div>
+            <>
+              <MuxSectionUploader
+                sectionId={section.id}
+                hasExistingVideo={Boolean(section.mux_playback_id)}
+              />
+
+              <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
+                <Field>
+                  <FieldLabel htmlFor="mux_playback_id">
+                    Mux Playback ID
+                  </FieldLabel>
+                  <Input
+                    id="mux_playback_id"
+                    {...register("mux_playback_id")}
+                    placeholder="ej. nVw01YQrLcsRZTpKxw2HmkkAFTQqyLOpRr01TR2..."
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Se rellena automáticamente cuando el video termina de
+                    procesarse. También puedes pegarlo a mano.{" "}
+                    <a
+                      href="https://dashboard.mux.com/video/assets"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-brand-coral hover:underline"
+                    >
+                      Abrir Mux Dashboard
+                      <ExternalLink className="size-3" />
+                    </a>
+                  </p>
+                  {errors.mux_playback_id && (
+                    <FieldError>{errors.mux_playback_id.message}</FieldError>
+                  )}
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="duration_seconds">
+                    Duración (segundos)
+                  </FieldLabel>
+                  <Input
+                    id="duration_seconds"
+                    type="number"
+                    min={0}
+                    max={36000}
+                    {...register("duration_seconds", {
+                      setValueAs: (v) =>
+                        v === "" || v === null || v === undefined
+                          ? null
+                          : Number(v),
+                    })}
+                  />
+                  {errors.duration_seconds && (
+                    <FieldError>{errors.duration_seconds.message}</FieldError>
+                  )}
+                </Field>
+              </div>
+            </>
           )}
         </FieldGroup>
       </section>
