@@ -12,7 +12,7 @@ export type AuthFormState = {
   fieldErrors?: Record<string, string[]>;
 };
 
-const FALLBACK_REDIRECT = "/diplomado";
+const FALLBACK_REDIRECT = "/dashboard";
 
 function safeRedirectTo(value: FormDataEntryValue | null): string {
   if (typeof value !== "string") return FALLBACK_REDIRECT;
