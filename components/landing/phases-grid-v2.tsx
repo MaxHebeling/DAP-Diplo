@@ -139,7 +139,7 @@ function FireVideo() {
         muted
         playsInline
         preload="auto"
-        className="absolute inset-0 size-full object-cover mix-blend-screen opacity-90"
+        className="absolute inset-0 size-full object-cover mix-blend-screen opacity-40"
       />
       {/* Vignette: oscurece bordes y top para no competir con header/cards */}
       <div
