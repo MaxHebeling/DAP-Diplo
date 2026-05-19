@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   BookOpen,
@@ -57,9 +58,21 @@ export async function PhasesGridV2() {
   return (
     <section
       id="bloques"
-      className="border-t border-white/[0.06] bg-surface-base px-6 py-28 sm:py-36"
+      className="relative isolate overflow-hidden border-t border-white/[0.06] bg-surface-base px-6 py-28 sm:py-36"
     >
-      <div className="mx-auto max-w-6xl">
+      {/* Background photo + tints (capas back→front) */}
+      <Image
+        src="/hero.jpg"
+        alt=""
+        fill
+        sizes="100vw"
+        className="-z-40 object-cover"
+      />
+      <div className="absolute inset-0 -z-35 bg-gradient-to-b from-surface-base/85 via-surface-base/55 to-surface-base" />
+      <div className="absolute inset-0 -z-30 bg-brand-coral/20 mix-blend-multiply" />
+      <div className="absolute inset-0 -z-25 bg-brand-violet/15 mix-blend-overlay" />
+
+      <div className="relative z-10 mx-auto max-w-6xl">
         <div className="mb-16 flex flex-col items-start gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-2xl">
             <p className="mb-4 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
