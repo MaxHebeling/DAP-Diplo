@@ -63,7 +63,7 @@ export function HowItWorks() {
                   <h3 className="mb-3 font-grotesk text-h4 font-semibold text-text-primary">
                     {step.title}
                   </h3>
-                  <p className="font-inter text-sm leading-relaxed text-text-secondary">
+                  <p className="text-justify font-inter text-sm leading-relaxed text-text-secondary hyphens-auto">
                     {step.body}
                   </p>
                 </div>

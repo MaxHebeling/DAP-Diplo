@@ -26,7 +26,7 @@ export function FinalCta() {
           <h2 className="mb-6 font-grotesk text-display font-bold leading-[1.05] text-text-primary">
             Empieza tu <span className="gradient-text">diplomado apostólico</span> hoy.
           </h2>
-          <p className="mb-10 mx-auto max-w-xl font-inter text-base leading-relaxed text-text-secondary md:text-lg">
+          <p className="mb-10 mx-auto max-w-xl text-justify font-inter text-base leading-relaxed text-text-secondary hyphens-auto md:text-lg">
             Acceso inmediato al Mes 1 y a las sesiones en vivo. 18 meses de
             formación apostólica integral, en español.
           </p>

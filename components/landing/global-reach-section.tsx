@@ -10,10 +10,10 @@ export function GlobalReachSection() {
         {/* Copy */}
         <div>
           <p className="mb-4 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-            Por qué el DAP
+            ¿Por qué el DAP?
           </p>
           <h2 className="font-grotesk text-h1 font-bold leading-tight text-text-primary">
-            No otro curso. Una{" "}
+            No es otro curso. Es una{" "}
             <span className="gradient-text">formación integral</span>.
           </h2>
           <div className="mt-8 space-y-5 font-inter text-base leading-relaxed text-text-secondary">

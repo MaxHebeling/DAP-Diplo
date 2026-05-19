@@ -30,7 +30,7 @@ export function HeroSectionV2() {
           para pastores
         </h1>
 
-        <p className="mx-auto mt-6 max-w-2xl font-inter text-base leading-relaxed text-text-secondary md:text-lg">
+        <p className="mx-auto mt-6 max-w-2xl text-justify font-inter text-base leading-relaxed text-text-secondary hyphens-auto md:text-lg">
           9 bloques, 200 módulos, 18 meses académicos. Espiritualidad,
           liderazgo, gobierno, finanzas, empresas y tecnología. Premium,
           en español.

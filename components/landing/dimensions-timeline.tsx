@@ -62,7 +62,7 @@ export async function DimensionsTimeline() {
               Discípulo. Hijo. Líder.{" "}
               <span className="gradient-text">Hasta Enviado</span>.
             </h2>
-            <p className="mt-6 font-inter text-base leading-relaxed text-text-secondary">
+            <p className="mt-6 text-justify font-inter text-base leading-relaxed text-text-secondary hyphens-auto">
               Cada bloque completado entrega una dimensión ministerial
               verificable. No son títulos honoríficos: son etapas de proceso
               reconocidas dentro del gobierno apostólico del DAP.
