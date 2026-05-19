@@ -125,6 +125,25 @@ export function DapPublicFooter() {
           </p>
         </div>
       </div>
+
+      {/* Marquee slogan band — última franja del footer */}
+      <div
+        aria-label="Ecosistema integral de educación, gobierno y liderazgo de Reino"
+        className="overflow-hidden border-t border-white/[0.06] bg-surface-elevated/40 py-5"
+      >
+        <div className="dap-marquee flex w-max items-center gap-12 whitespace-nowrap">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <span
+              key={i}
+              className="inline-flex items-center gap-12 font-grotesk text-sm font-semibold uppercase tracking-[0.32em] text-text-secondary"
+              aria-hidden={i > 0}
+            >
+              Ecosistema integral de educación, gobierno y liderazgo de Reino
+              <span className="gradient-text text-lg">✦</span>
+            </span>
+          ))}
+        </div>
+      </div>
     </footer>
   );
 }

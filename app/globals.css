@@ -299,3 +299,24 @@
   }
 }
 
+/* DAP — marquee horizontal infinito (footer slogan band). */
+@keyframes dap-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.dap-marquee {
+  animation: dap-marquee 40s linear infinite;
+}
+.dap-marquee:hover {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dap-marquee {
+    animation: none !important;
+  }
+}
+
