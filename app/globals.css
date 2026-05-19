@@ -60,6 +60,45 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* ============================================================
+     DAP design system v2 — dark-tech-premium (ver DESIGN-SYSTEM.md)
+     Convive con la paleta legacy de arriba. Nuevos componentes/
+     páginas opt-in con bg-surface-base / font-grotesk / etc.
+     ============================================================ */
+  --color-surface-base: var(--surface-base);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-overlay: var(--surface-overlay);
+  --color-brand-violet: var(--brand-violet);
+  --color-brand-deep: var(--brand-deep);
+  --color-brand-amber: var(--brand-amber);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+
+  --font-grotesk: var(--font-grotesk);
+  --font-inter: var(--font-inter);
+
+  --text-display: clamp(2.5rem, 6vw, 5rem);
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.02em;
+  --text-h1: 3rem;
+  --text-h1--line-height: 1.1;
+  --text-h1--letter-spacing: -0.01em;
+  --text-h2: 2.25rem;
+  --text-h2--line-height: 1.2;
+  --text-h3: 1.5rem;
+  --text-h3--line-height: 1.3;
+  --text-h4: 1.25rem;
+  --text-h4--line-height: 1.4;
+
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3);
+  --shadow-modal: 0 16px 64px rgba(0, 0, 0, 0.5);
+  --shadow-glow-violet: 0 0 40px rgba(123, 97, 255, 0.4);
+  --shadow-glow-coral: 0 0 40px rgba(255, 77, 109, 0.4);
+
+  --background-image-gradient-brand: linear-gradient(135deg, #7B61FF 0%, #FF4D6D 100%);
+  --background-image-gradient-cosmic: linear-gradient(180deg, #07142B 0%, #241E72 50%, #07142B 100%);
 }
 
 :root {
@@ -93,8 +132,12 @@
   --brand-foreground: oklch(0.985 0 0);
   --brand-magenta: oklch(0.569 0.174 2.5);    /* magenta #c43e6e */
   --brand-magenta-foreground: oklch(0.985 0 0);
-  --brand-coral: oklch(0.810 0.136 64.7);     /* coral #fdad5a */
-  --brand-coral-foreground: oklch(0.225 0.025 60);
+  /* DAP design system v2: --brand-coral redefinido como rosa-rojo #FF4D6D.
+     El antiguo durazno/ámbar vive ahora como --brand-amber para no perderlo. */
+  --brand-coral: #FF4D6D;
+  --brand-coral-foreground: oklch(0.985 0 0);
+  --brand-amber: oklch(0.810 0.136 64.7);     /* legacy: #fdad5a (era brand-coral) */
+  --brand-amber-foreground: oklch(0.225 0.025 60);
   /* DAP landing — premium gold + burgundy */
   --brand-gold: oklch(0.762 0.105 82);        /* warm gold #C9A961 */
   --brand-gold-foreground: oklch(0.145 0 0);  /* casi negro sobre dorado */
@@ -110,6 +153,18 @@
   --sidebar-accent-foreground: oklch(0.259 0.085 287.5);
   --sidebar-border: oklch(0.925 0.014 304.1);
   --sidebar-ring: oklch(0.55 0.10 287);
+
+  /* DAP design system v2 — paleta dark-tech-premium (siempre dark, sin variante light) */
+  --surface-base: #07142B;
+  --surface-elevated: #111827;
+  --surface-overlay: rgba(15, 23, 42, 0.9);
+  --brand-violet: #7B61FF;
+  --brand-deep: #241E72;
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-tertiary: #64748B;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
 }
 
 .dark {
@@ -141,8 +196,11 @@
   --brand-foreground: oklch(0.165 0.020 287);
   --brand-magenta: oklch(0.700 0.180 5);
   --brand-magenta-foreground: oklch(0.165 0.020 287);
-  --brand-coral: oklch(0.810 0.136 64.7);
-  --brand-coral-foreground: oklch(0.225 0.025 60);
+  /* DAP design system v2 — coral nuevo (rosa-rojo) y amber legacy mantenidos también en dark */
+  --brand-coral: #FF4D6D;
+  --brand-coral-foreground: oklch(0.985 0 0);
+  --brand-amber: oklch(0.810 0.136 64.7);
+  --brand-amber-foreground: oklch(0.225 0.025 60);
   --brand-gold: oklch(0.785 0.115 82);
   --brand-gold-foreground: oklch(0.145 0 0);
   --brand-burgundy: oklch(0.420 0.150 18);
@@ -168,5 +226,21 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+@layer utilities {
+  /* DAP design system v2 — helpers */
+  .gradient-text {
+    background-image: var(--background-image-gradient-brand);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .glass {
+    background-color: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--border-subtle);
   }
 }
