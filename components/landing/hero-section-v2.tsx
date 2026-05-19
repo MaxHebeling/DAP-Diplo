@@ -40,7 +40,7 @@ export function HeroSectionV2() {
           Diplomado · Apostólico · Pastoral
         </p>
 
-        <h1 className="mx-auto max-w-4xl font-grotesk text-h1 font-bold leading-[1.1] text-text-primary md:text-display md:leading-[1.05]">
+        <h1 className="mx-auto max-w-3xl font-grotesk text-h2 font-bold leading-[1.15] text-text-primary md:text-h1 md:leading-[1.1]">
           Formamos líderes para{" "}
           <span className="gradient-text">transformar personas</span>,
           iglesias, empresas y territorios.
