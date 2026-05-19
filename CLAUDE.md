@@ -3,7 +3,7 @@
 > **Lee este archivo COMPLETO al inicio de cada sesión antes de escribir código.**
 > Si algo aquí entra en conflicto con lo que el usuario te pida, pregunta antes de seguir.
 >
-> **Versión 3** — modelo mensual con gating académico (reemplaza el "drip por bloque cada 2 meses calendario" del v2).
+> **Versión 3.3** — admisión formal + calendario semanal personal (sin gating ni pausa de cobro). 72 módulos. Ver §12 para el historial de cambios.
 
 ---
 
@@ -27,60 +27,48 @@ Idioma del producto: **español**. Idioma del código: **inglés**.
 ## 2. Modelo de negocio
 
 - **Suscripción mensual de $25 USD** vía Stripe Subscription.
-- **Ciclo de facturación personal:** si el alumno se inscribe el 5 de mayo, paga el 5 de junio, el 5 de julio, etc. (Stripe maneja esto nativamente).
-- **Duración total:** 18 meses académicos (= 200 módulos / ~11 por mes).
-- **Costo total:** $450 USD si paga los 18 meses completos.
+- **Ciclo de facturación personal:** Stripe cobra cada mes desde la fecha de admisión. Suscripción simple, sin pausas automáticas ni gating de cobro.
+- **Duración total:** 72 semanas (~17 meses) — 1 módulo por semana.
+- **Modelo de cancelación:** Netflix. Cancela → pierde acceso. Reactiva → retoma desde donde quedó (su progreso se conserva).
 
-### Gating académico (regla central del producto)
+### Admisión (requisito de ingreso)
 
-El acceso al contenido **NO depende solo del pago**. Depende del rendimiento académico del alumno.
+Antes de acceder al contenido, el aspirante completa un **formulario de admisión obligatorio**:
 
-- En cada momento, el alumno está en un **mes académico** (`current_month_number`, 1–18).
-- En ese mes tiene **11 módulos** disponibles (12 en los meses 17 y 18, que son el Bloque 9).
-- Para avanzar al mes siguiente debe cumplir **dos condiciones**:
-  1. Haber **pagado** el siguiente mes (Stripe cobra normalmente).
-  2. Haber **aprobado** los 11 (o 12) módulos del mes actual.
-- Si paga pero no aprobó el mes actual: **queda bloqueado** en el mes actual aunque el pago esté procesado. El sistema acumula `months_paid_total` pero `current_month_number` NO avanza.
-- Cuando finalmente aprueba el módulo 11 del mes pendiente, **automáticamente** avanza al mes siguiente (ya estaba pagado). No espera otro pago.
-- Mensaje claro al alumno: "Termina los módulos del Mes X para desbloquear el Mes Y."
+- **Datos personales** (obligatorios): nombre completo, fecha de nacimiento, país, ciudad, teléfono, email.
+- **Pertenencia**: iglesia, ministerio, profesión, empresa/sector.
+- **Pertenencia a la Red**: si pertenece a la **Red Apostólica Reino y Avivamiento** o **Revival & Kingdom Ministries, INC** → no requiere carta. Si NO pertenece → debe subir una **carta de consentimiento de participación firmada por su pastor**.
+- Verificación: **por honor + revisión manual de admisiones**. El alumno declara su pertenencia; admisiones lo revisa antes de aprobar.
 
-### "Aprobado" — definición exacta
+**Flujo de admisión:**
+1. Aspirante envía la solicitud → notificación a `admisiones@dapglobal.org`.
+2. Admisiones revisa (verifica pertenencia, valida carta de consentimiento si aplica).
+3. Al aprobar: se fija `approved_at` y `program_start_date` (= primer martes después de la aprobación, vía función `next_tuesday`).
+4. **Exactamente 24h después de la aprobación**: el sistema genera y envía la **carta de admisión en PDF** al email del alumno, firmada por el Dr. Max Hebeling.
 
-Un módulo está aprobado cuando se cumplen **ambas**:
-- Las **5 secciones** (intro / teaching / activation / evaluation / impartation) tienen `section_progress.completed = true`.
-- El **quiz** de la sección de evaluación tiene al menos un `quiz_attempts.passed = true`.
+### Avance por calendario semanal (regla central)
 
-### Cancelación
+El avance lo manda el **calendario, no el rendimiento**. El tiempo fluye, complete o no.
 
-- Modelo Netflix: cancela suscripción → pierde acceso a todo.
-- Si reactiva en cualquier momento: retoma desde donde quedó (su `current_month_number` y todos sus `module_progress` se conservan).
+- Cada alumno tiene un **calendario personal** que arranca en su `program_start_date` (primer martes tras admisión).
+- **1 módulo por semana**: abre **martes 00:01**, cierra **lunes 23:59**.
+- La función `current_program_week(user_id)` calcula en qué semana (1–72) está el alumno.
+- El módulo de esa semana queda accesible (su contenido permanece para repaso aun después de cerrar). La **tarea/quiz** sí se cierra el lunes.
+- Si el alumno no completa la tarea en su ventana → se marca **"no entregada"** o **"incompleta"**. El siguiente módulo abre igual el martes siguiente.
 
-### Pausa automática del cobro (regla central)
+### "Aprobado" y certificación
 
-El cobro está **condicionado al rendimiento académico**. No se le cobra al alumno si no completó el mes actual.
+Un módulo está **aprobado** cuando:
+- Las 5 secciones tienen `section_progress.completed = true`.
+- El quiz de evaluación tiene al menos un `quiz_attempts.passed = true`.
 
-- ~3 días antes del próximo cobro, Stripe envía el evento `invoice.upcoming`.
-- En ese momento el sistema verifica si el alumno completó los 11 (o 12) módulos del mes actual:
-  - **Si NO completó:** pausa la suscripción con `pause_collection: { behavior: 'mark_uncollectible' }`. **Stripe NO cobra.** El alumno mantiene acceso al mes actual indefinidamente, sin cargo extra. Email: *"Tu cobro mensual está pausado hasta que completes los módulos pendientes del Mes X."*
-  - **Si SÍ completó:** la suscripción queda activa, Stripe cobra normalmente y `try_advance_month` lo avanza al siguiente mes cuando llega `invoice.paid`.
-- Cuando el alumno (en cualquier momento futuro) finalmente apruebe el último módulo pendiente, el handler de aprobación detecta la pausa y la **reanuda automáticamente** (`pause_collection: null`). Stripe procesa el cobro pendiente y avanza al siguiente mes.
+**Consecuencia de no completar:** se traslada a la **certificación**. Para obtener el **rango del bloque**, el alumno debe haber **aprobado los 8 módulos** del bloque (función `is_block_completed`). Quien tenga módulos incompletos no recibe el rango hasta completarlos (puede ponerse al día después; el contenido sigue accesible).
 
-### Timeout de pausa (60 días)
+### Corrección de tareas y quizzes (resultados 48h después)
 
-Para evitar "alumnos zombies" eternos, la pausa tiene un timeout:
-
-- **Día 30 en pausa** → email amable: "Te queremos de vuelta. Tu suscripción se cancelará en 30 días si no retomas."
-- **Día 50 en pausa** → email final: "Última semana. Tu suscripción se cancela en 10 días."
-- **Día 60 en pausa** → **suscripción se cancela automáticamente** (modelo Netflix completo). Pierde acceso. Su progreso (`module_progress`, `section_progress`, `student_ranks`) se conserva. Si reactiva en el futuro, retoma desde donde quedó.
-
-### Extensión por bloque
-
-El alumno puede solicitar **1 extensión por bloque** (hay 9 bloques en total — máximo 9 extensiones en toda su carrera del DAP):
-
-- Click en el dashboard cuando está pausado: "Pedir 60 días extra para este bloque".
-- Razón opcional (texto libre, no se valida automáticamente).
-- Se otorga inmediatamente: el timeout efectivo pasa de 60 a 120 días en ese bloque.
-- Solo 1 vez por bloque (controlado por tabla `pause_extensions` con UNIQUE constraint).
+- **Quizzes** (opción múltiple / V-F): autocorregibles por el sistema. El resultado se **revela 48h después** de la entrega (no inmediato).
+- **Tareas escritas** (sección Activación): corregidas por el **agente IA "excorrector"** que da feedback en la voz del Dr. Max Hebeling. Resultado enviado **48h después** de la entrega.
+- Estados de la tarea: `open` → `submitted` → `correcting` → `completed`/`incomplete`. Si nunca se entregó al cerrar la ventana → `not_submitted`.
 
 ---
 
@@ -88,20 +76,23 @@ El alumno puede solicitar **1 extensión por bloque** (hay 9 bloques en total �
 
 ```
 Diplomado (18 meses académicos)
-  ├── Bloque 1: Fundamentos Espirituales (22 módulos, meses 1–2)
-  │     ├── Mes 1 → módulos 1–11 del bloque
-  │     └── Mes 2 → módulos 12–22 del bloque
-  ├── Bloque 2: Identidad y Carácter (22 módulos, meses 3–4)
-  ├── Bloque 3: Liderazgo y Discipulado (22 módulos, meses 5–6)
-  ├── Bloque 4: Ministerio y Pastorado (22 módulos, meses 7–8)
-  ├── Bloque 5: Administración y Gobierno (22 módulos, meses 9–10)
-  ├── Bloque 6: Finanzas y Economía del Reino (22 módulos, meses 11–12)
-  ├── Bloque 7: Empresas y Expansión (22 módulos, meses 13–14)
-  ├── Bloque 8: Tecnología, IA y Comunicación (22 módulos, meses 15–16)
-  └── Bloque 9: Gobierno Apostólico y Reforma (24 módulos, meses 17–18)
-                                              (12 módulos por mes, excepción)
-                                  Total: 200 módulos
+  ├── Bloque 1: Fundamentos Espirituales (8 módulos, meses 1–2)
+  │     ├── Mes 1 → módulos 1–4 del bloque
+  │     └── Mes 2 → módulos 5–8 del bloque
+  ├── Bloque 2: Identidad y Carácter (8 módulos, meses 3–4)
+  ├── Bloque 3: Liderazgo y Discipulado (8 módulos, meses 5–6)
+  ├── Bloque 4: Ministerio y Pastorado (8 módulos, meses 7–8)
+  ├── Bloque 5: Administración y Gobierno (8 módulos, meses 9–10)
+  ├── Bloque 6: Finanzas y Economía del Reino (8 módulos, meses 11–12)
+  ├── Bloque 7: Empresas y Expansión (8 módulos, meses 13–14)
+  ├── Bloque 8: Tecnología, IA y Comunicación (8 módulos, meses 15–16)
+  └── Bloque 9: Gobierno Apostólico y Reforma (8 módulos, meses 17–18)
+                                  Total: 72 módulos
 ```
+
+**Cadencia: 4 módulos por mes académico.** Cada bloque = 2 meses;
+módulos 1–4 del bloque en el primer mes, 5–8 en el segundo.
+Distribución perfectamente simétrica (sin excepciones).
 
 ### Estructura interna de cada módulo (5 partes obligatorias)
 
@@ -113,12 +104,24 @@ Diplomado (18 meses académicos)
 | 4 | Evaluación | Quiz que mide comprensión (umbral 70%) |
 | 5 | Frase de impartición | Palabra apostólica de cierre |
 
-### Cronograma semanal (sesiones en vivo, opcionales)
+### Sesiones en vivo (por evento, NO recurrentes)
 
-- **Lunes** → Clase principal grabada premium.
-- **Miércoles** → MasterClass en vivo.
-- **Viernes** → Activación práctica.
-- **Mensual** → Mentoría grupal.
+El modelo NO tiene cadencia semanal fija. Las sesiones en vivo son
+**eventos especiales** que el apóstol programa cuando lo decide:
+
+- **MasterClass** — en vivo, por evento. **Mínimo garantizado: 1 al mes** (puede haber más). NO tiene día fijo de la semana.
+- **Mentoría grupal** — también por evento (sin fecha mensual fija). El apóstol la convoca cuando lo decide.
+- **Contenido grabado** — el alumno avanza a su ritmo por los 4 módulos del mes (ya no hay "clase de los lunes" recurrente).
+
+Implicación técnica: la tabla `live_sessions` se usa para anunciar
+estos eventos. El alumno se entera por **notificación + banner en el
+dashboard + email** cuando se programa una sesión. NO hay cron de
+recordatorio semanal fijo; el recordatorio se dispara relativo a la
+fecha de cada evento programado.
+
+Las sesiones de tipo `activation` quedan **eliminadas** (ya no hay
+activaciones semanales de los viernes). La práctica/activación vive
+ahora dentro de la Parte 3 de cada módulo (sección Activación).
 
 ### Sistema de rangos (1 por bloque completado)
 
@@ -143,7 +146,7 @@ Cada bloque completado entrega: insignia digital, certificado PDF descargable, r
 | Capa | Herramienta |
 |------|-------------|
 | Framework | Next.js 15 (App Router) |
-| Estilos | Tailwind + shadcn/ui (paleta navy + coral) |
+| Estilos | Tailwind + shadcn/ui (`/components/ui`) + componentes DAP (`/components/ui-dap`) según `DESIGN-SYSTEM.md` |
 | Base de datos | Supabase Postgres |
 | Auth | Supabase Auth |
 | Video | Mux |
@@ -165,7 +168,6 @@ Cada bloque completado entrega: insignia digital, certificado PDF descargable, r
   /api        - webhooks, route handlers
 /components
   /ui          - shadcn (CLI)
-  /ui-dap      - componentes propios DAP (Button, Card.Glass, RankBadge, etc. — ver DESIGN-SYSTEM.md §2)
   /landing     - hero, blocks grid, faq, etc.
   /student     - dashboard widgets, progreso, módulo viewer
 /lib
@@ -187,45 +189,41 @@ Cada bloque completado entrega: insignia digital, certificado PDF descargable, r
 
 | Tabla | Para qué |
 |-------|----------|
-| **profiles** | Datos del pastor (extiende auth.users). |
+| **profiles** | Datos del pastor (extiende auth.users). Campos clave: `program_start_date`, `matricula`, `admission_status`. |
+| **admissions** | Solicitud de admisión: datos personales, pertenencia, carta de consentimiento, estado, carta PDF emitida. |
 | **blocks** | Los 9 bloques temáticos. |
 | **ranks** | Los 9 rangos. |
-| **modules** | 200 clases. Tiene `course_month` (1–18) que indica en qué mes académico va. |
+| **modules** | 72 clases. Tiene `course_week` (1–72) que indica en qué semana del programa se abre. |
 | **module_sections** | Las 5 partes obligatorias de cada módulo. |
 | **module_resources** | PDFs, audios, descargables. |
-| **subscriptions** | Stripe Subscription por usuario. Campos clave: `status`, `months_paid_total`, `current_month_number` (1–18), `month_started_at`. |
+| **subscriptions** | Stripe Subscription por usuario. Campos: `status`, `stripe_subscription_id`, periods. Simple, sin pausa ni gating. |
 | **module_progress** | Estado del módulo por usuario (`completed` boolean). |
 | **section_progress** | Estado de cada una de las 5 partes por usuario. |
+| **assignment_submissions** | Tareas de la sección Activación: entrega, ventana (martes-lunes), estado, corrección IA, resultado 48h. |
 | **student_ranks** | Rangos otorgados a cada alumno. |
-| **quizzes / quiz_questions / quiz_attempts** | Evaluación de cada módulo. |
+| **quizzes / quiz_questions / quiz_attempts** | Evaluación de cada módulo (autocorregible). |
 | **certificates** | Certificados por bloque completado. |
-| **live_sessions** | MasterClass, Activación, Mentoría. |
+| **live_sessions** | MasterClass y mentorías (por evento, no recurrentes). |
 | **forum_threads / forum_posts** | Comunidad. |
 | **ai_conversations / ai_messages / ai_documents** | Tutor IA. |
 
-### Conceptos que ya NO se usan
+### Conceptos que ya NO se usan (revertidos en migration 0011)
 
-- `block_access` → dropeada en migration 0008. Reemplazada por `subscriptions.current_month_number`.
-- Función `unlock_next_block_if_needed` → reemplazada por `try_advance_month`.
-- Función `has_block_access` → reemplazada por `has_access_to_module`.
+- **Gating académico** (`current_month_number`, `try_advance_month`, `is_month_completed`, `count_approved_modules_in_month`) — eliminado. El avance lo manda el calendario.
+- **Pausa automática de cobro** (`pause_*`, `should_cancel_for_timeout`, `request_pause_extension`, tabla `pause_extensions`, view `subscriptions_pause_status`) — eliminado. Suscripción simple.
+- `block_access`, `has_block_access`, `unlock_next_block_if_needed` — eliminados desde 0008.
 
-### Funciones SQL críticas (definidas en migration 0008)
+### Funciones SQL críticas (vigentes tras migration 0011)
 
 | Función | Devuelve | Cuándo se llama |
 |---------|----------|-----------------|
-| `is_module_approved(user_id, module_id)` | bool | Cada vez que se necesita gating de un módulo, o al verificar si un mes está completo. |
-| `count_approved_modules_in_month(user_id, month_number)` | int | Para mostrar progreso del mes ("8 de 11 aprobados"). |
-| `is_month_completed(user_id, month_number)` | bool | Al intentar avanzar mes. |
-| `try_advance_month(user_id)` | int (nuevo current_month_number) | Webhook invoice.paid + cuando se marca aprobado el último módulo del mes. |
-| `has_access_to_module(user_id, module_id)` | bool | Gating del reproductor. |
+| `current_program_week(user_id)` | int (0–72) | Calcula la semana del programa según `program_start_date`. Base de todo el calendario. |
+| `has_access_to_module(module_id)` | bool | Gating del reproductor: `course_week ≤ semana actual` + suscripción activa. |
+| `is_module_week_open(module_id, user_id)` | bool | ¿El módulo está en su ventana activa de esta semana? |
+| `is_module_approved(user_id, module_id)` | bool | 5 secciones completas + quiz aprobado. Base de la certificación. |
+| `is_block_completed(user_id, block_id)` | bool | Los 8 módulos del bloque aprobados → otorga rango. |
+| `next_tuesday(from_date)` | date | Calcula el primer martes tras la aprobación de admisión (= `program_start_date`). |
 | `has_active_subscription(user_id)` | bool | Acceso general. |
-| `should_pause_for_incomplete_month(user_id)` | bool | Webhook `invoice.upcoming` → decidir si pausar el cobro. |
-| `is_subscription_paused(user_id)` | bool | UI del dashboard para mostrar el estado. |
-| `days_paused(user_id)` | int | Días en pausa (efectivos, descontando extensiones). |
-| `should_cancel_for_timeout(user_id)` | bool | Cron diario → ≥60 días en pausa = cancelar. |
-| `request_pause_extension(user_id)` | jsonb | Otorga +60 días si no ha extendido este bloque. |
-| `mark_subscription_paused(user_id, reason)` | bool | Marca la pausa al recibir `invoice.upcoming`. |
-| `mark_subscription_resumed(user_id)` | bool | Quita la pausa al completar el mes. |
 
 ---
 
@@ -243,9 +241,11 @@ MUX_TOKEN_ID=
 MUX_TOKEN_SECRET=
 MUX_WEBHOOK_SECRET=
 RESEND_API_KEY=
-EMAIL_FROM=DAP <hola@dap.tudominio>
+EMAIL_FROM=DAP <hola@dapglobal.org>
+EMAIL_ADMISSIONS=admisiones@dapglobal.org   # recibe las solicitudes de admisión
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ANTHROPIC_API_KEY=
+CRON_SECRET=                                 # autentica los crons (admisión 24h, apertura semanal, corrección 48h)
 ```
 
 ---
@@ -279,13 +279,13 @@ ANTHROPIC_API_KEY=
 
 - [x] **Fase 0** — Setup base
 - [x] **Fase 1** — Autenticación
-- [x] **Fase 2** — Vista pública del Diplomado
-- [x] **Fase 3** — Suscripción Stripe mensual + gating académico + pausa automática + cancelación por timeout (refactor 2026-05-18, migrations 0008/0009)
-- [x] **Fase 4** — Reproductor de módulo con 5 secciones + progreso
-- [x] **Fase 5** — Quizzes, certificados, rangos
-- [x] **Fase 6** — Comunidad
-- [x] **Fase 7** — Sesiones en vivo
-- [x] **Fase 8** — Tutor IA
+- [ ] **Fase 2** — Vista pública del Diplomado *(parcial: landing OK, falta detalle de bloque)*
+- [ ] **Fase 3** — Suscripción Stripe + gating mensual *(arquitectura cambió con migration 0008)*
+- [ ] **Fase 4** — Reproductor de módulo con 5 secciones + progreso
+- [ ] **Fase 5** — Quizzes, certificados, rangos
+- [ ] **Fase 6** — Comunidad
+- [ ] **Fase 7** — Sesiones en vivo
+- [ ] **Fase 8** — Tutor IA
 
 ---
 
@@ -295,7 +295,7 @@ ANTHROPIC_API_KEY=
 - **Diplomado** → el programa completo de 18 meses académicos.
 - **Bloque** → uno de los 9 grandes temas (2 meses académicos cada uno).
 - **Mes académico** → unidad de gating. Numerado 1–18 por alumno. Coincide con el ciclo de facturación de Stripe.
-- **Módulo** → una clase de 45–60 min con 5 partes fijas. 11 por mes (12 en meses 17–18). Total 200.
+- **Módulo** → una clase de 45–60 min con 5 partes fijas. 4 por mes, 8 por bloque. Total 72.
 - **Sección / parte** → una de las 5 partes obligatorias de cada módulo.
 - **Aprobado** → módulo con 5 secciones completadas + quiz pasado.
 - **Rango** → título ministerial otorgado al completar un bloque.
@@ -314,7 +314,8 @@ ANTHROPIC_API_KEY=
 | Modelo Netflix (cancela = pierde acceso) | Simple operacionalmente. Progreso se conserva si reactiva. |
 | Pausa automática si no completó | El cobro está condicionado al rendimiento académico. Más justo para el alumno (no paga si no avanzó) y más simple operacionalmente que devoluciones manuales. |
 | Rangos al completar bloque (no mes) | Mantiene los 9 rangos clásicos como hitos visibles. |
-| Bloque 9 con 24 módulos (12/mes) | Mantiene el plan curricular original sin recortar. Excepción aceptada. |
+| 9 bloques × 8 módulos = 72 (4/mes simétrico) | Programa más enfocado y digerible. 4 módulos/mes (≈1/semana) deja respirar. El valor se complementa con MasterClass, mentoría, comunidad y tutor IA. |
+| Sesiones en vivo por evento (no semanales) | Quita carga operativa de dar clase cada semana. MasterClass como "evento especial" (mín. 1/mes). Mentoría por convocatoria. |
 | 5 partes fijas por módulo | Estandariza experiencia, certificación clara, métricas comparables. |
 | Sin venta de bloques sueltos | Modelo simple. Si se evalúa después, se añade. |
 | Stripe Subscriptions sobre Checkout one-time | El modelo de cobro lo requiere. Renovaciones, cancelaciones, etc. |
@@ -329,5 +330,7 @@ ANTHROPIC_API_KEY=
 - **Antes:** drip por bloque cada 2 meses calendario. **Ahora:** drip mensual con gating académico.
 - **Antes:** `block_access` table + `has_block_access()` + `unlock_next_block_if_needed()`. **Ahora:** `subscriptions.current_month_number` + `has_access_to_module()` + `try_advance_month()`.
 - **Antes:** "aprobar" no era condición de acceso. **Ahora:** sí lo es (5 secciones + quiz).
-- **Antes:** los 200 módulos estaban solo agrupados por bloque. **Ahora:** además tienen `course_month` (1–18) que define cuándo se desbloquean.
+- **Antes:** los módulos estaban solo agrupados por bloque. **Ahora:** además tienen `course_month` (1–18) que define cuándo se desbloquean.
+- **v3.2 (rediseño curricular):** de 200 módulos (22/bloque, 11/mes) a **72 módulos (8/bloque, 4/mes)**. Sesiones en vivo dejan de ser semanales fijas y pasan a eventos (MasterClass mín. 1/mes, mentoría por evento). Activaciones semanales eliminadas (viven en la Parte 3 de cada módulo). Ver migration 0010.
+- **v3.3 (admisión + calendario semanal):** se ELIMINA el gating académico y la pausa automática de cobro (migrations 0008/0009 revertidas en 0011). El avance ahora lo manda el **calendario**: 1 módulo/semana (martes 00:01 — lunes 23:59), calendario personal por alumno desde su `program_start_date`. Se AGREGA el **sistema de admisión** (formulario + carta de consentimiento condicional + carta PDF de admisión 24h después firmada por Dr. Max Hebeling) y `assignment_submissions` (tareas corregidas por IA, resultados 48h). Para el rango del bloque hay que aprobar los 8 módulos. Suscripción $25/mes simple. Ver migration 0011. **El CHECKLIST-CAMBIO-MENSUAL.md queda obsoleto.**
 - **Antes:** rangos se otorgaban al completar bloque, pero no había concepto de "mes académico". **Ahora:** el sistema lleva `current_month_number` y el rango sigue saliendo al completar bloque entero.
