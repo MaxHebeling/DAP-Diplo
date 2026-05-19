@@ -46,11 +46,6 @@ export function HeroSectionV2() {
           iglesias, empresas y territorios.
         </h1>
 
-        <p className="mx-auto mt-6 max-w-2xl text-justify font-inter text-base leading-relaxed text-text-secondary md:text-lg">
-          Formación integral, bíblica, práctica y tecnológica para liderar
-          en el Reino y expandir tu impacto al siguiente nivel.
-        </p>
-
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
           <DapButton render={<Link href="/suscribirme" />} size="lg">
             Comienza tu transformación
