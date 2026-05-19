@@ -31,7 +31,7 @@ const COLS = [
     links: [
       { href: "#preguntas", label: "Preguntas frecuentes" },
       { href: "/login", label: "Iniciar sesión" },
-      { href: "mailto:hola@dap.tudominio", label: "Contacto" },
+      { href: "/contacto", label: "Contacto" },
     ],
   },
   {
