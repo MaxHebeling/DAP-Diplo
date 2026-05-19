@@ -11,7 +11,14 @@
 
 DAP (Diplomado Apostólico Pastoral) es una plataforma web de educación premium para pastores y líderes ministeriales hispanohablantes. Es un programa de formación integral de **18 meses** que combina formación espiritual, liderazgo, gobierno, finanzas, empresas y tecnología.
 
-Propiedad 100% del usuario. Código propio, base de datos propia. Posicionamiento visual premium (MasterClass / Apple Education / Hillsong College moderno). Paleta del proyecto: navy + coral.
+Propiedad 100% del usuario. Código propio, base de datos propia.
+
+**Identidad visual (ver `DESIGN-SYSTEM.md` para tokens completos):**
+- Estética: **dark-tech-premium** (referencia: Linear, Vercel, Stripe Dashboard) con alma apostólica.
+- Paleta: navy profundo `#07142B` + gradiente violeta `#7B61FF` → coral `#FF4D6D`.
+- Tipografía: **Space Grotesk** (títulos) + **Inter** (cuerpo).
+- Glassmorphism en cards. Gradientes de marca solo en CTAs primarios, logo, hero text, números destacados.
+- Sistema de rangos visualizado con badges hexagonales (1 por bloque completado).
 
 Idioma del producto: **español**. Idioma del código: **inglés**.
 
@@ -158,6 +165,7 @@ Cada bloque completado entrega: insignia digital, certificado PDF descargable, r
   /api        - webhooks, route handlers
 /components
   /ui          - shadcn (CLI)
+  /ui-dap      - componentes propios DAP (Button, Card.Glass, RankBadge, etc. — ver DESIGN-SYSTEM.md §2)
   /landing     - hero, blocks grid, faq, etc.
   /student     - dashboard widgets, progreso, módulo viewer
 /lib
