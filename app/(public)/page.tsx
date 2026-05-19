@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { HeroSectionV2 } from "@/components/landing/hero-section-v2";
 import { StatsStripV2 } from "@/components/landing/stats-strip-v2";
 import { PhasesGridV2 } from "@/components/landing/phases-grid-v2";
+import { GlobalReachSection } from "@/components/landing/global-reach-section";
 import { WhySection } from "@/components/landing/why-section";
 import { HowItWorks } from "@/components/landing/how-it-works";
 import { ModuleStructure } from "@/components/landing/module-structure";
@@ -64,6 +65,7 @@ export default async function LandingPage() {
         <HeroSectionV2 />
         <StatsStripV2 />
         <PhasesGridV2 />
+        <GlobalReachSection />
         <WhySection />
         <HowItWorks />
         <ModuleStructure />
