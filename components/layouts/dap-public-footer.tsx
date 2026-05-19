@@ -113,7 +113,7 @@ export function DapPublicFooter() {
               href="https://www.ikingdom.org"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-text-secondary transition-colors hover:text-text-primary hover:underline underline-offset-4"
+              className="gradient-text font-semibold transition-opacity hover:opacity-80"
             >
               iKingdom
             </a>
