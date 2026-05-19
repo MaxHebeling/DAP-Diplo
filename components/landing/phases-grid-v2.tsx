@@ -16,6 +16,10 @@ import {
 
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/server";
+import {
+  coursesItemListSchema,
+  jsonLd,
+} from "@/lib/seo/structured-data";
 
 type PhaseRow = {
   order_index: number;
@@ -60,6 +64,25 @@ export async function PhasesGridV2() {
       id="bloques"
       className="relative isolate overflow-hidden border-t border-white/[0.06] bg-surface-base px-6 py-28 sm:py-36"
     >
+      {/* JSON-LD ItemList con los 9 bloques (rich result oportunidad) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLd(
+            coursesItemListSchema(
+              phases.map((p) => ({
+                slug: p.slug,
+                order_index: p.order_index,
+                title: p.title,
+                subtitle: p.subtitle,
+                description: null,
+                months_duration: null,
+              })),
+            ),
+          ),
+        }}
+      />
+
       {/* Background photo + tints (capas back→front) */}
       <Image
         src="/phases-bg.jpg"

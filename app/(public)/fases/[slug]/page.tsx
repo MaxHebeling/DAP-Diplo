@@ -9,6 +9,7 @@ import { Reveal } from "@/components/landing/reveal";
 import { SiteHeader, type HeaderUser } from "@/components/landing/site-header";
 import { SiteFooter } from "@/components/landing/site-footer";
 import { createClient } from "@/lib/supabase/server";
+import { courseSchema, jsonLd } from "@/lib/seo/structured-data";
 import { formatDuration } from "@/lib/format";
 
 type ModuleRow = {
@@ -179,6 +180,22 @@ export default async function BlockDetailPage({ params }: PageProps) {
 
   return (
     <div className="flex flex-1 flex-col bg-neutral-950 text-neutral-50">
+      {/* JSON-LD Course (rich result oportunidad) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLd(
+            courseSchema({
+              slug: phase.slug,
+              order_index: phase.order_index,
+              title: phase.title,
+              subtitle: phase.subtitle,
+              description: phase.description,
+              months_duration: phase.months_duration,
+            }),
+          ),
+        }}
+      />
       <SiteHeader user={headerUser} />
       <main className="flex flex-1 flex-col">
         {/* HERO */}

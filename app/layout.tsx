@@ -9,6 +9,11 @@ import {
 import { Suspense } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { ToastFromQuery } from "@/components/toast-from-query";
+import {
+  jsonLd,
+  organizationSchema,
+  websiteSchema,
+} from "@/lib/seo/structured-data";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -108,6 +113,16 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} ${spaceGrotesk.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        {/* JSON-LD: identidad de la organización + sitio (aplica a todo). */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLd(organizationSchema()) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLd(websiteSchema()) }}
+        />
+
         {children}
         <Toaster richColors position="top-center" />
         <Suspense fallback={null}>

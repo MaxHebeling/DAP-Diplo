@@ -29,9 +29,10 @@ export function HeroSectionV2() {
           <Image
             src="/dap-logo-white.png"
             alt="DAP"
-            width={420}
-            height={420}
+            width={560}
+            height={560}
             priority
+            sizes="(max-width: 640px) 256px, (max-width: 768px) 320px, (max-width: 1024px) 440px, 560px"
             className="size-64 drop-shadow-[0_0_40px_rgba(123,97,255,0.45)] sm:size-80 md:size-[440px] lg:size-[560px]"
           />
         </div>

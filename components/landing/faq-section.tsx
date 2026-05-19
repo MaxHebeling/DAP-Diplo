@@ -6,6 +6,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { faqPageSchema, jsonLd } from "@/lib/seo/structured-data";
 
 const FAQS = [
   {
@@ -48,6 +49,13 @@ export function FaqSection() {
       id="faq"
       className="border-t border-white/[0.06] bg-surface-base px-6 py-28 sm:py-36"
     >
+      {/* JSON-LD FAQPage — habilita rich snippet con expansibles en Google */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLd(faqPageSchema(FAQS)),
+        }}
+      />
       <div className="mx-auto max-w-3xl">
         <div className="mb-12">
           <p className="mb-4 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
