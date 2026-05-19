@@ -46,9 +46,10 @@ function formatIssuedAt(iso: string): string {
 export async function generateMetadata({ params }: PageProps) {
   const { code } = await params;
   return {
-    title: `Verificación de certificado · ${code} — DAP`,
+    title: `Verificación · ${code}`,
     description:
       "Verificación oficial de un certificado emitido por el Diplomado Apostólico Pastoral.",
+    robots: { index: false, follow: true },
   };
 }
 

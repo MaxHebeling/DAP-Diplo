@@ -8,9 +8,17 @@ import { SiteFooter } from "@/components/landing/site-footer";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = {
-  title: "Suscribirme — DAP",
+  title: "Suscribirme",
   description:
     "$25 USD al mes. Acceso completo al Diplomado Apostólico Pastoral. Cancela cuando quieras.",
+  alternates: { canonical: "/suscribirme" },
+  openGraph: {
+    type: "website" as const,
+    url: "/suscribirme",
+    title: "Suscribirme · DAP",
+    description:
+      "Acceso completo al Diplomado Apostólico Pastoral por $25 USD/mes. 200 módulos en 18 meses · cancela cuando quieras.",
+  },
 };
 
 const INCLUDED = [

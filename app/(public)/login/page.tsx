@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 import {
   Card,
   CardContent,
@@ -9,6 +10,12 @@ import {
 import { LoginForm } from "@/components/auth/login-form";
 import { Logo } from "@/components/brand/logo";
 import { createClient } from "@/lib/supabase/server";
+
+export const metadata: Metadata = {
+  title: "Inicia sesión",
+  description: "Accede a tu cuenta del Diplomado Apostólico Pastoral.",
+  robots: { index: false, follow: true },
+};
 
 type SearchParams = Promise<{ redirectTo?: string }>;
 

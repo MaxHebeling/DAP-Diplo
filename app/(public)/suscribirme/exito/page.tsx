@@ -5,7 +5,8 @@ import { Logo } from "@/components/brand/logo";
 import { Reveal } from "@/components/landing/reveal";
 
 export const metadata = {
-  title: "¡Bienvenido al diplomado! — DAP",
+  title: "¡Bienvenido al diplomado!",
+  robots: { index: false, follow: true },
 };
 
 export default function SubscribeSuccessPage() {

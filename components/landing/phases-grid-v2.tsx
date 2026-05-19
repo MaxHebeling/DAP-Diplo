@@ -63,7 +63,7 @@ export async function PhasesGridV2() {
       {/* Background photo + tints (capas back→front) */}
       <Image
         src="/phases-bg.jpg"
-        alt=""
+        alt="Pastores y líderes en una conferencia apostólica del DAP"
         fill
         sizes="100vw"
         className="-z-40 object-cover opacity-15"

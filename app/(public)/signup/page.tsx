@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 import {
   Card,
   CardContent,
@@ -9,6 +10,12 @@ import {
 import { SignUpForm } from "@/components/auth/signup-form";
 import { Logo } from "@/components/brand/logo";
 import { createClient } from "@/lib/supabase/server";
+
+export const metadata: Metadata = {
+  title: "Crea tu cuenta",
+  description: "Únete al Diplomado Apostólico Pastoral. $25 USD/mes.",
+  robots: { index: false, follow: true },
+};
 
 type SearchParams = Promise<{ redirectTo?: string }>;
 

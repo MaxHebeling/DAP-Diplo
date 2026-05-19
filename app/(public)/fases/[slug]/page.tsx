@@ -76,10 +76,30 @@ export async function generateMetadata({ params }: PageProps) {
     .eq("slug", slug)
     .eq("published", true)
     .maybeSingle();
-  if (!data) return { title: "Fase no encontrado — DAP" };
+  if (!data) {
+    return {
+      title: "Fase no encontrada",
+      robots: { index: false, follow: true },
+    };
+  }
+  const url = `/fases/${slug}`;
+  const description =
+    data.subtitle ?? data.description ?? undefined;
   return {
-    title: `${data.title} — DAP`,
-    description: data.subtitle ?? data.description ?? undefined,
+    title: data.title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "article",
+      url,
+      title: `${data.title} · DAP`,
+      description,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${data.title} · DAP`,
+      description,
+    },
   };
 }
 
