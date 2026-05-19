@@ -8,12 +8,12 @@ import {
 } from "@/components/admin/module-edit-form";
 import { createClient } from "@/lib/supabase/server";
 
-type PageProps = { params: Promise<{ id: string; mid: string }> };
+type PageProps = { params: Promise<{ slug: string; moduleSlug: string }> };
 
 export const metadata = { title: "Editar módulo — Admin DAP" };
 
 export default async function AdminModuleEditPage({ params }: PageProps) {
-  const { id, mid } = await params;
+  const { slug: id, moduleSlug: mid } = await params;
   const supabase = await createClient();
 
   const { data: phase } = await supabase

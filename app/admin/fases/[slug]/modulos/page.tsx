@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { createClient } from "@/lib/supabase/server";
 
-type PageProps = { params: Promise<{ id: string }> };
+type PageProps = { params: Promise<{ slug: string }> };
 
 type ModuleRow = {
   id: string;
@@ -31,7 +31,7 @@ type ModuleRow = {
 export const metadata = { title: "Módulos de la fase — Admin DAP" };
 
 export default async function AdminBlockModulesPage({ params }: PageProps) {
-  const { id } = await params;
+  const { slug: id } = await params;
   const supabase = await createClient();
 
   const { data: phase } = await supabase

@@ -4,10 +4,10 @@ import { ArrowLeft } from "lucide-react";
 import { PhaseEditForm } from "@/components/admin/phase-edit-form";
 import { createClient } from "@/lib/supabase/server";
 
-type PageProps = { params: Promise<{ id: string }> };
+type PageProps = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: PageProps) {
-  const { id } = await params;
+  const { slug: id } = await params;
   const supabase = await createClient();
   const { data } = await supabase
     .from("phases")
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: PageProps) {
 }
 
 export default async function EditBlockPage({ params }: PageProps) {
-  const { id } = await params;
+  const { slug: id } = await params;
   const supabase = await createClient();
 
   // Layout admin ya gated, RLS de phases admin-full vía is_admin().

@@ -13,13 +13,13 @@ import type { QuestionRow } from "@/components/admin/quiz-question-form";
 import { createClient } from "@/lib/supabase/server";
 
 type PageProps = {
-  params: Promise<{ id: string; mid: string; sid: string }>;
+  params: Promise<{ slug: string; moduleSlug: string; sid: string }>;
 };
 
 export const metadata = { title: "Editar sección — Admin DAP" };
 
 export default async function AdminSectionEditPage({ params }: PageProps) {
-  const { id, mid, sid } = await params;
+  const { slug: id, moduleSlug: mid, sid } = await params;
   const supabase = await createClient();
 
   const { data: phase } = await supabase

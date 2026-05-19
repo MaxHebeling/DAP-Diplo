@@ -34,7 +34,7 @@ const SECTION_TITLE: Record<SectionKind, string> = {
 };
 
 type PageProps = {
-  params: Promise<{ phaseSlug: string; moduleSlug: string }>;
+  params: Promise<{ slug: string; moduleSlug: string }>;
   searchParams: Promise<{ section?: string }>;
 };
 
@@ -88,7 +88,7 @@ export default async function ModulePlayerPage({
   params,
   searchParams,
 }: PageProps) {
-  const { phaseSlug, moduleSlug } = await params;
+  const { slug: phaseSlug, moduleSlug } = await params;
   const { section: sectionParam } = await searchParams;
   const currentSection: SectionKind = SECTION_KINDS.includes(
     sectionParam as SectionKind,
