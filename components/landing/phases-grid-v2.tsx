@@ -69,7 +69,7 @@ export async function PhasesGridV2() {
               Nueve dimensiones de la <span className="gradient-text">unción apostólica</span>
             </h2>
           </div>
-          <p className="max-w-md text-justify font-inter text-sm leading-relaxed text-text-secondary hyphens-auto">
+          <p className="max-w-md text-justify font-inter text-sm leading-relaxed text-text-secondary">
             Un bloque cada 2 meses académicos. Cada bloque otorga una dimensión
             y prepara para el siguiente. Al final, los 9 forman al líder enviado.
           </p>
@@ -100,7 +100,7 @@ export async function PhasesGridV2() {
                   {p.title}
                 </h3>
                 {p.subtitle && (
-                  <p className="text-justify font-inter text-sm leading-relaxed text-text-secondary hyphens-auto">
+                  <p className="text-justify font-inter text-sm leading-relaxed text-text-secondary">
                     {p.subtitle}
                   </p>
                 )}

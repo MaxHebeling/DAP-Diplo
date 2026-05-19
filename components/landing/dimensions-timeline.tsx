@@ -59,10 +59,10 @@ export async function DimensionsTimeline() {
               Los 9 rangos del Reino
             </p>
             <h2 className="font-grotesk text-h1 font-bold leading-tight text-text-primary">
-              Discípulo. Hijo. Líder.{" "}
-              <span className="gradient-text">Hasta Enviado</span>.
+              Discípulo. Hijo. <span className="gradient-text">Líder</span>.
+              Enviado.
             </h2>
-            <p className="mt-6 text-justify font-inter text-base leading-relaxed text-text-secondary hyphens-auto">
+            <p className="mt-6 text-justify font-inter text-base leading-relaxed text-text-secondary">
               Cada bloque completado entrega una dimensión ministerial
               verificable. No son títulos honoríficos: son etapas de proceso
               reconocidas dentro del gobierno apostólico del DAP.

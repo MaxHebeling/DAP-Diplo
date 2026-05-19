@@ -56,7 +56,7 @@ export function ModuleStructure() {
                 <h3 className="mb-3 font-grotesk text-h4 font-semibold text-text-primary">
                   {part.title}
                 </h3>
-                <p className="text-justify font-inter text-sm leading-relaxed text-text-secondary hyphens-auto">
+                <p className="text-justify font-inter text-sm leading-relaxed text-text-secondary">
                   {part.body}
                 </p>
               </div>
