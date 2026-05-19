@@ -106,7 +106,18 @@ export function DapPublicFooter() {
         </div>
 
         <div className="mt-12 flex flex-col gap-2 border-t border-white/[0.06] pt-6 text-xs text-text-tertiary sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} DAP. Todos los derechos reservados.</p>
+          <p>
+            © {new Date().getFullYear()} DAP. Todos los derechos reservados.{" "}
+            <span className="text-text-tertiary/60">|</span> Desarrollado por{" "}
+            <a
+              href="https://www.ikingdom.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-text-secondary transition-colors hover:text-text-primary hover:underline underline-offset-4"
+            >
+              iKingdom
+            </a>
+          </p>
           <p>
             Construido con propósito ·{" "}
             <span className="gradient-text font-semibold">Apostólico + Tech</span>

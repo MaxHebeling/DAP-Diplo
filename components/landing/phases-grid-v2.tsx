@@ -59,7 +59,7 @@ export async function PhasesGridV2() {
       id="bloques"
       className="relative isolate overflow-hidden border-t border-white/[0.06] bg-surface-base px-6 py-28 sm:py-36"
     >
-      <LiveFlame />
+      <FireVideo />
 
       <div className="relative z-10 mx-auto max-w-6xl">
         <div className="mb-16 flex flex-col items-start gap-6 sm:flex-row sm:items-end sm:justify-between">
@@ -121,87 +121,36 @@ export async function PhasesGridV2() {
   );
 }
 
-// Llama viva — fondo decorativo. Server-compatible (sin hooks).
-// Capas: heat ambient + 3 elipses con flicker + chispas ascendentes.
-// Cards solid bg-surface-elevated mantienen legibilidad; la llama
-// rebota en gutters, header y zona inferior.
-function LiveFlame() {
-  const sparks = [
-    { left: "45%", delay: 0, duration: 3.2, drift: "-8px" },
-    { left: "52%", delay: 0.4, duration: 3.5, drift: "6px" },
-    { left: "48%", delay: 0.8, duration: 2.9, drift: "-4px" },
-    { left: "55%", delay: 1.2, duration: 3.7, drift: "10px" },
-    { left: "47%", delay: 1.6, duration: 3.1, drift: "-12px" },
-    { left: "53%", delay: 2.0, duration: 3.4, drift: "5px" },
-    { left: "49%", delay: 2.4, duration: 3.6, drift: "-6px" },
-    { left: "51%", delay: 0.2, duration: 3.0, drift: "8px" },
-    { left: "46%", delay: 1.4, duration: 3.3, drift: "-10px" },
-    { left: "54%", delay: 2.8, duration: 3.2, drift: "12px" },
-  ];
+// Fondo de video: loop de llamas en slow-motion sobre fondo negro.
+// mix-blend-mode: screen elimina el negro y solo deja el fuego.
+// Overlays radiales+lineales protegen header y zona inferior de la
+// sección para mantener legibilidad de las cards.
+// Server-compatible (sin hooks).
+function FireVideo() {
   return (
     <div
       aria-hidden
       className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
     >
-      {/* Heat ambient (oval bajo el centro) */}
-      <div
-        className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[460px] w-[820px] rounded-full bg-brand-coral/[0.08] blur-[120px]"
-        aria-hidden
+      <video
+        src="/fire-loop.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="auto"
+        className="absolute inset-0 size-full object-cover mix-blend-screen opacity-90"
       />
-
-      {/* Capa exterior: ancha + suave + más blur */}
+      {/* Vignette: oscurece bordes y top para no competir con header/cards */}
       <div
-        className="dap-flame-base absolute bottom-0 left-1/2 -translate-x-1/2 rounded-[50%] blur-[80px]"
+        className="absolute inset-0"
         style={{
-          width: 620,
-          height: 820,
           background:
-            "radial-gradient(ellipse 50% 70% at 50% 92%, rgba(255,77,109,0.28), rgba(253,173,90,0.20) 40%, transparent 72%)",
-          animation: "dap-flame-flicker 3.6s ease-in-out infinite",
+            "radial-gradient(ellipse 80% 80% at 50% 60%, transparent 0%, rgba(7,20,43,0.55) 70%, rgba(7,20,43,0.85) 100%)",
         }}
       />
-
-      {/* Capa media */}
-      <div
-        className="dap-flame-base absolute bottom-0 left-1/2 -translate-x-1/2 rounded-[50%] blur-[50px]"
-        style={{
-          width: 380,
-          height: 620,
-          background:
-            "radial-gradient(ellipse 45% 70% at 50% 92%, rgba(255,77,109,0.40), rgba(253,173,90,0.28) 50%, transparent 75%)",
-          animation: "dap-flame-flicker 2.8s ease-in-out infinite",
-          animationDelay: "0.4s",
-        }}
-      />
-
-      {/* Núcleo brillante */}
-      <div
-        className="dap-flame-inner absolute bottom-0 left-1/2 -translate-x-1/2 rounded-[50%] blur-[30px]"
-        style={{
-          width: 200,
-          height: 420,
-          background:
-            "radial-gradient(ellipse 40% 70% at 50% 95%, rgba(253,224,71,0.55), rgba(253,173,90,0.40) 50%, transparent 78%)",
-          animation: "dap-flame-flicker-inner 2.1s ease-in-out infinite",
-        }}
-      />
-
-      {/* Chispas ascendentes */}
-      {sparks.map((s, i) => (
-        <span
-          key={i}
-          className="dap-spark absolute bottom-0 block size-[3px] rounded-full bg-amber-200"
-          style={
-            {
-              left: s.left,
-              boxShadow: "0 0 8px 1px rgba(253,224,71,0.7)",
-              animation: `dap-spark-rise ${s.duration}s ease-out infinite`,
-              animationDelay: `${s.delay}s`,
-              "--spark-drift": s.drift,
-            } as React.CSSProperties
-          }
-        />
-      ))}
+      {/* Top fade — protege el header del slide */}
+      <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-surface-base to-transparent" />
     </div>
   );
 }
