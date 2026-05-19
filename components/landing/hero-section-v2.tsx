@@ -1,5 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, PlayCircle } from "lucide-react";
 
 import { DapButton } from "@/components/ui-dap/button";
 import { HeroParticles } from "./hero-particles";
@@ -15,30 +16,44 @@ export function HeroSectionV2() {
         className="absolute inset-0 -z-10 opacity-[0.18] [background-image:radial-gradient(circle_1px_at_25%_30%,white_99%,transparent_100%),radial-gradient(circle_1px_at_72%_44%,white_99%,transparent_100%),radial-gradient(circle_1px_at_88%_18%,white_99%,transparent_100%),radial-gradient(circle_1px_at_12%_72%,white_99%,transparent_100%),radial-gradient(circle_1px_at_55%_82%,white_99%,transparent_100%),radial-gradient(circle_1px_at_38%_15%,white_99%,transparent_100%),radial-gradient(circle_1px_at_82%_75%,white_99%,transparent_100%)] [background-repeat:no-repeat]"
       />
 
-      {/* Animated particles layer (above static layers, below content) */}
+      {/* Animated particles (cosmic network) */}
       <HeroParticles intensity="cosmic" className="absolute inset-0 -z-[5]" />
 
       <div className="mx-auto flex min-h-[88vh] max-w-5xl flex-col items-center justify-center px-6 pb-20 pt-32 text-center sm:pt-40">
-        <p className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/[0.1] bg-white/[0.05] px-4 py-1.5 font-inter text-xs font-medium uppercase tracking-widest text-text-secondary backdrop-blur">
-          <Sparkles className="size-3.5 text-brand-coral" />
-          Diplomado Apostólico Pastoral · 18 meses
+        {/* Logo DAP grande como centerpiece (mismo wireframe que el del header) */}
+        <div className="relative mb-2 flex items-center justify-center">
+          <div
+            aria-hidden
+            className="absolute -inset-x-20 inset-y-0 -z-10 [background:radial-gradient(50%_70%_at_50%_50%,rgba(123,97,255,0.35),transparent_70%)] blur-xl"
+          />
+          <Image
+            src="/dap-logo.png"
+            alt="DAP"
+            width={420}
+            height={420}
+            priority
+            className="size-48 drop-shadow-[0_0_40px_rgba(123,97,255,0.45)] sm:size-64 md:size-80 lg:size-[420px]"
+          />
+        </div>
+
+        <p className="mb-10 font-grotesk text-xs font-medium uppercase tracking-[0.36em] text-text-secondary sm:text-sm">
+          Diplomado · Apostólico · Pastoral
         </p>
 
-        <h1 className="mx-auto max-w-4xl font-grotesk text-display font-bold leading-[1.05] text-text-primary">
-          Formación{" "}
-          <span className="gradient-text">apostólica integral</span>{" "}
-          para pastores
+        <h1 className="mx-auto max-w-4xl font-grotesk text-h1 font-bold leading-[1.1] text-text-primary md:text-display md:leading-[1.05]">
+          Formamos líderes para{" "}
+          <span className="gradient-text">transformar personas</span>,
+          iglesias, empresas y territorios.
         </h1>
 
         <p className="mx-auto mt-6 max-w-2xl text-justify font-inter text-base leading-relaxed text-text-secondary md:text-lg">
-          9 bloques, 200 módulos, 18 meses académicos. Espiritualidad,
-          liderazgo, gobierno, finanzas, empresas y tecnología. Premium,
-          en español.
+          Formación integral, bíblica, práctica y tecnológica para liderar
+          en el Reino y expandir tu impacto al siguiente nivel.
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
           <DapButton render={<Link href="/suscribirme" />} size="lg">
-            Empezar ahora — $25/mes
+            Comienza tu transformación
             <ArrowRight />
           </DapButton>
           <DapButton
@@ -46,12 +61,13 @@ export function HeroSectionV2() {
             variant="secondary"
             size="lg"
           >
-            Ver los bloques
+            <PlayCircle />
+            Ver el diplomado
           </DapButton>
         </div>
 
         <p className="mt-6 font-inter text-xs text-text-tertiary">
-          Cancela cuando quieras. Sin compromiso.
+          18 meses · 9 bloques · 200 módulos · desde $25/mes
         </p>
       </div>
 
