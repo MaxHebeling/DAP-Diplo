@@ -3,12 +3,28 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { LayoutDashboard, LogOut, Menu, ShieldCheck, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { DapAvatar } from "@/components/ui-dap/avatar";
 import { DapButton } from "@/components/ui-dap/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type NavLink = { href: string; label: string };
+
+export type DapHeaderUser = {
+  fullName: string | null;
+  avatarUrl: string | null;
+  role: "student" | "admin";
+} | null;
 
 type DapPublicHeaderProps = {
   links?: NavLink[];
@@ -16,6 +32,8 @@ type DapPublicHeaderProps = {
   ctaHref?: string;
   loginLabel?: string;
   loginHref?: string;
+  user?: DapHeaderUser;
+  onSignOut?: () => void | Promise<void>;
 };
 
 const DEFAULT_LINKS: NavLink[] = [
@@ -31,6 +49,8 @@ export function DapPublicHeader({
   ctaHref = "/suscribirme",
   loginLabel = "Iniciar sesión",
   loginHref = "/login",
+  user,
+  onSignOut,
 }: DapPublicHeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -84,19 +104,67 @@ export function DapPublicHeader({
         </nav>
 
         <div className="flex items-center gap-2">
-          <Link
-            href={loginHref}
-            className="hidden font-inter text-sm font-medium text-text-secondary transition-colors hover:text-text-primary sm:inline-flex"
-          >
-            {loginLabel}
-          </Link>
-          <DapButton
-            render={<Link href={ctaHref} />}
-            size="sm"
-            className="hidden sm:inline-flex"
-          >
-            {ctaLabel}
-          </DapButton>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                aria-label="Abrir menú de cuenta"
+                className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-brand-violet focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base"
+              >
+                <DapAvatar
+                  src={user.avatarUrl}
+                  name={user.fullName}
+                  size="sm"
+                />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel className="truncate">
+                  {user.fullName ?? "Mi cuenta"}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem render={<Link href="/dashboard" />}>
+                    <LayoutDashboard className="size-4" />
+                    Dashboard
+                  </DropdownMenuItem>
+                  {user.role === "admin" && (
+                    <DropdownMenuItem render={<Link href="/admin" />}>
+                      <ShieldCheck className="size-4" />
+                      Admin
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuGroup>
+                {onSignOut && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <form action={onSignOut}>
+                      <DropdownMenuItem
+                        render={<button type="submit" className="w-full" />}
+                      >
+                        <LogOut className="size-4" />
+                        Cerrar sesión
+                      </DropdownMenuItem>
+                    </form>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Link
+                href={loginHref}
+                className="hidden font-inter text-sm font-medium text-text-secondary transition-colors hover:text-text-primary sm:inline-flex"
+              >
+                {loginLabel}
+              </Link>
+              <DapButton
+                render={<Link href={ctaHref} />}
+                size="sm"
+                className="hidden sm:inline-flex"
+              >
+                {ctaLabel}
+              </DapButton>
+            </>
+          )}
 
           <button
             type="button"
@@ -126,17 +194,19 @@ export function DapPublicHeader({
                 {link.label}
               </Link>
             ))}
-            <div className="mt-2 flex flex-col gap-2 border-t border-white/[0.06] pt-3 sm:hidden">
-              <Link
-                href={loginHref}
-                className="rounded-md px-3 py-2 font-inter text-base text-text-secondary"
-              >
-                {loginLabel}
-              </Link>
-              <DapButton render={<Link href={ctaHref} />} size="md">
-                {ctaLabel}
-              </DapButton>
-            </div>
+            {!user && (
+              <div className="mt-2 flex flex-col gap-2 border-t border-white/[0.06] pt-3 sm:hidden">
+                <Link
+                  href={loginHref}
+                  className="rounded-md px-3 py-2 font-inter text-base text-text-secondary"
+                >
+                  {loginLabel}
+                </Link>
+                <DapButton render={<Link href={ctaHref} />} size="md">
+                  {ctaLabel}
+                </DapButton>
+              </div>
+            )}
           </nav>
         </div>
       )}
