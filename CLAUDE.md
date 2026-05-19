@@ -271,13 +271,13 @@ ANTHROPIC_API_KEY=
 
 - [x] **Fase 0** — Setup base
 - [x] **Fase 1** — Autenticación
-- [ ] **Fase 2** — Vista pública del Diplomado *(parcial: landing OK, falta detalle de bloque)*
-- [ ] **Fase 3** — Suscripción Stripe + gating mensual *(arquitectura cambió con migration 0008)*
-- [ ] **Fase 4** — Reproductor de módulo con 5 secciones + progreso
-- [ ] **Fase 5** — Quizzes, certificados, rangos
-- [ ] **Fase 6** — Comunidad
-- [ ] **Fase 7** — Sesiones en vivo
-- [ ] **Fase 8** — Tutor IA
+- [x] **Fase 2** — Vista pública del Diplomado
+- [x] **Fase 3** — Suscripción Stripe mensual + gating académico + pausa automática + cancelación por timeout (refactor 2026-05-18, migrations 0008/0009)
+- [x] **Fase 4** — Reproductor de módulo con 5 secciones + progreso
+- [x] **Fase 5** — Quizzes, certificados, rangos
+- [x] **Fase 6** — Comunidad
+- [x] **Fase 7** — Sesiones en vivo
+- [x] **Fase 8** — Tutor IA
 
 ---
 
