@@ -320,3 +320,30 @@
   }
 }
 
+/* DAP — ripple effect en botones primary al click. */
+@keyframes dap-ripple {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.55;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(18);
+    opacity: 0;
+  }
+}
+.dap-ripple {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.45);
+  pointer-events: none;
+  animation: dap-ripple 650ms ease-out forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dap-ripple {
+    animation: none !important;
+    opacity: 0;
+  }
+}
+
