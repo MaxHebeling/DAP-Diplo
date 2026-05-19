@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import {
   Geist,
   Geist_Mono,
@@ -43,9 +43,58 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "DAP — Diplomado Apostólico Pastoral",
+  metadataBase: new URL("https://www.dapglobal.org"),
+  title: {
+    default: "DAP · Diplomado Apostólico Pastoral",
+    template: "%s · DAP",
+  },
   description:
-    "Formación apostólica integral para pastores y líderes hispanohablantes. 18 meses, 9 fases, 200 módulos. Espiritualidad, liderazgo, gobierno, finanzas, empresas y tecnología.",
+    "Formación apostólica integral para pastores. 200 módulos en 18 meses · 9 áreas ministeriales · mentoría grupal · comunidad. Desde $25 USD/mes.",
+  applicationName: "DAP",
+  authors: [{ name: "DAP" }],
+  generator: "Next.js",
+  keywords: [
+    "diplomado apostólico",
+    "formación pastoral",
+    "liderazgo cristiano",
+    "discipulado",
+    "reino",
+    "autoridad apostólica",
+    "pastores latinoamérica",
+  ],
+  robots: {
+    index: true,
+    follow: true,
+    "max-image-preview": "large",
+  },
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "es_LA",
+    url: "/",
+    siteName: "DAP",
+    title: "DAP · Diplomado Apostólico Pastoral",
+    description:
+      "Formamos pastores integrales que transforman su generación. 200 módulos en 18 meses, 9 áreas ministeriales y mentoría grupal. Desde $25 USD/mes.",
+    // Imagen auto-generada por app/opengraph-image.tsx (file convention).
+  },
+  twitter: {
+    card: "summary_large_image",
+    // site: "@dap_diplomado", // descomentar cuando exista la cuenta
+    title: "DAP · Diplomado Apostólico Pastoral",
+    description:
+      "Formamos pastores integrales que transforman su generación. 200 módulos · 18 meses · 9 áreas ministeriales. Desde $25 USD/mes.",
+    // Imagen auto-generada por app/opengraph-image.tsx (file convention).
+  },
+  // Icons + manifest se sirven via file conventions:
+  // app/favicon.ico, app/icon.svg, app/apple-icon.png, app/manifest.ts
+};
+
+export const viewport: Viewport = {
+  themeColor: "#07142B",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({

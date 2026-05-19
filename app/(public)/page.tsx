@@ -16,13 +16,6 @@ import {
 } from "@/components/layouts/dap-public-header";
 import { DapPublicFooter } from "@/components/layouts/dap-public-footer";
 
-export const metadata = {
-  title:
-    "DAP — Diplomado Apostólico Pastoral | Formación integral para pastores",
-  description:
-    "18 meses de formación apostólica integral. 9 bloques, 200 módulos, 9 dimensiones ministeriales. Espiritualidad + liderazgo + gobierno + finanzas + empresas + tecnología. $25/mes.",
-};
-
 const HEADER_LINKS = [
   { href: "#bloques", label: "Bloques" },
   { href: "#diplomado", label: "Modelo" },
