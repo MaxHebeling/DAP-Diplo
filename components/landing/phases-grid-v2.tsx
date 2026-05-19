@@ -66,7 +66,7 @@ export async function PhasesGridV2() {
         alt=""
         fill
         sizes="100vw"
-        className="-z-40 object-cover opacity-40"
+        className="-z-40 object-cover opacity-20"
       />
       <div className="absolute inset-0 -z-35 bg-gradient-to-b from-surface-base/70 via-transparent to-surface-base/85" />
       <div className="absolute inset-0 -z-30 bg-brand-coral/10 mix-blend-multiply" />

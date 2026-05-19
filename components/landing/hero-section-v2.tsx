@@ -27,7 +27,7 @@ export function HeroSectionV2() {
             className="absolute -inset-x-20 inset-y-0 -z-10 [background:radial-gradient(50%_70%_at_50%_50%,rgba(123,97,255,0.35),transparent_70%)] blur-xl"
           />
           <Image
-            src="/dap-logo.png"
+            src="/dap-logo-clear.png"
             alt="DAP"
             width={420}
             height={420}
