@@ -143,6 +143,32 @@ export async function resumeSubscriptionCollection(
   );
 }
 
+/**
+ * Cancela una suscripción inmediatamente (no waits for period end).
+ * El alumno pierde acceso. Su progreso (module_progress, etc.) se conserva
+ * en nuestra DB para cuando reactive.
+ */
+export async function cancelSubscription(
+  subscriptionId: string,
+): Promise<StripeSubscriptionMinimal> {
+  const sk = process.env.STRIPE_SECRET_KEY;
+  if (!sk) throw new Error("STRIPE_SECRET_KEY no está configurado.");
+  const res = await fetch(`${BASE}/subscriptions/${subscriptionId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${sk}` },
+  });
+  const json = (await res.json()) as
+    | StripeSubscriptionMinimal
+    | { error?: { message?: string } };
+  if (!res.ok) {
+    const msg =
+      (json as { error?: { message?: string } }).error?.message ??
+      `Stripe HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+  return json as StripeSubscriptionMinimal;
+}
+
 export async function createSubscriptionCheckoutSession(opts: {
   customerId: string;
   userId: string;
