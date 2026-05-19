@@ -62,15 +62,14 @@ export async function PhasesGridV2() {
     >
       {/* Background photo + tints (capas back→front) */}
       <Image
-        src="/hero.jpg"
+        src="/phases-bg.jpg"
         alt=""
         fill
         sizes="100vw"
         className="-z-40 object-cover"
       />
-      <div className="absolute inset-0 -z-35 bg-gradient-to-b from-surface-base/85 via-surface-base/55 to-surface-base" />
-      <div className="absolute inset-0 -z-30 bg-brand-coral/20 mix-blend-multiply" />
-      <div className="absolute inset-0 -z-25 bg-brand-violet/15 mix-blend-overlay" />
+      <div className="absolute inset-0 -z-35 bg-gradient-to-b from-surface-base/70 via-transparent to-surface-base/85" />
+      <div className="absolute inset-0 -z-30 bg-brand-coral/10 mix-blend-multiply" />
 
       <div className="relative z-10 mx-auto max-w-6xl">
         <div className="mb-16 flex flex-col items-start gap-6 sm:flex-row sm:items-end sm:justify-between">
