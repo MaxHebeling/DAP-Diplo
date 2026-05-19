@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
   // Mark processed (no fallar si ya existe por race condition)
   const { error: insErr } = await admin
     .from("stripe_events_processed")
-    .insert({ id: event.id, event_type: event.type });
+    .insert({ id: event.id, type: event.type });
   if (insErr && !/duplicate|already exists/i.test(insErr.message)) {
     console.error(
       `[stripe.webhook] event=${event.id} no se pudo marcar como procesado: ${insErr.message}`,
