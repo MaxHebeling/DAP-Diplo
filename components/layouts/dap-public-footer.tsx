@@ -52,17 +52,18 @@ export function DapPublicFooter() {
       <div className="mx-auto max-w-6xl px-6 py-16">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-[1.5fr_repeat(3,1fr)]">
           <div className="space-y-6">
-            <Link href="/" className="inline-flex items-center gap-2">
+            <Link
+              href="/"
+              className="inline-flex items-center"
+              aria-label="DAP — Inicio"
+            >
               <Image
                 src="/dap-logo-white.png"
-                alt=""
+                alt="DAP"
                 width={36}
                 height={36}
                 className="size-9 rounded-md"
               />
-              <span className="font-grotesk text-xl font-bold tracking-tight">
-                DAP
-              </span>
             </Link>
             <p className="max-w-sm text-sm leading-relaxed text-text-secondary">
               Diplomado Apostólico Pastoral. Formación integral de 18 meses
