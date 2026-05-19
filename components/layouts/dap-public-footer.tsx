@@ -39,6 +39,7 @@ const COLS = [
     links: [
       { href: "/terminos", label: "Términos" },
       { href: "/privacidad", label: "Privacidad" },
+      { href: "/reembolso", label: "Reembolsos" },
     ],
   },
 ];
