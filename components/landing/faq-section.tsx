@@ -30,7 +30,7 @@ const FAQS = [
   },
   {
     q: "¿Los certificados son válidos institucionalmente?",
-    a: "Los certificados del DAP son emitidos por la Red Apostólica Reino y Avivamiento. Son reconocidos dentro de nuestra red ministerial; no son títulos académicos universitarios. El valor está en la dimensión ministerial que respaldan, no en validez estatal.",
+    a: "Los certificados del DAP son emitidos por la Red Apostólica Reino y Avivamiento. Son reconocidos dentro de nuestra red ministerial; no son títulos académicos universitarios. El valor está en la dimensión ministerial que respaldan, no en validez estatal. Estamos en trámites de dos acreditaciones —una acreditación curricular en México y otra de una Universidad de Estados Unidos para el resto del mundo, con respaldo oficial—. Se comunicará públicamente cuando esté confirmado.",
   },
   {
     q: "¿Hay material descargable?",
