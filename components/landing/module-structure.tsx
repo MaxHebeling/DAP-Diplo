@@ -19,7 +19,7 @@ const PARTS = [
   {
     number: "04",
     title: "Evaluación",
-    body: "Test que mide comprensión. Aprobar es requisito para completar el módulo y, al final de la fase, recibir la dimensión.",
+    body: "Quiz que mide comprensión. Aprobar es requisito para completar el módulo y, al final del mes, desbloquear el siguiente.",
   },
   {
     number: "05",
@@ -32,31 +32,31 @@ export function ModuleStructure() {
   return (
     <section
       id="estructura"
-      className="border-t border-white/5 bg-neutral-950 px-6 py-28 sm:py-36"
+      className="border-t border-white/[0.06] bg-surface-base px-6 py-28 sm:py-36"
     >
       <div className="mx-auto max-w-6xl">
         <Reveal>
           <div className="mb-16 max-w-2xl">
-            <p className="mb-5 text-xs font-medium uppercase tracking-[0.32em] text-brand-coral">
+            <p className="mb-4 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
               Cada módulo, 5 partes
             </p>
-            <h2 className="font-serif text-balance text-4xl font-semibold leading-tight text-neutral-50 sm:text-5xl">
-              Una experiencia consistente en cada clase.
+            <h2 className="font-grotesk text-h1 font-bold leading-tight text-text-primary">
+              Una experiencia <span className="gradient-text">consistente</span> en cada clase.
             </h2>
           </div>
         </Reveal>
 
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {PARTS.map((part, i) => (
             <Reveal key={part.number} delay={i * 0.05}>
-              <div className="h-full rounded-2xl border border-white/10 bg-neutral-900/40 p-7 transition-colors hover:border-brand-coral/30">
-                <div className="mb-6 font-serif text-3xl font-semibold text-brand-coral">
+              <div className="h-full rounded-xl border border-white/[0.06] bg-surface-elevated p-6 transition-all duration-300 hover:border-brand-coral/30">
+                <div className="mb-6 font-grotesk text-h2 font-bold gradient-text leading-none">
                   {part.number}
                 </div>
-                <h3 className="mb-3 font-serif text-xl font-semibold text-neutral-50">
+                <h3 className="mb-3 font-grotesk text-h4 font-semibold text-text-primary">
                   {part.title}
                 </h3>
-                <p className="text-justify text-sm leading-relaxed text-neutral-400 hyphens-auto">
+                <p className="font-inter text-sm leading-relaxed text-text-secondary">
                   {part.body}
                 </p>
               </div>

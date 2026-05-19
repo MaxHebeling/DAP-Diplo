@@ -1,7 +1,8 @@
 import { Reveal } from "@/components/landing/reveal";
+import { DapRankBadge, type RankOrder } from "@/components/ui-dap/rank-badge";
 import { createClient } from "@/lib/supabase/server";
 
-type RankRow = {
+type DimensionRow = {
   order_index: number;
   name: string;
   description: string | null;
@@ -13,7 +14,7 @@ export async function DimensionsTimeline() {
     .from("dimensions")
     .select("order_index, name, description")
     .order("order_index", { ascending: true })
-    .returns<RankRow[]>();
+    .returns<DimensionRow[]>();
 
   if (error) {
     throw new Error(`No se pudieron cargar las dimensiones: ${error.message}`);
@@ -24,45 +25,48 @@ export async function DimensionsTimeline() {
   return (
     <section
       id="dimensiones"
-      className="border-t border-white/5 bg-neutral-950 px-6 py-28 sm:py-36"
+      className="border-t border-white/[0.06] bg-surface-base px-6 py-28 sm:py-36"
     >
       <div className="mx-auto max-w-7xl">
         <Reveal>
           <div className="mb-16 max-w-3xl">
-            <p className="mb-5 text-xs font-medium uppercase tracking-[0.32em] text-brand-coral">
-              Los 9 dimensiones del Reino
+            <p className="mb-4 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
+              Los 9 rangos del Reino
             </p>
-            <h2 className="font-serif text-balance text-4xl font-semibold leading-tight text-neutral-50 sm:text-5xl">
-              Discípulo. Hijo. Líder. Ministro. Hasta Enviado.
+            <h2 className="font-grotesk text-h1 font-bold leading-tight text-text-primary">
+              Discípulo. Hijo. Líder. <span className="gradient-text">Hasta Enviado</span>.
             </h2>
-            <p className="mt-6 text-justify text-base leading-relaxed text-neutral-400 hyphens-auto">
-              Cada fase completado entrega una dimensión ministerial verificable.
-              No son títulos honoríficos: son etapas de proceso reconocidas
-              dentro del gobierno apostólico del DAP.
+            <p className="mt-6 font-inter text-base leading-relaxed text-text-secondary">
+              Cada bloque completado entrega una dimensión ministerial
+              verificable. No son títulos honoríficos: son etapas de proceso
+              reconocidas dentro del gobierno apostólico del DAP.
             </p>
           </div>
         </Reveal>
 
-        {/* Timeline vertical en mobile, horizontal en desktop */}
         <div className="relative">
           <div
             aria-hidden
-            className="absolute left-4 top-4 bottom-4 w-px bg-gradient-to-b from-brand-coral/40 via-white/10 to-brand-coral/40 lg:left-0 lg:right-0 lg:top-7 lg:h-px lg:w-auto lg:bg-gradient-to-r"
+            className="absolute left-7 top-4 bottom-4 w-px bg-gradient-to-b from-brand-violet/40 via-white/10 to-brand-coral/40 lg:left-0 lg:right-0 lg:top-10 lg:h-px lg:w-auto lg:bg-gradient-to-r"
           />
           <ol className="grid gap-10 lg:grid-cols-9 lg:gap-4">
             {dimensions.map((r, i) => (
               <Reveal key={r.order_index} delay={i * 0.04}>
-                <li className="relative pl-14 lg:pl-0 lg:pt-16">
-                  <div className="absolute left-0 top-0 flex size-8 items-center justify-center rounded-full border border-brand-coral/40 bg-neutral-950 font-serif text-sm font-semibold text-brand-coral lg:left-1/2 lg:-translate-x-1/2">
-                    {r.order_index}
+                <li className="relative pl-20 lg:pl-0 lg:text-center">
+                  <div className="absolute left-0 top-0 lg:static lg:mx-auto lg:mb-4">
+                    <DapRankBadge
+                      rankOrder={(r.order_index as RankOrder) ?? 1}
+                      size="md"
+                      label={r.name}
+                    />
                   </div>
-                  <h3 className="mb-1.5 font-serif text-xl font-semibold text-neutral-50 lg:text-center lg:text-lg">
+                  <h3 className="mb-1.5 font-grotesk text-h4 font-semibold text-text-primary lg:text-base">
                     {r.name}
                   </h3>
                   {r.description && (
-                    <p className="text-xs leading-relaxed text-neutral-500 lg:text-center">
+                    <p className="font-inter text-xs leading-relaxed text-text-tertiary">
                       {r.description.replace(
-                        /^Otorgado al completar la Fase \d+ — /,
+                        /^Otorgado al completar (la|el) (Fase|Bloque) \d+ — /,
                         "",
                       )}
                     </p>

@@ -1,31 +1,40 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, Sparkles } from "lucide-react";
+
+import { DapButton } from "@/components/ui-dap/button";
 import { Reveal } from "@/components/landing/reveal";
 
 export function FinalCta() {
   return (
-    <section className="relative isolate overflow-hidden bg-brand-coral px-6 py-28 sm:py-36">
+    <section className="relative isolate overflow-hidden border-t border-white/[0.06] bg-surface-base px-6 py-28 sm:py-36">
+      {/* Cosmic background */}
       <div
         aria-hidden
-        className="absolute inset-0 -z-10 bg-[radial-gradient(60%_60%_at_50%_50%,rgba(255,255,255,0.18),transparent)]"
+        className="absolute inset-0 -z-20 bg-gradient-cosmic opacity-90"
       />
-      <div className="mx-auto max-w-3xl text-center text-brand-coral-foreground">
+      <div
+        aria-hidden
+        className="absolute inset-0 -z-10 opacity-70 [background:radial-gradient(50%_50%_at_30%_50%,rgba(123,97,255,0.35),transparent_55%),radial-gradient(50%_50%_at_70%_55%,rgba(255,77,109,0.3),transparent_55%)]"
+      />
+
+      <div className="mx-auto max-w-3xl text-center">
         <Reveal>
-          <h2 className="mb-6 font-serif text-balance text-4xl font-semibold leading-tight sm:text-6xl">
-            Empieza tu diplomado apostólico hoy.
-          </h2>
-          <p className="mb-10 text-balance text-base sm:text-lg">
-            $25 USD/mes. Acceso inmediato a la Fase 1 y a las sesiones en vivo.
-            Cancela cuando quieras.
+          <p className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/[0.1] bg-white/[0.05] px-4 py-1.5 font-inter text-xs font-medium uppercase tracking-widest text-text-secondary backdrop-blur">
+            <Sparkles className="size-3.5 text-brand-coral" />
+            $25 USD/mes · cancela cuando quieras
           </p>
-          <Button
-            size="lg"
-            className="h-12 bg-neutral-950 px-8 text-base font-medium text-neutral-50 hover:bg-neutral-900"
-            render={<Link href="/suscribirme" />}
-          >
+          <h2 className="mb-6 font-grotesk text-display font-bold leading-[1.05] text-text-primary">
+            Empieza tu <span className="gradient-text">diplomado apostólico</span> hoy.
+          </h2>
+          <p className="mb-10 mx-auto max-w-xl font-inter text-base leading-relaxed text-text-secondary md:text-lg">
+            Acceso inmediato al Mes 1 y a las sesiones en vivo. 18 meses de
+            formación apostólica integral, en español.
+          </p>
+          <DapButton render={<Link href="/suscribirme" />} size="lg">
             Suscribirme ahora
-          </Button>
-          <p className="mt-5 text-xs opacity-70">
+            <ArrowRight />
+          </DapButton>
+          <p className="mt-6 font-inter text-xs text-text-tertiary">
             Procesado por Stripe. Tu suscripción comienza al confirmar el pago.
           </p>
         </Reveal>
