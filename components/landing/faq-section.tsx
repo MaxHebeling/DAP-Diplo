@@ -10,7 +10,7 @@ import {
 const FAQS = [
   {
     q: "¿Qué incluye la suscripción de $25/mes?",
-    a: "Acceso a las clases grabadas premium del mes que tengas desbloqueado, a todas las sesiones en vivo (MasterClass los miércoles, Activación los viernes), a la mentoría grupal mensual y a la comunidad de pastores del diplomado.",
+    a: "Acceso a las clases premium del mes que tengas desbloqueado, a todas las sesiones en vivo (MasterClass y especiales), a la mentoría grupal mensual y a la comunidad de pastores del diplomado.",
   },
   {
     q: "¿Puedo cancelar cuando quiera?",
