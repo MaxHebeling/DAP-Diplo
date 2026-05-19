@@ -102,46 +102,12 @@ export type StripeCheckoutSession = {
   mode: string;
 };
 
-// --- Subscriptions (pause / resume) ---------------------------------
+// --- Subscriptions --------------------------------------------------
 
 export type StripeSubscriptionMinimal = {
   id: string;
   status: string;
-  pause_collection: { behavior: string } | null;
 };
-
-/**
- * Pausa el cobro de una suscripción. El alumno mantiene `status='active'`
- * y acceso a su contenido, pero Stripe NO le cobra en el próximo ciclo.
- * `mark_uncollectible` también marca el siguiente invoice como
- * uncollectible automáticamente (vs `void` que lo cancela).
- */
-export async function pauseSubscriptionCollection(
-  subscriptionId: string,
-  behavior:
-    | "mark_uncollectible"
-    | "keep_as_draft"
-    | "void" = "mark_uncollectible",
-): Promise<StripeSubscriptionMinimal> {
-  return stripeRequest<StripeSubscriptionMinimal>(
-    `/subscriptions/${subscriptionId}`,
-    { "pause_collection[behavior]": behavior },
-  );
-}
-
-/**
- * Quita la pausa. Stripe cobra el invoice pendiente (si lo había) y
- * vuelve al ciclo normal.
- */
-export async function resumeSubscriptionCollection(
-  subscriptionId: string,
-): Promise<StripeSubscriptionMinimal> {
-  // Stripe espera el string "" para "unset" un campo via form-encoded.
-  return stripeRequest<StripeSubscriptionMinimal>(
-    `/subscriptions/${subscriptionId}`,
-    { pause_collection: "" },
-  );
-}
 
 /**
  * Cancela una suscripción inmediatamente (no waits for period end).

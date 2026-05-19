@@ -2,10 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { issueCertificatePdf } from "@/lib/certificates/issue";
-import { resumeSubscriptionCollection } from "@/lib/stripe/api";
-import { sendMonthAdvancedEmail } from "@/lib/email/send-month-advanced";
 
 export const runtime = "nodejs";
 
@@ -143,14 +140,14 @@ export async function POST(
     );
   }
 
-  // Gating: usuario debe tener acceso al módulo (course_month <= current_month_number)
+  // Gating: usuario debe tener suscripción activa. El gating fino por
+  // course_week vive en has_access_to_module (v3.3) — pendiente migration 0011.
   const phaseId = quizRow.section.module.phase_id;
-  const moduleId = quizRow.section.module.id;
   const moduleSlug = quizRow.section.module.slug;
   const phaseSlug = quizRow.section.module.phase.slug;
 
-  const [{ data: hasAccess }, { data: profile }] = await Promise.all([
-    supabase.rpc("has_access_to_module", { p_module_id: moduleId }),
+  const [{ data: hasSub }, { data: profile }] = await Promise.all([
+    supabase.rpc("has_active_subscription", { p_user_id: user.id }),
     supabase
       .from("profiles")
       .select("role")
@@ -158,9 +155,9 @@ export async function POST(
       .maybeSingle(),
   ]);
   const isAdmin = profile?.role === "admin";
-  if (!hasAccess && !isAdmin) {
+  if (!hasSub && !isAdmin) {
     return NextResponse.json(
-      { error: "No tienes acceso a este módulo" },
+      { error: "Necesitás una suscripción activa" },
       { status: 403 },
     );
   }
@@ -334,84 +331,7 @@ export async function POST(
     }
 
     revalidatePath(`/fases/${phaseSlug}/modulos/${moduleSlug}`);
-  }
-
-  // === Modelo mensual con gating académico ===
-  // Después de marcar el módulo aprobado (passed=true + secciones completas),
-  // intentamos avanzar al siguiente mes académico. try_advance_month es
-  // idempotente y devuelve el nuevo current_month_number (o el mismo si no
-  // se cumplen las condiciones: meses pagados ≤ current OR mes incompleto).
-  let advancedToMonth: number | null = null;
-  if (passed) {
-    const admin = createAdminClient();
-
-    // Mes y stripe_subscription_id ANTES del try_advance_month
-    const { data: subBefore } = await admin
-      .from("subscriptions")
-      .select("current_month_number, stripe_subscription_id, paused_at")
-      .eq("user_id", user.id)
-      .in("status", ["active", "trialing"])
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (!subBefore) {
-      // Sin subscripción activa: log y continúa. Puede ser admin testing.
-      console.warn(
-        `[quiz.submit] user=${user.id} sin sub activa, no se intenta try_advance_month`,
-      );
-    } else {
-      const monthBefore = subBefore.current_month_number;
-      const { data: newMonth, error: rpcErr } = await admin.rpc(
-        "try_advance_month",
-        { p_user_id: user.id },
-      );
-      if (rpcErr) {
-        console.error("[quiz.submit] try_advance_month failed:", rpcErr.message);
-      } else {
-        const monthAfter = typeof newMonth === "number" ? newMonth : monthBefore;
-        const advanced = monthAfter > monthBefore;
-
-        if (advanced) {
-          advancedToMonth = monthAfter;
-
-          // Si estaba pausada: limpia DB + Stripe + (sin email separado, el
-          // email "Bienvenido al Mes N" cubre el avance).
-          if (subBefore.paused_at && subBefore.stripe_subscription_id) {
-            const { error: resErr } = await admin.rpc(
-              "mark_subscription_resumed",
-              { p_user_id: user.id },
-            );
-            if (resErr) {
-              console.error(
-                "[quiz.submit] mark_subscription_resumed falló:",
-                resErr.message,
-              );
-            }
-            try {
-              await resumeSubscriptionCollection(subBefore.stripe_subscription_id);
-            } catch (err) {
-              const msg = err instanceof Error ? err.message : String(err);
-              console.error(
-                `[quiz.submit] resumeSubscriptionCollection sub=${subBefore.stripe_subscription_id} falló: ${msg}`,
-              );
-              // No throw: la pausa local ya se limpió, Stripe se resincroniza
-              // en el próximo webhook customer.subscription.updated.
-            }
-          }
-
-          // Email "Bienvenido al Mes N" (cubre tanto reanudación como avance normal)
-          const emailRes = await sendMonthAdvancedEmail(user.id, monthAfter);
-          if (!emailRes.ok) {
-            console.error(
-              `[quiz.submit] sendMonthAdvancedEmail user=${user.id} mes=${monthAfter} falló: ${emailRes.error}`,
-            );
-          }
-
-          revalidatePath(`/dashboard`);
-        }
-      }
-    }
+    revalidatePath(`/dashboard`);
   }
 
   // Conteo de intentos tras inserción (para UI "Volver a intentar")
@@ -430,7 +350,6 @@ export async function POST(
     attempt_count: attemptCount ?? 1,
     module_completed: moduleCompleted,
     block_completion: blockCompletion,
-    advanced_to_month: advancedToMonth,
     graded,
   });
 }

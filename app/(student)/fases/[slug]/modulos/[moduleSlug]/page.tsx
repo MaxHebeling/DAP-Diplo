@@ -141,11 +141,12 @@ export default async function ModulePlayerPage({
   // 4) Block published / admin override
   if (!mod.phase.published && !isAdmin) notFound();
 
-  // 5) Gating por modelo mensual: course_month del módulo <= current_month_number
-  const { data: hasAccess } = await supabase.rpc("has_access_to_module", {
-    p_module_id: mod.id,
+  // 5) Gating: suscripción activa (v3.3 — el gating fino por course_week
+  // vive en has_access_to_module, pendiente migration 0011).
+  const { data: hasSub } = await supabase.rpc("has_active_subscription", {
+    p_user_id: user.id,
   });
-  if (!hasAccess && !isAdmin) {
+  if (!hasSub && !isAdmin) {
     redirect(`/fases/${phaseSlug}?toast=phase-locked`);
   }
 

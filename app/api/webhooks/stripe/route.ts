@@ -2,23 +2,19 @@ import { NextResponse, type NextRequest } from "next/server";
 import type Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendWelcomeEmail } from "@/lib/email/send-welcome";
-import { sendMonthAdvancedEmail } from "@/lib/email/send-month-advanced";
-import { sendSubscriptionPausedEmail } from "@/lib/email/send-subscription-paused";
 import { sendPaymentFailedEmail } from "@/lib/email/send-payment-failed";
 import { constructStripeEvent } from "@/lib/stripe/webhook";
-import { pauseSubscriptionCollection } from "@/lib/stripe/api";
 
 export const runtime = "nodejs";
 
-// Modelo mensual con gating académico (CLAUDE.md v3, migrations 0008/0009).
+// Modelo v3.3: suscripción simple. SIN gating académico, SIN pausa automática.
 //
-// 6 eventos manejados:
+// 5 eventos manejados:
 //   customer.subscription.created  → crea fila + welcome email
-//   customer.subscription.updated  → sincroniza + detecta pause_collection
-//   customer.subscription.deleted  → status=canceled + limpia paused_at
-//   invoice.paid                   → +1 months_paid_total + try_advance_month
+//   customer.subscription.updated  → sincroniza estado de Stripe
+//   customer.subscription.deleted  → status=canceled
+//   invoice.paid                   → status=active (no-op si ya está)
 //   invoice.payment_failed         → status=past_due + email
-//   invoice.upcoming               → si should_pause: pausa Stripe + email
 //
 // Idempotencia: tabla stripe_events_processed (check antes + insert después).
 
@@ -90,11 +86,6 @@ export async function POST(request: NextRequest) {
         break;
       case "invoice.payment_failed":
         result = await handleInvoicePaymentFailed(
-          event.data.object as Stripe.Invoice,
-        );
-        break;
-      case "invoice.upcoming":
-        result = await handleInvoiceUpcoming(
           event.data.object as Stripe.Invoice,
         );
         break;
@@ -174,7 +165,7 @@ function logEmail(
 
 async function upsertSubscription(
   sub: Stripe.Subscription,
-  opts: { isCreate: boolean },
+  _opts: { isCreate: boolean },
 ): Promise<EventResult> {
   const userId = sub.metadata?.userId;
   if (!userId) {
@@ -196,34 +187,6 @@ async function upsertSubscription(
 
   const admin = createAdminClient();
 
-  // Mantenemos contadores y current_month_number si la fila ya existe.
-  // En subscription.updated NUNCA reiniciamos esos campos.
-  const { data: existing } = await admin
-    .from("subscriptions")
-    .select("months_paid_total, current_month_number, paused_at, pause_reason")
-    .eq("stripe_subscription_id", sub.id)
-    .maybeSingle();
-
-  // Detectar pause_collection cambios desde Stripe (Customer Portal o API
-  // manual). Si Stripe trae pause_collection != null y nosotros no tenemos
-  // paused_at: marca como pausa "manual". Si Stripe trae null y nosotros
-  // tenemos paused_at: limpia (la pausa se resolvió externamente).
-  const stripeHasPause = sub.pause_collection != null;
-  const dbHasPause = existing?.paused_at != null;
-
-  let pausedAtNew: string | null | undefined;
-  let pauseReasonNew: string | null | undefined;
-  if (stripeHasPause && !dbHasPause) {
-    pausedAtNew = new Date().toISOString();
-    pauseReasonNew = "manual";
-  } else if (!stripeHasPause && dbHasPause) {
-    pausedAtNew = null;
-    pauseReasonNew = null;
-  } else {
-    pausedAtNew = undefined; // sin cambio
-    pauseReasonNew = undefined;
-  }
-
   const payload: Record<string, unknown> = {
     user_id: userId,
     stripe_customer_id: customerId,
@@ -235,19 +198,7 @@ async function upsertSubscription(
     cancel_at_period_end: sub.cancel_at_period_end ?? false,
     cancel_at: tsToIso(sub.cancel_at),
     canceled_at: tsToIso(sub.canceled_at),
-    months_paid_total: existing?.months_paid_total ?? 0,
-    // En create: arranca en mes 1. En update: preserva lo que haya en DB.
-    current_month_number:
-      existing?.current_month_number ?? (opts.isCreate ? 1 : 1),
-    month_started_at: opts.isCreate ? new Date().toISOString() : undefined,
   };
-  if (pausedAtNew !== undefined) payload.paused_at = pausedAtNew;
-  if (pauseReasonNew !== undefined) payload.pause_reason = pauseReasonNew;
-
-  // Limpia keys undefined (Supabase los manda como NULL si los dejamos)
-  for (const k of Object.keys(payload)) {
-    if (payload[k] === undefined) delete payload[k];
-  }
 
   const { error } = await admin
     .from("subscriptions")
@@ -257,12 +208,7 @@ async function upsertSubscription(
     });
   if (error) throw new Error(`Upsert subscriptions falló: ${error.message}`);
 
-  let detail = `status=${sub.status}`;
-  if (pausedAtNew === null) detail += " | pause cleared (Stripe → DB)";
-  if (pausedAtNew && pausedAtNew !== undefined)
-    detail += " | pause set (Stripe → DB, manual)";
-
-  return { ok: true, userId, detail };
+  return { ok: true, userId, detail: `status=${sub.status}` };
 }
 
 async function markSubscriptionCanceled(
@@ -274,8 +220,6 @@ async function markSubscriptionCanceled(
     .update({
       status: "canceled",
       canceled_at: tsToIso(sub.canceled_at) ?? new Date().toISOString(),
-      paused_at: null,
-      pause_reason: null,
     })
     .eq("stripe_subscription_id", sub.id);
   if (error) throw new Error(`Cancel subscription falló: ${error.message}`);
@@ -321,7 +265,7 @@ async function handleInvoicePaid(
   const subId = invoiceSubscriptionId(invoice);
   if (!subId) return { ok: true, detail: "invoice sin subscription, ignorado" };
 
-  // Solo contamos invoices de nuevo período de cobro.
+  // Solo procesamos invoices de creación o renovación del ciclo.
   const reason = invoice.billing_reason;
   if (reason !== "subscription_create" && reason !== "subscription_cycle") {
     return {
@@ -333,7 +277,7 @@ async function handleInvoicePaid(
   const admin = createAdminClient();
   const { data: subRow, error: selErr } = await admin
     .from("subscriptions")
-    .select("user_id, months_paid_total, current_month_number")
+    .select("user_id, status")
     .eq("stripe_subscription_id", subId)
     .maybeSingle();
   if (selErr) throw new Error(`Lookup subscription falló: ${selErr.message}`);
@@ -344,120 +288,18 @@ async function handleInvoicePaid(
     );
   }
 
-  const newCount = (subRow.months_paid_total ?? 0) + 1;
-  const monthBefore = subRow.current_month_number;
-
-  const { error: updErr } = await admin
-    .from("subscriptions")
-    .update({ months_paid_total: newCount })
-    .eq("stripe_subscription_id", subId);
-  if (updErr) throw new Error(`Update months falló: ${updErr.message}`);
-
-  // try_advance_month: avanza si pagó + completó el mes actual.
-  // Si todavía no completó el mes actual, queda en monthBefore (Stripe
-  // ya cobró pero el alumno no avanza hasta aprobar — gating académico).
-  const { data: newMonth, error: rpcErr } = await admin.rpc(
-    "try_advance_month",
-    { p_user_id: subRow.user_id },
-  );
-  if (rpcErr) {
-    throw new Error(`try_advance_month falló: ${rpcErr.message}`);
-  }
-  const monthAfter = typeof newMonth === "number" ? newMonth : monthBefore;
-  const advanced = monthAfter > monthBefore;
-
-  // Email "Bienvenido al Mes N" si avanzó
-  if (advanced) {
-    const emailRes = await sendMonthAdvancedEmail(subRow.user_id, monthAfter);
-    logEmail("month-advanced", subRow.user_id, emailRes);
+  // Si venía past_due → la marcamos active.
+  if (subRow.status !== "active") {
+    const { error: updErr } = await admin
+      .from("subscriptions")
+      .update({ status: "active" })
+      .eq("stripe_subscription_id", subId);
+    if (updErr) throw new Error(`Update status falló: ${updErr.message}`);
   }
 
   return {
     ok: true,
     userId: subRow.user_id,
-    detail: `reason=${reason} months_paid=${newCount} month=${monthBefore}→${monthAfter}${advanced ? " (advanced)" : ""}`,
-  };
-}
-
-async function handleInvoiceUpcoming(
-  invoice: Stripe.Invoice,
-): Promise<EventResult> {
-  const subId = invoiceSubscriptionId(invoice);
-  if (!subId) return { ok: true, detail: "invoice sin subscription" };
-
-  const admin = createAdminClient();
-  const { data: subRow } = await admin
-    .from("subscriptions")
-    .select("user_id, current_month_number, paused_at")
-    .eq("stripe_subscription_id", subId)
-    .maybeSingle();
-  if (!subRow) {
-    return { ok: true, detail: `sub=${subId} no existe en DB todavía` };
-  }
-
-  // Si ya está pausada, no hacemos nada (evita Stripe double-pause y email dup)
-  if (subRow.paused_at) {
-    return {
-      ok: true,
-      userId: subRow.user_id,
-      detail: "ya estaba pausada, no-op",
-    };
-  }
-
-  // ¿Debe pausarse? (RPC: mes actual incompleto?)
-  const { data: shouldPause, error: rpcErr } = await admin.rpc(
-    "should_pause_for_incomplete_month",
-    { p_user_id: subRow.user_id },
-  );
-  if (rpcErr) {
-    throw new Error(`should_pause_for_incomplete_month falló: ${rpcErr.message}`);
-  }
-  if (shouldPause !== true) {
-    return {
-      ok: true,
-      userId: subRow.user_id,
-      detail: "mes completado, no pausa, cobro normal",
-    };
-  }
-
-  // (a) Pausa en Stripe (fail-loud: si Stripe falla, NO marcamos paused_at
-  //     local para que el siguiente tick lo reintente).
-  await pauseSubscriptionCollection(subId, "mark_uncollectible");
-
-  // (b) Marca en nuestra DB
-  const { error: markErr } = await admin.rpc("mark_subscription_paused", {
-    p_user_id: subRow.user_id,
-    p_reason: "incomplete_month",
-  });
-  if (markErr) {
-    throw new Error(`mark_subscription_paused falló: ${markErr.message}`);
-  }
-
-  // (c) Email con counts del mes actual
-  const [{ data: approved }, { count: totalCount }] = await Promise.all([
-    admin.rpc("count_approved_modules_in_month", {
-      p_user_id: subRow.user_id,
-      p_month: subRow.current_month_number,
-    }),
-    admin
-      .from("modules")
-      .select("id", { count: "exact", head: true })
-      .eq("course_month", subRow.current_month_number),
-  ]);
-  const approvedCount = typeof approved === "number" ? approved : 0;
-  const total = totalCount ?? 0;
-
-  const emailRes = await sendSubscriptionPausedEmail(
-    subRow.user_id,
-    subRow.current_month_number,
-    approvedCount,
-    total,
-  );
-  logEmail("subscription-paused", subRow.user_id, emailRes);
-
-  return {
-    ok: true,
-    userId: subRow.user_id,
-    detail: `paused mes=${subRow.current_month_number} ${approvedCount}/${total}`,
+    detail: `reason=${reason}${subRow.status !== "active" ? " → active" : ""}`,
   };
 }

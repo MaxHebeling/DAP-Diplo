@@ -292,16 +292,18 @@ CRON_SECRET=                                 # autentica los crons (admisión 24
 ## 10. Glosario
 
 - **Pastor / alumno** → usuario final, suscriptor.
-- **Diplomado** → el programa completo de 18 meses académicos.
-- **Bloque** → uno de los 9 grandes temas (2 meses académicos cada uno).
-- **Mes académico** → unidad de gating. Numerado 1–18 por alumno. Coincide con el ciclo de facturación de Stripe.
-- **Módulo** → una clase de 45–60 min con 5 partes fijas. 4 por mes, 8 por bloque. Total 72.
+- **Diplomado** → el programa completo de 18 meses académicos (~72 semanas).
+- **Bloque** → uno de los 9 grandes temas (2 meses académicos cada uno = ~8 semanas).
+- **Mes académico** → unidad de organización curricular. Numerado 1–18. Cada mes contiene 4 módulos.
+- **Semana del programa** → unidad de avance real (1–72). Calculada por `current_program_week()` desde `program_start_date` del alumno.
+- **Módulo** → una clase de 45–60 min con 5 partes fijas. 4 por mes, 8 por bloque. Total 72. Cada módulo abre 1 semana (martes 00:01 → lunes 23:59).
 - **Sección / parte** → una de las 5 partes obligatorias de cada módulo.
-- **Aprobado** → módulo con 5 secciones completadas + quiz pasado.
-- **Rango** → título ministerial otorgado al completar un bloque.
-- **MasterClass** → sesión en vivo de los miércoles.
-- **Activación** → sesión práctica del viernes.
-- **Mentoría grupal** → sesión mensual con grupo reducido.
+- **Aprobado** → módulo con 5 secciones completadas + quiz pasado. Requisito para certificación, NO para avance (el calendario manda).
+- **Rango** → título ministerial otorgado al completar un bloque (aprobar los 8 módulos).
+- **MasterClass** → sesión en vivo. Por evento, mínimo 1/mes garantizado. NO tiene día fijo.
+- **Mentoría grupal** → sesión en vivo por evento (sin cadencia fija). Convocada por el apóstol.
+- **Activación** → Parte 3 de cada módulo (ejercicio práctico). YA NO es sesión en vivo separada.
+- **Admisión** → solicitud formal previa al ingreso. Aprobada manualmente por equipo de admisiones. Dispara `program_start_date` (primer martes después) y carta PDF firmada 24h después.
 
 ---
 
@@ -309,13 +311,16 @@ CRON_SECRET=                                 # autentica los crons (admisión 24
 
 | Decisión | Por qué |
 |----------|---------|
-| Suscripción mensual personal (5 al 5) | Lo hace Stripe nativamente. Permite gating mes a mes. |
-| Gating académico (no temporal) | Asegura rendimiento real, no solo pago. Diferencia el DAP de un Netflix bíblico. |
+| Suscripción mensual simple (sin pausa de cobro) | Stripe maneja todo nativamente. Modelo Netflix puro: cobra mientras esté activa, deja de cobrar al cancelar. |
+| Avance por calendario semanal (no por rendimiento) | El tiempo manda. Quita carga emocional de "perder el mes". El gating viene por **admisión** (filtro previo). |
+| Admisión formal con carta del pastor (si no es de la Red) | Filtro de seriedad. Asegura que quien entra está respaldado pastoralmente y es seleccionado, no comprado. |
+| Carta PDF de admisión firmada por el Dr. Max 24h después | Refuerzo simbólico del compromiso. Convierte la inscripción en un acto formal, no transaccional. |
 | Modelo Netflix (cancela = pierde acceso) | Simple operacionalmente. Progreso se conserva si reactiva. |
-| Pausa automática si no completó | El cobro está condicionado al rendimiento académico. Más justo para el alumno (no paga si no avanzó) y más simple operacionalmente que devoluciones manuales. |
-| Rangos al completar bloque (no mes) | Mantiene los 9 rangos clásicos como hitos visibles. |
-| 9 bloques × 8 módulos = 72 (4/mes simétrico) | Programa más enfocado y digerible. 4 módulos/mes (≈1/semana) deja respirar. El valor se complementa con MasterClass, mentoría, comunidad y tutor IA. |
+| Resultados de quizzes + tareas 48h después | Genera anticipación, evita el "quiz como juego". Tareas escritas pasan por agente IA "excorrector" con voz del Dr. Max. |
+| Rangos al completar bloque (aprobar los 8 módulos) | Los 9 rangos clásicos son hitos visibles. Quien no aprueba todos los módulos del bloque, no recibe el rango hasta ponerse al día. |
+| 9 bloques × 8 módulos = 72 (4/mes, 1/semana simétrico) | Programa enfocado. 4 módulos/mes (1/semana) deja respirar. El valor se complementa con MasterClass, mentoría, comunidad y tutor IA. |
 | Sesiones en vivo por evento (no semanales) | Quita carga operativa de dar clase cada semana. MasterClass como "evento especial" (mín. 1/mes). Mentoría por convocatoria. |
+| Activación dentro del módulo (no sesión separada) | Aplicación práctica vive al lado de la enseñanza, no en otro día. Mayor cohesión pedagógica. |
 | 5 partes fijas por módulo | Estandariza experiencia, certificación clara, métricas comparables. |
 | Sin venta de bloques sueltos | Modelo simple. Si se evalúa después, se añade. |
 | Stripe Subscriptions sobre Checkout one-time | El modelo de cobro lo requiere. Renovaciones, cancelaciones, etc. |

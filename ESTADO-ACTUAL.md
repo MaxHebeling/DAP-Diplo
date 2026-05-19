@@ -1,4 +1,13 @@
-# Estado actual del DAP — 2026-05-18
+> ⚠️ **OBSOLETO** — este documento describe el modelo v3 (gating mensual,
+> 200 módulos, `months_paid_total`, pausa automática). El modelo final
+> es **v3.3** (admisión + calendario semanal, 72 módulos, suscripción
+> simple sin pausa). Ver `CLAUDE.md` v3.3 para el estado vigente.
+>
+> Conservado solo como referencia histórica del MVP de mayo 2026.
+
+---
+
+# Estado actual del DAP — 2026-05-18 (snapshot obsoleto)
 
 ## 1. Resumen ejecutivo
 
