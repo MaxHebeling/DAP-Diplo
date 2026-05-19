@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 
 import { DapButton } from "@/components/ui-dap/button";
+import { HeroParticles } from "./hero-particles";
 
 export function HeroSectionV2() {
   return (
@@ -13,6 +14,9 @@ export function HeroSectionV2() {
         aria-hidden
         className="absolute inset-0 -z-10 opacity-[0.18] [background-image:radial-gradient(circle_1px_at_25%_30%,white_99%,transparent_100%),radial-gradient(circle_1px_at_72%_44%,white_99%,transparent_100%),radial-gradient(circle_1px_at_88%_18%,white_99%,transparent_100%),radial-gradient(circle_1px_at_12%_72%,white_99%,transparent_100%),radial-gradient(circle_1px_at_55%_82%,white_99%,transparent_100%),radial-gradient(circle_1px_at_38%_15%,white_99%,transparent_100%),radial-gradient(circle_1px_at_82%_75%,white_99%,transparent_100%)] [background-repeat:no-repeat]"
       />
+
+      {/* Animated particles layer (above static layers, below content) */}
+      <HeroParticles intensity="cosmic" className="absolute inset-0 -z-[5]" />
 
       <div className="mx-auto flex min-h-[88vh] max-w-5xl flex-col items-center justify-center px-6 pb-20 pt-32 text-center sm:pt-40">
         <p className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/[0.1] bg-white/[0.05] px-4 py-1.5 font-inter text-xs font-medium uppercase tracking-widest text-text-secondary backdrop-blur">
