@@ -9,7 +9,9 @@ import {
   PauseCircle,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+
+import { cn } from "@/lib/utils";
+import { DapButton } from "@/components/ui-dap/button";
 
 type PauseBannerProps = {
   daysPaused: number;
@@ -17,6 +19,20 @@ type PauseBannerProps = {
   approvedCount: number;
   totalCount: number;
   canRequestExtension: boolean;
+};
+
+type WarningLevel = "none" | "soft" | "urgent";
+
+const LEVEL_BORDER: Record<WarningLevel, string> = {
+  none: "border-brand-coral/30 bg-brand-coral/[0.06]",
+  soft: "border-amber-500/40 bg-amber-500/[0.06]",
+  urgent: "border-red-500/40 bg-red-500/[0.06]",
+};
+
+const LEVEL_ICON_BG: Record<WarningLevel, string> = {
+  none: "bg-brand-coral/15 text-brand-coral",
+  soft: "bg-amber-500/15 text-amber-400",
+  urgent: "bg-red-500/15 text-red-400",
 };
 
 export function PauseBanner({
@@ -29,19 +45,10 @@ export function PauseBanner({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const daysLeft = Math.max(0, 60 - daysPaused);
-  const pending_modules = Math.max(0, totalCount - approvedCount);
+  const modulesLeft = Math.max(0, totalCount - approvedCount);
 
-  // Niveles de aviso (igual que el cron):
-  // 0-29: ningún aviso
-  // 30-49: amber
-  // 50-59: red
-  // 60+: no debería verse, ya canceled
-  const warningLevel: "none" | "soft" | "urgent" =
-    daysPaused >= 50
-      ? "urgent"
-      : daysPaused >= 30
-        ? "soft"
-        : "none";
+  const warningLevel: WarningLevel =
+    daysPaused >= 50 ? "urgent" : daysPaused >= 30 ? "soft" : "none";
 
   function requestExtension() {
     if (!canRequestExtension) return;
@@ -83,56 +90,50 @@ export function PauseBanner({
 
   return (
     <section
-      className={[
-        "mb-8 overflow-hidden rounded-2xl border",
-        warningLevel === "urgent"
-          ? "border-red-500/40 bg-red-500/5"
-          : warningLevel === "soft"
-            ? "border-amber-500/40 bg-amber-500/5"
-            : "border-brand-coral/30 bg-brand-coral/5",
-      ].join(" ")}
+      className={cn(
+        "mb-8 overflow-hidden rounded-xl border",
+        LEVEL_BORDER[warningLevel],
+      )}
     >
       <div className="flex items-start gap-4 px-6 py-5">
         <div
-          className={[
+          className={cn(
             "flex size-10 shrink-0 items-center justify-center rounded-full",
-            warningLevel === "urgent"
-              ? "bg-red-500/15 text-red-600"
-              : warningLevel === "soft"
-                ? "bg-amber-500/15 text-amber-600"
-                : "bg-brand-coral/15 text-brand-coral",
-          ].join(" ")}
+            LEVEL_ICON_BG[warningLevel],
+          )}
         >
           <PauseCircle className="size-5" strokeWidth={2} />
         </div>
 
         <div className="min-w-0 flex-1">
-          <h2 className="font-medium leading-tight">
+          <h2 className="font-grotesk text-h4 font-semibold leading-tight text-text-primary">
             Tu suscripción está pausada.{" "}
-            <span className="text-muted-foreground">No se te está cobrando.</span>
+            <span className="text-text-secondary font-normal">
+              No se te está cobrando.
+            </span>
           </h2>
 
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          <p className="mt-2 font-inter text-sm leading-relaxed text-text-secondary">
             Has aprobado{" "}
-            <strong className="text-foreground">
+            <strong className="text-text-primary">
               {approvedCount}/{totalCount}
             </strong>{" "}
             módulos del Mes {currentMonth}. Completa los{" "}
-            <strong className="text-foreground">
-              {pending_modules}{" "}
-              {pending_modules === 1 ? "módulo pendiente" : "módulos pendientes"}
+            <strong className="text-text-primary">
+              {modulesLeft}{" "}
+              {modulesLeft === 1 ? "módulo pendiente" : "módulos pendientes"}
             </strong>{" "}
             para reactivar tu suscripción y avanzar al Mes {currentMonth + 1}.
           </p>
 
-          <p className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+          <p className="mt-3 inline-flex items-center gap-1.5 font-inter text-xs text-text-tertiary">
             <CalendarClock className="size-3.5" />
-            Llevas <strong className="text-foreground">{daysPaused}</strong>{" "}
+            Llevas <strong className="text-text-primary">{daysPaused}</strong>{" "}
             {daysPaused === 1 ? "día" : "días"} en pausa.
           </p>
 
           {warningLevel === "soft" && (
-            <div className="mt-4 flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+            <div className="mt-4 flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 font-inter text-xs text-amber-300">
               <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
               <p>
                 Atención: tu suscripción se cancelará en{" "}
@@ -142,7 +143,7 @@ export function PauseBanner({
           )}
 
           {warningLevel === "urgent" && (
-            <div className="mt-4 flex items-start gap-2 rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-700 dark:text-red-300">
+            <div className="mt-4 flex items-start gap-2 rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 font-inter text-xs text-red-300">
               <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
               <p>
                 Tu suscripción se cancelará en <strong>{daysLeft} días</strong>.
@@ -153,9 +154,9 @@ export function PauseBanner({
 
           <div className="mt-5 flex flex-wrap items-center gap-2">
             {canRequestExtension && (
-              <Button
+              <DapButton
                 size="sm"
-                variant="outline"
+                variant="secondary"
                 onClick={requestExtension}
                 disabled={pending}
               >
@@ -167,10 +168,10 @@ export function PauseBanner({
                 {pending
                   ? "Otorgando…"
                   : "Pedir extensión de 60 días para esta fase"}
-              </Button>
+              </DapButton>
             )}
             {!canRequestExtension && (
-              <p className="text-xs text-muted-foreground">
+              <p className="font-inter text-xs text-text-tertiary">
                 Ya usaste tu extensión de esta fase.
               </p>
             )}

@@ -10,6 +10,7 @@ import {
   Compass,
   GraduationCap,
   Home,
+  LogOut,
   MessageCircle,
   Radio,
   Settings,
@@ -34,6 +35,7 @@ type DapStudentSidebarProps = {
   rank?: { order: RankOrder; label: string } | null;
   groups?: NavGroup[];
   className?: string;
+  onSignOut?: () => void | Promise<void>;
 };
 
 const DEFAULT_GROUPS: NavGroup[] = [
@@ -69,6 +71,7 @@ export function DapStudentSidebar({
   rank,
   groups = DEFAULT_GROUPS,
   className,
+  onSignOut,
 }: DapStudentSidebarProps) {
   const pathname = usePathname();
 
@@ -149,13 +152,27 @@ export function DapStudentSidebar({
             </p>
           </div>
         </div>
-        <Link
-          href="/configuracion"
-          className="mt-2 flex items-center gap-2 rounded-md px-2 py-1.5 font-inter text-xs text-text-tertiary transition-colors hover:text-text-primary"
-        >
-          <Compass className="size-3.5" />
-          Mi recorrido
-        </Link>
+        <div className="mt-2 flex items-center justify-between gap-2">
+          <Link
+            href="/configuracion"
+            className="flex items-center gap-2 rounded-md px-2 py-1.5 font-inter text-xs text-text-tertiary transition-colors hover:text-text-primary"
+          >
+            <Compass className="size-3.5" />
+            Mi recorrido
+          </Link>
+          {onSignOut && (
+            <form action={onSignOut}>
+              <button
+                type="submit"
+                aria-label="Cerrar sesión"
+                className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 font-inter text-xs text-text-tertiary transition-colors hover:text-brand-coral"
+              >
+                <LogOut className="size-3.5" />
+                Salir
+              </button>
+            </form>
+          )}
+        </div>
       </div>
     </aside>
   );
