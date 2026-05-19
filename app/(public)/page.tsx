@@ -17,9 +17,10 @@ import {
 import { DapPublicFooter } from "@/components/layouts/dap-public-footer";
 
 const HEADER_LINKS = [
+  { href: "/como-funciona", label: "Cómo funciona" },
   { href: "#bloques", label: "Bloques" },
-  { href: "#diplomado", label: "Modelo" },
-  { href: "#dimensiones", label: "Dimensiones" },
+  { href: "/rangos", label: "Rangos" },
+  { href: "/precios", label: "Precios" },
   { href: "#faq", label: "Preguntas" },
 ];
 
