@@ -9,7 +9,7 @@ const dapButtonVariants = cva(
     variants: {
       variant: {
         primary:
-          "bg-gradient-brand text-white shadow-card hover:scale-[1.02] hover:shadow-glow-violet active:scale-[0.99]",
+          "dap-gradient-flow text-white shadow-card hover:scale-[1.02] hover:shadow-glow-violet active:scale-[0.99]",
         secondary:
           "border border-brand-coral bg-transparent text-white hover:bg-brand-coral/10 active:bg-brand-coral/15",
         ghost: "text-white hover:text-brand-coral",

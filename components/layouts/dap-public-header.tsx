@@ -75,20 +75,17 @@ export function DapPublicHeader({
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4">
         <Link
           href="/"
-          className="flex items-center gap-2 text-text-primary"
+          className="flex items-center text-text-primary"
           aria-label="DAP — Inicio"
         >
           <Image
             src="/dap-logo-white.png"
-            alt=""
+            alt="DAP"
             width={32}
             height={32}
             className="size-8 rounded-md"
             priority
           />
-          <span className="font-grotesk text-lg font-bold tracking-tight">
-            DAP
-          </span>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex" aria-label="Principal">

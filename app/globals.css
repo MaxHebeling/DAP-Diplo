@@ -273,3 +273,28 @@
     animation: none !important;
   }
 }
+
+/* DAP — gradient flow para CTAs primarios (violet → coral oscilando). */
+@keyframes dap-gradient-flow {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+.dap-gradient-flow {
+  background-image: linear-gradient(
+    135deg,
+    #7b61ff 0%,
+    #ff4d6d 50%,
+    #7b61ff 100%
+  );
+  background-size: 200% 200%;
+  animation: dap-gradient-flow 7s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dap-gradient-flow {
+    animation: none !important;
+  }
+}
