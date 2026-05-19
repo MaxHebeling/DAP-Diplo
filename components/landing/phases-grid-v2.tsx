@@ -57,11 +57,9 @@ export async function PhasesGridV2() {
   return (
     <section
       id="bloques"
-      className="relative isolate overflow-hidden border-t border-white/[0.06] bg-surface-base px-6 py-28 sm:py-36"
+      className="border-t border-white/[0.06] bg-surface-base px-6 py-28 sm:py-36"
     >
-      <FireVideo />
-
-      <div className="relative z-10 mx-auto max-w-6xl">
+      <div className="mx-auto max-w-6xl">
         <div className="mb-16 flex flex-col items-start gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-2xl">
             <p className="mb-4 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
@@ -121,36 +119,3 @@ export async function PhasesGridV2() {
   );
 }
 
-// Fondo de video: loop de llamas en slow-motion sobre fondo negro.
-// mix-blend-mode: screen elimina el negro y solo deja el fuego.
-// Overlays radiales+lineales protegen header y zona inferior de la
-// sección para mantener legibilidad de las cards.
-// Server-compatible (sin hooks).
-function FireVideo() {
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
-    >
-      <video
-        src="/fire-loop.mp4"
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="auto"
-        className="absolute inset-0 size-full object-cover mix-blend-screen opacity-40"
-      />
-      {/* Vignette: oscurece bordes y top para no competir con header/cards */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 80% at 50% 60%, transparent 0%, rgba(7,20,43,0.55) 70%, rgba(7,20,43,0.85) 100%)",
-        }}
-      />
-      {/* Top fade — protege el header del slide */}
-      <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-surface-base to-transparent" />
-    </div>
-  );
-}
