@@ -82,7 +82,7 @@ export const metadata: Metadata = {
     siteName: "DAP",
     title: "DAP · Diplomado Apostólico Pastoral",
     description:
-      "Formamos líderes integrales que transforman su generación. 200 módulos en 18 meses, 9 áreas ministeriales y mentoría grupal. Desde $25 USD/mes.",
+      "Formamos líderes integrales que transforman su generación. 9 Dimensiones, 18 Meses 1 Experiencia.",
     // Imagen auto-generada por app/opengraph-image.tsx (file convention).
   },
   twitter: {
@@ -90,7 +90,7 @@ export const metadata: Metadata = {
     // site: "@dap_diplomado", // descomentar cuando exista la cuenta
     title: "DAP · Diplomado Apostólico Pastoral",
     description:
-      "Formamos líderes integrales que transforman su generación. 200 módulos · 18 meses · 9 áreas ministeriales. Desde $25 USD/mes.",
+      "Formamos líderes integrales que transforman su generación. 9 Dimensiones, 18 Meses 1 Experiencia.",
     // Imagen auto-generada por app/opengraph-image.tsx (file convention).
   },
   // Icons + manifest se sirven via file conventions:
