@@ -32,7 +32,7 @@ export function HeroSectionV2() {
             width={420}
             height={420}
             priority
-            className="size-48 drop-shadow-[0_0_40px_rgba(123,97,255,0.45)] sm:size-64 md:size-80 lg:size-[420px]"
+            className="size-64 drop-shadow-[0_0_40px_rgba(123,97,255,0.45)] sm:size-80 md:size-[440px] lg:size-[560px]"
           />
         </div>
 
