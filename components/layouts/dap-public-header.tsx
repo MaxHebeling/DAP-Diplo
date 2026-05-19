@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { LayoutDashboard, LogOut, Menu, ShieldCheck, X } from "lucide-react";
+import { motion, useScroll, useSpring } from "motion/react";
 
 import { cn } from "@/lib/utils";
 import { DapAvatar } from "@/components/ui-dap/avatar";
@@ -62,6 +63,14 @@ export function DapPublicHeader({
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Scroll progress (0..1) suavizado con spring para que no se vea jittery.
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 120,
+    damping: 30,
+    mass: 0.3,
+  });
+
   return (
     <header
       data-slot="dap-public-header"
@@ -72,6 +81,12 @@ export function DapPublicHeader({
           : "border-b border-transparent bg-transparent",
       )}
     >
+      {/* Scroll progress bar — gradient violet→coral, 2px, top del header */}
+      <motion.div
+        aria-hidden
+        style={{ scaleX }}
+        className="pointer-events-none absolute inset-x-0 top-0 h-[2px] origin-left bg-gradient-to-r from-brand-violet via-brand-coral to-brand-violet"
+      />
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4">
         <Link
           href="/"

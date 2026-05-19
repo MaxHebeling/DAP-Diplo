@@ -1,5 +1,6 @@
 import { CalendarClock, CreditCard, Trophy } from "lucide-react";
 import { Reveal } from "@/components/landing/reveal";
+import { PerspectivePath } from "./perspective-path";
 
 const STEPS = [
   {
@@ -27,86 +28,6 @@ const ACCENT_BG: Record<(typeof STEPS)[number]["accent"], string> = {
   coral: "bg-brand-coral/10 text-brand-coral",
   amber: "bg-brand-amber/10 text-brand-amber",
 };
-
-// Perspective path background — vanishing point en (720, 240) sobre
-// viewBox 1440x800. Líneas convergen al horizonte; spacings horizontales
-// se compactan logarítmicamente.
-function PerspectivePath() {
-  const VP_X = 720;
-  const VP_Y = 240;
-  // Lanes: x final (en y=800) — 9 líneas extendiéndose más allá del viewport
-  const lanes = [-260, 60, 320, 540, 720, 900, 1120, 1380, 1700];
-  // Horizontal cross lines: y positions con spacing logarítmico
-  const crosses = [
-    { y: 800, half: 720 },
-    { y: 600, half: 460 },
-    { y: 460, half: 290 },
-    { y: 370, half: 188 },
-    { y: 310, half: 124 },
-    { y: 275, half: 84 },
-    { y: 252, half: 50 },
-  ];
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
-    >
-      {/* Base */}
-      <div className="absolute inset-0 bg-surface-base" />
-
-      {/* Vanishing point glow */}
-      <div className="absolute left-1/2 top-[30%] -translate-x-1/2 -translate-y-1/2 size-[420px] rounded-full bg-brand-violet/[0.18] blur-[110px]" />
-      <div className="absolute left-1/2 top-[30%] -translate-x-1/2 -translate-y-1/2 size-[260px] rounded-full bg-brand-coral/[0.12] blur-[80px]" />
-
-      {/* Horizon line */}
-      <div className="absolute left-0 right-0 top-[30%] h-px bg-gradient-to-r from-transparent via-brand-violet/30 to-transparent" />
-
-      {/* Perspective SVG (bottom 70% of section) */}
-      <svg
-        viewBox="0 0 1440 800"
-        preserveAspectRatio="xMidYMax slice"
-        className="absolute inset-x-0 bottom-0 h-[70%] w-full"
-      >
-        <defs>
-          <linearGradient id="lane-fade" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#7B61FF" stopOpacity="0" />
-            <stop offset="35%" stopColor="#7B61FF" stopOpacity="0.18" />
-            <stop offset="100%" stopColor="#FF4D6D" stopOpacity="0.28" />
-          </linearGradient>
-          <linearGradient id="cross-fade" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#ffffff" stopOpacity="0" />
-            <stop offset="60%" stopColor="#ffffff" stopOpacity="0.05" />
-            <stop offset="100%" stopColor="#ffffff" stopOpacity="0.12" />
-          </linearGradient>
-        </defs>
-
-        {/* Vertical lane lines converging to vanishing point */}
-        <g stroke="url(#lane-fade)" strokeWidth="0.8">
-          {lanes.map((endX, i) => (
-            <line key={i} x1={VP_X} y1={VP_Y} x2={endX} y2={800} />
-          ))}
-        </g>
-
-        {/* Horizontal cross lines (perspective foreshortening) */}
-        <g stroke="url(#cross-fade)" strokeWidth="0.8" strokeLinecap="round">
-          {crosses.map((c, i) => (
-            <line
-              key={i}
-              x1={VP_X - c.half}
-              y1={c.y}
-              x2={VP_X + c.half}
-              y2={c.y}
-            />
-          ))}
-        </g>
-      </svg>
-
-      {/* Top fade (suaviza la transición a la sección anterior + protege
-          la legibilidad del header de la sección) */}
-      <div className="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-surface-base to-transparent" />
-    </div>
-  );
-}
 
 export function HowItWorks() {
   return (

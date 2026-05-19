@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import {
   BookOpen,
   Briefcase,
@@ -14,12 +13,12 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/server";
 import {
   coursesItemListSchema,
   jsonLd,
 } from "@/lib/seo/structured-data";
+import { PhaseCard } from "./phase-card";
 
 type PhaseRow = {
   order_index: number;
@@ -115,14 +114,7 @@ export async function PhasesGridV2() {
             const Icon = ICON_BY_ORDER[p.order_index] ?? BookOpen;
             const count = p.modules?.[0]?.count ?? 0;
             return (
-              <Link
-                key={p.slug}
-                href={`/fases/${p.slug}`}
-                className={cn(
-                  "group relative flex h-full flex-col rounded-xl border border-white/[0.06] bg-surface-elevated p-6 transition-all duration-300",
-                  "hover:-translate-y-0.5 hover:border-brand-violet/30 hover:shadow-glow-violet",
-                )}
-              >
+              <PhaseCard key={p.slug} href={`/fases/${p.slug}`}>
                 <div className="mb-4 flex items-start justify-between">
                   <span className="gradient-text font-grotesk text-h2 font-bold leading-none">
                     {String(p.order_index).padStart(2, "0")}
@@ -145,7 +137,7 @@ export async function PhasesGridV2() {
                   </span>
                   <span className="text-text-tertiary">{count} módulos</span>
                 </div>
-              </Link>
+              </PhaseCard>
             );
           })}
         </div>
