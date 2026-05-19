@@ -244,3 +244,32 @@
     border: 1px solid var(--border-subtle);
   }
 }
+
+/* DAP — keyframes para iconos "vivos" en el timeline de rangos.
+   Se respeta prefers-reduced-motion (no animar). */
+@keyframes dap-breathe {
+  0%, 100% {
+    opacity: 0.88;
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.06);
+  }
+}
+@keyframes dap-glow-pulse {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(1.25);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dap-breathe,
+  .dap-glow-pulse {
+    animation: none !important;
+  }
+}

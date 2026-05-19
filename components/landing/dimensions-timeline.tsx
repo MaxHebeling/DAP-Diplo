@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 import { Reveal } from "@/components/landing/reveal";
-import { DapRankBadge, type RankOrder } from "@/components/ui-dap/rank-badge";
+import { RANK_TINT, type RankOrder } from "@/components/ui-dap/rank-badge";
 import { createClient } from "@/lib/supabase/server";
 
 type DimensionRow = {
@@ -79,16 +79,39 @@ export async function DimensionsTimeline() {
             {dimensions.map((r, i) => {
               const order = (r.order_index as RankOrder) ?? 1;
               const Icon = ICON_BY_RANK[order];
+              const tint = RANK_TINT[order];
+              const breatheDelay = `${i * 0.35}s`;
+              const glowDelay = `${i * 0.35 + 0.6}s`;
               return (
                 <Reveal key={r.order_index} delay={i * 0.04}>
                   <li className="relative pl-20 lg:pl-0 lg:text-center">
-                    <div className="absolute left-0 top-0 lg:static lg:mx-auto lg:mb-4">
-                      <DapRankBadge
-                        rankOrder={order}
-                        size="md"
-                        icon={Icon}
-                        label={r.name}
-                      />
+                    <div className="absolute left-0 top-0 lg:static lg:mx-auto lg:mb-6">
+                      <div
+                        className="group relative inline-flex size-14 items-center justify-center transition-transform duration-300 hover:-translate-y-1"
+                        aria-label={r.name}
+                      >
+                        {/* Glow blob detrás del icono */}
+                        <span
+                          aria-hidden
+                          className="dap-glow-pulse absolute inset-0 rounded-full blur-xl"
+                          style={{
+                            backgroundColor: tint,
+                            animation: "dap-glow-pulse 4.5s ease-in-out infinite",
+                            animationDelay: glowDelay,
+                          }}
+                        />
+                        {/* Icono vivo */}
+                        <Icon
+                          className="dap-breathe relative z-10 size-10 transition-transform duration-300 group-hover:scale-110"
+                          strokeWidth={1.6}
+                          style={{
+                            color: tint,
+                            filter: `drop-shadow(0 0 10px ${tint}aa)`,
+                            animation: "dap-breathe 3.2s ease-in-out infinite",
+                            animationDelay: breatheDelay,
+                          }}
+                        />
+                      </div>
                     </div>
                     <h3 className="mb-1.5 font-grotesk text-h4 font-semibold text-text-primary lg:text-base">
                       {r.name}
