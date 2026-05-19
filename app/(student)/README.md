@@ -12,4 +12,4 @@ Páginas planeadas:
 - `/tutor` — chat con tutor IA + RAG (Fase 8)
 - `/certificados` — descarga de certificados emitidos por bloque completado
 
-Gate en `proxy.ts`: si no hay sesión → redirect a `/login?redirectTo=…`. RLS adicional gates contenido por suscripción activa + `phase_access`.
+Gate en `proxy.ts`: si no hay sesión → redirect a `/login?redirectTo=…`. RLS adicional gates contenido por suscripción activa + `has_access_to_module`.

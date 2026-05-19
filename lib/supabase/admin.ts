@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 /**
  * Cliente con SERVICE_ROLE_KEY. Bypasea RLS.
  * Usar SOLO en route handlers server-side donde sea estrictamente necesario
- * (ej. webhook de Stripe creando/actualizando subscriptions y phase_access).
+ * (ej. webhook de Stripe creando/actualizando subscriptions, recordatorios cron, certificados PDF, etc.).
  * NUNCA importar desde Client Components.
  */
 export function createAdminClient() {

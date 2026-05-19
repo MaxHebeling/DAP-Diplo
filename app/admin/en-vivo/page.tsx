@@ -65,7 +65,9 @@ export default async function AdminEnVivoPage({ searchParams }: PageProps) {
   const filter = when === "past" || when === "all" ? when : "upcoming";
 
   const supabase = await createClient();
-  const nowIso = new Date().toISOString();
+  // eslint-disable-next-line react-hooks/purity
+  const nowMs = Date.now();
+  const nowIso = new Date(nowMs).toISOString();
 
   let query = supabase
     .from("live_sessions")
@@ -153,7 +155,7 @@ export default async function AdminEnVivoPage({ searchParams }: PageProps) {
                   const hasRecording =
                     !!s.recording_url || !!s.recording_mux_playback_id;
                   const isPast =
-                    new Date(s.scheduled_at).getTime() < Date.now();
+                    new Date(s.scheduled_at).getTime() < nowMs;
                   return (
                     <TableRow
                       key={s.id}

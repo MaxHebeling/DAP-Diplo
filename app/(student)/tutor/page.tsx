@@ -1,4 +1,4 @@
-import Link from "next/link";
+
 import { Brain, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TutorSidebar } from "@/components/tutor/tutor-sidebar";

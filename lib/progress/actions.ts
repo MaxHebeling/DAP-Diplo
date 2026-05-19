@@ -16,7 +16,6 @@ const sectionKinds = [
   "evaluation",
   "impartation",
 ] as const;
-type SectionKind = (typeof sectionKinds)[number];
 
 const markCompletedSchema = z.object({
   sectionId: z.uuid(),

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CalendarClock, Film } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+
 import { UpcomingSessionCard } from "@/components/en-vivo/upcoming-session-card";
 import { RecordingCard } from "@/components/en-vivo/recording-card";
 import { createClient } from "@/lib/supabase/server";
@@ -22,7 +22,10 @@ export default async function StudentEnVivoPage({ searchParams }: PageProps) {
     tabParam === "recordings" ? "recordings" : "upcoming";
 
   const supabase = await createClient();
-  const nowIso = new Date().toISOString();
+  // eslint-disable-next-line react-hooks/purity
+  const nowMs = Date.now();
+  const nowIso = new Date(nowMs).toISOString();
+  const windowStartIso = new Date(nowMs - 4 * 60 * 60 * 1000).toISOString();
 
   // "Próximas" incluye: futuras + actualmente en vivo (within duration window).
   // Para simplificarlo y aprovechar el index por scheduled_at: traemos las que
@@ -35,10 +38,7 @@ export default async function StudentEnVivoPage({ searchParams }: PageProps) {
        meeting_url, host_name, recording_url, recording_mux_playback_id,
        phase:phases!live_sessions_phase_id_fkey(order_index, title)`,
     )
-    .gte(
-      "scheduled_at",
-      new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-    )
+    .gte("scheduled_at", windowStartIso)
     .order("scheduled_at", { ascending: true })
     .limit(50);
 
@@ -64,12 +64,11 @@ export default async function StudentEnVivoPage({ searchParams }: PageProps) {
   if (rErr) throw new Error(`No se pudieron cargar grabaciones: ${rErr.message}`);
 
   // Filtrar las que ya cerraron su ventana (scheduled_at + duration <= ahora)
-  const now = Date.now();
   const upcoming = ((upcomingRaw ?? []) as unknown as StudentSession[]).filter(
     (s) => {
       const end =
         new Date(s.scheduled_at).getTime() + s.duration_minutes * 60_000;
-      return end > now;
+      return end > nowMs;
     },
   );
   const recordingsList = (recordings ?? []) as unknown as StudentSession[];
