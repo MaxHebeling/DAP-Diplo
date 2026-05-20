@@ -42,35 +42,39 @@ export function HeroSectionV2() {
       {/* Particles más sutiles porque ya tenemos la foto detrás */}
       <HeroParticles intensity="cosmic" className="absolute inset-0 -z-[5] opacity-40" />
 
+      {/* Logo DAP: arriba derecha en desktop, arriba centrado en mobile.
+          Absolute para no empujar el contenido del hero. */}
       <motion.div
-        style={{ opacity: contentOpacity, y: contentY }}
-        className="mx-auto flex min-h-[88vh] max-w-5xl flex-col items-center justify-center px-6 pb-20 pt-32 text-center sm:pt-40"
+        initial={{ opacity: 0, scale: 0.85, filter: "blur(8px)" }}
+        animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+        transition={{
+          duration: 1.2,
+          delay: 0.15,
+          ease: [0.16, 1, 0.3, 1],
+        }}
+        className="pointer-events-none absolute top-20 left-1/2 z-[1] -translate-x-1/2 sm:top-16 md:left-auto md:right-6 md:translate-x-0 lg:right-10 lg:top-12"
       >
-        {/* Logo entrance: scale + fade in al cargar */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.85, filter: "blur(8px)" }}
-          animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-          transition={{
-            duration: 1.2,
-            delay: 0.15,
-            ease: [0.16, 1, 0.3, 1],
-          }}
-          className="relative mb-2 flex items-center justify-center"
-        >
+        <div className="relative">
           <div
             aria-hidden
-            className="absolute -inset-x-20 inset-y-0 -z-10 [background:radial-gradient(50%_70%_at_50%_50%,rgba(123,97,255,0.35),transparent_70%)] blur-xl"
+            className="absolute -inset-x-12 inset-y-0 -z-10 [background:radial-gradient(50%_70%_at_50%_50%,rgba(123,97,255,0.35),transparent_70%)] blur-xl"
           />
           <Image
             src="/dap-logo-white.png"
             alt="DAP"
-            width={560}
-            height={560}
+            width={400}
+            height={400}
             priority
-            sizes="(max-width: 640px) 256px, (max-width: 768px) 320px, (max-width: 1024px) 440px, 560px"
-            className="size-64 drop-shadow-[0_0_40px_rgba(123,97,255,0.45)] sm:size-80 md:size-[440px] lg:size-[560px]"
+            sizes="(max-width: 640px) 128px, (max-width: 1024px) 200px, 320px"
+            className="size-32 drop-shadow-[0_0_40px_rgba(123,97,255,0.45)] sm:size-40 md:size-52 lg:size-72"
           />
-        </motion.div>
+        </div>
+      </motion.div>
+
+      <motion.div
+        style={{ opacity: contentOpacity, y: contentY }}
+        className="mx-auto flex min-h-[88vh] max-w-5xl flex-col items-center justify-center px-6 pb-20 pt-52 text-center sm:pt-56 md:pt-40"
+      >
 
         <motion.p
           initial={{ opacity: 0, y: 12 }}
