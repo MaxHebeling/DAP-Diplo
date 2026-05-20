@@ -1,0 +1,168 @@
+"use client";
+
+import { useEffect, useState, useTransition } from "react";
+import { Bell, BellOff, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import {
+  subscribePushAction,
+  unsubscribePushAction,
+} from "@/lib/push/actions";
+
+/**
+ * Pide permiso al usuario para Web Push + suscribe al endpoint del browser.
+ * El SEND server-side requiere `web-push` lib + VAPID_PUBLIC_KEY /
+ * VAPID_PRIVATE_KEY en env. Si la public key falta, el botón muestra
+ * "Notificaciones no configuradas" y no permite suscribirse.
+ */
+export function PushSubscribeButton() {
+  const [supported, setSupported] = useState<boolean | null>(null);
+  const [permission, setPermission] = useState<NotificationPermission>("default");
+  const [subscribed, setSubscribed] = useState(false);
+  const [pending, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const ok =
+      "serviceWorker" in navigator &&
+      "PushManager" in window &&
+      "Notification" in window;
+    setSupported(ok);
+    if (!ok) return;
+    setPermission(Notification.permission);
+    // ¿Ya está suscripto?
+    navigator.serviceWorker.ready.then(async (reg) => {
+      const sub = await reg.pushManager.getSubscription();
+      setSubscribed(!!sub);
+    });
+  }, []);
+
+  if (supported === null) return null;
+  if (supported === false) {
+    return (
+      <p className="font-inter text-xs text-text-tertiary">
+        Tu navegador no soporta notificaciones push.
+      </p>
+    );
+  }
+
+  const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  if (!vapidKey) {
+    return (
+      <p className="font-inter text-xs text-text-tertiary">
+        Notificaciones push aún no configuradas en este sitio.
+      </p>
+    );
+  }
+
+  function handleSubscribe() {
+    startTransition(async () => {
+      try {
+        if (Notification.permission === "denied") {
+          toast.error(
+            "Permiso bloqueado. Habilitalo manualmente desde la configuración de tu browser.",
+          );
+          return;
+        }
+        const perm =
+          Notification.permission === "granted"
+            ? "granted"
+            : await Notification.requestPermission();
+        setPermission(perm);
+        if (perm !== "granted") {
+          toast.warning("Necesitamos tu permiso para enviarte avisos.");
+          return;
+        }
+
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(vapidKey!) as BufferSource,
+        });
+
+        const json = sub.toJSON() as {
+          endpoint?: string;
+          keys?: { p256dh?: string; auth?: string };
+        };
+        if (!json.endpoint || !json.keys?.p256dh || !json.keys?.auth) {
+          throw new Error("Subscription incompleta del browser");
+        }
+
+        const res = await subscribePushAction({
+          endpoint: json.endpoint,
+          p256dh: json.keys.p256dh,
+          auth: json.keys.auth,
+          userAgent: navigator.userAgent,
+        });
+        if (!res.ok) throw new Error(res.error);
+
+        setSubscribed(true);
+        toast.success("Listo — te avisaremos cuando abra tu módulo.");
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        toast.error(`No se pudo suscribir: ${msg}`);
+      }
+    });
+  }
+
+  function handleUnsubscribe() {
+    startTransition(async () => {
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.getSubscription();
+        if (sub) {
+          await sub.unsubscribe();
+          await unsubscribePushAction(sub.endpoint);
+        }
+        setSubscribed(false);
+        toast.success("Notificaciones desactivadas.");
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        toast.error(`No se pudo desactivar: ${msg}`);
+      }
+    });
+  }
+
+  if (subscribed) {
+    return (
+      <Button
+        variant="outline"
+        onClick={handleUnsubscribe}
+        disabled={pending}
+        size="sm"
+      >
+        {pending ? (
+          <Loader2 className="size-4 animate-spin" />
+        ) : (
+          <BellOff className="size-4" />
+        )}
+        Desactivar notificaciones
+      </Button>
+    );
+  }
+
+  return (
+    <Button onClick={handleSubscribe} disabled={pending} size="sm">
+      {pending ? (
+        <Loader2 className="size-4 animate-spin" />
+      ) : (
+        <Bell className="size-4" />
+      )}
+      Activar notificaciones
+    </Button>
+  );
+}
+
+// Web Push API necesita la key como Uint8Array. Tomamos el base64url
+// de la env var y convertimos.
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = typeof window !== "undefined" ? window.atob(base64) : "";
+  const buffer = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) {
+    buffer[i] = raw.charCodeAt(i);
+  }
+  return buffer;
+}

@@ -9,6 +9,8 @@ import {
 import { Suspense } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { ToastFromQuery } from "@/components/toast-from-query";
+import { RegisterServiceWorker } from "@/components/pwa/register-sw";
+import { InstallPrompt } from "@/components/pwa/install-prompt";
 import {
   jsonLd,
   organizationSchema,
@@ -54,8 +56,13 @@ export const metadata: Metadata = {
     template: "%s · DAP",
   },
   description:
-    "Formación apostólica integral para pastores. 200 módulos en 18 meses · 9 áreas ministeriales · mentoría grupal · comunidad. Desde $25 USD/mes.",
+    "Formación apostólica integral. 72 módulos en 18 meses · 9 Dimensiones · MasterClass en vivo · comunidad. Desde $25 USD/mes.",
   applicationName: "DAP",
+  appleWebApp: {
+    capable: true,
+    title: "DAP",
+    statusBarStyle: "black-translucent",
+  },
   authors: [{ name: "DAP" }],
   generator: "Next.js",
   keywords: [
@@ -124,6 +131,8 @@ export default function RootLayout({
         />
 
         {children}
+        <RegisterServiceWorker />
+        <InstallPrompt />
         <Toaster richColors position="top-center" />
         <Suspense fallback={null}>
           <ToastFromQuery />
