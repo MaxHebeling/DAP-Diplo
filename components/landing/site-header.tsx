@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { signOutAction } from "@/lib/auth/actions";
+import { EnrollmentGateDialog } from "@/components/launch/enrollment-gate-dialog";
+import { isEnrollmentOpen } from "@/lib/launch/config";
 
 export type HeaderUser = {
   fullName: string | null;
@@ -39,6 +41,8 @@ function initialsOf(name: string | null): string {
 
 export function SiteHeader({ user }: { user: HeaderUser }) {
   const [scrolled, setScrolled] = useState(false);
+  const [gateOpen, setGateOpen] = useState(false);
+  const enrollmentOpen = isEnrollmentOpen();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -125,17 +129,29 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
               >
                 Iniciar sesión
               </Button>
-              <Button
-                size="sm"
-                className="bg-brand-coral text-brand-coral-foreground hover:bg-brand-coral/90"
-                render={<Link href="/signup" />}
-              >
-                Inscribirme
-              </Button>
+              {enrollmentOpen ? (
+                <Button
+                  size="sm"
+                  className="bg-brand-coral text-brand-coral-foreground hover:bg-brand-coral/90"
+                  render={<Link href="/signup" />}
+                >
+                  Inscribirme
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  className="bg-brand-coral text-brand-coral-foreground hover:bg-brand-coral/90"
+                  onClick={() => setGateOpen(true)}
+                >
+                  Inscribirme
+                </Button>
+              )}
             </>
           )}
         </div>
       </div>
+
+      <EnrollmentGateDialog open={gateOpen} onOpenChange={setGateOpen} />
     </header>
   );
 }

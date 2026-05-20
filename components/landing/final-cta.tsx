@@ -1,7 +1,6 @@
-import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 
-import { DapButton } from "@/components/ui-dap/button";
+import { EnrollmentCTA } from "@/components/launch/enrollment-cta";
 import { Reveal } from "@/components/landing/reveal";
 
 export function FinalCta() {
@@ -31,10 +30,10 @@ export function FinalCta() {
             Corrección personalizada del Ap. Max Hebeling y MasterClass en vivo
             por evento. En español.
           </p>
-          <DapButton render={<Link href="/suscribirme" />} size="lg">
+          <EnrollmentCTA href="/suscribirme" size="lg">
             Suscribirme ahora
             <ArrowRight />
-          </DapButton>
+          </EnrollmentCTA>
           <p className="mt-6 font-inter text-xs text-text-tertiary">
             Procesado por Stripe. Tu suscripción comienza al confirmar el pago.
           </p>

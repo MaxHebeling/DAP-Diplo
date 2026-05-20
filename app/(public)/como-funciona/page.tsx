@@ -22,6 +22,7 @@ import {
 } from "@/components/layouts/dap-public-header";
 import { DapPublicFooter } from "@/components/layouts/dap-public-footer";
 import { DapButton } from "@/components/ui-dap/button";
+import { EnrollmentCTA } from "@/components/launch/enrollment-cta";
 import { Reveal } from "@/components/landing/reveal";
 
 export const metadata: Metadata = {
@@ -359,10 +360,10 @@ export default async function ComoFuncionaPage() {
               Mes 1.
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-              <DapButton render={<Link href="/suscribirme" />} size="lg">
+              <EnrollmentCTA href="/suscribirme" size="lg">
                 Suscribirme ahora
                 <ArrowRight />
-              </DapButton>
+              </EnrollmentCTA>
               <DapButton
                 render={<Link href="/precios" />}
                 variant="secondary"

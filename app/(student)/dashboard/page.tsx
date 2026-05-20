@@ -22,6 +22,7 @@ import {
 } from "@/lib/calendar/week";
 
 import { DapButton } from "@/components/ui-dap/button";
+import { EnrollmentCTA } from "@/components/launch/enrollment-cta";
 import {
   DapCard,
   DapCardDescription,
@@ -185,10 +186,10 @@ function NoSubscriptionState({
           </DapCardDescription>
         </DapCardHeader>
         <div className="mt-4">
-          <DapButton render={<Link href="/suscribirme" />} size="lg">
+          <EnrollmentCTA href="/suscribirme" size="lg">
             Continuar
             <ArrowRight />
-          </DapButton>
+          </EnrollmentCTA>
         </div>
       </DapCard>
     </div>

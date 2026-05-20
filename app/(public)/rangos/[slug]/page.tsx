@@ -27,6 +27,7 @@ import {
 } from "@/components/layouts/dap-public-header";
 import { DapPublicFooter } from "@/components/layouts/dap-public-footer";
 import { DapButton } from "@/components/ui-dap/button";
+import { EnrollmentCTA } from "@/components/launch/enrollment-cta";
 import {
   DapRankBadge,
   type RankOrder,
@@ -297,12 +298,9 @@ export default async function RankDetailPage({ params }: PageProps) {
                     Ver el bloque completo
                     <ArrowRight />
                   </DapButton>
-                  <DapButton
-                    render={<Link href="/suscribirme" />}
-                    variant="secondary"
-                  >
+                  <EnrollmentCTA href="/suscribirme" variant="secondary">
                     Empezar el camino
-                  </DapButton>
+                  </EnrollmentCTA>
                 </div>
               </Reveal>
             </div>

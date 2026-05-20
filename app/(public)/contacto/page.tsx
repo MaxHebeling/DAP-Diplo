@@ -17,6 +17,7 @@ import {
 } from "@/components/layouts/dap-public-header";
 import { DapPublicFooter } from "@/components/layouts/dap-public-footer";
 import { DapButton } from "@/components/ui-dap/button";
+import { EnrollmentCTA } from "@/components/launch/enrollment-cta";
 import { Reveal } from "@/components/landing/reveal";
 
 const SUPPORT_EMAIL = "contacto@dapglobal.org";
@@ -221,10 +222,10 @@ export default async function ContactoPage() {
               primeros 7 días — si no es para ti, te devolvemos todo.
             </p>
             <div className="mt-10">
-              <DapButton render={<Link href="/suscribirme" />} size="lg">
+              <EnrollmentCTA href="/suscribirme" size="lg">
                 Comienza tu transformación
                 <ArrowRight />
-              </DapButton>
+              </EnrollmentCTA>
             </div>
           </div>
         </section>

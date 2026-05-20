@@ -20,6 +20,7 @@ import {
 } from "@/components/layouts/dap-public-header";
 import { DapPublicFooter } from "@/components/layouts/dap-public-footer";
 import { DapButton } from "@/components/ui-dap/button";
+import { EnrollmentCTA } from "@/components/launch/enrollment-cta";
 import { Reveal } from "@/components/landing/reveal";
 
 export const metadata: Metadata = {
@@ -117,10 +118,10 @@ export default async function PreciosPage() {
               de pastores. Cancela cuando quieras, sin compromisos.
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-              <DapButton render={<Link href="/suscribirme" />} size="lg">
+              <EnrollmentCTA href="/suscribirme" size="lg">
                 Empezar ahora
                 <ArrowRight />
-              </DapButton>
+              </EnrollmentCTA>
               <DapButton
                 render={<Link href="/como-funciona" />}
                 variant="secondary"
@@ -239,10 +240,10 @@ export default async function PreciosPage() {
               Fase 1 desde el día uno.
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-              <DapButton render={<Link href="/suscribirme" />} size="lg">
+              <EnrollmentCTA href="/suscribirme" size="lg">
                 <CreditCard />
                 Suscribirme — $25/mes
-              </DapButton>
+              </EnrollmentCTA>
               <DapButton
                 render={<Link href="/#preguntas" />}
                 variant="secondary"

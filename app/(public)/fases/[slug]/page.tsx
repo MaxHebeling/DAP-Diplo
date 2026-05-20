@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EnrollmentCTAPhase } from "@/components/launch/enrollment-cta-phase";
 import { Reveal } from "@/components/landing/reveal";
 import { SiteHeader, type HeaderUser } from "@/components/landing/site-header";
 import { SiteFooter } from "@/components/landing/site-footer";
@@ -385,13 +386,12 @@ export default async function BlockDetailPage({ params }: PageProps) {
                 $25 USD/mes. Acceso al contenido grabado, las sesiones en vivo y
                 la mentoría grupal. Cancela cuando quieras.
               </p>
-              <Button
-                size="lg"
+              <EnrollmentCTAPhase
+                href="/suscribirme"
                 className="h-12 bg-neutral-950 px-8 text-base font-medium text-neutral-50 hover:bg-neutral-900"
-                render={<Link href="/suscribirme" />}
               >
                 Suscribirme — $25/mes
-              </Button>
+              </EnrollmentCTAPhase>
             </Reveal>
           </div>
         </section>

@@ -6,6 +6,11 @@ import { Reveal } from "@/components/landing/reveal";
 import { SiteHeader, type HeaderUser } from "@/components/landing/site-header";
 import { SiteFooter } from "@/components/landing/site-footer";
 import { createClient } from "@/lib/supabase/server";
+import {
+  ENROLLMENT_OPENS_LABEL,
+  isEnrollmentOpen,
+} from "@/lib/launch/config";
+import { CalendarClock } from "lucide-react";
 
 export const metadata = {
   title: "Suscribirme",
@@ -123,23 +128,42 @@ export default async function SuscribirmePage() {
               </ul>
             </div>
 
-            <form
-              action="/api/checkout/create-subscription"
-              method="POST"
-              className="w-full"
-            >
-              <Button
-                type="submit"
-                size="lg"
-                className="h-12 w-full bg-brand-coral px-7 text-base font-medium text-brand-coral-foreground hover:bg-brand-coral/90"
-              >
-                Continuar a pago
-              </Button>
-            </form>
-            <p className="mt-5 text-center text-xs text-neutral-500">
-              Procesado por Stripe. Sin contrato. Cancela en un click cuando
-              quieras.
-            </p>
+            {isEnrollmentOpen() ? (
+              <>
+                <form
+                  action="/api/checkout/create-subscription"
+                  method="POST"
+                  className="w-full"
+                >
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="h-12 w-full bg-brand-coral px-7 text-base font-medium text-brand-coral-foreground hover:bg-brand-coral/90"
+                  >
+                    Continuar a pago
+                  </Button>
+                </form>
+                <p className="mt-5 text-center text-xs text-neutral-500">
+                  Procesado por Stripe. Sin contrato. Cancela en un click cuando
+                  quieras.
+                </p>
+              </>
+            ) : (
+              <div className="w-full rounded-2xl border border-brand-coral/30 bg-brand-coral/[0.06] p-6 text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand-coral/10 text-brand-coral">
+                  <CalendarClock className="h-6 w-6" />
+                </div>
+                <p className="font-grotesk text-lg font-bold text-neutral-50">
+                  Inscripciones abren el {ENROLLMENT_OPENS_LABEL}
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-neutral-300">
+                  La primera convocatoria del Diplomado Apostólico Pastoral
+                  arranca el <strong>01 de Junio de 2026</strong>. En esa
+                  fecha podrás activar tu suscripción y comenzar el
+                  programa.
+                </p>
+              </div>
+            )}
           </div>
         </Reveal>
       </main>

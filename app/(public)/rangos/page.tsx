@@ -23,6 +23,7 @@ import {
 } from "@/components/layouts/dap-public-header";
 import { DapPublicFooter } from "@/components/layouts/dap-public-footer";
 import { DapButton } from "@/components/ui-dap/button";
+import { EnrollmentCTA } from "@/components/launch/enrollment-cta";
 import {
   DapRankBadge,
   type RankOrder,
@@ -182,10 +183,10 @@ export default async function RangosHubPage() {
               Después de aprobar los 8 módulos del Bloque 1, la recibes.
             </p>
             <div className="mt-10">
-              <DapButton render={<Link href="/suscribirme" />} size="lg">
+              <EnrollmentCTA href="/suscribirme" size="lg">
                 Comienza tu transformación
                 <ArrowRight />
-              </DapButton>
+              </EnrollmentCTA>
             </div>
           </div>
         </section>

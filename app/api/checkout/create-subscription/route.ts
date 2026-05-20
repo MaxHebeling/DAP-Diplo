@@ -5,10 +5,19 @@ import {
   createStripeCustomer,
   createSubscriptionCheckoutSession,
 } from "@/lib/stripe/api";
+import { isEnrollmentOpen } from "@/lib/launch/config";
 
 export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
+  // Gate de lanzamiento: hasta la fecha de apertura, ningún checkout
+  // se procesa aunque alguien intente POSTear directo. Devolvemos a la
+  // página /suscribirme que ya muestra el cartel "Inscripciones abren…".
+  if (!isEnrollmentOpen()) {
+    const url = new URL("/suscribirme", request.url);
+    return NextResponse.redirect(url, { status: 303 });
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
