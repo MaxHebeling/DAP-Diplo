@@ -42,7 +42,7 @@ type DapPublicHeaderProps = {
 // landing usa anchors a #bloques), pasa `links={[...]}` explícito.
 const DEFAULT_LINKS: NavLink[] = [
   { href: "/como-funciona", label: "Cómo funciona" },
-  { href: "/rangos", label: "Rangos" },
+  { href: "/rangos", label: "Dimensiones" },
   { href: "/precios", label: "Precios" },
   { href: "/#faq", label: "Preguntas" },
 ];

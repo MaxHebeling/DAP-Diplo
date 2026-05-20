@@ -20,16 +20,16 @@ const COLS = [
   {
     title: "Programa",
     links: [
-      { href: "#bloques", label: "Los 9 bloques" },
-      { href: "#modelo", label: "Modelo mensual" },
-      { href: "#rangos", label: "Rangos y certificaciones" },
+      { href: "/#bloques", label: "Los 9 bloques" },
+      { href: "/como-funciona", label: "Cómo funciona" },
+      { href: "/rangos", label: "Dimensiones y certificaciones" },
       { href: "/suscribirme", label: "Empezar ahora" },
     ],
   },
   {
     title: "Soporte",
     links: [
-      { href: "#preguntas", label: "Preguntas frecuentes" },
+      { href: "/#faq", label: "Preguntas frecuentes" },
       { href: "/login", label: "Iniciar sesión" },
       { href: "/contacto", label: "Contacto" },
     ],

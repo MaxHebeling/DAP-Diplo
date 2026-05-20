@@ -12,7 +12,7 @@
  * pasá por la RPC.
  */
 
-export const DAP_TZ = "America/Mexico_City";
+export const DAP_TZ = "America/Los_Angeles";
 
 /**
  * Formatea una fecha en TZ DAP en formato largo español

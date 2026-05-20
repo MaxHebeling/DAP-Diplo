@@ -30,14 +30,14 @@ import {
 import { Reveal } from "@/components/landing/reveal";
 
 export const metadata: Metadata = {
-  title: "Los 9 Rangos del Reino",
+  title: "Las 9 Dimensiones del Reino",
   description:
-    "Discípulo, Hijo, Líder, Ministro, Administrador, Mayordomo, Reformador, Arquitecto, Enviado. Cada bloque del DAP entrega una dimensión ministerial verificable.",
+    "Discípulo, Hijo, Líder, Ministro, Administrador, Mayordomo, Reformador, Arquitecto, Enviado. Cada bloque del DAP entrega una dimensión nueva verificable.",
   alternates: { canonical: "/rangos" },
   openGraph: {
     type: "website",
     url: "/rangos",
-    title: "Los 9 Rangos del Reino · DAP",
+    title: "Las 9 Dimensiones del Reino · DAP",
     description:
       "Discípulo, Hijo, Líder, Ministro, Administrador, Mayordomo, Reformador, Arquitecto, Enviado — la jornada apostólica completa.",
   },
@@ -91,7 +91,7 @@ export default async function RangosHubPage() {
     .returns<DimensionRow[]>();
 
   if (error) {
-    throw new Error(`No se pudieron cargar los rangos: ${error.message}`);
+    throw new Error(`No se pudieron cargar las dimensiones: ${error.message}`);
   }
 
   const ranks = dimensions ?? [];
@@ -111,7 +111,7 @@ export default async function RangosHubPage() {
               El recorrido del DAP
             </p>
             <h1 className="font-grotesk text-display font-bold leading-[1.05] text-text-primary">
-              Los <span className="gradient-text">9 Rangos</span> del Reino
+              Las <span className="gradient-text">9 Dimensiones</span> del Reino
             </h1>
             <p className="mx-auto mt-6 max-w-2xl font-inter text-base leading-relaxed text-text-secondary md:text-lg">
               Cada bloque completado entrega una dimensión ministerial
@@ -121,7 +121,7 @@ export default async function RangosHubPage() {
           </div>
         </section>
 
-        {/* Grid de 9 rangos */}
+        {/* Grid de 9 dimensiones */}
         <section className="border-t border-white/[0.06] bg-surface-base px-6 py-24">
           <div className="mx-auto max-w-6xl">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -175,11 +175,11 @@ export default async function RangosHubPage() {
           <div className="absolute inset-0 -z-10 opacity-70 [background:radial-gradient(50%_50%_at_50%_50%,rgba(123,97,255,0.35),transparent_55%)]" />
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="font-grotesk text-h1 font-bold leading-tight text-text-primary">
-              Empezá tu camino al <span className="gradient-text">primer rango</span>.
+              Empezá tu camino a la <span className="gradient-text">primera dimensión</span>.
             </h2>
             <p className="mt-6 font-inter text-base text-text-secondary md:text-lg">
-              El Mes 1 te ubica en el camino del rango Discípulo. Después
-              de aprobar los 11 módulos del Bloque 1, lo recibís.
+              La Semana 1 te ubica en el camino de la dimensión Discípulo.
+              Después de aprobar los 8 módulos del Bloque 1, la recibís.
             </p>
             <div className="mt-10">
               <DapButton render={<Link href="/suscribirme" />} size="lg">

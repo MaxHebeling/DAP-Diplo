@@ -22,7 +22,7 @@ export async function sendWeekOpenedEmail(
     weekday: "long",
     day: "numeric",
     month: "long",
-    timeZone: "America/Mexico_City",
+    timeZone: "America/Los_Angeles",
   });
 
   return await sendEmail({

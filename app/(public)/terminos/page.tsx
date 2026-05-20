@@ -64,7 +64,7 @@ export default function TerminosPage() {
       <p>
         Una vez aprobada la admisión, el contenido se libera por{" "}
         <strong>calendario semanal personal</strong>: el módulo de la
-        semana abre cada martes (00:01 hora de Ciudad de México) y la
+        semana abre cada martes (00:01 hora de San Diego, California) y la
         tarea cierra el lunes siguiente (23:59). El contenido pasado
         queda disponible para repaso indefinidamente.
       </p>
@@ -152,9 +152,9 @@ export default function TerminosPage() {
         <li>Compartir credenciales de acceso con terceros.</li>
       </ul>
 
-      <h2>6. Certificados y rangos ministeriales</h2>
+      <h2>6. Certificados y dimensiones ministeriales</h2>
       <p>
-        Los certificados y rangos otorgados al completar bloques del DAP
+        Los certificados y dimensiones otorgadas al completar bloques del DAP
         (Discípulo, Hijo, Líder, Ministro, Administrador, Mayordomo,
         Reformador, Arquitecto, Enviado) son emitidos por Revival &amp;
         Kingdom Ministries, INC y reconocidos dentro de su red ministerial.

@@ -131,7 +131,7 @@ function render(p: AnnouncementInput): string {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
-    timeZone: "America/Mexico_City",
+    timeZone: "America/Los_Angeles",
   });
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.dapglobal.org";
 

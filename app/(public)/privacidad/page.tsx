@@ -55,14 +55,14 @@ export default function PrivacidadPage() {
       <ul>
         <li>Dirección IP, tipo de navegador, dispositivo y sistema operativo.</li>
         <li>Páginas visitadas, tiempo de permanencia y módulos consumidos (analítica de uso).</li>
-        <li>Progreso académico (módulos completados, evaluaciones aprobadas, rangos obtenidos).</li>
+        <li>Progreso académico (módulos completados, evaluaciones aprobadas, dimensiones obtenidas).</li>
         <li>Cookies y tecnologías similares (ver sección 5).</li>
       </ul>
 
       <h2>3. Finalidades del tratamiento</h2>
       <p>Usamos tus datos para:</p>
       <ul>
-        <li><strong>Prestar el Servicio:</strong> gestionar tu cuenta, controlar tu progreso académico, otorgarte certificados y rangos.</li>
+        <li><strong>Prestar el Servicio:</strong> gestionar tu cuenta, controlar tu progreso académico, otorgarte certificados y dimensiones.</li>
         <li><strong>Procesar pagos:</strong> facturación recurrente y cancelaciones a través de Stripe.</li>
         <li><strong>Comunicación operativa:</strong> envío de emails transaccionales (bienvenida, confirmaciones de pago, avisos de cancelación, apertura semanal, correcciones de tareas).</li>
         <li><strong>Comunicación pedagógica:</strong> recordatorios de sesiones en vivo, novedades del programa.</li>

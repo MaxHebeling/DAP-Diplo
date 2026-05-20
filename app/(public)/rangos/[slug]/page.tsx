@@ -91,28 +91,28 @@ export async function generateMetadata({ params }: PageProps) {
   const rank = await findRankBySlug(slug);
   if (!rank) {
     return {
-      title: "Rango no encontrado",
+      title: "Dimensión no encontrada",
       robots: { index: false, follow: true },
     };
   }
   const theme = rankThemeFromDescription(rank.description);
   const description = theme
-    ? `Rango ${rank.name} — otorgado al completar el Bloque ${rank.order_index} (${theme}) del Diplomado Apostólico Pastoral.`
-    : `Rango ${rank.name} del Diplomado Apostólico Pastoral.`;
+    ? `Dimensión ${rank.name} — otorgada al completar el Bloque ${rank.order_index} (${theme}) del Diplomado Apostólico Pastoral.`
+    : `Dimensión ${rank.name} del Diplomado Apostólico Pastoral.`;
   const url = `/rangos/${slug}`;
   return {
-    title: `Rango ${rank.name}`,
+    title: `Dimensión ${rank.name}`,
     description,
     alternates: { canonical: url },
     openGraph: {
       type: "article" as const,
       url,
-      title: `Rango ${rank.name} · DAP`,
+      title: `Dimensión ${rank.name} · DAP`,
       description,
     },
     twitter: {
       card: "summary_large_image" as const,
-      title: `Rango ${rank.name} · DAP`,
+      title: `Dimensión ${rank.name} · DAP`,
       description,
     },
   };
@@ -186,7 +186,7 @@ export default async function RankDetailPage({ params }: PageProps) {
               courseSchema({
                 slug: phaseData.slug,
                 order_index: phaseData.order_index,
-                title: `Rango ${rank.name} — ${phaseData.title}`,
+                title: `Dimensión ${rank.name} — ${phaseData.title}`,
                 subtitle: phaseData.subtitle,
                 description: phaseData.description,
                 months_duration: phaseData.months_duration,
@@ -210,7 +210,7 @@ export default async function RankDetailPage({ params }: PageProps) {
               className="mb-8 inline-flex items-center gap-2 font-inter text-sm text-text-secondary hover:text-text-primary"
             >
               <ArrowLeft className="size-3.5" />
-              Ver los 9 rangos
+              Ver las 9 dimensiones
             </Link>
 
             <DapRankBadge
@@ -221,7 +221,7 @@ export default async function RankDetailPage({ params }: PageProps) {
             />
 
             <p className="mt-8 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-              Rango {String(order).padStart(2, "0")} de 9
+              Dimensión {String(order).padStart(2, "0")} de 9
             </p>
             <h1 className="mt-2 font-grotesk text-display font-bold leading-[1.05] text-text-primary">
               {rank.name}
@@ -285,7 +285,7 @@ export default async function RankDetailPage({ params }: PageProps) {
                       {rank.name}
                     </p>
                     <p className="font-inter text-xs uppercase tracking-widest text-text-tertiary">
-                      Rango al completar
+                      Dimensión al completar
                     </p>
                   </div>
                 </div>
@@ -320,7 +320,7 @@ export default async function RankDetailPage({ params }: PageProps) {
                 <ArrowLeft className="size-4 text-text-tertiary transition-colors group-hover:text-brand-coral" />
                 <div>
                   <p className="font-inter text-xs uppercase tracking-widest text-text-tertiary">
-                    Rango anterior
+                    Dimensión anterior
                   </p>
                   <p className="font-grotesk text-base font-semibold text-text-primary">
                     {prev.name}
@@ -337,7 +337,7 @@ export default async function RankDetailPage({ params }: PageProps) {
               >
                 <div>
                   <p className="font-inter text-xs uppercase tracking-widest text-text-tertiary">
-                    Rango siguiente
+                    Dimensión siguiente
                   </p>
                   <p className="font-grotesk text-base font-semibold text-text-primary">
                     {next.name}

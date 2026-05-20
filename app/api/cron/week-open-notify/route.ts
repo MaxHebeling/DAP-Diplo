@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendWeekOpenedEmail } from "@/lib/email/send-week-opened";
 
-// Corre 1x al día a las 12:00 UTC (06:00 America/Mexico_City), antes del
+// Corre 1x al día a las 12:00 UTC (05:00 PDT / 04:00 PST — San Diego), antes del
 // inicio del día académico (martes 00:01) … wait: en realidad lo más
 // limpio es disparar martes 06:00 Mexico = 12:00 UTC, así cubre la
 // recién-abierta semana. Cron en vercel.json.

@@ -28,7 +28,7 @@ const INCLUDED = [
   "Corrección personalizada de tu activación con la voz del Dr. Max (48h)",
   "Comunidad privada de pastores en formación",
   "Material descargable por módulo (PDFs, audios, plantillas)",
-  "Certificado, insignia y rango ministerial al completar cada bloque",
+  "Certificado, insignia y dimensión nueva al completar cada bloque",
 ];
 
 export default async function SuscribirmePage() {

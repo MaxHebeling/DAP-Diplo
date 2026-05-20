@@ -52,12 +52,12 @@ const STEPS = [
   {
     icon: CalendarClock,
     title: "Recibís 1 módulo cada semana",
-    body: "Cada martes (00:01 hora de Ciudad de México) se abre un módulo nuevo. La tarea de activación cierra el lunes siguiente (23:59). El contenido pasado sigue accesible para repaso indefinidamente.",
+    body: "Cada martes (00:01 hora de San Diego, California) se abre un módulo nuevo. La tarea de activación cierra el lunes siguiente (23:59). El contenido pasado sigue accesible para repaso indefinidamente.",
   },
   {
     icon: Award,
     title: "Completás bloques, recibís dimensiones",
-    body: "Al aprobar los 8 módulos de un bloque (5 secciones completas + quiz aprobado), recibís certificado, insignia y una dimensión ministerial. 9 bloques = 9 dimensiones, de Discípulo hasta Enviado.",
+    body: "Al aprobar los 8 módulos de un bloque (5 secciones completas + quiz aprobado), recibís certificado, insignia y una dimensión nueva. 9 bloques = 9 dimensiones, de Discípulo hasta Enviado.",
   },
 ] as const;
 
@@ -179,7 +179,7 @@ export default async function ComoFuncionaPage() {
                 El recorrido
               </p>
               <h2 className="mb-12 max-w-2xl font-grotesk text-h1 font-bold leading-tight text-text-primary">
-                Cuatro pasos, <span className="gradient-text">del aspirante al apóstol</span>.
+                Cuatro pasos, <span className="gradient-text">del aspirante al liderazgo</span>.
               </h2>
             </Reveal>
 
@@ -339,7 +339,7 @@ export default async function ComoFuncionaPage() {
                 <ShieldCheck className="mx-auto mb-3 size-6 text-brand-violet" />
                 <p className="font-grotesk text-h2 font-bold gradient-text">9</p>
                 <p className="font-inter text-xs uppercase tracking-widest text-text-tertiary">
-                  Rangos
+                  Dimensiones
                 </p>
               </div>
             </div>

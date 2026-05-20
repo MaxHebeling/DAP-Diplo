@@ -37,7 +37,7 @@ type ProfileMini = {
 const BATCH_SIZE = 20;
 
 /**
- * Cron handler: corre diario a las 15:00 UTC (09:00 America/Mexico_City)
+ * Cron handler: corre diario a las 15:00 UTC (08:00 PDT / 07:00 PST — San Diego)
  * configurado en vercel.json. Para cada admisión aprobada hace >=24h y
  * sin carta enviada:
  *   1) Lee matrícula + program_start_date del profile asociado.
