@@ -1,12 +1,34 @@
 import { anthropic } from "@ai-sdk/anthropic";
 import { generateText } from "ai";
 
+import { createAdminClient } from "@/lib/supabase/admin";
 import {
   EXCORRECTOR_MODEL,
   EXCORRECTOR_VOICE_MANUAL,
   buildExcorrectorPrompt,
   type ExcorrectorOutput,
 } from "./voice-manual";
+
+/**
+ * Lee el voice manual de DB (admin_settings.excorrector_voice_manual).
+ * Si no hay row en DB, cae al hardcoded EXCORRECTOR_VOICE_MANUAL.
+ * Cacheable a nivel runtime (sin TTL) — admin invalida con redeploy o
+ * con UPDATE manual a la row.
+ */
+async function loadVoiceManual(): Promise<string> {
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin.rpc("get_admin_setting", {
+      p_key: "excorrector_voice_manual",
+    });
+    if (typeof data === "string" && data.trim().length > 50) {
+      return data;
+    }
+  } catch {
+    // ignored — fallback al hardcoded
+  }
+  return EXCORRECTOR_VOICE_MANUAL;
+}
 
 export type CorrectionResult =
   | { ok: true; data: ExcorrectorOutput; rawResponse: string }
@@ -63,11 +85,12 @@ Hijo, el llamado se desarrolla en el detalle. No subestimes el peso de una entre
   }
 
   const prompt = buildExcorrectorPrompt(input);
+  const voiceManual = await loadVoiceManual();
 
   try {
     const { text } = await generateText({
       model: anthropic(EXCORRECTOR_MODEL),
-      system: EXCORRECTOR_VOICE_MANUAL,
+      system: voiceManual,
       prompt,
       temperature: 0.4,
     });

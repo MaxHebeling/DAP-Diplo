@@ -11,6 +11,7 @@ import {
   LogOut,
   MessagesSquare,
   Radio,
+  Sparkles,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
@@ -20,10 +21,12 @@ import { signOutAction } from "@/lib/auth/actions";
 const NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/admin/admisiones", label: "Admisiones", icon: GraduationCap, exact: false },
-  { href: "/admin/fases", label: "Fases", icon: Layers, exact: false },
+  { href: "/admin/bloques", label: "Bloques (copy)", icon: Layers, exact: false },
+  { href: "/admin/fases", label: "Fases (módulos)", icon: Layers, exact: false },
   { href: "/admin/comunidad", label: "Comunidad", icon: MessagesSquare, exact: false },
   { href: "/admin/en-vivo", label: "En vivo", icon: Radio, exact: false },
   { href: "/admin/tutor/documentos", label: "Tutor IA", icon: Brain, exact: false },
+  { href: "/admin/excorrector", label: "Excorrector", icon: Sparkles, exact: false },
   { href: "/admin/push-test", label: "Test push", icon: Bell, exact: false },
 ];
 
