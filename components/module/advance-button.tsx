@@ -24,11 +24,22 @@ function SubmitInner({ label, done }: { label: string; done?: boolean }) {
       type="submit"
       size="lg"
       disabled={pending}
-      className="h-11 bg-brand text-brand-foreground hover:bg-brand/90"
+      className="h-11 bg-brand text-brand-foreground hover:bg-brand/90 transition-all"
     >
-      {pending ? "Guardando…" : done ? <Check className="size-4" /> : null}
-      {pending ? "" : label}
-      {!done && !pending && <ArrowRight className="size-4" />}
+      {/* Optimistic UI: apenas se aprieta el botón mostramos check + label
+          afirmativo. Si el server falla, el form state lo refleja después. */}
+      {pending ? (
+        <>
+          <Check className="size-4 animate-in fade-in duration-150" />
+          ¡Listo!
+        </>
+      ) : (
+        <>
+          {done && <Check className="size-4" />}
+          {label}
+          {!done && <ArrowRight className="size-4" />}
+        </>
+      )}
     </Button>
   );
 }
