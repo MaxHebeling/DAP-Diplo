@@ -10,6 +10,7 @@ import {
   ALL_DIAL_CODES,
   COUNTRIES,
   COUNTRY_DIAL_CODES,
+  COUNTRY_PHONE_PLACEHOLDER,
   NETWORK_OPTIONS,
   admissionFormSchema,
   type AdmissionFormInput,
@@ -230,7 +231,7 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
               type="tel"
               value={phoneLocal}
               onChange={(e) => setPhoneLocal(e.target.value)}
-              placeholder="55 1234 5678"
+              placeholder={COUNTRY_PHONE_PLACEHOLDER[country]}
               autoComplete="tel-national"
               inputMode="tel"
               className="flex-1"

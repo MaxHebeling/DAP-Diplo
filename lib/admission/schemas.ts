@@ -57,6 +57,33 @@ export const COUNTRY_DIAL_CODES: Record<Country, string> = {
   Otro: "",
 };
 
+// Placeholder de número local por país. Da un ejemplo realista al alumno
+// sin obligarlo a un formato específico (la validación es solo length).
+export const COUNTRY_PHONE_PLACEHOLDER: Record<Country, string> = {
+  Argentina: "11 1234 5678",
+  Bolivia: "70123456",
+  Chile: "9 1234 5678",
+  Colombia: "300 123 4567",
+  "Costa Rica": "8312 3456",
+  Cuba: "5 1234567",
+  Ecuador: "99 123 4567",
+  "El Salvador": "7012 3456",
+  España: "612 34 56 78",
+  "Estados Unidos": "(555) 123-4567",
+  Guatemala: "5123 4567",
+  Honduras: "9123 4567",
+  México: "55 1234 5678",
+  Nicaragua: "8123 4567",
+  Panamá: "6123 4567",
+  Paraguay: "981 123 456",
+  Perú: "912 345 678",
+  "Puerto Rico": "(787) 123-4567",
+  "República Dominicana": "(809) 123-4567",
+  Uruguay: "9 1234 5678",
+  Venezuela: "412 123 4567",
+  Otro: "Tu número",
+};
+
 // Lista completa de dial codes para el dropdown del PhoneField (incluye
 // otros países comunes que no están en COUNTRIES). Ordenado por nombre.
 export const ALL_DIAL_CODES: Array<{ label: string; value: string }> = [
