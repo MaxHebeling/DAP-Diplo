@@ -37,11 +37,14 @@ type DapPublicHeaderProps = {
   onSignOut?: () => void | Promise<void>;
 };
 
+// Default cross-página: rutas absolutas + anchor a la sección de
+// preguntas del landing. Si una página quiere su propio menú (ej. el
+// landing usa anchors a #bloques), pasa `links={[...]}` explícito.
 const DEFAULT_LINKS: NavLink[] = [
-  { href: "#bloques", label: "Bloques" },
-  { href: "#modelo", label: "Modelo" },
-  { href: "#testimonios", label: "Testimonios" },
-  { href: "#preguntas", label: "Preguntas" },
+  { href: "/como-funciona", label: "Cómo funciona" },
+  { href: "/rangos", label: "Rangos" },
+  { href: "/precios", label: "Precios" },
+  { href: "/#faq", label: "Preguntas" },
 ];
 
 export function DapPublicHeader({
