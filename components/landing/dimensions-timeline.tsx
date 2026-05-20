@@ -1,3 +1,4 @@
+import Image from "next/image";
 import {
   Briefcase,
   Building2,
@@ -50,16 +51,27 @@ export async function DimensionsTimeline() {
   return (
     <section
       id="dimensiones"
-      className="border-t border-white/[0.06] bg-surface-base px-6 py-28 sm:py-36"
+      className="relative isolate overflow-hidden border-t border-white/[0.06] bg-surface-base px-6 py-28 sm:py-36"
     >
-      <div className="mx-auto max-w-7xl">
+      {/* Background photo + tints (mismo patrón que phases-grid-v2) */}
+      <Image
+        src="/dimensions-bg.jpg"
+        alt=""
+        fill
+        sizes="100vw"
+        className="-z-40 object-cover opacity-15"
+      />
+      <div className="absolute inset-0 -z-30 bg-gradient-to-b from-surface-base/70 via-transparent to-surface-base/85" />
+      <div className="absolute inset-0 -z-20 bg-brand-violet/10 mix-blend-multiply" />
+
+      <div className="relative z-10 mx-auto max-w-7xl">
         <Reveal>
           <div className="mb-16 max-w-3xl">
             <p className="mb-4 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
               Las 9 dimensiones del Reino
             </p>
             <h2 className="font-grotesk text-h1 font-bold leading-tight text-text-primary">
-              Discípulo. Hijo. <span className="gradient-text">Líder</span>.
+              Discípulo. <span className="gradient-text">Hijo</span>. Líder.
               Enviado.
             </h2>
             <p className="mt-6 text-justify font-inter text-base leading-relaxed text-text-secondary">
