@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Brain,
+  GraduationCap,
   Layers,
   LayoutDashboard,
   LogOut,
@@ -17,6 +18,7 @@ import { signOutAction } from "@/lib/auth/actions";
 
 const NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { href: "/admin/admisiones", label: "Admisiones", icon: GraduationCap, exact: false },
   { href: "/admin/fases", label: "Fases", icon: Layers, exact: false },
   { href: "/admin/comunidad", label: "Comunidad", icon: MessagesSquare, exact: false },
   { href: "/admin/en-vivo", label: "En vivo", icon: Radio, exact: false },

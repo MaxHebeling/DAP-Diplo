@@ -11,6 +11,14 @@
 
 const RESEND_API = "https://api.resend.com/emails";
 
+export type SendEmailAttachment = {
+  filename: string;
+  /** Contenido base64. */
+  content: string;
+  /** MIME — opcional, Resend lo infiere si no se pasa. */
+  contentType?: string;
+};
+
 export type SendEmailInput = {
   to: string | string[];
   subject: string;
@@ -19,6 +27,8 @@ export type SendEmailInput = {
   from?: string;
   /** Reply-To opcional. */
   replyTo?: string;
+  /** Adjuntos (PDF, etc). El payload va base64-encoded en JSON. */
+  attachments?: SendEmailAttachment[];
 };
 
 export type SendEmailResult =
@@ -48,6 +58,15 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
         subject: input.subject,
         html: input.html,
         ...(input.replyTo ? { reply_to: input.replyTo } : {}),
+        ...(input.attachments && input.attachments.length > 0
+          ? {
+              attachments: input.attachments.map((a) => ({
+                filename: a.filename,
+                content: a.content,
+                ...(a.contentType ? { content_type: a.contentType } : {}),
+              })),
+            }
+          : {}),
       }),
     });
 
