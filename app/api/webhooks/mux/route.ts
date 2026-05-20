@@ -42,9 +42,11 @@ export async function POST(request: NextRequest) {
       muxWebhookSecret(),
     );
   } catch (err) {
-    const msg = err instanceof Error ? err.message : "Firma inválida";
-    console.error("[mux.webhook] signature failed:", msg);
-    return NextResponse.json({ error: msg }, { status: 400 });
+    console.error("[mux.webhook] signature failed:", err);
+    return NextResponse.json(
+      { error: "Invalid signature" },
+      { status: 400 },
+    );
   }
 
   const admin = createAdminClient();
@@ -81,8 +83,11 @@ export async function POST(request: NextRequest) {
           .update({ mux_asset_id: assetId })
           .eq("id", section.id);
         if (error) {
-          console.error("[mux.webhook] update asset_id failed:", error.message);
-          return NextResponse.json({ error: error.message }, { status: 500 });
+          console.error("[mux.webhook] update asset_id failed:", error);
+          return NextResponse.json(
+            { error: "Update failed" },
+            { status: 500 },
+          );
         }
         return NextResponse.json({ received: true, sectionId: section.id });
       }
@@ -96,9 +101,12 @@ export async function POST(request: NextRequest) {
         };
         const assetId = data.id;
         const passthrough = data.passthrough;
-        const playback = data.playback_ids?.find(
-          (p) => p.policy === "public",
-        )?.id;
+        // Preferimos signed (contenido pagado). Caemos a public sólo si el
+        // asset fue creado con policy pública antes del backfill — el
+        // backfill final convertirá esos a signed.
+        const playback =
+          data.playback_ids?.find((p) => p.policy === "signed")?.id ??
+          data.playback_ids?.find((p) => p.policy === "public")?.id;
         const durationSec = data.duration
           ? Math.round(data.duration)
           : null;
@@ -127,8 +135,11 @@ export async function POST(request: NextRequest) {
           })
           .eq("id", section.id);
         if (error) {
-          console.error("[mux.webhook] update asset.ready failed:", error.message);
-          return NextResponse.json({ error: error.message }, { status: 500 });
+          console.error("[mux.webhook] update asset.ready failed:", error);
+          return NextResponse.json(
+            { error: "Update failed" },
+            { status: 500 },
+          );
         }
 
         // Invalida páginas admin y student para reflejar el video inmediatamente.
@@ -141,8 +152,10 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ received: true, ignored: event.type });
     }
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error("[mux.webhook] handler error:", msg);
-    return NextResponse.json({ error: msg }, { status: 500 });
+    console.error("[mux.webhook] handler error:", err);
+    return NextResponse.json(
+      { error: "Handler error" },
+      { status: 500 },
+    );
   }
 }

@@ -14,12 +14,19 @@ type Resource = {
   url: string;
 };
 
+type MuxTokens = {
+  playback: string;
+  thumbnail: string;
+  storyboard: string;
+};
+
 type SectionTeachingProps = {
   sectionId: string;
   moduleId: string;
   phaseSlug: string;
   moduleSlug: string;
   muxPlaybackId: string | null;
+  muxTokens: MuxTokens | null;
   bodyMd: string | null;
   durationSeconds: number | null;
   startPositionSeconds: number;
@@ -68,11 +75,12 @@ export function SectionTeaching(props: SectionTeachingProps) {
 
   return (
     <div className="space-y-8">
-      {props.muxPlaybackId ? (
+      {props.muxPlaybackId && props.muxTokens ? (
         <div className="overflow-hidden rounded-xl border bg-black">
           <MuxPlayer
             streamType="on-demand"
             playbackId={props.muxPlaybackId}
+            tokens={props.muxTokens}
             startTime={props.startPositionSeconds}
             metadata={{
               video_id: props.sectionId,
@@ -82,6 +90,11 @@ export function SectionTeaching(props: SectionTeachingProps) {
             style={{ aspectRatio: "16 / 9", width: "100%" }}
             accentColor="#fdad5a"
           />
+        </div>
+      ) : props.muxPlaybackId ? (
+        <div className="flex aspect-video items-center justify-center rounded-xl border border-dashed bg-amber-500/10 px-6 text-center text-sm text-amber-700 dark:text-amber-300">
+          No pudimos cargar el video en este momento. Recarga la página o
+          contáctanos si el problema persiste.
         </div>
       ) : (
         <div className="flex aspect-video items-center justify-center rounded-xl border border-dashed bg-muted/30 text-sm text-muted-foreground">

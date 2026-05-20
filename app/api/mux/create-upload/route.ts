@@ -57,11 +57,28 @@ export async function POST(req: Request) {
     );
   }
 
-  const origin = req.headers.get("origin") ?? "*";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  if (!appUrl) {
+    return NextResponse.json(
+      { error: "NEXT_PUBLIC_APP_URL no configurado" },
+      { status: 500 },
+    );
+  }
+  const requestOrigin = req.headers.get("origin");
+  const allowedOrigins = new Set<string>([appUrl]);
+  if (process.env.VERCEL_URL) {
+    allowedOrigins.add(`https://${process.env.VERCEL_URL}`);
+  }
+  if (process.env.NODE_ENV !== "production") {
+    allowedOrigins.add("http://localhost:3000");
+  }
+  const corsOrigin =
+    requestOrigin && allowedOrigins.has(requestOrigin) ? requestOrigin : appUrl;
+
   const upload = await muxClient().video.uploads.create({
-    cors_origin: origin,
+    cors_origin: corsOrigin,
     new_asset_settings: {
-      playback_policies: ["public"],
+      playback_policies: ["signed"],
       video_quality: "basic",
       passthrough: section.id,
     },

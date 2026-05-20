@@ -17,6 +17,7 @@ import type {
 } from "@/components/module/quiz-player";
 import { createClient } from "@/lib/supabase/server";
 import { ensureWeekAssignment } from "@/lib/calendar/ensure-assignment";
+import { signMuxPlayerTokens } from "@/lib/mux/playback";
 
 const SECTION_KINDS: SectionKind[] = [
   "intro",
@@ -335,6 +336,17 @@ export default async function ModulePlayerPage({
     }
   }
 
+  // El acceso al módulo ya fue validado más arriba (RLS / has_access_to_module).
+  // Si hay video, generamos tokens signed cortos (6h) para el reproductor.
+  let muxTokens: Awaited<ReturnType<typeof signMuxPlayerTokens>> | null = null;
+  if (activeSection?.mux_playback_id) {
+    try {
+      muxTokens = await signMuxPlayerTokens(activeSection.mux_playback_id);
+    } catch (err) {
+      console.error("[module] failed to sign Mux tokens:", err);
+    }
+  }
+
   return (
     <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[300px_1fr]">
       <ModuleSidebar
@@ -429,6 +441,7 @@ export default async function ModulePlayerPage({
                   phaseSlug={mod.phase.slug}
                   moduleSlug={mod.slug}
                   muxPlaybackId={activeSection.mux_playback_id}
+                  muxTokens={muxTokens}
                   bodyMd={activeSection.body_md}
                   durationSeconds={activeSection.duration_seconds}
                   startPositionSeconds={startPosition}
