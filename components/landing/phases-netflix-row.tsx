@@ -34,7 +34,7 @@ const ACCENT_GRADIENTS = [
 export function PhasesNetflixRow({ phases }: { phases: NetflixPhaseRow[] }) {
   return (
     <div
-      className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5"
+      className="mx-auto grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-3 lg:gap-4"
     >
       {phases.map((p) => {
         const accent =
@@ -47,7 +47,7 @@ export function PhasesNetflixRow({ phases }: { phases: NetflixPhaseRow[] }) {
             <Link
               key={p.slug}
               href={`/fases/${p.slug}`}
-              className="group relative aspect-[2/3] overflow-hidden rounded-xl border border-white/[0.08] bg-surface-elevated shadow-card transition-all duration-300 hover:z-10 hover:scale-[1.03] hover:border-brand-violet/40 hover:shadow-glow-violet"
+              className="group relative aspect-square overflow-hidden rounded-lg border border-white/[0.08] bg-surface-elevated shadow-card transition-all duration-300 hover:z-10 hover:scale-[1.05] hover:border-brand-violet/40 hover:shadow-glow-violet"
             >
               {/* Cover image o gradient fallback */}
               {p.cover_image_url ? (
@@ -80,15 +80,15 @@ export function PhasesNetflixRow({ phases }: { phases: NetflixPhaseRow[] }) {
               )}
 
               {/* Badge bloque arriba-izq (sutil, no compite con el brand impreso) */}
-              <div className="absolute left-3 top-3 z-10">
-                <span className="inline-flex items-center gap-1 rounded-full bg-black/70 px-2.5 py-1 font-inter text-[10px] font-semibold uppercase tracking-widest text-white backdrop-blur-sm">
+              <div className="absolute left-2 top-2 z-10">
+                <span className="inline-flex items-center gap-1 rounded-full bg-black/70 px-2 py-0.5 font-inter text-[9px] font-semibold uppercase tracking-widest text-white backdrop-blur-sm">
                   Bloque {String(p.order_index).padStart(2, "0")}
                 </span>
               </div>
 
               {/* Eyebrow dimensión arriba-der (sutil) */}
-              <div className="absolute right-3 top-3 z-10">
-                <span className="inline-flex items-center gap-1 rounded-full bg-brand-coral/85 px-2.5 py-1 font-inter text-[10px] font-semibold uppercase tracking-widest text-white shadow-sm">
+              <div className="absolute right-2 top-2 z-10">
+                <span className="inline-flex items-center gap-1 rounded-full bg-brand-coral/85 px-2 py-0.5 font-inter text-[9px] font-semibold uppercase tracking-widest text-white shadow-sm">
                   Dim {dimN}
                 </span>
               </div>
@@ -100,30 +100,28 @@ export function PhasesNetflixRow({ phases }: { phases: NetflixPhaseRow[] }) {
                 className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black via-black/90 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
               />
 
-              <div className="absolute inset-x-0 bottom-0 z-10 flex translate-y-2 flex-col gap-1.5 p-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 sm:p-5">
-                <p className="font-inter text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-coral">
+              <div className="absolute inset-x-0 bottom-0 z-10 flex translate-y-2 flex-col gap-1 p-3 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 sm:p-3.5">
+                <p className="font-inter text-[9px] font-semibold uppercase tracking-[0.18em] text-brand-coral">
                   {p.dimension_name ?? `Dimensión ${dimN}`}
                 </p>
-                {/* heroTitle viene impreso en la imagen — lo dejamos como h3
-                    accesible pero invisible para no duplicar visualmente */}
                 <h3 className="sr-only">{heroTitle}</h3>
                 {p.subtitle && (
-                  <p className="font-inter text-sm font-semibold leading-snug text-white">
+                  <p className="line-clamp-2 font-inter text-xs font-semibold leading-snug text-white">
                     {p.subtitle}
                   </p>
                 )}
                 {p.promise && (
-                  <p className="font-inter text-xs italic leading-relaxed text-white/85">
+                  <p className="line-clamp-2 font-inter text-[11px] italic leading-snug text-white/85">
                     {p.promise}
                   </p>
                 )}
-                <div className="mt-2 flex items-center justify-between">
-                  <span className="font-inter text-[10px] uppercase tracking-widest text-white/60">
-                    {p.modules_count} módulos · 8 semanas
+                <div className="mt-1.5 flex items-center justify-between">
+                  <span className="font-inter text-[9px] uppercase tracking-widest text-white/60">
+                    {p.modules_count} módulos
                   </span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-brand-coral px-3 py-1 font-inter text-xs font-semibold text-white">
-                    Ver bloque
-                    <ArrowRight className="size-3" />
+                  <span className="inline-flex items-center gap-1 rounded-full bg-brand-coral px-2 py-0.5 font-inter text-[10px] font-semibold text-white">
+                    Ver
+                    <ArrowRight className="size-2.5" />
                   </span>
                 </div>
               </div>
