@@ -53,14 +53,18 @@ export async function DimensionsTimeline() {
       id="dimensiones"
       className="relative isolate overflow-hidden border-t border-white/[0.06] bg-surface-base px-6 py-28 sm:py-36"
     >
-      {/* Background photo + tints (mismo patrón que phases-grid-v2) */}
+      {/* Background photo + tints. Shift hacia la derecha y oculto progresivamente
+          el lado izquierdo (donde están las 2 personas que NO van protagónicas). */}
       <Image
         src="/dimensions-bg.jpg"
         alt=""
         fill
         sizes="100vw"
-        className="-z-40 object-cover opacity-15"
+        className="-z-40 object-cover opacity-20 [object-position:80%_center]"
       />
+      {/* Gradient lateral: oscurece izq, deja viva la der */}
+      <div className="absolute inset-0 -z-30 bg-gradient-to-r from-surface-base via-surface-base/85 via-50% to-transparent" />
+      {/* Gradient vertical para el fade top/bottom */}
       <div className="absolute inset-0 -z-30 bg-gradient-to-b from-surface-base/70 via-transparent to-surface-base/85" />
       <div className="absolute inset-0 -z-20 bg-brand-violet/10 mix-blend-multiply" />
 
