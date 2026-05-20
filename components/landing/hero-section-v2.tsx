@@ -87,7 +87,7 @@ export function HeroSectionV2() {
           transition={{ duration: 0.8, delay: 0.85 }}
           className="mx-auto max-w-3xl font-grotesk text-h2 font-bold leading-[1.15] text-text-primary md:text-h1 md:leading-[1.1]"
         >
-          Formamos pastores integrales que{" "}
+          Formamos líderes integrales que{" "}
           <span className="gradient-text">transforman su generación</span>.
         </motion.h1>
 
@@ -97,10 +97,9 @@ export function HeroSectionV2() {
           transition={{ duration: 0.7, delay: 1.0 }}
           className="mx-auto mt-6 max-w-2xl font-inter text-base leading-relaxed text-text-secondary md:text-lg"
         >
-          72 semanas de formación apostólica integral que une espiritualidad,
-          liderazgo, gobierno, finanzas, empresas y tecnología.{" "}
+          72 semanas de formación · 9 Dimensiones ·{" "}
           <span className="font-medium text-text-primary">
-            9 Dimensiones. Una transformación completa.
+            Una transformación sobrenatural.
           </span>
         </motion.p>
 
