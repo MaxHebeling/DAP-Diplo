@@ -17,7 +17,7 @@
  *  - skipWaiting + clients.claim → SW nuevo toma control inmediato
  */
 
-const VERSION = "dap-v1";
+const VERSION = "dap-v2";
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
