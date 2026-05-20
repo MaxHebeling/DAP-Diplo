@@ -71,9 +71,9 @@ export function HeroSectionV2() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.7 }}
-          className="mb-10 font-grotesk text-xs font-medium uppercase tracking-[0.36em] text-text-secondary sm:text-sm"
+          className="mb-8 font-grotesk text-xs font-medium uppercase tracking-[0.36em] text-text-secondary sm:text-sm"
         >
-          Diplomado · Apostólico · Pastoral
+          Diplomado Apostólico Pastoral
         </motion.p>
 
         <motion.h1
@@ -82,15 +82,27 @@ export function HeroSectionV2() {
           transition={{ duration: 0.8, delay: 0.85 }}
           className="mx-auto max-w-3xl font-grotesk text-h2 font-bold leading-[1.15] text-text-primary md:text-h1 md:leading-[1.1]"
         >
-          Formamos líderes para{" "}
-          <span className="gradient-text">transformar personas</span>,
-          iglesias, empresas y territorios.
+          Formamos pastores integrales que{" "}
+          <span className="gradient-text">transforman su generación</span>.
         </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 1.0 }}
+          className="mx-auto mt-6 max-w-2xl font-inter text-base leading-relaxed text-text-secondary md:text-lg"
+        >
+          72 semanas de formación apostólica integral que une espiritualidad,
+          liderazgo, gobierno, finanzas, empresas y tecnología.{" "}
+          <span className="font-medium text-text-primary">
+            9 Dimensiones. Una transformación completa.
+          </span>
+        </motion.p>
 
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 1.05 }}
+          transition={{ duration: 0.7, delay: 1.15 }}
           className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4"
         >
           <DapButton render={<Link href="/suscribirme" />} size="lg">
@@ -110,10 +122,10 @@ export function HeroSectionV2() {
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 1.3 }}
+          transition={{ duration: 0.6, delay: 1.4 }}
           className="mt-6 font-inter text-xs text-text-tertiary"
         >
-          18 meses · 9 bloques · 72 módulos · desde $25/mes
+          $25 USD/mes · Acceso inmediato · Cancela cuando quieras
         </motion.p>
       </motion.div>
 

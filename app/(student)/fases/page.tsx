@@ -21,7 +21,10 @@ type PhaseRow = {
   order_index: number;
   slug: string;
   title: string;
+  brand_name: string | null;
+  promise: string | null;
   subtitle: string | null;
+  dimension: { name: string; order_index: number } | null;
 };
 
 type BlockModulesRow = {
@@ -52,7 +55,9 @@ export default async function MisModulosPage() {
   // 9 bloques (phases) ordenados
   const { data: phases } = await supabase
     .from("phases")
-    .select("id, order_index, slug, title, subtitle")
+    .select(
+      "id, order_index, slug, title, brand_name, promise, subtitle, dimension:dimensions(name, order_index)",
+    )
     .order("order_index", { ascending: true })
     .returns<PhaseRow[]>();
 
@@ -142,16 +147,22 @@ export default async function MisModulosPage() {
                 const isLocked = currentWeekN > 0 && firstWeek > currentWeekN;
                 const isCompleted = completed === total && total > 0;
 
+                const dimN = String(
+                  phase.dimension?.order_index ?? phase.order_index,
+                ).padStart(2, "0");
+                const dimName = phase.dimension?.name ?? "—";
+                const heroTitle = phase.brand_name ?? phase.title;
+
                 return (
                   <Link
                     key={phase.id}
                     href={`/fases/${phase.slug}`}
                     className="group relative flex flex-col rounded-xl border border-white/[0.06] bg-surface-elevated/60 p-6 transition-all hover:-translate-y-0.5 hover:border-brand-violet/30 hover:bg-surface-elevated"
                   >
-                    <div className="mb-4 flex items-start justify-between">
-                      <span className="font-grotesk text-h2 font-bold gradient-text">
-                        {String(phase.order_index).padStart(2, "0")}
-                      </span>
+                    <div className="mb-3 flex items-start justify-between">
+                      <p className="font-inter text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-coral">
+                        Dimensión {dimN} · {dimName}
+                      </p>
                       {isCompleted ? (
                         <CheckCircle2 className="size-5 text-emerald-400" />
                       ) : isLocked ? (
@@ -159,12 +170,17 @@ export default async function MisModulosPage() {
                       ) : null}
                     </div>
 
-                    <h3 className="font-grotesk text-h4 font-semibold text-text-primary">
-                      {phase.title}
+                    <h3 className="font-grotesk text-h3 font-bold gradient-text leading-tight">
+                      {heroTitle}
                     </h3>
                     {phase.subtitle && (
                       <p className="mt-1 font-inter text-sm text-text-secondary">
                         {phase.subtitle}
+                      </p>
+                    )}
+                    {phase.promise && (
+                      <p className="mt-3 font-inter text-sm italic leading-relaxed text-text-primary/85">
+                        {phase.promise}
                       </p>
                     )}
 
@@ -182,11 +198,11 @@ export default async function MisModulosPage() {
                         />
                       </div>
                       <p className="font-inter text-xs text-text-tertiary">
-                        Semanas {firstWeek}–{lastWeek}
+                        Bloque {String(phase.order_index).padStart(2, "0")} · Semanas {firstWeek}–{lastWeek}
                       </p>
                     </div>
 
-                    <div className="mt-5 inline-flex items-center gap-1.5 font-inter text-sm font-medium text-brand-coral group-hover:gap-2 transition-all">
+                    <div className="mt-5 inline-flex items-center gap-1.5 font-inter text-sm font-medium text-brand-coral transition-all group-hover:gap-2">
                       Ver bloque
                       <ArrowRight className="size-3.5" />
                     </div>

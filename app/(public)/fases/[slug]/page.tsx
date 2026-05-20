@@ -31,6 +31,8 @@ type BlockDetail = {
   order_index: number;
   slug: string;
   title: string;
+  brand_name: string | null;
+  promise: string | null;
   subtitle: string | null;
   description: string | null;
   cover_image_url: string | null;
@@ -73,32 +75,33 @@ export async function generateMetadata({ params }: PageProps) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("phases")
-    .select("title, subtitle, description")
+    .select("title, brand_name, promise, subtitle, description")
     .eq("slug", slug)
     .eq("published", true)
     .maybeSingle();
   if (!data) {
     return {
-      title: "Fase no encontrada",
+      title: "Bloque no encontrado",
       robots: { index: false, follow: true },
     };
   }
   const url = `/fases/${slug}`;
+  const heroTitle = data.brand_name ?? data.title;
   const description =
-    data.subtitle ?? data.description ?? undefined;
+    data.promise ?? data.subtitle ?? data.description ?? undefined;
   return {
-    title: data.title,
+    title: heroTitle,
     description,
     alternates: { canonical: url },
     openGraph: {
       type: "article",
       url,
-      title: `${data.title} · DAP`,
+      title: `${heroTitle} · DAP`,
       description,
     },
     twitter: {
       card: "summary_large_image",
-      title: `${data.title} · DAP`,
+      title: `${heroTitle} · DAP`,
       description,
     },
   };
@@ -113,7 +116,7 @@ export default async function BlockDetailPage({ params }: PageProps) {
   const { data: phase, error } = await supabase
     .from("phases")
     .select(
-      `id, order_index, slug, title, subtitle, description, cover_image_url,
+      `id, order_index, slug, title, brand_name, promise, subtitle, description, cover_image_url,
        months_duration, published,
        dimension:dimensions(name, order_index),
        modules(id, order_index, slug, title, subtitle, duration_minutes)`,
@@ -219,32 +222,52 @@ export default async function BlockDetailPage({ params }: PageProps) {
           <div className="mx-auto max-w-5xl px-6">
             <Reveal>
               <Link
-                href="/#fases"
+                href="/#bloques"
                 className="mb-10 inline-flex items-center gap-2 text-sm text-neutral-400 transition-colors hover:text-brand-coral"
               >
                 <ArrowLeft className="size-4" />
-                Volver a las fases
+                Volver a los bloques
               </Link>
 
               {!phase.published && (
                 <Badge className="mb-6 bg-amber-500/15 text-amber-300 hover:bg-amber-500/20">
-                  Preview admin — fase sin publicar
+                  Preview admin — bloque sin publicar
                 </Badge>
               )}
 
-              <p className="mb-2 font-serif text-7xl font-semibold leading-none text-brand-coral sm:text-8xl">
-                {String(phase.order_index).padStart(2, "0")}
+              {/* Eyebrow: Dimensión NN · Nombre */}
+              <p className="mb-3 font-inter text-xs font-semibold uppercase tracking-[0.3em] text-brand-coral">
+                Dimensión{" "}
+                {String(
+                  phase.dimension?.order_index ?? phase.order_index,
+                ).padStart(2, "0")}
+                {phase.dimension?.name ? ` · ${phase.dimension.name}` : ""}
               </p>
+
+              {/* Brand name (título grande gradiente) o fallback al title académico */}
+              <h1 className="mb-3 font-serif text-balance text-5xl font-semibold leading-[1.05] sm:text-6xl">
+                <span className="gradient-text">
+                  {phase.brand_name ?? phase.title}
+                </span>
+              </h1>
+
+              {/* Subtítulo descriptivo */}
               {phase.subtitle && (
-                <p className="mb-4 text-xs font-medium uppercase tracking-[0.3em] text-brand-coral">
+                <p className="mb-6 max-w-3xl font-inter text-xl leading-snug text-neutral-300">
                   {phase.subtitle}
                 </p>
               )}
-              <h1 className="mb-7 font-serif text-balance text-5xl font-semibold leading-[1.05] text-neutral-50 sm:text-6xl">
-                {phase.title}
-              </h1>
+
+              {/* Línea de promesa */}
+              {phase.promise && (
+                <p className="mb-8 max-w-3xl font-inter text-lg italic leading-relaxed text-neutral-200">
+                  {phase.promise}
+                </p>
+              )}
+
+              {/* Descripción larga (si existe) */}
               {phase.description && (
-                <p className="mb-10 max-w-3xl text-justify text-lg leading-relaxed text-neutral-300 hyphens-auto">
+                <p className="mb-10 max-w-3xl text-justify text-base leading-relaxed text-neutral-400 hyphens-auto">
                   {phase.description}
                 </p>
               )}
@@ -254,26 +277,22 @@ export default async function BlockDetailPage({ params }: PageProps) {
                   variant="secondary"
                   className="bg-white/5 text-neutral-200"
                 >
+                  Bloque {String(phase.order_index).padStart(2, "0")} de 9
+                </Badge>
+                <span className="text-neutral-700">·</span>
+                <Badge
+                  variant="secondary"
+                  className="bg-white/5 text-neutral-200"
+                >
                   {modules.length}{" "}
                   {modules.length === 1 ? "módulo" : "módulos"}
                 </Badge>
                 <span className="text-neutral-700">·</span>
-                <span>
-                  {phase.months_duration}{" "}
-                  {phase.months_duration === 1 ? "mes" : "meses"}
-                </span>
+                <span>1 módulo por semana</span>
                 {totalMinutes > 0 && (
                   <>
                     <span className="text-neutral-700">·</span>
                     <span>{formatDuration(totalMinutes * 60)} de contenido</span>
-                  </>
-                )}
-                {phase.dimension && (
-                  <>
-                    <span className="text-neutral-700">·</span>
-                    <Badge className="bg-brand-coral text-brand-coral-foreground hover:bg-brand-coral/90">
-                      Dimensión: {phase.dimension.name}
-                    </Badge>
                   </>
                 )}
               </div>

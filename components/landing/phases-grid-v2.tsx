@@ -24,8 +24,10 @@ type PhaseRow = {
   order_index: number;
   slug: string;
   title: string;
+  brand_name: string | null;
+  promise: string | null;
   subtitle: string | null;
-  dimension: { name: string } | null;
+  dimension: { name: string; order_index: number } | null;
   modules: { count: number }[] | null;
 };
 
@@ -46,7 +48,7 @@ export async function PhasesGridV2() {
   const { data, error } = await supabase
     .from("phases")
     .select(
-      "order_index, slug, title, subtitle, dimension:dimensions(name), modules(count)",
+      "order_index, slug, title, brand_name, promise, subtitle, dimension:dimensions(name, order_index), modules(count)",
     )
     .eq("published", true)
     .order("order_index", { ascending: true })
@@ -104,8 +106,9 @@ export async function PhasesGridV2() {
             </h2>
           </div>
           <p className="max-w-md text-justify font-inter text-sm leading-relaxed text-text-secondary">
-            Un bloque cada 2 meses académicos. Cada bloque otorga una dimensión
-            y prepara para el siguiente. Al final, los 9 forman al líder enviado.
+            8 módulos por bloque, 1 módulo por semana. Cada bloque entrega una
+            dimensión nueva y prepara para el siguiente. Al final, las 9
+            forman al líder enviado.
           </p>
         </div>
 
@@ -113,27 +116,38 @@ export async function PhasesGridV2() {
           {phases.map((p) => {
             const Icon = ICON_BY_ORDER[p.order_index] ?? BookOpen;
             const count = p.modules?.[0]?.count ?? 0;
+            const dimensionN = String(
+              p.dimension?.order_index ?? p.order_index,
+            ).padStart(2, "0");
+            const dimensionName = p.dimension?.name ?? "—";
+            // Mostramos brand_name como hero del card; fallback al title académico
+            const heroTitle = p.brand_name ?? p.title;
             return (
               <PhaseCard key={p.slug} href={`/fases/${p.slug}`}>
                 <div className="mb-4 flex items-start justify-between">
-                  <span className="gradient-text font-grotesk text-h2 font-bold leading-none">
-                    {String(p.order_index).padStart(2, "0")}
-                  </span>
+                  <p className="font-inter text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-coral">
+                    Dimensión {dimensionN} · {dimensionName}
+                  </p>
                   <div className="flex size-10 items-center justify-center rounded-lg bg-brand-violet/10 text-brand-violet transition-colors group-hover:bg-brand-violet/20">
                     <Icon className="size-5" strokeWidth={1.8} />
                   </div>
                 </div>
-                <h3 className="mb-2 font-grotesk text-h4 font-semibold text-text-primary">
-                  {p.title}
+                <h3 className="mb-1 gradient-text font-grotesk text-h3 font-bold leading-tight">
+                  {heroTitle}
                 </h3>
                 {p.subtitle && (
-                  <p className="text-justify font-inter text-sm leading-relaxed text-text-secondary">
+                  <p className="mb-3 font-inter text-sm leading-relaxed text-text-secondary">
                     {p.subtitle}
                   </p>
                 )}
+                {p.promise && (
+                  <p className="mt-1 font-inter text-sm italic leading-relaxed text-text-primary/85">
+                    {p.promise}
+                  </p>
+                )}
                 <div className="mt-auto flex items-center justify-between border-t border-white/[0.05] pt-4 font-inter text-xs">
-                  <span className="font-medium uppercase tracking-wider text-brand-coral">
-                    {p.dimension?.name ?? "—"}
+                  <span className="font-medium text-text-tertiary">
+                    Bloque {String(p.order_index).padStart(2, "0")}
                   </span>
                   <span className="text-text-tertiary">{count} módulos</span>
                 </div>
