@@ -346,39 +346,49 @@ export default async function ModulePlayerPage({
       />
 
       <div className="flex min-h-screen flex-col">
-        {/* Top bar mini */}
-        <header className="flex items-center justify-between border-b px-6 py-4">
+        {/* Top bar mini — responsive */}
+        <header className="flex items-center justify-between gap-2 border-b px-4 py-3 sm:px-6 sm:py-4">
+          {/* Breadcrumb compacto en mobile, completo en desktop */}
           <nav
             aria-label="Breadcrumb"
-            className="flex items-center gap-2 text-xs text-muted-foreground"
+            className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground"
           >
-            <Link href="/dashboard" className="hover:text-foreground">
-              Diplomado
-            </Link>
-            <span className="text-border">/</span>
             <Link
               href={`/fases/${mod.phase.slug}`}
-              className="hover:text-foreground"
+              className="inline-flex shrink-0 items-center gap-1 hover:text-foreground sm:hidden"
             >
-              Fase {String(mod.phase.order_index).padStart(2, "0")}
+              <ArrowLeft className="size-3.5" />
+              <span className="font-medium">Bloque {String(mod.phase.order_index).padStart(2, "0")}</span>
             </Link>
-            <span className="text-border">/</span>
-            <span className="text-foreground">{mod.title}</span>
+            <Link href="/dashboard" className="hidden hover:text-foreground sm:inline">
+              Diplomado
+            </Link>
+            <span className="hidden text-border sm:inline">/</span>
+            <Link
+              href={`/fases/${mod.phase.slug}`}
+              className="hidden hover:text-foreground sm:inline"
+            >
+              Bloque {String(mod.phase.order_index).padStart(2, "0")}
+            </Link>
+            <span className="hidden text-border sm:inline">/</span>
+            <span className="hidden truncate text-foreground sm:inline">
+              {mod.title}
+            </span>
           </nav>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Logo size="sm" />
             <SignOutButton variant="ghost" />
           </div>
         </header>
 
-        <main className="flex-1 px-6 py-10">
+        <main className="flex-1 px-4 py-6 sm:px-6 sm:py-10">
           <div className="mx-auto max-w-3xl">
             <Link
               href={`/fases/${mod.phase.slug}`}
-              className="mb-6 inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-brand-coral"
+              className="mb-6 hidden items-center gap-2 text-xs text-muted-foreground hover:text-brand-coral sm:inline-flex"
             >
               <ArrowLeft className="size-3.5" />
-              Volver a la fase
+              Volver al bloque
             </Link>
 
             <header className="mb-8">

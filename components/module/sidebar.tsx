@@ -29,7 +29,7 @@ export function ModuleSidebar({
   const pct = modules.length === 0 ? 0 : Math.round((completedCount / modules.length) * 100);
 
   return (
-    <aside className="border-r bg-card/40">
+    <aside className="hidden border-r bg-card/40 lg:block">
       <div className="border-b p-5">
         <p className="mb-1 text-xs font-medium uppercase tracking-widest text-brand-coral">
           Fase {String(phaseOrderIndex).padStart(2, "0")}

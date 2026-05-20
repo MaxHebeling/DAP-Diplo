@@ -47,7 +47,7 @@ export default async function AdmisionPage() {
         className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[420px] bg-[radial-gradient(40%_40%_at_70%_30%,rgba(255,77,109,0.08),transparent_70%)]"
       />
 
-      <div className="mx-auto w-full max-w-3xl px-6 py-16 sm:py-20">
+      <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 sm:py-20">
         {/* Header */}
         <header className="mb-12 text-center">
           <Image

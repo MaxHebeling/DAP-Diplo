@@ -28,8 +28,7 @@ import {
   DapCardHeader,
   DapCardTitle,
 } from "@/components/ui-dap/card";
-import { DapStudentSidebar } from "@/components/layouts/dap-student-sidebar";
-import { DapStudentTopbar } from "@/components/layouts/dap-student-topbar";
+import { DapStudentShell } from "@/components/layouts/dap-student-shell";
 
 export const metadata = { title: "Mi dashboard — DAP" };
 
@@ -118,40 +117,35 @@ export default async function DashboardPage() {
       new Date(sub.current_period_end) > new Date());
 
   return (
-    <div className="flex min-h-screen bg-surface-base text-text-primary">
-      <DapStudentSidebar
-        userName={profile.full_name}
-        userAvatar={profile.avatar_url}
-        onSignOut={signOutAction}
-      />
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        <DapStudentTopbar title="Inicio" />
-
-        <main className="flex-1 overflow-y-auto px-6 py-10 sm:px-10">
-          {!hasActive ? (
-            <NoSubscriptionState
-              firstName={firstName}
-              hadCanceledSub={!!sub && sub.status === "canceled"}
-            />
-          ) : (
-            <WeekDashboard
-              firstName={firstName}
-              isAdmin={profile.role === "admin"}
-              programStartDate={profile.program_start_date}
-              matricula={profile.matricula}
-              cancelDate={
-                sub?.cancel_at_period_end
-                  ? formatBillingDate(sub?.current_period_end ?? null)
-                  : null
-              }
-              nextBillDate={formatBillingDate(sub?.current_period_end ?? null)}
-              userId={user.id}
-            />
-          )}
-        </main>
+    <DapStudentShell
+      userName={profile.full_name}
+      userAvatar={profile.avatar_url}
+      title="Inicio"
+      onSignOut={signOutAction}
+    >
+      <div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-10">
+        {!hasActive ? (
+          <NoSubscriptionState
+            firstName={firstName}
+            hadCanceledSub={!!sub && sub.status === "canceled"}
+          />
+        ) : (
+          <WeekDashboard
+            firstName={firstName}
+            isAdmin={profile.role === "admin"}
+            programStartDate={profile.program_start_date}
+            matricula={profile.matricula}
+            cancelDate={
+              sub?.cancel_at_period_end
+                ? formatBillingDate(sub?.current_period_end ?? null)
+                : null
+            }
+            nextBillDate={formatBillingDate(sub?.current_period_end ?? null)}
+            userId={user.id}
+          />
+        )}
       </div>
-    </div>
+    </DapStudentShell>
   );
 }
 

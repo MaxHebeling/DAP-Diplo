@@ -5,8 +5,7 @@ import { ArrowRight, CheckCircle2, Lock } from "lucide-react";
 import { signOutAction } from "@/lib/auth/actions";
 import { createClient } from "@/lib/supabase/server";
 
-import { DapStudentSidebar } from "@/components/layouts/dap-student-sidebar";
-import { DapStudentTopbar } from "@/components/layouts/dap-student-topbar";
+import { DapStudentShell } from "@/components/layouts/dap-student-shell";
 
 export const metadata = { title: "Mis Módulos — DAP" };
 
@@ -105,18 +104,14 @@ export default async function MisModulosPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-surface-base text-text-primary">
-      <DapStudentSidebar
-        userName={profile.full_name}
-        userAvatar={profile.avatar_url}
-        onSignOut={signOutAction}
-      />
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        <DapStudentTopbar title="Mis Módulos" />
-
-        <main className="flex-1 overflow-y-auto px-6 py-10 sm:px-10">
-          <div className="mx-auto max-w-6xl space-y-8">
+    <DapStudentShell
+      userName={profile.full_name}
+      userAvatar={profile.avatar_url}
+      title="Mis Módulos"
+      onSignOut={signOutAction}
+    >
+      <div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-10">
+        <div className="mx-auto max-w-6xl space-y-8">
             <header>
               <p className="font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
                 Diplomado Apostólico Pastoral · 72 semanas
@@ -210,10 +205,9 @@ export default async function MisModulosPage() {
                 );
               })}
             </div>
-          </div>
-        </main>
+        </div>
       </div>
-    </div>
+    </DapStudentShell>
   );
 }
 

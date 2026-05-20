@@ -5,8 +5,7 @@ import { Award, CheckCircle2, Clock, GraduationCap } from "lucide-react";
 import { signOutAction } from "@/lib/auth/actions";
 import { createClient } from "@/lib/supabase/server";
 
-import { DapStudentSidebar } from "@/components/layouts/dap-student-sidebar";
-import { DapStudentTopbar } from "@/components/layouts/dap-student-topbar";
+import { DapStudentShell } from "@/components/layouts/dap-student-shell";
 
 export const metadata = { title: "Mi Progreso — DAP" };
 
@@ -79,18 +78,14 @@ export default async function MiProgresoPage() {
     >();
 
   return (
-    <div className="flex min-h-screen bg-surface-base text-text-primary">
-      <DapStudentSidebar
-        userName={profile.full_name}
-        userAvatar={profile.avatar_url}
-        onSignOut={signOutAction}
-      />
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        <DapStudentTopbar title="Mi Progreso" />
-
-        <main className="flex-1 overflow-y-auto px-6 py-10 sm:px-10">
-          <div className="mx-auto max-w-5xl space-y-8">
+    <DapStudentShell
+      userName={profile.full_name}
+      userAvatar={profile.avatar_url}
+      title="Mi Progreso"
+      onSignOut={signOutAction}
+    >
+      <div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-10">
+        <div className="mx-auto max-w-5xl space-y-8">
             <header>
               <p className="font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
                 Tu camino en el DAP
@@ -260,9 +255,8 @@ export default async function MiProgresoPage() {
                 </p>
               )}
             </section>
-          </div>
-        </main>
+        </div>
       </div>
-    </div>
+    </DapStudentShell>
   );
 }

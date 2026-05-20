@@ -209,7 +209,7 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
             <Select
               value={dialId}
               onChange={(e) => setDialId(e.target.value)}
-              className="w-28 shrink-0"
+              className="w-24 shrink-0 sm:w-28"
               aria-label="Código de país"
               title={
                 ALL_DIAL_CODES.find((d) => d.id === dialId)?.country ?? ""
@@ -378,7 +378,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="space-y-5 rounded-2xl border border-white/[0.08] bg-surface-elevated/60 p-6 backdrop-blur-sm sm:p-8">
+    <section className="space-y-5 rounded-2xl border border-white/[0.08] bg-surface-elevated/60 p-4 backdrop-blur-sm sm:p-8">
       <header>
         <p className="font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
           {title}
