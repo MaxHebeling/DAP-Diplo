@@ -48,7 +48,7 @@ type SubscriptionRow = {
   status: string;
   current_period_end: string | null;
   cancel_at_period_end: boolean;
-  cancel_at: string | null;
+  canceled_at: string | null;
 };
 
 type ModuleRow = {
@@ -104,7 +104,7 @@ export default async function DashboardPage() {
   const { data: sub } = await supabase
     .from("subscriptions")
     .select(
-      "id, status, current_period_end, cancel_at_period_end, cancel_at",
+      "id, status, current_period_end, cancel_at_period_end, canceled_at",
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
@@ -140,7 +140,11 @@ export default async function DashboardPage() {
               isAdmin={profile.role === "admin"}
               programStartDate={profile.program_start_date}
               matricula={profile.matricula}
-              cancelDate={formatBillingDate(sub?.cancel_at ?? null)}
+              cancelDate={
+                sub?.cancel_at_period_end
+                  ? formatBillingDate(sub?.current_period_end ?? null)
+                  : null
+              }
               nextBillDate={formatBillingDate(sub?.current_period_end ?? null)}
               userId={user.id}
             />
