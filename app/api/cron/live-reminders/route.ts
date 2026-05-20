@@ -16,11 +16,7 @@ export const dynamic = "force-dynamic";
 // endpoint no sea públicamente disparable (evita spam de emails).
 function isAuthorized(request: NextRequest): boolean {
   const expected = process.env.CRON_SECRET;
-  if (!expected) {
-    // Sin secret configurado, dejamos pasar SOLO en preview/dev. En prod
-    // forzamos rechazo (operador debe configurarlo). Esto es defense-in-depth.
-    return process.env.VERCEL_ENV !== "production";
-  }
+  if (!expected) return false;
   const auth = request.headers.get("authorization") ?? "";
   return auth === `Bearer ${expected}`;
 }

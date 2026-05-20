@@ -8,7 +8,7 @@ export const maxDuration = 30;
 
 function isAuthorized(request: NextRequest): boolean {
   const expected = process.env.CRON_SECRET;
-  if (!expected) return process.env.VERCEL_ENV !== "production";
+  if (!expected) return false;
   const auth = request.headers.get("authorization") ?? "";
   return auth === `Bearer ${expected}`;
 }

@@ -11,7 +11,7 @@ export const maxDuration = 300; // 5 min — Claude tarda ~10s/tarea × 20 = ~20
 
 function isAuthorized(request: NextRequest): boolean {
   const expected = process.env.CRON_SECRET;
-  if (!expected) return process.env.VERCEL_ENV !== "production";
+  if (!expected) return false;
   const auth = request.headers.get("authorization") ?? "";
   return auth === `Bearer ${expected}`;
 }
