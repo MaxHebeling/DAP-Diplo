@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { correctAssignment } from "@/lib/excorrector";
 import { sendAssignmentFeedbackEmail } from "@/lib/email/send-assignment-feedback";
+import { sendPushToUser } from "@/lib/push/send";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -218,15 +219,15 @@ export async function GET(request: NextRequest) {
       }
 
       // 5. Email al alumno (best-effort)
+      const moduleRelPath = mod.block
+        ? `/fases/${mod.block.slug}/modulos/${mod.slug}?section=activation`
+        : `/dashboard`;
       if (userInfo.email) {
-        const moduleHref = mod.block
-          ? `${APP_URL}/fases/${mod.block.slug}/modulos/${mod.slug}?section=activation`
-          : `${APP_URL}/dashboard`;
         const emailRes = await sendAssignmentFeedbackEmail({
           to: userInfo.email,
           fullName: userInfo.full_name,
           moduleTitle: mod.title,
-          moduleHref,
+          moduleHref: `${APP_URL}${moduleRelPath}`,
           passed,
           score,
         });
@@ -236,6 +237,16 @@ export async function GET(request: NextRequest) {
           );
         }
       }
+
+      // 5b. Push notification (paralelo al email)
+      await sendPushToUser(sub.user_id, {
+        title: passed
+          ? `✓ Tu tarea fue aprobada (${score}/100)`
+          : `Tu corrección llegó (${score}/100)`,
+        body: `${mod.title} — El Ap. Max te dejó feedback. Tocá para verlo.`,
+        url: moduleRelPath,
+        tag: `grade-${sub.module_id}`,
+      });
 
       if (notes_for_admin) {
         console.log(

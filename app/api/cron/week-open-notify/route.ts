@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendWeekOpenedEmail } from "@/lib/email/send-week-opened";
+import { sendPushToUser } from "@/lib/push/send";
 
 // Corre 1x al día a las 12:00 UTC (05:00 PDT / 04:00 PST — San Diego), antes del
 // inicio del día académico (martes 00:01) … wait: en realidad lo más
@@ -105,12 +106,13 @@ export async function GET(request: NextRequest) {
         ? new Date(win.closes_at)
         : new Date(Date.now() + 6 * 24 * 60 * 60 * 1000);
 
+      const moduleHref = `/fases/${mod.block.slug}/modulos/${mod.slug}`;
       const res = await sendWeekOpenedEmail({
         to: a.email,
         fullName: a.full_name,
         courseWeek: a.course_week,
         moduleTitle: mod.title,
-        moduleHref: `${APP_URL}/fases/${mod.block.slug}/modulos/${mod.slug}`,
+        moduleHref: `${APP_URL}${moduleHref}`,
         closesAt,
       });
       if (res.ok) sent++;
@@ -118,6 +120,19 @@ export async function GET(request: NextRequest) {
         failed++;
         console.error(
           `[cron/week-open-notify] email user=${a.user_id} falló: ${res.error}`,
+        );
+      }
+
+      // Push notification (paralelo al email — si tiene suscripción activa)
+      const pushRes = await sendPushToUser(a.user_id, {
+        title: `Semana ${a.course_week} de 72 · ${mod.title}`,
+        body: `Tu nuevo módulo ya está abierto. La tarea cierra el lunes 23:59.`,
+        url: moduleHref,
+        tag: `week-${a.course_week}`,
+      });
+      if (pushRes.failed > 0) {
+        console.warn(
+          `[cron/week-open-notify] push user=${a.user_id} ${pushRes.sent}/${pushRes.total} ok`,
         );
       }
     } catch (err) {
