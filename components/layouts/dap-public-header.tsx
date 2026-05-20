@@ -120,49 +120,68 @@ export function DapPublicHeader({
 
         <div className="flex items-center gap-2">
           {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                aria-label="Abrir menú de cuenta"
-                className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-brand-violet focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base"
+            <>
+              {/* Mobile: avatar es un link directo (evita bugs Radix
+                  DropdownMenu en Safari iOS standalone PWA) */}
+              <Link
+                href="/dashboard"
+                aria-label="Ir a mi dashboard"
+                className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-brand-violet focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base sm:hidden"
               >
                 <DapAvatar
                   src={user.avatarUrl}
                   name={user.fullName}
                   size="sm"
                 />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel className="truncate">
-                  {user.fullName ?? "Mi cuenta"}
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DropdownMenuItem render={<Link href="/dashboard" />}>
-                    <LayoutDashboard className="size-4" />
-                    Dashboard
-                  </DropdownMenuItem>
-                  {user.role === "admin" && (
-                    <DropdownMenuItem render={<Link href="/admin" />}>
-                      <ShieldCheck className="size-4" />
-                      Admin
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuGroup>
-                {onSignOut && (
-                  <>
+              </Link>
+
+              {/* Desktop: dropdown completo con Admin + Cerrar sesión */}
+              <div className="hidden sm:inline-flex">
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    aria-label="Abrir menú de cuenta"
+                    className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-brand-violet focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base"
+                  >
+                    <DapAvatar
+                      src={user.avatarUrl}
+                      name={user.fullName}
+                      size="sm"
+                    />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel className="truncate">
+                      {user.fullName ?? "Mi cuenta"}
+                    </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <form action={onSignOut}>
-                      <DropdownMenuItem
-                        render={<button type="submit" className="w-full" />}
-                      >
-                        <LogOut className="size-4" />
-                        Cerrar sesión
+                    <DropdownMenuGroup>
+                      <DropdownMenuItem render={<Link href="/dashboard" />}>
+                        <LayoutDashboard className="size-4" />
+                        Dashboard
                       </DropdownMenuItem>
-                    </form>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                      {user.role === "admin" && (
+                        <DropdownMenuItem render={<Link href="/admin" />}>
+                          <ShieldCheck className="size-4" />
+                          Admin
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuGroup>
+                    {onSignOut && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <form action={onSignOut}>
+                          <DropdownMenuItem
+                            render={<button type="submit" className="w-full" />}
+                          >
+                            <LogOut className="size-4" />
+                            Cerrar sesión
+                          </DropdownMenuItem>
+                        </form>
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </>
           ) : (
             <>
               <Link
