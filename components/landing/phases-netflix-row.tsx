@@ -126,51 +126,52 @@ export function PhasesNetflixRow({ phases }: { phases: NetflixPhaseRow[] }) {
                 </div>
               )}
 
-              {/* Gradient overlay siempre presente para legibilidad */}
-              <div
-                aria-hidden
-                className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black via-black/80 to-transparent"
-              />
-
-              {/* Badge bloque arriba-izq */}
+              {/* Badge bloque arriba-izq (sutil, no compite con el brand impreso) */}
               <div className="absolute left-3 top-3 z-10">
                 <span className="inline-flex items-center gap-1 rounded-full bg-black/70 px-2.5 py-1 font-inter text-[10px] font-semibold uppercase tracking-widest text-white backdrop-blur-sm">
                   Bloque {String(p.order_index).padStart(2, "0")}
                 </span>
               </div>
 
-              {/* Contenido inferior: dimensión + título + subtitle visible idle, promise on hover */}
-              <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-1.5 p-4 sm:p-5">
+              {/* Eyebrow dimensión arriba-der (sutil) */}
+              <div className="absolute right-3 top-3 z-10">
+                <span className="inline-flex items-center gap-1 rounded-full bg-brand-coral/85 px-2.5 py-1 font-inter text-[10px] font-semibold uppercase tracking-widest text-white shadow-sm">
+                  Dim {dimN}
+                </span>
+              </div>
+
+              {/* Hover overlay: gradient + info detallada solo on hover.
+                  Idle queda 100% imagen (con el brand_name ya impreso). */}
+              <div
+                aria-hidden
+                className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black via-black/90 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+              />
+
+              <div className="absolute inset-x-0 bottom-0 z-10 flex translate-y-2 flex-col gap-1.5 p-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 sm:p-5">
                 <p className="font-inter text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-coral">
-                  Dimensión {dimN}{p.dimension_name ? ` · ${p.dimension_name}` : ""}
+                  {p.dimension_name ?? `Dimensión ${dimN}`}
                 </p>
-                <h3 className="font-grotesk text-lg font-bold leading-tight text-white sm:text-xl">
-                  {heroTitle}
-                </h3>
+                {/* heroTitle viene impreso en la imagen — lo dejamos como h3
+                    accesible pero invisible para no duplicar visualmente */}
+                <h3 className="sr-only">{heroTitle}</h3>
                 {p.subtitle && (
-                  <p className="line-clamp-2 font-inter text-xs leading-snug text-white/75 transition-opacity duration-300 group-hover:opacity-100">
+                  <p className="font-inter text-sm font-semibold leading-snug text-white">
                     {p.subtitle}
                   </p>
                 )}
-
-                {/* Reveal on hover */}
-                <div className="grid grid-rows-[0fr] transition-all duration-300 group-hover:grid-rows-[1fr]">
-                  <div className="overflow-hidden">
-                    {p.promise && (
-                      <p className="mt-2 font-inter text-xs italic leading-relaxed text-white/90">
-                        {p.promise}
-                      </p>
-                    )}
-                    <div className="mt-3 flex items-center justify-between">
-                      <span className="font-inter text-[10px] uppercase tracking-widest text-white/60">
-                        {p.modules_count} módulos
-                      </span>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-brand-coral px-3 py-1 font-inter text-xs font-semibold text-white">
-                        Ver bloque
-                        <ArrowRight className="size-3" />
-                      </span>
-                    </div>
-                  </div>
+                {p.promise && (
+                  <p className="font-inter text-xs italic leading-relaxed text-white/85">
+                    {p.promise}
+                  </p>
+                )}
+                <div className="mt-2 flex items-center justify-between">
+                  <span className="font-inter text-[10px] uppercase tracking-widest text-white/60">
+                    {p.modules_count} módulos · 8 semanas
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-brand-coral px-3 py-1 font-inter text-xs font-semibold text-white">
+                    Ver bloque
+                    <ArrowRight className="size-3" />
+                  </span>
                 </div>
               </div>
             </Link>
