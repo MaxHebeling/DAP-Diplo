@@ -17,7 +17,7 @@
  *  - skipWaiting + clients.claim → SW nuevo toma control inmediato
  */
 
-const VERSION = "dap-v2";
+const VERSION = "dap-v3";
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
@@ -59,11 +59,27 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(req.url);
 
-  // No cachear API, webhooks, supabase auth, ni rutas dinámicas con cookies.
+  // No cachear API, webhooks, supabase auth, rutas auth-gated, ni Supabase cloud.
+  // Cualquier ruta del usuario logueado (dashboard/fases del alumno/admision/admin/comunidad/etc)
+  // queda fuera del SW para evitar servir HTML stale con el contexto auth equivocado.
   if (
     url.pathname.startsWith("/api/") ||
     url.pathname.startsWith("/auth/") ||
-    url.pathname.includes("/admin/") ||
+    url.pathname.startsWith("/admin") ||
+    url.pathname.startsWith("/dashboard") ||
+    url.pathname.startsWith("/admision") ||
+    url.pathname.startsWith("/comunidad") ||
+    url.pathname.startsWith("/en-vivo") ||
+    url.pathname.startsWith("/tutor") ||
+    url.pathname.startsWith("/progreso") ||
+    url.pathname.startsWith("/certificaciones") ||
+    url.pathname.startsWith("/agenda") ||
+    url.pathname.startsWith("/configuracion") ||
+    url.pathname.startsWith("/login") ||
+    url.pathname.startsWith("/signup") ||
+    url.pathname.startsWith("/reset-password") ||
+    url.pathname.startsWith("/suscribirme") ||
+    url.pathname.startsWith("/cache-clear") ||
     url.hostname.endsWith(".supabase.co")
   ) {
     return; // dejar pasar al network sin tocar
