@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Bell,
   Brain,
   GraduationCap,
   Layers,
@@ -23,6 +24,7 @@ const NAV = [
   { href: "/admin/comunidad", label: "Comunidad", icon: MessagesSquare, exact: false },
   { href: "/admin/en-vivo", label: "En vivo", icon: Radio, exact: false },
   { href: "/admin/tutor/documentos", label: "Tutor IA", icon: Brain, exact: false },
+  { href: "/admin/push-test", label: "Test push", icon: Bell, exact: false },
 ];
 
 export function AdminSidebar({ fullName }: { fullName: string | null }) {
