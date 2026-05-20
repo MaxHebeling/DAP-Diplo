@@ -108,7 +108,7 @@ export async function PhasesGridV2() {
         />
 
         <p className="mt-6 text-center font-inter text-xs text-text-tertiary md:text-left">
-          Desliza horizontalmente o usa las flechas para ver los 9 bloques.
+          Pasá el cursor sobre cada bloque para ver el detalle.
         </p>
       </div>
     </section>

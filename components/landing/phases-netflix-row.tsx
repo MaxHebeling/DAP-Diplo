@@ -2,8 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, useState } from "react";
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -33,68 +32,22 @@ const ACCENT_GRADIENTS = [
 ];
 
 export function PhasesNetflixRow({ phases }: { phases: NetflixPhaseRow[] }) {
-  const railRef = useRef<HTMLDivElement>(null);
-  const [showLeft, setShowLeft] = useState(false);
-  const [showRight, setShowRight] = useState(true);
-
-  function onScroll() {
-    const el = railRef.current;
-    if (!el) return;
-    setShowLeft(el.scrollLeft > 8);
-    setShowRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 8);
-  }
-
-  function scrollBy(dir: 1 | -1) {
-    const el = railRef.current;
-    if (!el) return;
-    const cardWidth = el.clientWidth * 0.7;
-    el.scrollBy({ left: dir * cardWidth, behavior: "smooth" });
-  }
-
   return (
-    <div className="relative">
-      {/* Flecha izquierda */}
-      <button
-        type="button"
-        onClick={() => scrollBy(-1)}
-        aria-label="Anterior"
-        className={cn(
-          "absolute left-0 top-1/2 z-20 -translate-y-1/2 hidden h-20 w-12 items-center justify-center rounded-r-lg bg-black/50 text-white backdrop-blur-sm transition-opacity hover:bg-black/70 md:flex",
-          showLeft ? "opacity-100" : "pointer-events-none opacity-0",
-        )}
-      >
-        <ChevronLeft className="size-7" />
-      </button>
-
-      {/* Flecha derecha */}
-      <button
-        type="button"
-        onClick={() => scrollBy(1)}
-        aria-label="Siguiente"
-        className={cn(
-          "absolute right-0 top-1/2 z-20 -translate-y-1/2 hidden h-20 w-12 items-center justify-center rounded-l-lg bg-black/50 text-white backdrop-blur-sm transition-opacity hover:bg-black/70 md:flex",
-          showRight ? "opacity-100" : "pointer-events-none opacity-0",
-        )}
-      >
-        <ChevronRight className="size-7" />
-      </button>
-
-      {/* Rail con scroll horizontal + snap */}
-      <div
-        ref={railRef}
-        onScroll={onScroll}
-        className="netflix-rail relative -mx-6 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain px-6 pb-6 pt-4 sm:-mx-10 sm:px-10 lg:gap-4"
-      >
-        {phases.map((p, i) => {
-          const accent = ACCENT_GRADIENTS[(p.order_index - 1) % ACCENT_GRADIENTS.length];
-          const heroTitle = p.brand_name ?? p.title;
-          const dimN = String(p.dimension_order ?? p.order_index).padStart(2, "0");
-          return (
+    <div
+      className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5"
+    >
+      {phases.map((p) => {
+        const accent =
+          ACCENT_GRADIENTS[(p.order_index - 1) % ACCENT_GRADIENTS.length];
+        const heroTitle = p.brand_name ?? p.title;
+        const dimN = String(
+          p.dimension_order ?? p.order_index,
+        ).padStart(2, "0");
+        return (
             <Link
               key={p.slug}
               href={`/fases/${p.slug}`}
-              className="group relative aspect-[2/3] w-56 shrink-0 snap-start overflow-hidden rounded-xl border border-white/[0.08] bg-surface-elevated shadow-card transition-all duration-300 hover:z-10 hover:scale-[1.05] hover:border-brand-violet/40 hover:shadow-glow-violet sm:w-64 lg:w-72"
-              style={{ animationDelay: `${i * 60}ms` }}
+              className="group relative aspect-[2/3] overflow-hidden rounded-xl border border-white/[0.08] bg-surface-elevated shadow-card transition-all duration-300 hover:z-10 hover:scale-[1.03] hover:border-brand-violet/40 hover:shadow-glow-violet"
             >
               {/* Cover image o gradient fallback */}
               {p.cover_image_url ? (
@@ -177,17 +130,6 @@ export function PhasesNetflixRow({ phases }: { phases: NetflixPhaseRow[] }) {
             </Link>
           );
         })}
-      </div>
-
-      {/* Estilos para ocultar scrollbar (Webkit + Firefox) */}
-      <style jsx>{`
-        :global(.netflix-rail) {
-          scrollbar-width: none;
-        }
-        :global(.netflix-rail)::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
     </div>
   );
 }
