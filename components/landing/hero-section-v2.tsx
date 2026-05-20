@@ -26,16 +26,21 @@ export function HeroSectionV2() {
       ref={sectionRef}
       className="relative isolate overflow-hidden"
     >
-      {/* Background: cosmic gradient + radial glows + subtle stars */}
-      <div className="absolute inset-0 -z-30 bg-gradient-cosmic" />
-      <div className="absolute inset-0 -z-20 opacity-60 [background:radial-gradient(60%_45%_at_30%_42%,rgba(123,97,255,0.35),transparent_60%),radial-gradient(50%_40%_at_72%_58%,rgba(255,77,109,0.28),transparent_60%)]" />
-      <div
-        aria-hidden
-        className="absolute inset-0 -z-10 opacity-[0.18] [background-image:radial-gradient(circle_1px_at_25%_30%,white_99%,transparent_100%),radial-gradient(circle_1px_at_72%_44%,white_99%,transparent_100%),radial-gradient(circle_1px_at_88%_18%,white_99%,transparent_100%),radial-gradient(circle_1px_at_12%_72%,white_99%,transparent_100%),radial-gradient(circle_1px_at_55%_82%,white_99%,transparent_100%),radial-gradient(circle_1px_at_38%_15%,white_99%,transparent_100%),radial-gradient(circle_1px_at_82%_75%,white_99%,transparent_100%)] [background-repeat:no-repeat]"
+      {/* Background: cosmic photo + tints + radial glows */}
+      <Image
+        src="/hero-cosmic.jpg"
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="-z-40 object-cover opacity-90"
       />
+      {/* Tinted overlay para legibilidad del texto */}
+      <div className="absolute inset-0 -z-30 bg-gradient-to-b from-surface-base/70 via-surface-base/40 to-surface-base" />
+      <div className="absolute inset-0 -z-20 opacity-50 [background:radial-gradient(60%_45%_at_30%_42%,rgba(123,97,255,0.25),transparent_60%),radial-gradient(50%_40%_at_72%_58%,rgba(255,77,109,0.18),transparent_60%)]" />
 
-      {/* Animated particles (cosmic network) */}
-      <HeroParticles intensity="cosmic" className="absolute inset-0 -z-[5]" />
+      {/* Particles más sutiles porque ya tenemos la foto detrás */}
+      <HeroParticles intensity="cosmic" className="absolute inset-0 -z-[5] opacity-40" />
 
       <motion.div
         style={{ opacity: contentOpacity, y: contentY }}
