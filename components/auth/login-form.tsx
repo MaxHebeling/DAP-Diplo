@@ -47,7 +47,15 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="password">Contraseña</FieldLabel>
+          <div className="flex items-baseline justify-between">
+            <FieldLabel htmlFor="password">Contraseña</FieldLabel>
+            <Link
+              href="/reset-password"
+              className="text-xs text-brand-coral hover:underline"
+            >
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
           <Input
             id="password"
             name="password"

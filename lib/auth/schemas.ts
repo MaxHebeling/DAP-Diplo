@@ -27,3 +27,20 @@ export const signInSchema = z.object({
 });
 
 export type SignInInput = z.infer<typeof signInSchema>;
+
+// Request reset: el alumno solo manda email. Supabase manda magic link.
+export const requestPasswordResetSchema = z.object({
+  email: z.email("Correo inválido").trim().toLowerCase(),
+});
+
+// Update password: al volver del magic link, el alumno ya tiene
+// sesión recovery y puede setear nueva contraseña.
+export const updatePasswordSchema = z
+  .object({
+    password,
+    confirm: z.string(),
+  })
+  .refine((d) => d.password === d.confirm, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirm"],
+  });
