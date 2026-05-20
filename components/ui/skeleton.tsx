@@ -12,7 +12,7 @@ export function Skeleton({
   return (
     <div
       className={cn(
-        "animate-pulse rounded-md bg-white/[0.06]",
+        "dap-shimmer rounded-md bg-white/[0.06]",
         className,
       )}
       aria-hidden

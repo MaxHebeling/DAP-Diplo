@@ -351,3 +351,71 @@
    bfcache: al volver de background, la animación intenta correr sobre
    un page snapshot stale y Safari muestra "This page couldn't load". */
 
+/* ===== Microinteracciones del DAP ===== */
+
+/* Fade-in suave con leve slide para apparecer cualquier card al cargar */
+@keyframes dap-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.dap-fade-up {
+  animation: dap-fade-up 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+/* Stagger automático en hijos directos: cada uno entra ~50ms más tarde */
+.dap-stagger > * {
+  animation: dap-fade-up 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.dap-stagger > *:nth-child(1) { animation-delay: 30ms; }
+.dap-stagger > *:nth-child(2) { animation-delay: 80ms; }
+.dap-stagger > *:nth-child(3) { animation-delay: 130ms; }
+.dap-stagger > *:nth-child(4) { animation-delay: 180ms; }
+.dap-stagger > *:nth-child(5) { animation-delay: 230ms; }
+.dap-stagger > *:nth-child(6) { animation-delay: 280ms; }
+.dap-stagger > *:nth-child(7) { animation-delay: 330ms; }
+.dap-stagger > *:nth-child(8) { animation-delay: 380ms; }
+.dap-stagger > *:nth-child(9) { animation-delay: 430ms; }
+
+/* Skeleton shimmer (reemplaza el pulse plano) */
+@keyframes dap-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.dap-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(255, 255, 255, 0.10) 50%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  background-size: 200% 100%;
+  animation: dap-shimmer 1.6s ease-in-out infinite;
+}
+
+/* Active state del bottom nav: leve bounce-up al volverse active */
+@keyframes dap-bounce-up {
+  0% { transform: translateY(0); }
+  35% { transform: translateY(-4px); }
+  60% { transform: translateY(0); }
+  100% { transform: translateY(0); }
+}
+.dap-bounce-active {
+  animation: dap-bounce-up 500ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dap-fade-up,
+  .dap-stagger > *,
+  .dap-bounce-active,
+  .dap-shimmer {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+

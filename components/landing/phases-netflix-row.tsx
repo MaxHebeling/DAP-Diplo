@@ -34,7 +34,7 @@ const ACCENT_GRADIENTS = [
 export function PhasesNetflixRow({ phases }: { phases: NetflixPhaseRow[] }) {
   return (
     <div
-      className="mx-auto grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-3 lg:gap-4"
+      className="dap-stagger mx-auto grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-3 lg:gap-4"
     >
       {phases.map((p) => {
         const accent =

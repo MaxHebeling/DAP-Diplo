@@ -29,6 +29,7 @@ import {
   DapCardTitle,
 } from "@/components/ui-dap/card";
 import { DapStudentShell } from "@/components/layouts/dap-student-shell";
+import { DashboardTour } from "@/components/onboarding/dashboard-tour";
 
 export const metadata = { title: "Mi dashboard — DAP" };
 
@@ -295,26 +296,30 @@ async function WeekDashboard({
       </header>
 
       {/* Tu módulo de esta semana */}
-      {currentModule ? (
-        <CurrentWeekCard
-          module={currentModule}
-          isCompleted={progressById.get(currentModule.id) === true}
-          closesAt={closesAt}
-        />
-      ) : (
-        <DapCard>
-          <p className="text-sm text-text-secondary">
-            No encontramos el módulo de esta semana. Si esto persiste,
-            avisanos a admisiones@dapglobal.org.
-          </p>
-        </DapCard>
-      )}
+      <div data-tour="current-module">
+        {currentModule ? (
+          <CurrentWeekCard
+            module={currentModule}
+            isCompleted={progressById.get(currentModule.id) === true}
+            closesAt={closesAt}
+          />
+        ) : (
+          <DapCard>
+            <p className="text-sm text-text-secondary">
+              No encontramos el módulo de esta semana. Si esto persiste,
+              avisanos a admisiones@dapglobal.org.
+            </p>
+          </DapCard>
+        )}
+      </div>
 
       {/* Progreso global */}
-      <ProgressBar
-        completedCount={completedCount}
-        completionPct={completionPct}
-      />
+      <div data-tour="progress">
+        <ProgressBar
+          completedCount={completedCount}
+          completionPct={completionPct}
+        />
+      </div>
 
       {/* Módulos pasados + próximos */}
       <div className="grid gap-6 lg:grid-cols-2">
@@ -322,18 +327,25 @@ async function WeekDashboard({
           modules={pastModules}
           progressById={progressById}
         />
-        <UpcomingModulesList
-          modules={upcomingModules}
-          programStartDate={programStartDate}
-        />
+        <div data-tour="upcoming">
+          <UpcomingModulesList
+            modules={upcomingModules}
+            programStartDate={programStartDate}
+          />
+        </div>
       </div>
 
       {/* Subscripción */}
-      <SubscriptionPanel
-        cancelDate={cancelDate}
-        nextBillDate={nextBillDate}
-        isAdmin={isAdmin}
-      />
+      <div data-tour="resources">
+        <SubscriptionPanel
+          cancelDate={cancelDate}
+          nextBillDate={nextBillDate}
+          isAdmin={isAdmin}
+        />
+      </div>
+
+      {/* Tour interactivo de bienvenida (primera vez por device) */}
+      <DashboardTour />
     </div>
   );
 }

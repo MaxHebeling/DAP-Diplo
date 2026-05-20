@@ -201,7 +201,10 @@ export function DapStudentShell({
               aria-current={active ? "page" : undefined}
             >
               <Icon
-                className={cn("size-5", active && "text-brand-coral")}
+                className={cn(
+                  "size-5 transition-transform",
+                  active && "dap-bounce-active text-brand-coral",
+                )}
                 strokeWidth={active ? 2.2 : 1.7}
               />
               <span>{item.label}</span>
