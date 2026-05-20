@@ -60,10 +60,11 @@ export async function DimensionsTimeline() {
         alt=""
         fill
         sizes="100vw"
-        className="-z-40 object-cover opacity-20 [object-position:80%_center]"
+        className="-z-40 object-cover opacity-25 [object-position:65%_center]"
       />
-      {/* Gradient lateral: oscurece izq, deja viva la der */}
-      <div className="absolute inset-0 -z-30 bg-gradient-to-r from-surface-base via-surface-base/85 via-50% to-transparent" />
+      {/* Gradient lateral: oscurece izq (donde están los 2 que tapamos),
+          deja visible el centro-derecha (foco en el 2do hombre desde la derecha) */}
+      <div className="absolute inset-0 -z-30 bg-gradient-to-r from-surface-base via-surface-base/80 via-35% to-transparent" />
       {/* Gradient vertical para el fade top/bottom */}
       <div className="absolute inset-0 -z-30 bg-gradient-to-b from-surface-base/70 via-transparent to-surface-base/85" />
       <div className="absolute inset-0 -z-20 bg-brand-violet/10 mix-blend-multiply" />
