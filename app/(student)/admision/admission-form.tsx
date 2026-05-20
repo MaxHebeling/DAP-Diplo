@@ -225,7 +225,6 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
               type="tel"
               value={phoneLocal}
               onChange={(e) => setPhoneLocal(e.target.value)}
-              placeholder={COUNTRY_PHONE_PLACEHOLDER[country]}
               autoComplete="tel-national"
               inputMode="tel"
               className="flex-1"
