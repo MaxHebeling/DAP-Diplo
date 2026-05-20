@@ -5,6 +5,7 @@ import {
   CheckCircle2,
   Clock,
   FileSearch,
+  Home,
   Mail,
   XCircle,
 } from "lucide-react";
@@ -169,6 +170,13 @@ export default async function AdmisionEstadoPage() {
         {/* Acciones */}
         <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-center">
           <DapButton
+            size="lg"
+            render={<Link href="/" />}
+          >
+            <Home />
+            Volver al inicio
+          </DapButton>
+          <DapButton
             variant="secondary"
             size="lg"
             render={<Link href="mailto:admisiones@dapglobal.org" />}
@@ -179,7 +187,8 @@ export default async function AdmisionEstadoPage() {
         </div>
 
         <p className="mt-6 text-center font-inter text-xs text-text-tertiary">
-          Revisá tu bandeja de spam por si nuestra respuesta llega ahí.
+          Revisá tu bandeja de spam por si nuestra respuesta llega ahí. Te
+          avisamos por email apenas tengamos novedades.
         </p>
       </div>
     </main>
