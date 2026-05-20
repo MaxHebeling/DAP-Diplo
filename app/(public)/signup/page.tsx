@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
-import { CalendarClock, ArrowLeft } from "lucide-react";
+import { CalendarClock, ArrowLeft, GraduationCap } from "lucide-react";
 
 import {
   Card,
@@ -14,6 +14,7 @@ import { SignUpForm } from "@/components/auth/signup-form";
 import { Logo } from "@/components/brand/logo";
 import { createClient } from "@/lib/supabase/server";
 import {
+  CLASSES_START_LABEL,
   ENROLLMENT_OPENS_LABEL,
   isEnrollmentOpen,
 } from "@/lib/launch/config";
@@ -54,12 +55,21 @@ export default async function SignUpPage({
             </CardTitle>
             <CardDescription className="text-base leading-relaxed">
               La primera convocatoria del Diplomado Apostólico Pastoral
-              arranca el <strong>01 de Junio de 2026</strong>. Vuelve en
-              esa fecha para postular tu admisión y comenzar tu camino
-              hacia la dimensión Discípulo.
+              abre inscripciones el <strong>01 de Junio de 2026</strong>.
+              Vuelve en esa fecha para postular tu admisión y asegurar
+              tu lugar.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-5">
+            <div className="flex items-start gap-3 rounded-lg border border-brand-violet/25 bg-brand-violet/[0.06] p-4 text-left">
+              <GraduationCap className="mt-0.5 h-5 w-5 shrink-0 text-brand-violet" />
+              <div className="text-sm leading-relaxed">
+                <p className="font-semibold">Clases comienzan oficialmente</p>
+                <p className="capitalize text-muted-foreground">
+                  {CLASSES_START_LABEL}
+                </p>
+              </div>
+            </div>
             <Link
               href="/"
               className="inline-flex items-center gap-2 text-sm text-brand-coral hover:underline"

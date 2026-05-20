@@ -7,10 +7,11 @@ import { SiteHeader, type HeaderUser } from "@/components/landing/site-header";
 import { SiteFooter } from "@/components/landing/site-footer";
 import { createClient } from "@/lib/supabase/server";
 import {
+  CLASSES_START_LABEL,
   ENROLLMENT_OPENS_LABEL,
   isEnrollmentOpen,
 } from "@/lib/launch/config";
-import { CalendarClock } from "lucide-react";
+import { CalendarClock, GraduationCap } from "lucide-react";
 
 export const metadata = {
   title: "Suscribirme",
@@ -158,10 +159,21 @@ export default async function SuscribirmePage() {
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-neutral-300">
                   La primera convocatoria del Diplomado Apostólico Pastoral
-                  arranca el <strong>01 de Junio de 2026</strong>. En esa
-                  fecha podrás activar tu suscripción y comenzar el
-                  programa.
+                  abre inscripciones el <strong>01 de Junio de 2026</strong>.
+                  En esa fecha podrás activar tu suscripción y asegurar tu
+                  lugar.
                 </p>
+                <div className="mt-4 flex items-start gap-3 rounded-lg border border-brand-violet/30 bg-brand-violet/[0.08] p-3 text-left">
+                  <GraduationCap className="mt-0.5 h-5 w-5 shrink-0 text-brand-violet" />
+                  <div className="text-sm leading-relaxed text-neutral-200">
+                    <p className="font-semibold text-neutral-50">
+                      Clases comienzan oficialmente
+                    </p>
+                    <p className="capitalize text-neutral-400">
+                      {CLASSES_START_LABEL}
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
           </div>
