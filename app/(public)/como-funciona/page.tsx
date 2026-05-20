@@ -28,14 +28,14 @@ import { Reveal } from "@/components/landing/reveal";
 export const metadata: Metadata = {
   title: "Cómo funciona el DAP",
   description:
-    "Cómo funciona el Diplomado Apostólico Pastoral: suscripción mensual de $25, 9 bloques en 18 meses académicos, mentoría grupal, MasterClass, comunidad. Pausa automática si necesitás más tiempo.",
+    "Cómo funciona el Diplomado Apostólico Pastoral: admisión formal con carta del pastor, suscripción mensual de $25, 72 módulos en 18 meses, 1 módulo por semana, MasterClass por evento, corrección personalizada del Dr. Max y comunidad.",
   alternates: { canonical: "/como-funciona" },
   openGraph: {
     type: "website",
     url: "/como-funciona",
     title: "Cómo funciona el DAP · Diplomado Apostólico Pastoral",
     description:
-      "Suscripción mensual de $25. 9 bloques en 18 meses. MasterClass, mentoría grupal y comunidad. Pausa automática.",
+      "Suscripción mensual de $25. 72 módulos en 18 meses (1 por semana). MasterClass por evento, corrección personalizada del Dr. Max, comunidad.",
   },
 };
 
@@ -152,15 +152,16 @@ export default async function ComoFuncionaPage() {
 
           <div className="mx-auto max-w-4xl text-center">
             <p className="mb-4 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-              Modelo mensual con gating académico
+              Calendario semanal personal
             </p>
             <h1 className="font-grotesk text-display font-bold leading-[1.05] text-text-primary">
               ¿Cómo funciona <span className="gradient-text">el DAP</span>?
             </h1>
             <p className="mx-auto mt-6 max-w-2xl font-inter text-base text-text-secondary md:text-lg">
-              Suscripción mensual, gating por rendimiento académico, 9
-              bloques en 18 meses. Sin estrés, sin penalidades. Avanzás
-              cuando aprobás.
+              Admisión formal, suscripción mensual, 1 módulo por semana
+              durante 72 semanas. Corrección personalizada del Dr. Max y
+              MasterClass en vivo por evento. El tiempo fluye — no te
+              quedás atrás.
             </p>
           </div>
         </section>
@@ -173,7 +174,7 @@ export default async function ComoFuncionaPage() {
                 El recorrido
               </p>
               <h2 className="mb-12 max-w-2xl font-grotesk text-h1 font-bold leading-tight text-text-primary">
-                Cuatro pasos, <span className="gradient-text">repetidos cada mes</span>.
+                Cuatro pasos, <span className="gradient-text">cada semana</span>.
               </h2>
             </Reveal>
 
@@ -284,22 +285,20 @@ export default async function ComoFuncionaPage() {
                   strokeWidth={2}
                 />
                 <h3 className="mb-3 font-grotesk text-h2 font-bold text-text-primary">
-                  ¿Y si no llego a completar el mes?
+                  ¿Y si no llego a completar una semana?
                 </h3>
                 <p className="font-inter text-base leading-relaxed text-text-secondary">
-                  No pasa nada. Si llega tu fecha de cobro y todavía no
-                  completaste los 11 módulos, el sistema{" "}
-                  <strong className="text-text-primary">
-                    pausa el cobro automáticamente
-                  </strong>
-                  . Mantenés tu acceso al mes actual indefinidamente y no
-                  se te cobra nada. Cuando aprobás el último módulo, se
-                  reanuda y avanzás.
+                  No pasa nada con tu avance. El{" "}
+                  <strong className="text-text-primary">calendario manda</strong>
+                  {" "}— el módulo siguiente se abre el próximo martes. La
+                  tarea de la semana que no entregaste queda como pendiente,
+                  pero el contenido sigue accesible para repaso indefinidamente.
+                  Para certificarte del bloque vas a necesitar aprobar los
+                  8 módulos en algún momento.
                 </p>
                 <p className="mt-4 font-inter text-sm text-text-tertiary">
-                  Tu progreso es la prioridad — no tu billetera. Si
-                  necesitás más tiempo, también podés solicitar una
-                  extensión de 60 días por bloque.
+                  Quita la ansiedad de "perder el mes". El llamado se desarrolla
+                  con constancia, no con presión.
                 </p>
               </div>
             </Reveal>
@@ -319,7 +318,7 @@ export default async function ComoFuncionaPage() {
               </div>
               <div className="text-center">
                 <BookOpen className="mx-auto mb-3 size-6 text-brand-coral" />
-                <p className="font-grotesk text-h2 font-bold gradient-text">200</p>
+                <p className="font-grotesk text-h2 font-bold gradient-text">72</p>
                 <p className="font-inter text-xs uppercase tracking-widest text-text-tertiary">
                   Módulos
                 </p>

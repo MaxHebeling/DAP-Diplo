@@ -45,7 +45,7 @@ const TOPICS = [
   {
     icon: CreditCard,
     title: "Soporte de suscripción o pago",
-    body: "Problemas con tu cobro, cancelación, pausa o reembolso (dentro de los 7 días).",
+    body: "Problemas con tu cobro, cancelación o reembolso (dentro de los 7 días).",
     subject: "Soporte suscripción DAP",
   },
   {

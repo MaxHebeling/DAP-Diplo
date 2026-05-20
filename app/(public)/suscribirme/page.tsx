@@ -17,18 +17,18 @@ export const metadata = {
     url: "/suscribirme",
     title: "Suscribirme · DAP",
     description:
-      "Acceso completo al Diplomado Apostólico Pastoral por $25 USD/mes. 200 módulos en 18 meses · cancela cuando quieras.",
+      "Acceso completo al Diplomado Apostólico Pastoral por $25 USD/mes. 72 módulos en 18 meses · 1 módulo por semana · cancela cuando quieras.",
   },
 };
 
 const INCLUDED = [
-  "Acceso a la Fase 1 desde el día 1, con una fase nuevo cada 2 meses",
-  "MasterClass en vivo los miércoles",
-  "Activación práctica los viernes",
-  "Mentoría grupal mensual",
+  "Calendario semanal personal: 1 módulo por semana durante 72 semanas",
+  "MasterClass en vivo por evento (mínimo 1 garantizada al mes)",
+  "Mentoría grupal por convocatoria del apóstol",
+  "Corrección personalizada de tu activación con la voz del Dr. Max (48h)",
   "Comunidad privada de pastores en formación",
   "Material descargable por módulo (PDFs, audios, plantillas)",
-  "Certificado, insignia y dimensión ministerial al completar cada fase",
+  "Certificado, insignia y rango ministerial al completar cada bloque",
 ];
 
 export default async function SuscribirmePage() {
@@ -90,8 +90,9 @@ export default async function SuscribirmePage() {
             </h1>
             <p className="mb-10 max-w-xl text-justify text-base leading-relaxed text-neutral-300 hyphens-auto">
               Una sola suscripción mensual te da acceso al diplomado completo
-              de 18 meses. Cada 2 meses se desbloquea una fase nuevo. Cancela
-              cuando quieras desde tu dashboard — tu progreso queda guardado.
+              de 18 meses. Recibís un módulo nuevo cada semana (martes 00:01).
+              Cancela cuando quieras desde tu dashboard — tu progreso queda
+              guardado.
             </p>
 
             <div className="mb-10 rounded-2xl border border-white/10 bg-neutral-900/40 p-8 sm:p-10">

@@ -63,8 +63,8 @@ export default function PrivacidadPage() {
       <p>Usamos tus datos para:</p>
       <ul>
         <li><strong>Prestar el Servicio:</strong> gestionar tu cuenta, controlar tu progreso académico, otorgarte certificados y rangos.</li>
-        <li><strong>Procesar pagos:</strong> facturación recurrente, gestión de pausas y cancelaciones a través de Stripe.</li>
-        <li><strong>Comunicación operativa:</strong> envío de emails transaccionales (bienvenida, confirmaciones de pago, recordatorios de pausa, avisos de cancelación).</li>
+        <li><strong>Procesar pagos:</strong> facturación recurrente y cancelaciones a través de Stripe.</li>
+        <li><strong>Comunicación operativa:</strong> envío de emails transaccionales (bienvenida, confirmaciones de pago, avisos de cancelación, apertura semanal, correcciones de tareas).</li>
         <li><strong>Comunicación pedagógica:</strong> recordatorios de sesiones en vivo, novedades del programa.</li>
         <li><strong>Soporte:</strong> responder a tus consultas y resolver problemas.</li>
         <li><strong>Mejora del Servicio:</strong> analítica agregada para optimizar contenido y experiencia.</li>

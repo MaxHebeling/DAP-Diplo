@@ -25,32 +25,32 @@ import { Reveal } from "@/components/landing/reveal";
 export const metadata: Metadata = {
   title: "Precios y planes",
   description:
-    "$25 USD/mes — acceso completo al Diplomado Apostólico Pastoral. 200 módulos, 18 meses, mentoría grupal mensual. Cancela cuando quieras, sin compromiso.",
+    "$25 USD/mes — acceso completo al Diplomado Apostólico Pastoral. 72 módulos en 18 meses, 1 módulo por semana, corrección personalizada del Dr. Max. Cancela cuando quieras.",
   alternates: { canonical: "/precios" },
   openGraph: {
     type: "website",
     url: "/precios",
     title: "Precios y planes · DAP",
     description:
-      "$25 USD/mes — todo incluido. 200 módulos, 18 meses, mentoría, comunidad. Cancela cuando quieras.",
+      "$25 USD/mes — todo incluido. 72 módulos en 18 meses, 1 por semana, MasterClass por evento, comunidad. Cancela cuando quieras.",
   },
 };
 
 const INCLUDED = [
   {
     icon: BookOpen,
-    title: "Acceso completo a tu mes académico",
-    body: "11 módulos del mes actual (12 en los meses 17 y 18). Cada módulo con 5 partes: introducción, enseñanza, activación, evaluación e impartición.",
+    title: "1 módulo por semana durante 72 semanas",
+    body: "El módulo de tu semana abre cada martes (00:01) y la tarea cierra el lunes (23:59). Cada módulo con 5 partes: introducción, enseñanza, activación, evaluación e impartición.",
   },
   {
     icon: Radio,
-    title: "Sesiones en vivo todas las semanas",
-    body: "MasterClass en vivo los miércoles · Activación práctica los viernes. Se graban y quedan disponibles si no podés asistir.",
+    title: "Sesiones en vivo por evento",
+    body: "MasterClass en vivo (mínimo 1 al mes, garantizada). Mentoría grupal por convocatoria del apóstol. Todas se graban y quedan disponibles.",
   },
   {
     icon: Users,
-    title: "Mentoría grupal mensual",
-    body: "Una sesión mensual con grupo reducido donde respondemos preguntas, revisamos casos reales y ajustamos tu proceso ministerial.",
+    title: "Corrección personalizada del Dr. Max",
+    body: "Tu activación se corrige con feedback en la voz del Dr. Max Hebeling. Resultado en 48 horas — espacio para asimilar sin la ansiedad del feedback inmediato.",
   },
   {
     icon: Sparkles,
@@ -59,8 +59,8 @@ const INCLUDED = [
   },
   {
     icon: Pause,
-    title: "Pausa automática si necesitás más tiempo",
-    body: "Si no completaste los módulos del mes, el cobro se pausa solo. No se te cobra hasta que avances. Justo y sin estrés.",
+    title: "Modelo Netflix: cancelás cuando querés",
+    body: "Sin compromiso de permanencia. Si pausás un mes, tu progreso queda guardado y retomás desde la semana donde dejaste cuando reactives.",
   },
 ];
 
@@ -68,7 +68,7 @@ const NOT_INCLUDED = [
   "Inscripción única ni cuota anual",
   "Costos ocultos por certificado o insignia",
   "Compromisos de permanencia",
-  "Cobros si la suscripción está pausada",
+  "Cobros si la suscripción está cancelada",
 ];
 
 export default async function PreciosPage() {
@@ -112,9 +112,9 @@ export default async function PreciosPage() {
               <span className="gradient-text">$25 USD</span> al mes.
             </h1>
             <p className="mx-auto mt-6 max-w-2xl font-inter text-base text-text-secondary md:text-lg">
-              Acceso completo al Diplomado Apostólico Pastoral. 200 módulos
-              en 18 meses, mentoría grupal mensual y comunidad de pastores.
-              Cancela cuando quieras, sin compromisos.
+              Acceso completo al Diplomado Apostólico Pastoral. 72 módulos
+              en 18 meses, 1 por semana, MasterClass por evento y comunidad
+              de pastores. Cancela cuando quieras, sin compromisos.
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
               <DapButton render={<Link href="/suscribirme" />} size="lg">
@@ -130,7 +130,7 @@ export default async function PreciosPage() {
               </DapButton>
             </div>
             <p className="mt-6 font-inter text-xs text-text-tertiary">
-              Procesado por Stripe · 18 meses · 9 bloques · 200 módulos
+              Procesado por Stripe · 18 meses · 9 bloques · 72 módulos
             </p>
           </div>
         </section>
@@ -200,7 +200,7 @@ export default async function PreciosPage() {
           </div>
         </section>
 
-        {/* Modelo de pausa explicado */}
+        {/* Modelo Netflix explicado */}
         <section className="border-t border-white/[0.06] bg-surface-base px-6 py-20">
           <div className="mx-auto max-w-3xl">
             <Reveal>
@@ -210,16 +210,16 @@ export default async function PreciosPage() {
                   strokeWidth={2}
                 />
                 <h3 className="mb-3 font-grotesk text-h3 font-bold text-text-primary">
-                  Pausa académica automática
+                  Modelo Netflix — sin compromiso
                 </h3>
                 <p className="font-inter text-base leading-relaxed text-text-secondary">
-                  Si llega tu fecha de cobro y todavía no completaste los
-                  módulos del mes, el sistema pausa el cobro automáticamente.
-                  Mantenés tu acceso al mes actual y no se te cobra hasta
-                  que aprobás todo. Cuando terminás, retomamos.
+                  Cancelás desde tu dashboard cuando quieras. Mientras
+                  estés activo recibís 1 módulo nuevo cada semana. Si
+                  pausás, tu progreso queda guardado y cuando reactives
+                  retomás desde la semana donde dejaste.
                 </p>
                 <p className="mt-4 font-inter text-sm text-text-tertiary">
-                  Tu progreso académico es la prioridad — no tu billetera.
+                  Sin penalidades, sin renovaciones automáticas mañosas.
                 </p>
               </div>
             </Reveal>

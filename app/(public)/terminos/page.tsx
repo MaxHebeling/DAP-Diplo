@@ -44,16 +44,29 @@ export default function TerminosPage() {
       <h2>1. Descripción del servicio</h2>
       <p>
         El DAP es un programa educativo online de formación apostólica
-        integral de 18 meses, organizado en 9 bloques temáticos (200 módulos
-        en total). Incluye clases pre-grabadas, sesiones en vivo, mentoría
-        grupal mensual, comunidad de pastores y acceso a un tutor con
-        inteligencia artificial entrenado con el material del programa.
+        integral de 18 meses, organizado en 9 bloques temáticos
+        (72 módulos en total, 1 módulo por semana). Incluye clases
+        pre-grabadas, sesiones en vivo por evento (MasterClass + mentoría),
+        corrección personalizada de tareas escritas con feedback en la voz
+        del Dr. Max Hebeling (48h tras la entrega), comunidad de pastores
+        y acceso a un tutor con inteligencia artificial entrenado con el
+        material del programa.
       </p>
       <p>
-        El acceso al contenido se entrega progresivamente bajo un modelo
-        mensual con gating académico: el usuario avanza al siguiente mes
-        únicamente cuando: (a) ha aprobado todos los módulos del mes actual
-        y (b) su suscripción se encuentra al día.
+        El ingreso al programa requiere un{" "}
+        <strong>proceso de admisión formal</strong>: el aspirante completa
+        un formulario y, si no pertenece a la Red Apostólica Reino y
+        Avivamiento ni a Revival &amp; Kingdom Ministries, INC, debe
+        adjuntar una carta de consentimiento firmada por su pastor. La
+        admisión es revisada y aprobada manualmente por el equipo de
+        admisiones.
+      </p>
+      <p>
+        Una vez aprobada la admisión, el contenido se libera por{" "}
+        <strong>calendario semanal personal</strong>: el módulo de la
+        semana abre cada martes (00:01 hora de Ciudad de México) y la
+        tarea cierra el lunes siguiente (23:59). El contenido pasado
+        queda disponible para repaso indefinidamente.
       </p>
 
       <h2>2. Cuenta de usuario</h2>
@@ -78,28 +91,24 @@ export default function TerminosPage() {
         se renueva automáticamente cada mes en la fecha aniversario de la
         inscripción hasta que el usuario la cancele.
       </p>
-      <h3>3.1 Pausa automática</h3>
+      <h3>3.1 Modelo de cancelación</h3>
       <p>
-        Si al momento del cobro mensual el usuario no ha completado los
-        módulos del mes actual, el sistema pausa automáticamente la
-        suscripción y no se realiza el cobro. Cuando el usuario completa el
-        último módulo pendiente, la suscripción se reactiva y se cobra el mes
-        siguiente.
+        La suscripción opera bajo modelo Netflix: el cobro mensual continúa
+        mientras la suscripción esté activa, independientemente del avance
+        académico del usuario. El calendario semanal manda — el usuario
+        recibe 1 módulo nuevo por semana mientras la suscripción esté al
+        día. Si el usuario no completa la tarea de una semana, no hay
+        penalización en el cobro: simplemente la tarea queda como pendiente
+        y el contenido sigue accesible para repaso.
       </p>
-      <h3>3.2 Timeout de pausa</h3>
-      <p>
-        La pausa académica tiene un límite de 60 días. Si el usuario no
-        retoma la actividad en ese plazo, la suscripción se cancela
-        automáticamente y se conserva el progreso acumulado. El usuario puede
-        solicitar una extensión adicional de 60 días por bloque (1 por
-        bloque, máximo 9).
-      </p>
-      <h3>3.3 Cancelación</h3>
+      <h3>3.2 Cancelación</h3>
       <p>
         Podés cancelar la suscripción en cualquier momento desde la sección
         &ldquo;Mi suscripción&rdquo; de tu cuenta o desde el portal de Stripe. La
         cancelación detiene cobros futuros pero te permite seguir accediendo
-        al contenido hasta el final del período mensual ya pagado.
+        al contenido hasta el final del período mensual ya pagado. Tu
+        progreso académico se conserva: si reactivás más adelante,
+        retomás desde la semana en que dejaste.
       </p>
 
       <h2>4. Política de reembolso</h2>

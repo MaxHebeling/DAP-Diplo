@@ -78,19 +78,21 @@ export default function ReembolsoPage() {
         de pagar el próximo mes, pero el mes ya cobrado se cumple.
       </p>
 
-      <h2>4. Pausa académica automática</h2>
+      <h2>4. Modelo Netflix — sin penalidades por no avanzar</h2>
       <p>
-        Si llega tu fecha de cobro mensual y todavía no completaste los
-        módulos del mes, el sistema{" "}
-        <strong>pausa automáticamente la suscripción</strong> y{" "}
-        <strong>no se realiza ningún cobro</strong>. No necesitás pedir
-        reembolso porque directamente no se cobra. Cuando aprobás los
-        módulos pendientes, la suscripción se reactiva y se cobra el mes
-        siguiente normalmente.
+        La suscripción opera bajo modelo Netflix: el cobro mensual continúa
+        mientras la suscripción esté activa, independientemente del avance
+        académico. Si una semana no completaste la tarea, no hay penalidad
+        — simplemente queda como pendiente y el contenido sigue accesible.
+        Para certificarte del bloque vas a necesitar aprobar los 8 módulos
+        en algún momento, pero podés hacerlo a tu ritmo.
       </p>
       <p>
-        Esto significa que <strong>nunca pagás por un mes que no usaste</strong>{" "}
-        siempre y cuando hayas accedido al menos a un módulo del mes anterior.
+        Si en algún momento decidís no continuar, simplemente cancelás la
+        suscripción desde tu dashboard y dejás de pagar a partir del mes
+        siguiente. <strong>No hay penalidades de cancelación.</strong> Tu
+        progreso queda guardado: si reactivás, retomás desde la semana en
+        que dejaste.
       </p>
 
       <h2>5. Casos especiales</h2>
