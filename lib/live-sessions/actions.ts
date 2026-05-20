@@ -67,6 +67,27 @@ export async function createLiveSessionAction(
     .single();
   if (error) return { ok: false, error: error.message };
 
+  // Broadcast a suscriptores activos (fire-and-forget — no bloqueamos
+  // el redirect del admin). El cron de recordatorio (1h antes) cubre
+  // a quien no abra este primer aviso.
+  try {
+    const { broadcastLiveSessionAnnouncement } = await import(
+      "@/lib/email/send-live-session-announcement"
+    );
+    void broadcastLiveSessionAnnouncement({
+      id: data.id,
+      kind: parsed.data.kind,
+      title: parsed.data.title,
+      description: parsed.data.description ?? null,
+      scheduledAt: parsed.data.scheduled_at,
+      hostName: parsed.data.host_name ?? null,
+    }).catch((err) => {
+      console.error("[live-announcement] broadcast falló:", err);
+    });
+  } catch (err) {
+    console.error("[live-announcement] import falló:", err);
+  }
+
   revalidatePath("/admin/en-vivo");
   redirect(`/admin/en-vivo?toast=live-created&focus=${data.id}`);
 }
