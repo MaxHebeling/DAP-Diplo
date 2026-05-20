@@ -209,11 +209,14 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
             <Select
               value={dialId}
               onChange={(e) => setDialId(e.target.value)}
-              className="w-32 shrink-0"
+              className="w-28 shrink-0"
               aria-label="Código de país"
+              title={
+                ALL_DIAL_CODES.find((d) => d.id === dialId)?.country ?? ""
+              }
             >
               {ALL_DIAL_CODES.map((d) => (
-                <option key={d.id} value={d.id}>
+                <option key={d.id} value={d.id} title={d.country}>
                   {d.label}
                 </option>
               ))}
