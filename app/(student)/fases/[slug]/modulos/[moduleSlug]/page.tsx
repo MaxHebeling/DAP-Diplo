@@ -16,6 +16,7 @@ import type {
   PlayerQuiz,
 } from "@/components/module/quiz-player";
 import { createClient } from "@/lib/supabase/server";
+import { ensureWeekAssignment } from "@/lib/calendar/ensure-assignment";
 
 const SECTION_KINDS: SectionKind[] = [
   "intro",
@@ -66,6 +67,7 @@ type DbModule = {
   main_revelation: string | null;
   impartation_phrase: string | null;
   duration_minutes: number | null;
+  course_week: number | null;
   phase: {
     id: string;
     slug: string;
@@ -121,7 +123,7 @@ export default async function ModulePlayerPage({
     .from("modules")
     .select(
       `id, slug, title, subtitle, description, objective, main_revelation,
-       impartation_phrase, duration_minutes,
+       impartation_phrase, duration_minutes, course_week,
        phase:phases(id, slug, order_index, title, published),
        sections:module_sections(
          id, kind, order_index, title, body_md, mux_playback_id,
@@ -141,13 +143,14 @@ export default async function ModulePlayerPage({
   // 4) Block published / admin override
   if (!mod.phase.published && !isAdmin) notFound();
 
-  // 5) Gating: suscripción activa (v3.3 — el gating fino por course_week
-  // vive en has_access_to_module, pendiente migration 0011).
-  const { data: hasSub } = await supabase.rpc("has_active_subscription", {
-    p_user_id: user.id,
+  // 5) Gating v3.3: has_access_to_module verifica suscripción activa
+  //    Y que course_week <= semana actual del alumno (calendario semanal).
+  //    También cubre is_admin internamente.
+  const { data: hasAccess } = await supabase.rpc("has_access_to_module", {
+    p_module_id: mod.id,
   });
-  if (!hasSub && !isAdmin) {
-    redirect(`/fases/${phaseSlug}?toast=phase-locked`);
+  if (!hasAccess && !isAdmin) {
+    redirect(`/fases/${phaseSlug}?toast=module-locked`);
   }
 
   // 6) Sidebar: módulos hermanos + progreso
@@ -197,6 +200,24 @@ export default async function ModulePlayerPage({
   }
 
   const startPosition = activeSection.progress?.[0]?.last_position_seconds ?? 0;
+
+  // v3.3: si el alumno entra a la sección activation del módulo de su
+  // semana actual, garantizamos que exista su assignment_submission con
+  // la ventana semanal calculada. Idempotente: SELECT primero, luego
+  // INSERT con la window de la DB.
+  if (
+    currentSection === "activation" &&
+    mod.course_week != null &&
+    !isAdmin
+  ) {
+    await ensureWeekAssignment({
+      supabase,
+      userId: user.id,
+      moduleId: mod.id,
+      sectionId: activeSection.id,
+      courseWeek: mod.course_week,
+    });
+  }
 
   // Carga del quiz solo si estamos viendo la sección de evaluación
   let evaluationQuiz: PlayerQuiz | null = null;
