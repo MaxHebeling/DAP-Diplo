@@ -27,8 +27,9 @@ export function FinalCta() {
             Empieza tu <span className="gradient-text">diplomado apostólico</span> hoy.
           </h2>
           <p className="mb-10 mx-auto max-w-xl text-justify font-inter text-base leading-relaxed text-text-secondary md:text-lg">
-            Acceso inmediato al Mes 1 y a las sesiones en vivo. 18 meses de
-            formación apostólica integral, en español.
+            Admisión formal + 1 módulo nuevo cada semana, durante 72 semanas.
+            Corrección personalizada del Ap. Max Hebeling y MasterClass en vivo
+            por evento. En español.
           </p>
           <DapButton render={<Link href="/suscribirme" />} size="lg">
             Suscribirme ahora

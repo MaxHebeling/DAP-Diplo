@@ -14,8 +14,8 @@ export function StatsStripV2() {
         />
         <DapStat
           icon={GraduationCap}
-          value={<AnimatedNumber value={200} />}
-          label="Módulos premium"
+          value={<AnimatedNumber value={72} />}
+          label="Módulos premium · 1 por semana"
           accent="coral"
         />
         <DapStat

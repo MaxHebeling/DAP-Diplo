@@ -113,7 +113,7 @@ export function HeroSectionV2() {
           transition={{ duration: 0.6, delay: 1.3 }}
           className="mt-6 font-inter text-xs text-text-tertiary"
         >
-          18 meses · 9 bloques · 200 módulos · desde $25/mes
+          18 meses · 9 bloques · 72 módulos · desde $25/mes
         </motion.p>
       </motion.div>
 

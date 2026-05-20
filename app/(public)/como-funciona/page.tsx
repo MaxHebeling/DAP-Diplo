@@ -5,7 +5,6 @@ import {
   Award,
   BookOpen,
   CalendarClock,
-  CheckCircle2,
   CreditCard,
   Layers,
   Pause,
@@ -28,64 +27,70 @@ import { Reveal } from "@/components/landing/reveal";
 export const metadata: Metadata = {
   title: "Cómo funciona el DAP",
   description:
-    "Cómo funciona el Diplomado Apostólico Pastoral: admisión formal con carta del pastor, suscripción mensual de $25, 72 módulos en 18 meses, 1 módulo por semana, MasterClass por evento, corrección personalizada del Dr. Max y comunidad.",
+    "Cómo funciona el Diplomado Apostólico Pastoral: admisión formal con carta del pastor, suscripción mensual de $25, 72 módulos en 18 meses, 1 módulo por semana, MasterClass por evento, corrección personalizada del Ap. Max Hebeling y comunidad.",
   alternates: { canonical: "/como-funciona" },
   openGraph: {
     type: "website",
     url: "/como-funciona",
     title: "Cómo funciona el DAP · Diplomado Apostólico Pastoral",
     description:
-      "Suscripción mensual de $25. 72 módulos en 18 meses (1 por semana). MasterClass por evento, corrección personalizada del Dr. Max, comunidad.",
+      "Suscripción mensual de $25. 72 módulos en 18 meses (1 por semana). MasterClass por evento, corrección personalizada del Ap. Max Hebeling, comunidad.",
   },
 };
 
 const STEPS = [
   {
+    icon: ShieldCheck,
+    title: "Postulás y sos admitido",
+    body: "Completás el formulario de admisión y, si no pertenecés a la Red Apostólica, adjuntás carta de consentimiento de tu pastor. El equipo revisa manualmente y emite tu admisión formal.",
+  },
+  {
     icon: CreditCard,
-    title: "Te suscribís",
-    body: "$25 USD/mes vía Stripe. Acceso inmediato al Mes 1 (Bloque 1: Fundamentos Espirituales) y a todas las sesiones en vivo. Sin compromiso de permanencia.",
+    title: "Activás tu suscripción",
+    body: "$25 USD/mes vía Stripe — sin compromiso de permanencia. Tu calendario personal arranca el primer martes después de la aprobación de tu admisión.",
   },
   {
     icon: CalendarClock,
-    title: "Avanzás a tu ritmo, dentro del mes",
-    body: "Cada mes tenés 11 módulos para aprobar (12 en los meses 17–18). Los hacés cuando podés — el contenido grabado está disponible 24/7.",
-  },
-  {
-    icon: CheckCircle2,
-    title: "Aprobás los 11 módulos",
-    body: "Para que un módulo cuente como aprobado, completás las 5 secciones (intro, enseñanza, activación, evaluación, impartición) y pasás el quiz de evaluación.",
+    title: "Recibís 1 módulo cada semana",
+    body: "Cada martes (00:01 hora de Ciudad de México) se abre un módulo nuevo. La tarea de activación cierra el lunes siguiente (23:59). El contenido pasado sigue accesible para repaso indefinidamente.",
   },
   {
     icon: Award,
-    title: "Avanzás al mes siguiente",
-    body: "Cuando aprobás todos los módulos del mes + pagaste el siguiente, automáticamente desbloqueás los módulos del Mes 2. Cada 2 meses completás un bloque y recibís un rango ministerial.",
+    title: "Completás bloques, recibís dimensiones",
+    body: "Al aprobar los 8 módulos de un bloque (5 secciones completas + quiz aprobado), recibís certificado, insignia y una dimensión ministerial. 9 bloques = 9 dimensiones, de Discípulo hasta Enviado.",
   },
 ] as const;
 
 const WEEK = [
   {
-    day: "Lunes",
+    day: "Martes 00:01",
     icon: BookOpen,
-    title: "Clase grabada premium",
-    body: "El módulo principal de la semana. Video de 45–60 minutos con doctrina apostólica, lente del mundo actual.",
+    title: "Abre tu módulo de la semana",
+    body: "El nuevo módulo aparece en tu dashboard con sus 5 partes: introducción, enseñanza en video, activación práctica, evaluación e impartición. Recibís email automático.",
   },
   {
-    day: "Miércoles",
-    icon: Radio,
-    title: "MasterClass en vivo",
-    body: "Sesión en vivo con un mentor del DAP. Tema profundo, preguntas en tiempo real, networking ministerial.",
-  },
-  {
-    day: "Viernes",
+    day: "De martes a lunes",
     icon: Sparkles,
-    title: "Activación práctica",
-    body: "Ejercicio aplicado: salimos del aula y llevamos lo aprendido al ministerio, la familia o el negocio.",
+    title: "Estudiás a tu ritmo",
+    body: "Mirás la enseñanza (45–60 min), hacés el quiz autocorregible y entregás tu activación escrita. Todo a tu ritmo, dentro de tu semana.",
   },
   {
-    day: "Mensual",
+    day: "Lunes 23:59",
+    icon: CalendarClock,
+    title: "Cierra la ventana de entrega",
+    body: "Después de esa hora, la tarea queda como pendiente y el martes siguiente abre la próxima semana. El contenido visto sigue disponible para repaso.",
+  },
+  {
+    day: "48h después",
+    icon: Radio,
+    title: "Llega tu corrección personal",
+    body: "El Ap. Max Hebeling te devuelve feedback escrito en su voz pastoral: lo que viste, lo que necesitás afinar, próximo paso y una palabra de impartación. Resultado del quiz también revelado a las 48h.",
+  },
+  {
+    day: "Por evento",
     icon: Users,
-    title: "Mentoría grupal",
-    body: "Una sesión mensual con grupo reducido. Respondemos preguntas, revisamos casos reales, ajustamos tu proceso.",
+    title: "MasterClass + mentoría en vivo",
+    body: "MasterClass en vivo del Ap. Max Hebeling (mínimo 1 al mes garantizada). Mentoría grupal por convocatoria especial. Te avisamos por email apenas se programa.",
   },
 ];
 
@@ -159,9 +164,9 @@ export default async function ComoFuncionaPage() {
             </h1>
             <p className="mx-auto mt-6 max-w-2xl font-inter text-base text-text-secondary md:text-lg">
               Admisión formal, suscripción mensual, 1 módulo por semana
-              durante 72 semanas. Corrección personalizada del Dr. Max y
-              MasterClass en vivo por evento. El tiempo fluye — no te
-              quedás atrás.
+              durante 72 semanas. Corrección personalizada del Ap. Max
+              Hebeling y MasterClass en vivo por evento. El tiempo fluye
+              — no te quedás atrás.
             </p>
           </div>
         </section>
@@ -174,7 +179,7 @@ export default async function ComoFuncionaPage() {
                 El recorrido
               </p>
               <h2 className="mb-12 max-w-2xl font-grotesk text-h1 font-bold leading-tight text-text-primary">
-                Cuatro pasos, <span className="gradient-text">cada semana</span>.
+                Cuatro pasos, <span className="gradient-text">del aspirante al apóstol</span>.
               </h2>
             </Reveal>
 
@@ -216,7 +221,7 @@ export default async function ComoFuncionaPage() {
               </h2>
             </Reveal>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
               {WEEK.map((d, i) => {
                 const Icon = d.icon;
                 return (

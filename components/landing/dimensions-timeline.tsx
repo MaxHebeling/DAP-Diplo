@@ -56,7 +56,7 @@ export async function DimensionsTimeline() {
         <Reveal>
           <div className="mb-16 max-w-3xl">
             <p className="mb-4 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-              Los 9 rangos del Reino
+              Las 9 dimensiones del Reino
             </p>
             <h2 className="font-grotesk text-h1 font-bold leading-tight text-text-primary">
               Discípulo. Hijo. <span className="gradient-text">Líder</span>.

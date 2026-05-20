@@ -5,20 +5,20 @@ import { PerspectivePath } from "./perspective-path";
 const STEPS = [
   {
     icon: CreditCard,
-    title: "Te suscribes",
-    body: "$25 USD/mes vía Stripe. Acceso inmediato al Mes 1 y a todas las sesiones en vivo. Cancela cuando quieras.",
+    title: "Postulás y te suscribís",
+    body: "Completás el formulario de admisión y, una vez aprobada, activás tu suscripción de $25 USD/mes. Tu calendario personal arranca el primer martes después de la aprobación.",
     accent: "violet",
   },
   {
     icon: CalendarClock,
-    title: "Estudias a tu ritmo",
-    body: "Lunes clase grabada premium. Miércoles MasterClass en vivo. Viernes activación práctica. Una vez al mes, mentoría grupal.",
+    title: "1 módulo cada semana",
+    body: "Cada martes 00:01 se abre un módulo nuevo (de 72 en total). La activación práctica la corrige el Ap. Max Hebeling con feedback personal en 48h. MasterClass en vivo por evento — mínimo 1 al mes.",
     accent: "coral",
   },
   {
     icon: Trophy,
-    title: "Avanzas y desbloqueas dimensiones",
-    body: "Cada 2 meses se libera un nuevo bloque. Al completarlo recibes certificado, insignia y una dimensión ministerial — de Discípulo hasta Enviado.",
+    title: "Completás un bloque, recibís tu dimensión",
+    body: "Al aprobar los 8 módulos de un bloque, recibís certificado, insignia y una dimensión ministerial — de Discípulo hasta Enviado, las 9 dimensiones del Reino.",
     accent: "amber",
   },
 ] as const;
@@ -44,8 +44,8 @@ export function HowItWorks() {
               ¿Cómo funciona?
             </p>
             <h2 className="font-grotesk text-h1 font-bold leading-tight text-text-primary">
-              Un camino claro de 18 meses, en{" "}
-              <span className="gradient-text">tres pasos</span>.
+              72 semanas, 9 bloques, una sola{" "}
+              <span className="gradient-text">cadencia</span>.
             </h2>
           </div>
         </Reveal>
