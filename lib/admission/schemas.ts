@@ -84,37 +84,71 @@ export const COUNTRY_PHONE_PLACEHOLDER: Record<Country, string> = {
   Otro: "Tu número",
 };
 
-// Lista completa de dial codes para el dropdown del PhoneField (incluye
-// otros países comunes que no están en COUNTRIES). Ordenado por nombre.
-export const ALL_DIAL_CODES: Array<{ label: string; value: string }> = [
-  { label: "Argentina (+54)", value: "+54" },
-  { label: "Bolivia (+591)", value: "+591" },
-  { label: "Brasil (+55)", value: "+55" },
-  { label: "Canadá (+1)", value: "+1" },
-  { label: "Chile (+56)", value: "+56" },
-  { label: "Colombia (+57)", value: "+57" },
-  { label: "Costa Rica (+506)", value: "+506" },
-  { label: "Cuba (+53)", value: "+53" },
-  { label: "Ecuador (+593)", value: "+593" },
-  { label: "El Salvador (+503)", value: "+503" },
-  { label: "España (+34)", value: "+34" },
-  { label: "Estados Unidos (+1)", value: "+1" },
-  { label: "Francia (+33)", value: "+33" },
-  { label: "Guatemala (+502)", value: "+502" },
-  { label: "Honduras (+504)", value: "+504" },
-  { label: "Italia (+39)", value: "+39" },
-  { label: "México (+52)", value: "+52" },
-  { label: "Nicaragua (+505)", value: "+505" },
-  { label: "Panamá (+507)", value: "+507" },
-  { label: "Paraguay (+595)", value: "+595" },
-  { label: "Perú (+51)", value: "+51" },
-  { label: "Portugal (+351)", value: "+351" },
-  { label: "Puerto Rico (+1)", value: "+1" },
-  { label: "Reino Unido (+44)", value: "+44" },
-  { label: "República Dominicana (+1)", value: "+1" },
-  { label: "Uruguay (+598)", value: "+598" },
-  { label: "Venezuela (+58)", value: "+58" },
+// Lista completa de dial codes para el dropdown del PhoneField.
+// `id` es único por país (ej. "US", "CA") para que el <select> distinga
+// entre países que comparten dial code (USA, Canadá, PR, RD = +1).
+// `code` es el prefijo real que se concatena al número del alumno.
+// Mapping de Country (COUNTRIES) → id en COUNTRY_DIAL_ID abajo.
+export const ALL_DIAL_CODES: Array<{
+  id: string;
+  label: string;
+  code: string;
+}> = [
+  { id: "AR", label: "Argentina (+54)", code: "+54" },
+  { id: "BO", label: "Bolivia (+591)", code: "+591" },
+  { id: "BR", label: "Brasil (+55)", code: "+55" },
+  { id: "CA", label: "Canadá (+1)", code: "+1" },
+  { id: "CL", label: "Chile (+56)", code: "+56" },
+  { id: "CO", label: "Colombia (+57)", code: "+57" },
+  { id: "CR", label: "Costa Rica (+506)", code: "+506" },
+  { id: "CU", label: "Cuba (+53)", code: "+53" },
+  { id: "EC", label: "Ecuador (+593)", code: "+593" },
+  { id: "SV", label: "El Salvador (+503)", code: "+503" },
+  { id: "ES", label: "España (+34)", code: "+34" },
+  { id: "US", label: "Estados Unidos (+1)", code: "+1" },
+  { id: "FR", label: "Francia (+33)", code: "+33" },
+  { id: "GT", label: "Guatemala (+502)", code: "+502" },
+  { id: "HN", label: "Honduras (+504)", code: "+504" },
+  { id: "IT", label: "Italia (+39)", code: "+39" },
+  { id: "MX", label: "México (+52)", code: "+52" },
+  { id: "NI", label: "Nicaragua (+505)", code: "+505" },
+  { id: "PA", label: "Panamá (+507)", code: "+507" },
+  { id: "PY", label: "Paraguay (+595)", code: "+595" },
+  { id: "PE", label: "Perú (+51)", code: "+51" },
+  { id: "PT", label: "Portugal (+351)", code: "+351" },
+  { id: "PR", label: "Puerto Rico (+1)", code: "+1" },
+  { id: "GB", label: "Reino Unido (+44)", code: "+44" },
+  { id: "DO", label: "República Dominicana (+1)", code: "+1" },
+  { id: "UY", label: "Uruguay (+598)", code: "+598" },
+  { id: "VE", label: "Venezuela (+58)", code: "+58" },
 ];
+
+// Mapping Country → id de ALL_DIAL_CODES. Cuando el alumno elige país
+// el form selecciona el ID correcto del dropdown (evita ambigüedad NANP).
+export const COUNTRY_DIAL_ID: Record<Country, string> = {
+  Argentina: "AR",
+  Bolivia: "BO",
+  Chile: "CL",
+  Colombia: "CO",
+  "Costa Rica": "CR",
+  Cuba: "CU",
+  Ecuador: "EC",
+  "El Salvador": "SV",
+  España: "ES",
+  "Estados Unidos": "US",
+  Guatemala: "GT",
+  Honduras: "HN",
+  México: "MX",
+  Nicaragua: "NI",
+  Panamá: "PA",
+  Paraguay: "PY",
+  Perú: "PE",
+  "Puerto Rico": "PR",
+  "República Dominicana": "DO",
+  Uruguay: "UY",
+  Venezuela: "VE",
+  Otro: "",
+};
 
 export const NETWORK_OPTIONS = [
   { value: "reino_y_avivamiento", label: "Red Apostólica Reino y Avivamiento" },

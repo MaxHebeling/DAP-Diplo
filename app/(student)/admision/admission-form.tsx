@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import {
   ALL_DIAL_CODES,
   COUNTRIES,
-  COUNTRY_DIAL_CODES,
+  COUNTRY_DIAL_ID,
   COUNTRY_PHONE_PLACEHOLDER,
   NETWORK_OPTIONS,
   admissionFormSchema,
@@ -38,17 +38,13 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
   const [country, setCountry] = useState<AdmissionFormInput["country"]>("México");
   const [countryOther, setCountryOther] = useState("");
   const [city, setCity] = useState("");
-  // Phone split: prefix (dial code) + local number. Submit junta ambos.
-  const [dialCode, setDialCode] = useState<string>(
-    COUNTRY_DIAL_CODES["México"],
-  );
+  // Phone split: dial id (ej "MX", "US", "CA") + local number.
+  // El id distingue entre países que comparten +1 (USA, Canadá, PR, RD).
+  // El dial code real se lookup desde ALL_DIAL_CODES.
+  const [dialId, setDialId] = useState<string>(COUNTRY_DIAL_ID["México"]);
   const [phoneLocal, setPhoneLocal] = useState("");
-  // Auto-sync del prefijo cuando cambia el país. NO sobreescribe si el
-  // user lo cambió manualmente en este turno (lo asumimos cuando el
-  // dialCode actual ya no coincide con el del país previo, pero acá lo
-  // dejamos simple: cada cambio de country setea el prefijo del país
-  // nuevo. Si el user quiere mantener su prefijo manual, lo elige otra
-  // vez del dropdown).
+  const dialCode =
+    ALL_DIAL_CODES.find((d) => d.id === dialId)?.code ?? "";
   const phone = `${dialCode} ${phoneLocal.trim()}`.trim();
   const [email] = useState(prefill.email ?? "");
 
@@ -177,9 +173,9 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
               onChange={(e) => {
                 const next = e.target.value as AdmissionFormInput["country"];
                 setCountry(next);
-                // Auto-sync del prefijo telefónico (siempre que el país tenga uno).
-                const nextDial = COUNTRY_DIAL_CODES[next];
-                if (nextDial) setDialCode(nextDial);
+                // Auto-sync: si el país tiene id en el dropdown, lo seleccionamos.
+                const nextId = COUNTRY_DIAL_ID[next];
+                if (nextId) setDialId(nextId);
               }}
             >
               {COUNTRIES.map((c) => (
@@ -211,18 +207,13 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
         >
           <div className="flex gap-2">
             <Select
-              value={dialCode}
-              onChange={(e) => setDialCode(e.target.value)}
+              value={dialId}
+              onChange={(e) => setDialId(e.target.value)}
               className="w-32 shrink-0"
               aria-label="Código de país"
             >
-              {/* Si el dial code seleccionado no está en la lista (caso
-                  raro), lo inyectamos como opción para no perderlo. */}
-              {!ALL_DIAL_CODES.some((d) => d.value === dialCode) && dialCode && (
-                <option value={dialCode}>{dialCode}</option>
-              )}
               {ALL_DIAL_CODES.map((d) => (
-                <option key={`${d.label}-${d.value}`} value={d.value}>
+                <option key={d.id} value={d.id}>
                   {d.label}
                 </option>
               ))}
