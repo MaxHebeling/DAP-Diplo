@@ -16,6 +16,10 @@
     {
       "path": "/api/cron/week-open-notify",
       "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/grade-assignments",
+      "schedule": "0 * * * *"
     }
   ]
 }

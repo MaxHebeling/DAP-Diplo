@@ -7,6 +7,10 @@ import {
   type PlayerQuestion,
   type PlayerQuiz,
 } from "@/components/module/quiz-player";
+import {
+  ActivationSubmission,
+  type ActivationSubmission as ActivationSubmissionData,
+} from "@/components/module/activation-submission";
 
 type SectionKind = "intro" | "activation" | "evaluation" | "impartation";
 
@@ -17,6 +21,10 @@ export type EvaluationProps = {
   passed: boolean;
   bestScore: number | null;
   latestAttempt: LatestAttemptSummary | null;
+};
+
+export type ActivationProps = {
+  submission: ActivationSubmissionData | null;
 };
 
 type SectionContentProps = {
@@ -32,6 +40,7 @@ type SectionContentProps = {
     impartation_phrase: string | null;
   };
   evaluation?: EvaluationProps;
+  activation?: ActivationProps;
 };
 
 const NEXT: Record<SectionKind, SectionTeachingKind> = {
@@ -71,15 +80,27 @@ export function SectionContent(props: SectionContentProps) {
         />
       )}
 
-      {/* Cuerpo Markdown (intro/activation/impartation y arriba del quiz en evaluation) */}
-      {props.bodyMd && !isEvaluation && <Markdown>{props.bodyMd}</Markdown>}
+      {/* Cuerpo Markdown — intro/impartation lo muestran tal cual; activation
+          ahora vive dentro de ActivationSubmission (con la consigna y el form);
+          evaluation lo muestra arriba del quiz. */}
+      {props.bodyMd && !isEvaluation && props.kind !== "activation" && (
+        <Markdown>{props.bodyMd}</Markdown>
+      )}
       {props.bodyMd && isEvaluation && (
         <div className="mb-2">
           <Markdown>{props.bodyMd}</Markdown>
         </div>
       )}
-      {!props.bodyMd && !isEvaluation && (
+      {!props.bodyMd && !isEvaluation && props.kind !== "activation" && (
         <EmptyBodyPlaceholder kind={props.kind} />
+      )}
+
+      {/* Activación: form/feedback del Dr. Max */}
+      {props.kind === "activation" && (
+        <ActivationSubmission
+          submission={props.activation?.submission ?? null}
+          consignaMd={props.bodyMd}
+        />
       )}
 
       {props.kind === "impartation" && props.module.impartation_phrase && (
@@ -117,8 +138,10 @@ export function SectionContent(props: SectionContentProps) {
           </div>
         ))}
 
-      {/* AdvanceButton: oculto en evaluation (el QuizPlayer maneja su propio CTA) */}
-      {!isEvaluation && (
+      {/* AdvanceButton: oculto en evaluation (el QuizPlayer maneja su propio CTA)
+          y en activation (la entrega se valida con la corrección IA, no
+          marcando manualmente). */}
+      {!isEvaluation && props.kind !== "activation" && (
         <div className="pt-2">
           <AdvanceButton
             sectionId={props.sectionId}

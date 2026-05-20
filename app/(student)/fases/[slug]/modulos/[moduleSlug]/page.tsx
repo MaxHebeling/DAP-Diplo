@@ -219,6 +219,37 @@ export default async function ModulePlayerPage({
     });
   }
 
+  // Cargar la submission del alumno para esta activation (si existe)
+  // — la usamos para renderizar el form de entrega o el feedback IA.
+  let activationSubmission: {
+    id: string;
+    status: "open" | "submitted" | "correcting" | "completed" | "incomplete" | "not_submitted";
+    content_text: string | null;
+    opens_at: string;
+    closes_at: string;
+    submitted_at: string | null;
+    ai_feedback: string | null;
+    ai_score: number | null;
+    ai_passed: boolean | null;
+    corrected_at: string | null;
+    results_sent_at: string | null;
+  } | null = null;
+  if (currentSection === "activation") {
+    const { data: subData } = await supabase
+      .from("assignment_submissions")
+      .select(
+        "id, status, content_text, opens_at, closes_at, submitted_at, ai_feedback, ai_score, ai_passed, corrected_at, results_sent_at",
+      )
+      .eq("user_id", user.id)
+      .eq("module_section_id", activeSection.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (subData) {
+      activationSubmission = subData as unknown as typeof activationSubmission;
+    }
+  }
+
   // Carga del quiz solo si estamos viendo la sección de evaluación
   let evaluationQuiz: PlayerQuiz | null = null;
   let evaluationQuestions: PlayerQuestion[] = [];
@@ -414,6 +445,11 @@ export default async function ModulePlayerPage({
                     main_revelation: mod.main_revelation,
                     impartation_phrase: mod.impartation_phrase,
                   }}
+                  activation={
+                    currentSection === "activation"
+                      ? { submission: activationSubmission }
+                      : undefined
+                  }
                   evaluation={
                     currentSection === "evaluation"
                       ? {
