@@ -20,30 +20,11 @@ export function RegisterServiceWorker() {
       navigator.serviceWorker
         .register("/sw.js", { scope: "/" })
         .then((reg) => {
-          // Update check inmediato (no esperar al primer 60min tick)
+          // Update check inmediato + chequeo periódico cada 30min.
+          // NO auto-recargamos (causaba loops raros en Safari iOS al
+          // volver de background). El SW nuevo toma control la próxima
+          // navegación natural del usuario.
           reg.update().catch(() => undefined);
-
-          // Si ya hay un SW nuevo esperando, recargar para que tome control
-          if (reg.waiting) {
-            window.location.reload();
-            return;
-          }
-
-          // Auto-reload cuando aparece un SW nuevo durante la sesión
-          reg.addEventListener("updatefound", () => {
-            const installing = reg.installing;
-            if (!installing) return;
-            installing.addEventListener("statechange", () => {
-              if (
-                installing.state === "installed" &&
-                navigator.serviceWorker.controller
-              ) {
-                window.location.reload();
-              }
-            });
-          });
-
-          // Verificar updates cada 30 min mientras la pestaña está abierta
           const interval = setInterval(
             () => {
               reg.update().catch(() => undefined);
