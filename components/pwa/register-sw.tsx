@@ -20,12 +20,35 @@ export function RegisterServiceWorker() {
       navigator.serviceWorker
         .register("/sw.js", { scope: "/" })
         .then((reg) => {
-          // Verificar updates cada 60 min mientras la pestaña está abierta
+          // Update check inmediato (no esperar al primer 60min tick)
+          reg.update().catch(() => undefined);
+
+          // Si ya hay un SW nuevo esperando, recargar para que tome control
+          if (reg.waiting) {
+            window.location.reload();
+            return;
+          }
+
+          // Auto-reload cuando aparece un SW nuevo durante la sesión
+          reg.addEventListener("updatefound", () => {
+            const installing = reg.installing;
+            if (!installing) return;
+            installing.addEventListener("statechange", () => {
+              if (
+                installing.state === "installed" &&
+                navigator.serviceWorker.controller
+              ) {
+                window.location.reload();
+              }
+            });
+          });
+
+          // Verificar updates cada 30 min mientras la pestaña está abierta
           const interval = setInterval(
             () => {
               reg.update().catch(() => undefined);
             },
-            60 * 60 * 1000,
+            30 * 60 * 1000,
           );
           return () => clearInterval(interval);
         })
