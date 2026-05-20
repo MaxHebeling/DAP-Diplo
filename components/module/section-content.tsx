@@ -3,6 +3,7 @@ import { Markdown } from "@/components/module/markdown";
 import {
   QuizPlayer,
   QuizAlreadyPassed,
+  type LatestAttemptSummary,
   type PlayerQuestion,
   type PlayerQuiz,
 } from "@/components/module/quiz-player";
@@ -15,6 +16,7 @@ export type EvaluationProps = {
   attemptCount: number;
   passed: boolean;
   bestScore: number | null;
+  latestAttempt: LatestAttemptSummary | null;
 };
 
 type SectionContentProps = {
@@ -101,6 +103,7 @@ export function SectionContent(props: SectionContentProps) {
               attemptCount={props.evaluation!.attemptCount}
               phaseSlug={props.phaseSlug}
               moduleSlug={props.moduleSlug}
+              latestAttempt={props.evaluation!.latestAttempt}
             />
           )
         ) : (

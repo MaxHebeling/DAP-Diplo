@@ -1,9 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, RefreshCw, XCircle } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  Loader2,
+  RefreshCw,
+  XCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
@@ -11,9 +18,6 @@ export type PlayerQuestion = {
   id: string;
   prompt: string;
   kind: "multiple_choice" | "true_false";
-  // Para el alumno: el payload pelado, SIN correct_index ni correct.
-  // Para multiple_choice: { options: string[] }
-  // Para true_false: nada visible (radio V/F estático)
   options?: string[];
 };
 
@@ -24,6 +28,12 @@ export type PlayerQuiz = {
   pass_threshold: number;
   max_attempts: number | null;
   shuffle_questions: boolean;
+};
+
+export type LatestAttemptSummary = {
+  id: string;
+  reveal_at: string | null;
+  revealed_at: string | null;
 };
 
 type StudentAnswer =
@@ -41,16 +51,25 @@ type GradedQuestion = {
   explanation: string | null;
 };
 
-type SubmitResult = {
+type RevealResponse = {
   attempt_id: string;
   score_percent: number;
   passed: boolean;
-  pass_threshold: number;
-  max_attempts: number | null;
-  attempt_count: number;
+  reveal_at: string | null;
+  revealed_at: string | null;
+  was_first_reveal: boolean;
   module_completed: boolean;
+  block_completion: Record<string, unknown> | null;
   graded: GradedQuestion[];
 };
+
+type SubmitResponse = {
+  attempt_id: string;
+  reveal_at: string;
+  attempt_count: number;
+};
+
+type Mode = "form" | "pending" | "revealed";
 
 function shuffle<T>(arr: T[]): T[] {
   const a = arr.slice();
@@ -61,30 +80,106 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+function formatRevealDate(iso: string): string {
+  return new Date(iso).toLocaleString("es-MX", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+}
+
 export function QuizPlayer({
   quiz,
   questions,
   attemptCount,
   phaseSlug,
   moduleSlug,
+  latestAttempt,
 }: {
   quiz: PlayerQuiz;
   questions: PlayerQuestion[];
   attemptCount: number;
   phaseSlug: string;
   moduleSlug: string;
+  latestAttempt: LatestAttemptSummary | null;
 }) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<SubmitResult | null>(null);
+  const [revealing, setRevealing] = useState(false);
+  const [reveal, setReveal] = useState<RevealResponse | null>(null);
   const [answers, setAnswers] = useState<Record<string, StudentAnswer>>({});
-  const [version, setVersion] = useState(0); // bump → reshuffle on retry
+  const [version, setVersion] = useState(0);
 
-  // Shuffle estable por intento: se recalcula cuando cambia "version"
-  const ordered = useMemo(() => {
-    return quiz.shuffle_questions ? shuffle(questions) : questions;
+  // Estado inicial según latestAttempt
+  const [pendingReveal, setPendingReveal] = useState<string | null>(() => {
+    if (!latestAttempt || !latestAttempt.reveal_at) return null;
+    if (latestAttempt.revealed_at) return null;
+    if (new Date(latestAttempt.reveal_at) > new Date()) {
+      return latestAttempt.reveal_at;
+    }
+    return null;
+  });
+
+  const initialMode: Mode = (() => {
+    if (!latestAttempt) return "form";
+    if (
+      latestAttempt.reveal_at &&
+      new Date(latestAttempt.reveal_at) > new Date() &&
+      !latestAttempt.revealed_at
+    ) {
+      return "pending";
+    }
+    // Si reveal_at ya pasó (con o sin revealed_at), vamos a "revealed"
+    // y el useEffect fetcha /reveal para hidratar el ResultView.
+    return "revealed";
+  })();
+  const [mode, setMode] = useState<Mode>(initialMode);
+
+  // Shuffle estable por intento
+  const ordered = useMemo(
+    () => (quiz.shuffle_questions ? shuffle(questions) : questions),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [version, quiz.shuffle_questions, questions.length]);
+    [version, quiz.shuffle_questions, questions.length],
+  );
+
+  // Auto-revelar al montar si correspondía
+  useEffect(() => {
+    if (mode !== "revealed" || reveal !== null) return;
+    void fetchReveal();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function fetchReveal() {
+    setRevealing(true);
+    try {
+      const res = await fetch(`/api/quizzes/${quiz.id}/reveal`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        // 409 = todavía no se puede
+        if (res.status === 409 && data?.reveal_at) {
+          setPendingReveal(data.reveal_at as string);
+          setMode("pending");
+          return;
+        }
+        toast.error(data?.error ?? `HTTP ${res.status}`);
+        return;
+      }
+      const r = data as RevealResponse;
+      setReveal(r);
+      setMode("revealed");
+      if (r.was_first_reveal && r.passed) {
+        toast.success("¡Quiz aprobado!");
+        router.refresh();
+      }
+    } finally {
+      setRevealing(false);
+    }
+  }
 
   function setMC(qid: string, idx: number) {
     setAnswers((prev) => ({ ...prev, [qid]: { selected_index: idx } }));
@@ -110,37 +205,56 @@ export function QuizPlayer({
       });
       const data = await res.json();
       if (!res.ok) {
-        toast.error(data.error ?? `HTTP ${res.status}`);
+        toast.error(data?.error ?? `HTTP ${res.status}`);
         return;
       }
-      setResult(data as SubmitResult);
-      if ((data as SubmitResult).passed) {
-        toast.success("¡Quiz aprobado!");
-        router.refresh();
-      } else {
-        toast.warning(
-          `${(data as SubmitResult).score_percent}% — necesitas ${quiz.pass_threshold}% para aprobar.`,
-        );
-      }
+      const r = data as SubmitResponse;
+      setPendingReveal(r.reveal_at);
+      setMode("pending");
+      toast.success(
+        "Recibido. Tu resultado estará disponible en 48h.",
+      );
     } finally {
       setSubmitting(false);
     }
   }
 
   function retry() {
-    setResult(null);
+    setReveal(null);
     setAnswers({});
+    setPendingReveal(null);
+    setMode("form");
     setVersion((v) => v + 1);
   }
 
-  // ============== RESULTADOS ==============
-  if (result) {
+  // ============== PENDING (48h) ==============
+  if (mode === "pending" && pendingReveal) {
+    return (
+      <PendingRevealView
+        quiz={quiz}
+        revealAt={pendingReveal}
+        onCheck={fetchReveal}
+        checking={revealing}
+      />
+    );
+  }
+
+  // ============== REVEALED (con graded) ==============
+  if (mode === "revealed") {
+    if (revealing || !reveal) {
+      return (
+        <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">
+          <Loader2 className="mr-2 size-4 animate-spin" />
+          Cargando tu resultado…
+        </div>
+      );
+    }
     return (
       <ResultView
         quiz={quiz}
-        result={result}
+        reveal={reveal}
         questionsOrdered={ordered}
-        attemptCountTotal={result.attempt_count}
+        attemptCountTotal={attemptCount}
         onRetry={retry}
         phaseSlug={phaseSlug}
         moduleSlug={moduleSlug}
@@ -175,6 +289,10 @@ export function QuizPlayer({
           <span>
             {ordered.length}{" "}
             {ordered.length === 1 ? "pregunta" : "preguntas"}
+          </span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-amber-300">
+            <Clock className="size-3" />
+            Resultado en 48h
           </span>
         </div>
       </div>
@@ -269,11 +387,68 @@ export function QuizPlayer({
   );
 }
 
+// ============== PENDING REVEAL VIEW ==============
+
+function PendingRevealView({
+  quiz,
+  revealAt,
+  onCheck,
+  checking,
+}: {
+  quiz: PlayerQuiz;
+  revealAt: string;
+  onCheck: () => void;
+  checking: boolean;
+}) {
+  return (
+    <div className="space-y-6">
+      <div className="rounded-2xl border border-amber-500/30 bg-amber-500/[0.05] p-8 text-center">
+        <Clock className="mx-auto size-9 text-amber-400" strokeWidth={1.7} />
+        <h3 className="mt-4 font-serif text-xl font-semibold">
+          Recibido. Tu resultado está en revisión.
+        </h3>
+        <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
+          Las evaluaciones del DAP se entregan <strong>48 horas después</strong>
+          {" "}del envío. Esto te da espacio para asimilar lo aprendido sin la
+          ansiedad del resultado inmediato.
+        </p>
+        <p className="mt-5 inline-flex items-center gap-2 rounded-lg bg-amber-500/10 px-3 py-2 text-sm">
+          <span className="text-muted-foreground">Disponible el</span>
+          <span className="font-medium text-amber-200">
+            {formatRevealDate(revealAt)}
+          </span>
+        </p>
+      </div>
+
+      <div className="flex justify-end">
+        <Button variant="outline" onClick={onCheck} disabled={checking}>
+          {checking ? (
+            <>
+              <Loader2 className="size-4 animate-spin" />
+              Verificando…
+            </>
+          ) : (
+            <>
+              <RefreshCw className="size-4" />
+              Verificar si ya está disponible
+            </>
+          )}
+        </Button>
+      </div>
+
+      <p className="text-center text-xs text-muted-foreground">
+        Mientras esperás, podés repasar la enseñanza o avanzar con otros
+        contenidos del módulo {quiz.title.toLowerCase().includes("evaluación") ? "" : "(quiz: " + quiz.title + ")"}.
+      </p>
+    </div>
+  );
+}
+
 // ============== RESULT VIEW ==============
 
 function ResultView({
   quiz,
-  result,
+  reveal,
   questionsOrdered,
   attemptCountTotal,
   onRetry,
@@ -281,41 +456,39 @@ function ResultView({
   moduleSlug,
 }: {
   quiz: PlayerQuiz;
-  result: SubmitResult;
+  reveal: RevealResponse;
   questionsOrdered: PlayerQuestion[];
   attemptCountTotal: number;
   onRetry: () => void;
   phaseSlug: string;
   moduleSlug: string;
 }) {
-  // Indexamos resultado por question_id para mostrar en el orden mostrado al alumno
-  const byId = new Map(result.graded.map((g) => [g.question_id, g]));
+  const byId = new Map(reveal.graded.map((g) => [g.question_id, g]));
 
   const attemptsRemaining =
     quiz.max_attempts !== null
       ? Math.max(0, quiz.max_attempts - attemptCountTotal)
       : null;
   const canRetry =
-    !result.passed &&
+    !reveal.passed &&
     (quiz.max_attempts === null || attemptsRemaining! > 0);
   const outOfAttempts =
-    !result.passed &&
+    !reveal.passed &&
     quiz.max_attempts !== null &&
     attemptsRemaining === 0;
 
   return (
     <div className="space-y-6">
-      {/* Score banner */}
       <div
         className={[
           "rounded-2xl border p-6",
-          result.passed
+          reveal.passed
             ? "border-emerald-500/30 bg-emerald-500/5"
             : "border-red-500/30 bg-red-500/5",
         ].join(" ")}
       >
         <div className="flex items-center gap-3">
-          {result.passed ? (
+          {reveal.passed ? (
             <CheckCircle2 className="size-7 text-emerald-500" />
           ) : (
             <XCircle className="size-7 text-red-500" />
@@ -325,7 +498,7 @@ function ResultView({
               Resultado
             </p>
             <p className="font-serif text-3xl font-semibold leading-none">
-              {result.score_percent}%
+              {reveal.score_percent}%
             </p>
           </div>
           <div className="ml-auto text-right">
@@ -333,18 +506,17 @@ function ResultView({
               Umbral aprobatorio
             </p>
             <p className="text-lg font-medium tabular-nums">
-              {result.pass_threshold}%
+              {quiz.pass_threshold}%
             </p>
           </div>
         </div>
         <p className="mt-3 text-sm">
-          {result.passed
+          {reveal.passed
             ? "¡Felicidades! Aprobaste esta evaluación."
-            : "Aún no alcanzas el umbral. Revisa las explicaciones y vuelve a intentarlo."}
+            : "Aún no alcanzas el umbral. Revisá las explicaciones y volvé a intentarlo."}
         </p>
       </div>
 
-      {/* Per-question feedback */}
       <ol className="space-y-4">
         {questionsOrdered.map((q, i) => {
           const g = byId.get(q.id);
@@ -403,9 +575,8 @@ function ResultView({
         })}
       </ol>
 
-      {/* CTA */}
       <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
-        {result.passed && (
+        {reveal.passed && (
           <Button
             render={
               <Link
@@ -425,7 +596,7 @@ function ResultView({
         )}
         {outOfAttempts && (
           <div className="rounded-lg border border-red-500/30 bg-red-500/5 px-4 py-3 text-sm text-red-600">
-            Has agotado tus intentos. Contacta al equipo si crees que es un
+            Has agotado tus intentos. Contactá al equipo si creés que es un
             error.
           </div>
         )}
@@ -465,8 +636,7 @@ function AnswerSummary({
   );
 }
 
-// ============== ALREADY-PASSED VIEW ==============
-// (Mostrada cuando el alumno ya aprobó previamente.)
+// ============== ALREADY-PASSED VIEW (exportado para casos sin intento nuevo) ==============
 
 export function QuizAlreadyPassed({
   quiz,

@@ -225,6 +225,11 @@ export default async function ModulePlayerPage({
   let evaluationAttemptCount = 0;
   let evaluationBestScore: number | null = null;
   let evaluationPassed = false;
+  let evaluationLatestAttempt: {
+    id: string;
+    reveal_at: string | null;
+    revealed_at: string | null;
+  } | null = null;
   if (currentSection === "evaluation") {
     const { data: q } = await supabase
       .from("quizzes")
@@ -262,15 +267,40 @@ export default async function ModulePlayerPage({
 
       const { data: attempts } = await supabase
         .from("quiz_attempts")
-        .select("score_percent, passed")
+        .select("id, score_percent, passed, reveal_at, revealed_at, submitted_at")
         .eq("user_id", user.id)
-        .eq("quiz_id", q.id);
+        .eq("quiz_id", q.id)
+        .order("submitted_at", { ascending: false })
+        .returns<
+          {
+            id: string;
+            score_percent: number;
+            passed: boolean;
+            reveal_at: string | null;
+            revealed_at: string | null;
+            submitted_at: string | null;
+          }[]
+        >();
       evaluationAttemptCount = attempts?.length ?? 0;
-      evaluationPassed = (attempts ?? []).some((a) => a.passed);
+      // "passed" para mostrar QuizAlreadyPassed solo si hay un attempt
+      // REVELADO que pasó. Si todavía está pendiente de reveal, no
+      // mostramos la vista de "ya aprobado".
+      evaluationPassed = (attempts ?? []).some(
+        (a) => a.passed && a.revealed_at !== null,
+      );
       evaluationBestScore =
         attempts && attempts.length > 0
           ? Math.max(...attempts.map((a) => a.score_percent))
           : null;
+      // El más reciente para el flow pending/reveal del QuizPlayer.
+      const latest = attempts?.[0];
+      if (latest) {
+        evaluationLatestAttempt = {
+          id: latest.id,
+          reveal_at: latest.reveal_at,
+          revealed_at: latest.revealed_at,
+        };
+      }
     }
   }
 
@@ -392,6 +422,7 @@ export default async function ModulePlayerPage({
                           attemptCount: evaluationAttemptCount,
                           passed: evaluationPassed,
                           bestScore: evaluationBestScore,
+                          latestAttempt: evaluationLatestAttempt,
                         }
                       : undefined
                   }

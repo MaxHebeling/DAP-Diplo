@@ -1,8 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { issueCertificatePdf } from "@/lib/certificates/issue";
 
 export const runtime = "nodejs";
 
@@ -32,17 +30,6 @@ type QuestionRow = {
   order_index: number;
 };
 
-type GradedQuestion = {
-  question_id: string;
-  prompt: string;
-  kind: "multiple_choice" | "true_false";
-  is_correct: boolean;
-  student_answer: AnswerEntry | null;
-  correct_answer: AnswerEntry;
-  options?: string[];
-  explanation: string | null;
-};
-
 function isCorrect(q: QuestionRow, answer: AnswerEntry | undefined): boolean {
   if (!answer) return false;
   if (q.kind === "multiple_choice") {
@@ -53,7 +40,6 @@ function isCorrect(q: QuestionRow, answer: AnswerEntry | undefined): boolean {
       answer.selected_index === correct
     );
   }
-  // true_false
   const correct = q.payload?.correct;
   return (
     typeof correct === "boolean" &&
@@ -62,15 +48,19 @@ function isCorrect(q: QuestionRow, answer: AnswerEntry | undefined): boolean {
   );
 }
 
-function correctAnswerOf(q: QuestionRow): AnswerEntry {
-  if (q.kind === "multiple_choice") {
-    return {
-      selected_index: Number(q.payload?.correct_index ?? 0),
-    };
-  }
-  return { selected: Boolean(q.payload?.correct) };
-}
+const REVEAL_DELAY_HOURS = 48;
 
+/**
+ * Submit del quiz por el alumno (v3.3 — gate 48h):
+ *
+ * - Calcula score y `passed` en el server (NUNCA confiar en cliente).
+ * - INSERT en quiz_attempts con `reveal_at = now() + 48h`.
+ * - NO ejecuta cascade aún (eso lo hace /api/quizzes/[id]/reveal cuando
+ *   se cumplen las 48h y el alumno carga la sección de evaluación).
+ * - Devuelve SOLO `{ attempt_id, reveal_at, attempt_count }` — sin
+ *   score, sin graded. El alumno no debe poder espiar el resultado por
+ *   network inspector.
+ */
 export async function POST(
   request: NextRequest,
   ctx: { params: Promise<{ quizId: string }> },
@@ -99,15 +89,13 @@ export async function POST(
     );
   }
 
-  // Cargar quiz + sección + módulo + fase para validar acceso
+  // Cargar quiz mínimo (sin embed pesado) — solo lo necesario para validar
+  // tipo de sección y umbral.
   const { data: quizRow, error: quizErr } = await supabase
     .from("quizzes")
     .select(
       `id, module_section_id, pass_threshold, max_attempts,
-       section:module_sections!inner(
-         id, kind, module_id,
-         module:modules!inner(id, slug, phase_id, phase:phases!inner(id, slug))
-       )`,
+       section:module_sections!inner(kind, module_id)`,
     )
     .eq("id", quizId)
     .maybeSingle<{
@@ -115,17 +103,7 @@ export async function POST(
       module_section_id: string;
       pass_threshold: number;
       max_attempts: number | null;
-      section: {
-        id: string;
-        kind: string;
-        module_id: string;
-        module: {
-          id: string;
-          slug: string;
-          phase_id: string;
-          phase: { id: string; slug: string };
-        };
-      };
+      section: { kind: string; module_id: string };
     }>();
   if (quizErr || !quizRow) {
     return NextResponse.json(
@@ -140,29 +118,25 @@ export async function POST(
     );
   }
 
-  // Gating: usuario debe tener suscripción activa. El gating fino por
-  // course_week vive en has_access_to_module (v3.3) — pendiente migration 0011.
-  const phaseId = quizRow.section.module.phase_id;
-  const moduleSlug = quizRow.section.module.slug;
-  const phaseSlug = quizRow.section.module.phase.slug;
-
-  const [{ data: hasSub }, { data: profile }] = await Promise.all([
-    supabase.rpc("has_active_subscription", { p_user_id: user.id }),
-    supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .maybeSingle(),
-  ]);
+  // Gate v3.3: has_access_to_module (suscripción + course_week + admin override).
+  const moduleId = quizRow.section.module_id;
+  const { data: hasAccess } = await supabase.rpc("has_access_to_module", {
+    p_module_id: moduleId,
+  });
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
   const isAdmin = profile?.role === "admin";
-  if (!hasSub && !isAdmin) {
+  if (!hasAccess && !isAdmin) {
     return NextResponse.json(
-      { error: "Necesitás una suscripción activa" },
+      { error: "No tenés acceso a este módulo todavía" },
       { status: 403 },
     );
   }
 
-  // Chequear si ya hay un intento aprobado (en ese caso no aceptamos otro envío)
+  // No aceptamos otro intento si ya hay uno aprobado (revealed o no).
   const { data: existingPassed } = await supabase
     .from("quiz_attempts")
     .select("id")
@@ -178,7 +152,28 @@ export async function POST(
     );
   }
 
-  // Chequear max_attempts
+  // Si hay un attempt pendiente de reveal (reveal_at > now()) — el alumno
+  // tiene que esperar antes de reintentar. Esto evita farm de respuestas.
+  const { data: pendingReveal } = await supabase
+    .from("quiz_attempts")
+    .select("id, reveal_at")
+    .eq("user_id", user.id)
+    .eq("quiz_id", quizId)
+    .is("revealed_at", null)
+    .order("submitted_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<{ id: string; reveal_at: string }>();
+  if (pendingReveal && new Date(pendingReveal.reveal_at) > new Date()) {
+    return NextResponse.json(
+      {
+        error: "Tu último intento aún está en revisión. Vení después.",
+        pending_reveal_at: pendingReveal.reveal_at,
+      },
+      { status: 409 },
+    );
+  }
+
+  // max_attempts
   if (quizRow.max_attempts !== null) {
     const { count: previous } = await supabase
       .from("quiz_attempts")
@@ -193,7 +188,7 @@ export async function POST(
     }
   }
 
-  // Cargar preguntas y calcular score
+  // Calcular score (NO se devuelve)
   const { data: questions, error: qErr } = await supabase
     .from("quiz_questions")
     .select("id, prompt, kind, payload, explanation, order_index")
@@ -207,29 +202,20 @@ export async function POST(
     );
   }
 
-  const graded: GradedQuestion[] = questions.map((q) => {
-    const studentAns = parsed.data.answers[q.id];
-    const correct = isCorrect(q, studentAns);
-    return {
-      question_id: q.id,
-      prompt: q.prompt,
-      kind: q.kind,
-      is_correct: correct,
-      student_answer: studentAns ?? null,
-      correct_answer: correctAnswerOf(q),
-      options:
-        q.kind === "multiple_choice"
-          ? ((q.payload?.options as string[] | undefined) ?? [])
-          : undefined,
-      explanation: q.explanation,
-    };
-  });
-
-  const correctCount = graded.filter((g) => g.is_correct).length;
+  let correctCount = 0;
+  for (const q of questions) {
+    if (isCorrect(q, parsed.data.answers[q.id])) correctCount++;
+  }
   const scorePercent = Math.round((correctCount / questions.length) * 100);
   const passed = scorePercent >= quizRow.pass_threshold;
 
-  // Insertar intento
+  // Insert con reveal_at = +48h. Para admin emparejamos reveal_at con
+  // submitted_at (sin gate) para no romper QA.
+  const now = new Date();
+  const revealAt = isAdmin
+    ? now
+    : new Date(now.getTime() + REVEAL_DELAY_HOURS * 60 * 60 * 1000);
+
   const { data: attempt, error: attemptErr } = await supabase
     .from("quiz_attempts")
     .insert({
@@ -238,103 +224,16 @@ export async function POST(
       score_percent: scorePercent,
       passed,
       answers: parsed.data.answers,
-      submitted_at: new Date().toISOString(),
+      submitted_at: now.toISOString(),
+      reveal_at: revealAt.toISOString(),
     })
-    .select("id")
+    .select("id, reveal_at")
     .single();
   if (attemptErr) {
     return NextResponse.json({ error: attemptErr.message }, { status: 500 });
   }
 
-  // Si pasó: marcar sección completada + cascadear módulo + fase
-  let moduleCompleted = false;
-  let blockCompletion: Record<string, unknown> | null = null;
-  if (passed) {
-    const { error: spErr } = await supabase.from("section_progress").upsert(
-      {
-        user_id: user.id,
-        module_section_id: quizRow.module_section_id,
-        completed: true,
-        completed_at: new Date().toISOString(),
-      },
-      { onConflict: "user_id,module_section_id" },
-    );
-    if (spErr) {
-      console.error("[quiz.submit] section_progress upsert failed:", spErr.message);
-    }
-
-    // ¿Las 5 secciones del módulo están completed?
-    const { data: sectionRows } = await supabase
-      .from("module_sections")
-      .select("id, section_progress(completed)")
-      .eq("module_id", quizRow.section.module_id);
-
-    const allDone =
-      (sectionRows?.length ?? 0) === 5 &&
-      (sectionRows ?? []).every(
-        (s) =>
-          Array.isArray(s.section_progress) &&
-          s.section_progress.some(
-            (p: { completed: boolean | null }) => p.completed === true,
-          ),
-      );
-    if (allDone) {
-      await supabase.from("module_progress").upsert(
-        {
-          user_id: user.id,
-          module_id: quizRow.section.module_id,
-          completed: true,
-          completed_at: new Date().toISOString(),
-        },
-        { onConflict: "user_id,module_id" },
-      );
-      moduleCompleted = true;
-
-      // Cascada: ¿fase completo? otorga dimension + certificate.
-      const { data: blockResult, error: cbErr } = await supabase.rpc(
-        "complete_phase_if_done",
-        { p_user_id: user.id, p_phase_id: phaseId },
-      );
-      if (cbErr) {
-        console.error(
-          "[quiz.submit] complete_block_if_done failed:",
-          cbErr.message,
-        );
-      } else if (
-        blockResult &&
-        typeof blockResult === "object" &&
-        !Array.isArray(blockResult)
-      ) {
-        blockCompletion = blockResult as Record<string, unknown>;
-        if (blockCompletion.newly_completed === true) {
-          revalidatePath(`/dashboard`);
-          revalidatePath(`/fases/${phaseSlug}`);
-
-          // Genera + sube el PDF del certificado. Síncrono porque tarda 1-3s
-          // y este endpoint solo se llama 9 veces en la vida del alumno
-          // (una por fase). Si falla, el certificado SQL ya quedó emitido
-          // y se puede re-generar manualmente con issueCertificatePdf(certId).
-          const certId = blockCompletion.certificate_id as string | undefined;
-          if (certId) {
-            try {
-              const { path } = await issueCertificatePdf(certId);
-              blockCompletion.pdf_path = path;
-            } catch (err) {
-              const msg =
-                err instanceof Error ? err.message : String(err);
-              console.error("[quiz.submit] issueCertificatePdf failed:", msg);
-              blockCompletion.pdf_error = msg;
-            }
-          }
-        }
-      }
-    }
-
-    revalidatePath(`/fases/${phaseSlug}/modulos/${moduleSlug}`);
-    revalidatePath(`/dashboard`);
-  }
-
-  // Conteo de intentos tras inserción (para UI "Volver a intentar")
+  // attempt_count para que la UI pueda saber cuántos lleva
   const { count: attemptCount } = await supabase
     .from("quiz_attempts")
     .select("id", { count: "exact", head: true })
@@ -343,13 +242,7 @@ export async function POST(
 
   return NextResponse.json({
     attempt_id: attempt.id,
-    score_percent: scorePercent,
-    passed,
-    pass_threshold: quizRow.pass_threshold,
-    max_attempts: quizRow.max_attempts,
+    reveal_at: attempt.reveal_at,
     attempt_count: attemptCount ?? 1,
-    module_completed: moduleCompleted,
-    block_completion: blockCompletion,
-    graded,
   });
 }
