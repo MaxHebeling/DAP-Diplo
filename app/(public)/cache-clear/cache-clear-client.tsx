@@ -127,7 +127,7 @@ export function CacheClearClient() {
       {done && (
         <div className="mt-5 space-y-3">
           <p className="rounded-md border border-emerald-500/30 bg-emerald-500/[0.05] p-3 text-center font-inter text-sm text-emerald-300">
-            Listo. Caché limpia. Cerrá esta pestaña y abrí el sitio de nuevo.
+            Listo. Caché limpia. Cierra esta pestaña y abre el sitio de nuevo.
           </p>
           <Link
             href="/login"

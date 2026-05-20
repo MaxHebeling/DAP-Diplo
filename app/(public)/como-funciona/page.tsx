@@ -41,23 +41,23 @@ export const metadata: Metadata = {
 const STEPS = [
   {
     icon: ShieldCheck,
-    title: "Postulás y sos admitido",
-    body: "Completás el formulario de admisión y, si no pertenecés a la Red Apostólica, adjuntás carta de consentimiento de tu pastor. El equipo revisa manualmente y emite tu admisión formal.",
+    title: "Postulas y eres admitido",
+    body: "Completas el formulario de admisión y, si no perteneces a la Red Apostólica, adjuntas carta de consentimiento de tu pastor. El equipo revisa manualmente y emite tu admisión formal.",
   },
   {
     icon: CreditCard,
-    title: "Activás tu suscripción",
+    title: "Activas tu suscripción",
     body: "$25 USD/mes vía Stripe — sin compromiso de permanencia. Tu calendario personal arranca el primer martes después de la aprobación de tu admisión.",
   },
   {
     icon: CalendarClock,
-    title: "Recibís 1 módulo cada semana",
+    title: "Recibes 1 módulo cada semana",
     body: "Cada martes (00:01 hora de San Diego, California) se abre un módulo nuevo. La tarea de activación cierra el lunes siguiente (23:59). El contenido pasado sigue accesible para repaso indefinidamente.",
   },
   {
     icon: Award,
-    title: "Completás bloques, recibís dimensiones",
-    body: "Al aprobar los 8 módulos de un bloque (5 secciones completas + quiz aprobado), recibís certificado, insignia y una dimensión nueva. 9 bloques = 9 dimensiones, de Discípulo hasta Enviado.",
+    title: "Completas bloques, recibes dimensiones",
+    body: "Al aprobar los 8 módulos de un bloque (5 secciones completas + quiz aprobado), recibes certificado, insignia y una dimensión nueva. 9 bloques = 9 dimensiones, de Discípulo hasta Enviado.",
   },
 ] as const;
 
@@ -66,13 +66,13 @@ const WEEK = [
     day: "Martes 00:01",
     icon: BookOpen,
     title: "Abre tu módulo de la semana",
-    body: "El nuevo módulo aparece en tu dashboard con sus 5 partes: introducción, enseñanza en video, activación práctica, evaluación e impartición. Recibís email automático.",
+    body: "El nuevo módulo aparece en tu dashboard con sus 5 partes: introducción, enseñanza en video, activación práctica, evaluación e impartición. Recibes email automático.",
   },
   {
     day: "De martes a lunes",
     icon: Sparkles,
-    title: "Estudiás a tu ritmo",
-    body: "Mirás la enseñanza (45–60 min), hacés el quiz autocorregible y entregás tu activación escrita. Todo a tu ritmo, dentro de tu semana.",
+    title: "Estudias a tu ritmo",
+    body: "Miras la enseñanza (45–60 min), haces el quiz autocorregible y entregas tu activación escrita. Todo a tu ritmo, dentro de tu semana.",
   },
   {
     day: "Lunes 23:59",
@@ -84,7 +84,7 @@ const WEEK = [
     day: "48h después",
     icon: Radio,
     title: "Llega tu corrección personal",
-    body: "El Ap. Max Hebeling te devuelve feedback escrito en su voz pastoral: lo que viste, lo que necesitás afinar, próximo paso y una palabra de impartación. Resultado del quiz también revelado a las 48h.",
+    body: "El Ap. Max Hebeling te devuelve feedback escrito en su voz pastoral: lo que viste, lo que necesitas afinar, próximo paso y una palabra de impartación. Resultado del quiz también revelado a las 48h.",
   },
   {
     day: "Por evento",

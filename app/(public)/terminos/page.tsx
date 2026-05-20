@@ -36,7 +36,7 @@ export default function TerminosPage() {
       </p>
 
       <p>
-        Al crear una cuenta, suscribirte o utilizar el Servicio aceptás estos
+        Al crear una cuenta, suscribirte o utilizar el Servicio aceptas estos
         Términos en su totalidad. Si no estás de acuerdo, no utilices el
         Servicio.
       </p>
@@ -77,7 +77,7 @@ export default function TerminosPage() {
         tu cuenta.
       </p>
       <ul>
-        <li>Debés ser mayor de 18 años (o tener consentimiento parental verificable si tenés entre 13 y 17 años).</li>
+        <li>Debés ser mayor de 18 años (o tener consentimiento parental verificable si tienes entre 13 y 17 años).</li>
         <li>Una cuenta corresponde a una persona física. No se permite el uso compartido.</li>
         <li>Notificá de inmediato cualquier uso no autorizado a{" "}
           <Link href="mailto:office@rkchurch.com">office@rkchurch.com</Link>.
@@ -103,19 +103,19 @@ export default function TerminosPage() {
       </p>
       <h3>3.2 Cancelación</h3>
       <p>
-        Podés cancelar la suscripción en cualquier momento desde la sección
+        Puedes cancelar la suscripción en cualquier momento desde la sección
         &ldquo;Mi suscripción&rdquo; de tu cuenta o desde el portal de Stripe. La
         cancelación detiene cobros futuros pero te permite seguir accediendo
         al contenido hasta el final del período mensual ya pagado. Tu
-        progreso académico se conserva: si reactivás más adelante,
-        retomás desde la semana en que dejaste.
+        progreso académico se conserva: si reactivas más adelante,
+        retomas desde la semana en que dejaste.
       </p>
 
       <h2>4. Política de reembolso</h2>
       <p>
         Ofrecemos una{" "}
         <strong>garantía de devolución de 7 días</strong> contados desde la
-        fecha del primer cobro. Si no estás conforme con el Servicio, podés
+        fecha del primer cobro. Si no estás conforme con el Servicio, puedes
         solicitar el reembolso íntegro de tu primer pago dentro de ese plazo
         escribiendo a{" "}
         <Link href="mailto:office@rkchurch.com">office@rkchurch.com</Link>.
@@ -220,7 +220,7 @@ export default function TerminosPage() {
 
       <h2>12. Contacto</h2>
       <p>
-        Para cualquier consulta sobre estos Términos podés escribirnos a{" "}
+        Para cualquier consulta sobre estos Términos puedes escribirnos a{" "}
         <Link href="mailto:office@rkchurch.com">office@rkchurch.com</Link>.
       </p>
 

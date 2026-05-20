@@ -27,7 +27,7 @@ export async function sendWeekOpenedEmail(
 
   return await sendEmail({
     to: input.to,
-    subject: `Semana ${input.courseWeek} de 72 · Ya podés entrar`,
+    subject: `Semana ${input.courseWeek} de 72 · Ya puedes entrar`,
     html: render({
       firstName,
       courseWeek: input.courseWeek,
@@ -73,7 +73,7 @@ function render(p: {
         </td></tr>
         <tr><td>
           <p style="margin:0 0 12px;font-size:15px;line-height:1.7;color:#E2E8F0;">
-            Hola, ${escapeHtml(p.firstName)}. Esta semana entrás a:
+            Hola, ${escapeHtml(p.firstName)}. Esta semana entras a:
           </p>
           <p style="margin:0;font-size:20px;line-height:1.4;font-weight:600;color:#F8FAFC;">
             ${escapeHtml(p.moduleTitle)}
@@ -92,7 +92,7 @@ function render(p: {
         </td></tr>
         <tr><td align="center" style="padding:32px 0 0;">
           <p style="margin:0;font-size:11px;color:#64748B;">
-            Si no podés esta semana, el contenido sigue accesible después en repaso. La tarea sí cierra el lunes.
+            Si no puedes esta semana, el contenido sigue accesible después en repaso. La tarea sí cierra el lunes.
           </p>
         </td></tr>
       </table>

@@ -111,7 +111,7 @@ function renderHtml(p: {
                 disponible para repaso.
               </p>
               <p style="margin:0;font-size:14px;line-height:1.7;color:#CBD5E1;">
-                Si tenés cualquier consulta, respondé este email o escribinos a
+                Si tienes cualquier consulta, responde este email o escríbenos a
                 <a href="mailto:admisiones@dapglobal.org" style="color:#FF4D6D;">admisiones@dapglobal.org</a>.
               </p>
             </td></tr>

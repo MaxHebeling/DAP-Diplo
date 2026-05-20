@@ -71,7 +71,7 @@ export function BlockEditForm({ initial }: { initial: Initial }) {
         />
         <p className="mt-1 text-xs text-muted-foreground">
           Título grande con gradiente que se muestra en las cards. Si lo
-          dejás vacío, se usa el título académico.
+          dejas vacío, se usa el título académico.
         </p>
       </div>
 

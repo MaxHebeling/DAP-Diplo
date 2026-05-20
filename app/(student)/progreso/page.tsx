@@ -206,7 +206,7 @@ export default async function MiProgresoPage() {
                 </ul>
               ) : (
                 <p className="text-sm text-text-secondary">
-                  Aún no tenés certificados emitidos. Se generan automáticamente
+                  Aún no tienes certificados emitidos. Se generan automáticamente
                   al completar cada bloque.
                 </p>
               )}

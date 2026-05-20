@@ -175,11 +175,11 @@ export default async function RangosHubPage() {
           <div className="absolute inset-0 -z-10 opacity-70 [background:radial-gradient(50%_50%_at_50%_50%,rgba(123,97,255,0.35),transparent_55%)]" />
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="font-grotesk text-h1 font-bold leading-tight text-text-primary">
-              Empezá tu camino a la <span className="gradient-text">primera dimensión</span>.
+              Empieza tu camino a la <span className="gradient-text">primera dimensión</span>.
             </h2>
             <p className="mt-6 font-inter text-base text-text-secondary md:text-lg">
               La Semana 1 te ubica en el camino de la dimensión Discípulo.
-              Después de aprobar los 8 módulos del Bloque 1, la recibís.
+              Después de aprobar los 8 módulos del Bloque 1, la recibes.
             </p>
             <div className="mt-10">
               <DapButton render={<Link href="/suscribirme" />} size="lg">

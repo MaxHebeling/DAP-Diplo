@@ -121,7 +121,7 @@ export default async function AdminAdmisionesPage({
             Admisiones
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Revisá las solicitudes de admisión, aprobá o rechazá. La carta PDF
+            Revisa las solicitudes de admisión, aprueba o rechaza. La carta PDF
             firmada se envía automáticamente 24h después de la aprobación.
           </p>
         </header>

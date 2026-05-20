@@ -437,7 +437,7 @@ function PendingRevealView({
       </div>
 
       <p className="text-center text-xs text-muted-foreground">
-        Mientras esperás, podés repasar la enseñanza o avanzar con otros
+        Mientras esperas, puedes repasar la enseñanza o avanzar con otros
         contenidos del módulo {quiz.title.toLowerCase().includes("evaluación") ? "" : "(quiz: " + quiz.title + ")"}.
       </p>
     </div>

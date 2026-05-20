@@ -78,7 +78,7 @@ export async function submitAssignmentAction(
     return {
       ok: false,
       error:
-        "Esta tarea ya fue enviada o cerrada. No podés re-entregarla desde acá.",
+        "Esta tarea ya fue enviada o cerrada. No puedes re-entregarla desde acá.",
     };
   }
   if (new Date(sub.closes_at) <= new Date()) {

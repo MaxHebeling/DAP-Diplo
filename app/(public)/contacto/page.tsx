@@ -24,7 +24,7 @@ const SUPPORT_EMAIL = "contacto@dapglobal.org";
 export const metadata: Metadata = {
   title: "Contacto",
   description:
-    "Hablemos. Para soporte técnico, preguntas pre-venta o consultas pastorales escribinos a contacto@dapglobal.org. Respondemos en menos de 24 horas hábiles.",
+    "Hablemos. Para soporte técnico, preguntas pre-venta o consultas pastorales escríbenos a contacto@dapglobal.org. Respondemos en menos de 24 horas hábiles.",
   alternates: { canonical: "/contacto" },
   openGraph: {
     type: "website",
@@ -51,13 +51,13 @@ const TOPICS = [
   {
     icon: MessageSquare,
     title: "Soporte técnico de la plataforma",
-    body: "No podés acceder, no carga un módulo, falla un quiz. Te ayudamos a resolverlo.",
+    body: "No puedes acceder, no carga un módulo, falla un quiz. Te ayudamos a resolverlo.",
     subject: "Soporte técnico DAP",
   },
   {
     icon: Sparkles,
     title: "Consultas pastorales o ministeriales",
-    body: "Si querés conversar sobre tu llamado, una iglesia interesada en sumarse, o colaboraciones.",
+    body: "Si quieres conversar sobre tu llamado, una iglesia interesada en sumarse, o colaboraciones.",
     subject: "Consulta pastoral DAP",
   },
 ];
@@ -103,7 +103,7 @@ export default async function ContactoPage() {
             </h1>
             <p className="mx-auto mt-6 max-w-xl font-inter text-base text-text-secondary md:text-lg">
               Para cualquier consulta, soporte o conversación pastoral,
-              escribinos. Respondemos en menos de 24 horas hábiles.
+              escríbenos. Respondemos en menos de 24 horas hábiles.
             </p>
           </div>
         </section>
@@ -141,7 +141,7 @@ export default async function ContactoPage() {
           <div className="mx-auto max-w-6xl">
             <Reveal>
               <p className="mb-4 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-                Sobre qué nos podés escribir
+                Sobre qué nos puedes escribir
               </p>
               <h2 className="mb-12 max-w-2xl font-grotesk text-h1 font-bold leading-tight text-text-primary">
                 Cualquiera de estos <span className="gradient-text">temas</span>.
@@ -217,8 +217,8 @@ export default async function ContactoPage() {
               ¿Listo para <span className="gradient-text">empezar</span>?
             </h2>
             <p className="mx-auto mt-6 max-w-xl font-inter text-base text-text-secondary md:text-lg">
-              No hace falta escribirnos antes. Suscribite, probá los
-              primeros 7 días — si no es para vos, te devolvemos todo.
+              No hace falta escribirnos antes. Suscríbete, prueba los
+              primeros 7 días — si no es para ti, te devolvemos todo.
             </p>
             <div className="mt-10">
               <DapButton render={<Link href="/suscribirme" />} size="lg">

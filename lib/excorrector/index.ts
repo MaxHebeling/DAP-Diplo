@@ -69,11 +69,11 @@ export async function correctAssignment(
         feedback_markdown: `### 1. Lo que vi
 Recibí tu entrega pero el texto que escribiste es muy breve para devolverte una corrección sustantiva (menos de 20 caracteres).
 
-### 2. Lo que necesitás afinar
-Volvé a la consigna del módulo y dedicale unos minutos a desarrollar tu respuesta. No hace falta que sea larga, pero sí que tenga sustancia.
+### 2. Lo que necesitas afinar
+Vuelve a la consigna del módulo y dedícale unos minutos a desarrollar tu respuesta. No hace falta que sea larga, pero sí que tenga sustancia.
 
 ### 3. Tu próximo paso
-Releé el video de la enseñanza y respondé en tus palabras: ¿qué fue lo que más te marcó? Esa es la base para una buena activación.
+Relee el video de la enseñanza y responde en tus palabras: ¿qué fue lo que más te marcó? Esa es la base para una buena activación.
 
 ### 4. Palabra de impartación
 Hijo, el llamado se desarrolla en el detalle. No subestimes el peso de una entrega seria, aunque sea de pocas líneas.`,

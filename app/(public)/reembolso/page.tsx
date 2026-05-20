@@ -22,25 +22,25 @@ export default function ReembolsoPage() {
       <p>
         Queremos que entres al Diplomado Apostólico Pastoral{" "}
         <strong>(&ldquo;DAP&rdquo;)</strong> con confianza y sin riesgo
-        económico. Esta política explica cuándo y cómo podés solicitar la
+        económico. Esta política explica cuándo y cómo puedes solicitar la
         devolución de tu dinero.
       </p>
 
       <h2>1. Garantía de 7 días</h2>
       <p>
         <strong>
-          Tenés 7 días corridos desde tu primer cobro para pedir un
+          Tienes 7 días corridos desde tu primer cobro para pedir un
           reembolso íntegro
         </strong>
         , sin necesidad de justificar el motivo. Si dentro de ese plazo
-        sentís que el DAP no es para vos, te devolvemos el 100% de los{" "}
+        sientes que el DAP no es para ti, te devolvemos el 100% de los{" "}
         <strong>USD $25</strong> pagados.
       </p>
 
       <h2>2. Cómo solicitar el reembolso</h2>
       <ol>
         <li>
-          Enviá un email a{" "}
+          Envía un email a{" "}
           <Link href="mailto:office@rkchurch.com">office@rkchurch.com</Link>{" "}
           desde la misma dirección con la que creaste tu cuenta.
         </li>
@@ -74,7 +74,7 @@ export default function ReembolsoPage() {
         <li>Falta de tiempo o motivación personal para completar el contenido del mes.</li>
       </ul>
       <p>
-        El modelo del DAP es de tipo Netflix: cancelás cuando querés, dejás
+        El modelo del DAP es de tipo Netflix: cancelas cuando quieres, dejas
         de pagar el próximo mes, pero el mes ya cobrado se cumple.
       </p>
 
@@ -85,26 +85,26 @@ export default function ReembolsoPage() {
         académico. Si una semana no completaste la tarea, no hay penalidad
         — simplemente queda como pendiente y el contenido sigue accesible.
         Para certificarte del bloque vas a necesitar aprobar los 8 módulos
-        en algún momento, pero podés hacerlo a tu ritmo.
+        en algún momento, pero puedes hacerlo a tu ritmo.
       </p>
       <p>
-        Si en algún momento decidís no continuar, simplemente cancelás la
-        suscripción desde tu dashboard y dejás de pagar a partir del mes
+        Si en algún momento decides no continuar, simplemente cancelas la
+        suscripción desde tu dashboard y dejas de pagar a partir del mes
         siguiente. <strong>No hay penalidades de cancelación.</strong> Tu
-        progreso queda guardado: si reactivás, retomás desde la semana en
+        progreso queda guardado: si reactivas, retomas desde la semana en
         que dejaste.
       </p>
 
       <h2>5. Casos especiales</h2>
       <h3>5.1 Cobro duplicado o error técnico</h3>
       <p>
-        Si recibís un cobro que no corresponde, escribinos de inmediato y lo
+        Si recibes un cobro que no corresponde, escríbenos de inmediato y lo
         revertimos sin costo. El plazo de 7 días no aplica en estos casos.
       </p>
       <h3>5.2 Fraude o uso no autorizado</h3>
       <p>
         Si alguien usó tu tarjeta sin autorización para suscribirse al DAP,
-        avisanos en cuanto lo detectes para investigar y reembolsar el cargo.
+        avísanos en cuanto lo detectes para investigar y reembolsar el cargo.
       </p>
       <h3>5.3 Suspensión por incumplimiento de términos</h3>
       <p>

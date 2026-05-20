@@ -52,7 +52,7 @@ delete from public.profiles where id in (
 );
 delete from auth.users where email in ('testing.dap@gmail.com', 'embajadormax@amppbr.org');
 
--- Resetear contador de matrículas si querés empezar desde 00001 real
+-- Resetear contador de matrículas si quieres empezar desde 00001 real
 update public.admission_matricula_counters
   set next = 1
   where year = extract(year from current_date)::int;
@@ -83,7 +83,7 @@ update public.admission_matricula_counters
 ## 5. PWA / Push notifications
 
 - [ ] Verificar 3 env vars en Vercel: `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`
-- [ ] (Opcional) Si querés diferenciar test vs prod, generar nuevas VAPID keys:
+- [ ] (Opcional) Si quieres diferenciar test vs prod, generar nuevas VAPID keys:
   ```bash
   node -e "const w=require('web-push'); const k=w.generateVAPIDKeys(); console.log(k);"
   ```

@@ -292,7 +292,7 @@ function NotSubmittedView({
         ({formatDateTime(submission.opens_at)} → {formatDateTime(submission.closes_at)}).
         El contenido sigue accesible para repaso. Para certificarte del
         bloque vas a necesitar volver a abrir esta tarea — contactá al
-        equipo si querés ponerte al día.
+        equipo si quieres ponerte al día.
       </p>
     </div>
   );

@@ -131,7 +131,7 @@ export async function POST(
   const isAdmin = profile?.role === "admin";
   if (!hasAccess && !isAdmin) {
     return NextResponse.json(
-      { error: "No tenés acceso a este módulo todavía" },
+      { error: "No tienes acceso a este módulo todavía" },
       { status: 403 },
     );
   }

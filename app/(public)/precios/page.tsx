@@ -59,8 +59,8 @@ const INCLUDED = [
   },
   {
     icon: Pause,
-    title: "Modelo Netflix: cancelás cuando querés",
-    body: "Sin compromiso de permanencia. Si pausás un mes, tu progreso queda guardado y retomás desde la semana donde dejaste cuando reactives.",
+    title: "Modelo Netflix: cancelas cuando quieres",
+    body: "Sin compromiso de permanencia. Si pausas un mes, tu progreso queda guardado y retomas desde la semana donde dejaste cuando reactives.",
   },
 ];
 
@@ -143,7 +143,7 @@ export default async function PreciosPage() {
                 Qué incluye
               </p>
               <h2 className="font-grotesk text-h1 font-bold leading-tight text-text-primary">
-                Todo lo que necesitás <span className="gradient-text">en un solo plan</span>.
+                Todo lo que necesitas <span className="gradient-text">en un solo plan</span>.
               </h2>
             </Reveal>
 
@@ -213,10 +213,10 @@ export default async function PreciosPage() {
                   Modelo Netflix — sin compromiso
                 </h3>
                 <p className="font-inter text-base leading-relaxed text-text-secondary">
-                  Cancelás desde tu dashboard cuando quieras. Mientras
-                  estés activo recibís 1 módulo nuevo cada semana. Si
-                  pausás, tu progreso queda guardado y cuando reactives
-                  retomás desde la semana donde dejaste.
+                  Cancelas desde tu dashboard cuando quieras. Mientras
+                  estés activo recibes 1 módulo nuevo cada semana. Si
+                  pausas, tu progreso queda guardado y cuando reactives
+                  retomas desde la semana donde dejaste.
                 </p>
                 <p className="mt-4 font-inter text-sm text-text-tertiary">
                   Sin penalidades, sin renovaciones automáticas mañosas.
@@ -235,7 +235,7 @@ export default async function PreciosPage() {
               Empieza hoy, <span className="gradient-text">cancela cuando quieras</span>.
             </h2>
             <p className="mx-auto mt-6 max-w-xl font-inter text-base text-text-secondary md:text-lg">
-              Tu suscripción se activa al confirmar el pago. Empezás con la
+              Tu suscripción se activa al confirmar el pago. Empiezas con la
               Fase 1 desde el día uno.
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">

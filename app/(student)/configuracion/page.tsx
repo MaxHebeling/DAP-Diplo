@@ -67,7 +67,7 @@ export default async function ConfiguracionPage() {
               Contraseña
             </h2>
             <p className="mt-1 font-inter text-sm text-text-secondary">
-              Si querés cambiarla, te mandamos un link a tu email.
+              Si quieres cambiarla, te mandamos un link a tu email.
             </p>
             <div className="mt-4">
               <DapButton

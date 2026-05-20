@@ -53,7 +53,7 @@ export const rejectAdmissionSchema = z
       return !!data.customReason && data.customReason.trim().length >= 5;
     },
     {
-      message: "Si elegís 'Otro motivo', escribí al menos 5 caracteres.",
+      message: "Si eliges 'Otro motivo', escribe al menos 5 caracteres.",
       path: ["customReason"],
     },
   );

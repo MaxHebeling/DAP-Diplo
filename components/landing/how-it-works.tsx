@@ -5,8 +5,8 @@ import { PerspectivePath } from "./perspective-path";
 const STEPS = [
   {
     icon: CreditCard,
-    title: "Postulás y te suscribís",
-    body: "Completás el formulario de admisión y, una vez aprobada, activás tu suscripción de $25 USD/mes. Tu calendario personal arranca el primer martes después de la aprobación.",
+    title: "Postulas y te suscribes",
+    body: "Completas el formulario de admisión y, una vez aprobada, activas tu suscripción de $25 USD/mes. Tu calendario personal arranca el primer martes después de la aprobación.",
     accent: "violet",
   },
   {
@@ -17,8 +17,8 @@ const STEPS = [
   },
   {
     icon: Trophy,
-    title: "Completás un bloque, recibís tu dimensión",
-    body: "Al aprobar los 8 módulos de un bloque, recibís certificado, insignia y una dimensión ministerial — de Discípulo hasta Enviado, las 9 dimensiones del Reino.",
+    title: "Completas un bloque, recibes tu dimensión",
+    body: "Al aprobar los 8 módulos de un bloque, recibes certificado, insignia y una dimensión ministerial — de Discípulo hasta Enviado, las 9 dimensiones del Reino.",
     accent: "amber",
   },
 ] as const;

@@ -23,9 +23,9 @@ export default function PrivacidadPage() {
         En el Diplomado Apostólico Pastoral (<strong>&ldquo;DAP&rdquo;</strong>),
         operado por <strong>Revival &amp; Kingdom Ministries, INC</strong>{" "}
         (en adelante, &ldquo;nosotros&rdquo;), respetamos tu privacidad y nos
-        comprometemos a proteger los datos personales que nos compartís.
+        comprometemos a proteger los datos personales que nos compartes.
         Esta política explica qué datos recolectamos, cómo los usamos, con
-        quién los compartimos y qué derechos tenés sobre ellos.
+        quién los compartimos y qué derechos tienes sobre ellos.
       </p>
 
       <h2>1. Responsable del tratamiento</h2>
@@ -46,7 +46,7 @@ export default function PrivacidadPage() {
         <li>Nombre completo, email y contraseña (al crear la cuenta).</li>
         <li>Información del ministerio o iglesia (opcional).</li>
         <li>País y zona horaria.</li>
-        <li>Foto de perfil (si la subís).</li>
+        <li>Foto de perfil (si la subes).</li>
         <li>Datos de pago: procesados directamente por Stripe; nosotros no almacenamos los números de tarjeta.</li>
         <li>Contenido que generás dentro del Servicio (posts en comunidad, mensajes al tutor IA, respuestas a evaluaciones).</li>
       </ul>
@@ -100,7 +100,7 @@ export default function PrivacidadPage() {
         <li><strong>Analíticas:</strong> medir uso del sitio en forma agregada.</li>
       </ul>
       <p>
-        Podés configurar tu navegador para rechazar cookies, aunque eso
+        Puedes configurar tu navegador para rechazar cookies, aunque eso
         puede afectar la funcionalidad del Servicio (especialmente el inicio
         de sesión).
       </p>
@@ -131,7 +131,7 @@ export default function PrivacidadPage() {
 
       <h2>8. Tus derechos</h2>
       <p>
-        Podés ejercer en cualquier momento los siguientes derechos sobre tus
+        Puedes ejercer en cualquier momento los siguientes derechos sobre tus
         datos personales:
       </p>
       <ul>
@@ -143,7 +143,7 @@ export default function PrivacidadPage() {
         <li><strong>Limitación:</strong> restringir el tratamiento en ciertas circunstancias.</li>
       </ul>
       <p>
-        Para ejercer cualquiera de estos derechos, escribinos a{" "}
+        Para ejercer cualquiera de estos derechos, escríbenos a{" "}
         <Link href="mailto:office@rkchurch.com">office@rkchurch.com</Link>{" "}
         desde la dirección de email asociada a tu cuenta. Responderemos en
         un plazo máximo de 30 días.

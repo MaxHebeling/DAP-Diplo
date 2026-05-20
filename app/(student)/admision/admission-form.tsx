@@ -202,7 +202,7 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
         <Field
           label="Teléfono"
           error={errors.phone}
-          hint="El prefijo se actualiza con el país. Cambialo desde el dropdown si querés."
+          hint="El prefijo se actualiza con el país. Cambialo desde el dropdown si quieres."
           required
         >
           <div className="flex gap-2">
@@ -338,7 +338,7 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
       {/* Submit */}
       <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="font-inter text-xs text-text-tertiary">
-          Al enviar aceptás los{" "}
+          Al enviar aceptas los{" "}
           <a href="/terminos" className="text-brand-coral hover:underline">
             términos
           </a>{" "}

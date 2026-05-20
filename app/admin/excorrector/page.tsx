@@ -49,8 +49,8 @@ export default async function AdminExcorrectorPage() {
           <p className="font-medium text-text-secondary">Notas</p>
           <ul className="mt-2 space-y-1">
             <li>· Los cambios afectan inmediatamente la próxima corrección que dispare el cron.</li>
-            <li>· Si dejás el campo vacío, vuelve al voice manual hardcoded del repo.</li>
-            <li>· El texto se manda como system prompt a Claude — incluí ejemplos, reglas duras, y la rúbrica de score.</li>
+            <li>· Si dejas el campo vacío, vuelve al voice manual hardcoded del repo.</li>
+            <li>· El texto se manda como system prompt a Claude — incluye ejemplos, reglas duras, y la rúbrica de score.</li>
           </ul>
         </div>
       </div>

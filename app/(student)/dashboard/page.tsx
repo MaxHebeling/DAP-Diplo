@@ -171,16 +171,16 @@ function NoSubscriptionState({
         </h1>
         <p className="mt-3 font-inter text-base leading-relaxed text-text-secondary">
           {hadCanceledSub
-            ? "Tu suscripción está cancelada. Reactivá cuando quieras y retomás desde donde dejaste."
-            : "Tu suscripción aún no está activa. Empezá la formación cuando estés listo."}
+            ? "Tu suscripción está cancelada. Reactiva cuando quieras y retomas desde donde dejaste."
+            : "Tu suscripción aún no está activa. Empieza la formación cuando estés listo."}
         </p>
       </header>
 
       <DapCard>
         <DapCardHeader>
-          <DapCardTitle>Activá tu acceso</DapCardTitle>
+          <DapCardTitle>Activa tu acceso</DapCardTitle>
           <DapCardDescription>
-            $25 USD/mes · cancelás cuando quieras · todos los módulos se
+            $25 USD/mes · cancelas cuando quieras · todos los módulos se
             liberan semana a semana.
           </DapCardDescription>
         </DapCardHeader>
@@ -307,7 +307,7 @@ async function WeekDashboard({
           <DapCard>
             <p className="text-sm text-text-secondary">
               No encontramos el módulo de esta semana. Si esto persiste,
-              avisanos a admisiones@dapglobal.org.
+              avísanos a admisiones@dapglobal.org.
             </p>
           </DapCard>
         )}
@@ -401,7 +401,7 @@ function NotStartedYet({
               </p>
             ) : (
               <p className="mt-2 font-inter text-sm leading-relaxed text-text-secondary">
-                Todavía no tenés fecha de inicio asignada. Te llegará un email
+                Todavía no tienes fecha de inicio asignada. Te llegará un email
                 cuando admisiones apruebe tu solicitud y emita tu matrícula.
               </p>
             )}
@@ -415,7 +415,7 @@ function NotStartedYet({
       </DapCard>
 
       <p className="font-inter text-xs text-text-tertiary">
-        Mientras tanto podés explorar la <Link href="/comunidad" className="text-brand-coral hover:underline">comunidad</Link> o el <Link href="/tutor" className="text-brand-coral hover:underline">tutor IA</Link>.
+        Mientras tanto puedes explorar la <Link href="/comunidad" className="text-brand-coral hover:underline">comunidad</Link> o el <Link href="/tutor" className="text-brand-coral hover:underline">tutor IA</Link>.
       </p>
     </div>
   );

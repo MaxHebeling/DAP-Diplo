@@ -74,8 +74,8 @@ function renderHtml(p: { firstName: string; reason: string }): string {
 
             <tr><td style="padding:24px 0 0;">
               <p style="margin:0;font-size:14px;line-height:1.7;color:#CBD5E1;">
-                Si querés contarnos más contexto o ajustar lo que sea necesario,
-                respondé este email o escribinos a
+                Si quieres contarnos más contexto o ajustar lo que sea necesario,
+                responde este email o escríbenos a
                 <a href="mailto:admisiones@dapglobal.org" style="color:#FF4D6D;">admisiones@dapglobal.org</a>.
                 Estaremos atentos.
               </p>
