@@ -7,7 +7,9 @@ import { Loader2, Send } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import {
+  ALL_DIAL_CODES,
   COUNTRIES,
+  COUNTRY_DIAL_CODES,
   NETWORK_OPTIONS,
   admissionFormSchema,
   type AdmissionFormInput,
@@ -35,7 +37,18 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
   const [country, setCountry] = useState<AdmissionFormInput["country"]>("México");
   const [countryOther, setCountryOther] = useState("");
   const [city, setCity] = useState("");
-  const [phone, setPhone] = useState("");
+  // Phone split: prefix (dial code) + local number. Submit junta ambos.
+  const [dialCode, setDialCode] = useState<string>(
+    COUNTRY_DIAL_CODES["México"],
+  );
+  const [phoneLocal, setPhoneLocal] = useState("");
+  // Auto-sync del prefijo cuando cambia el país. NO sobreescribe si el
+  // user lo cambió manualmente en este turno (lo asumimos cuando el
+  // dialCode actual ya no coincide con el del país previo, pero acá lo
+  // dejamos simple: cada cambio de country setea el prefijo del país
+  // nuevo. Si el user quiere mantener su prefijo manual, lo elige otra
+  // vez del dropdown).
+  const phone = `${dialCode} ${phoneLocal.trim()}`.trim();
   const [email] = useState(prefill.email ?? "");
 
   const [churchName, setChurchName] = useState("");
@@ -160,9 +173,13 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
           <Field label="País" error={errors.country} required>
             <Select
               value={country}
-              onChange={(e) =>
-                setCountry(e.target.value as AdmissionFormInput["country"])
-              }
+              onChange={(e) => {
+                const next = e.target.value as AdmissionFormInput["country"];
+                setCountry(next);
+                // Auto-sync del prefijo telefónico (siempre que el país tenga uno).
+                const nextDial = COUNTRY_DIAL_CODES[next];
+                if (nextDial) setDialCode(nextDial);
+              }}
             >
               {COUNTRIES.map((c) => (
                 <option key={c} value={c}>
@@ -188,16 +205,37 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
         <Field
           label="Teléfono"
           error={errors.phone}
-          hint="Incluí código de país (ej: +52 55 1234 5678)"
+          hint="El prefijo se actualiza con el país. Cambialo desde el dropdown si querés."
           required
         >
-          <Input
-            type="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="+52 55 1234 5678"
-            autoComplete="tel"
-          />
+          <div className="flex gap-2">
+            <Select
+              value={dialCode}
+              onChange={(e) => setDialCode(e.target.value)}
+              className="w-32 shrink-0"
+              aria-label="Código de país"
+            >
+              {/* Si el dial code seleccionado no está en la lista (caso
+                  raro), lo inyectamos como opción para no perderlo. */}
+              {!ALL_DIAL_CODES.some((d) => d.value === dialCode) && dialCode && (
+                <option value={dialCode}>{dialCode}</option>
+              )}
+              {ALL_DIAL_CODES.map((d) => (
+                <option key={`${d.label}-${d.value}`} value={d.value}>
+                  {d.label}
+                </option>
+              ))}
+            </Select>
+            <Input
+              type="tel"
+              value={phoneLocal}
+              onChange={(e) => setPhoneLocal(e.target.value)}
+              placeholder="55 1234 5678"
+              autoComplete="tel-national"
+              inputMode="tel"
+              className="flex-1"
+            />
+          </div>
         </Field>
       </Section>
 
