@@ -1,24 +1,14 @@
 import Image from "next/image";
-import {
-  BookOpen,
-  Briefcase,
-  Building2,
-  Coins,
-  Cpu,
-  Crown,
-  Globe2,
-  Heart,
-  type LucideIcon,
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import {
   coursesItemListSchema,
   jsonLd,
 } from "@/lib/seo/structured-data";
-import { PhaseCard } from "./phase-card";
+import {
+  PhasesNetflixRow,
+  type NetflixPhaseRow,
+} from "./phases-netflix-row";
 
 type PhaseRow = {
   order_index: number;
@@ -27,20 +17,9 @@ type PhaseRow = {
   brand_name: string | null;
   promise: string | null;
   subtitle: string | null;
+  cover_image_url: string | null;
   dimension: { name: string; order_index: number } | null;
   modules: { count: number }[] | null;
-};
-
-const ICON_BY_ORDER: Record<number, LucideIcon> = {
-  1: BookOpen,
-  2: Heart,
-  3: Crown,
-  4: Sparkles,
-  5: ShieldCheck,
-  6: Coins,
-  7: Briefcase,
-  8: Cpu,
-  9: Globe2,
 };
 
 export async function PhasesGridV2() {
@@ -48,7 +27,7 @@ export async function PhasesGridV2() {
   const { data, error } = await supabase
     .from("phases")
     .select(
-      "order_index, slug, title, brand_name, promise, subtitle, dimension:dimensions(name, order_index), modules(count)",
+      "order_index, slug, title, brand_name, promise, subtitle, cover_image_url, dimension:dimensions(name, order_index), modules(count)",
     )
     .eq("published", true)
     .order("order_index", { ascending: true })
@@ -112,49 +91,25 @@ export async function PhasesGridV2() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {phases.map((p) => {
-            const Icon = ICON_BY_ORDER[p.order_index] ?? BookOpen;
-            const count = p.modules?.[0]?.count ?? 0;
-            const dimensionN = String(
-              p.dimension?.order_index ?? p.order_index,
-            ).padStart(2, "0");
-            const dimensionName = p.dimension?.name ?? "—";
-            // Mostramos brand_name como hero del card; fallback al title académico
-            const heroTitle = p.brand_name ?? p.title;
-            return (
-              <PhaseCard key={p.slug} href={`/fases/${p.slug}`}>
-                <div className="mb-4 flex items-start justify-between">
-                  <p className="font-inter text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-coral">
-                    Dimensión {dimensionN} · {dimensionName}
-                  </p>
-                  <div className="flex size-10 items-center justify-center rounded-lg bg-brand-violet/10 text-brand-violet transition-colors group-hover:bg-brand-violet/20">
-                    <Icon className="size-5" strokeWidth={1.8} />
-                  </div>
-                </div>
-                <h3 className="mb-1 gradient-text font-grotesk text-h3 font-bold leading-tight">
-                  {heroTitle}
-                </h3>
-                {p.subtitle && (
-                  <p className="mb-3 font-inter text-sm leading-relaxed text-text-secondary">
-                    {p.subtitle}
-                  </p>
-                )}
-                {p.promise && (
-                  <p className="mt-1 font-inter text-sm italic leading-relaxed text-text-primary/85">
-                    {p.promise}
-                  </p>
-                )}
-                <div className="mt-auto flex items-center justify-between border-t border-white/[0.05] pt-4 font-inter text-xs">
-                  <span className="font-medium text-text-tertiary">
-                    Bloque {String(p.order_index).padStart(2, "0")}
-                  </span>
-                  <span className="text-text-tertiary">{count} módulos</span>
-                </div>
-              </PhaseCard>
-            );
-          })}
-        </div>
+        {/* Netflix-style rail con scroll horizontal */}
+        <PhasesNetflixRow
+          phases={phases.map<NetflixPhaseRow>((p) => ({
+            slug: p.slug,
+            order_index: p.order_index,
+            title: p.title,
+            brand_name: p.brand_name,
+            promise: p.promise,
+            subtitle: p.subtitle,
+            cover_image_url: p.cover_image_url,
+            dimension_name: p.dimension?.name ?? null,
+            dimension_order: p.dimension?.order_index ?? null,
+            modules_count: p.modules?.[0]?.count ?? 0,
+          }))}
+        />
+
+        <p className="mt-6 text-center font-inter text-xs text-text-tertiary md:text-left">
+          Desliza horizontalmente o usa las flechas para ver los 9 bloques.
+        </p>
       </div>
     </section>
   );
