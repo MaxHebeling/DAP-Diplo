@@ -16,9 +16,9 @@ type PageProps = { params: Promise<{ code: string }> };
 
 type VerifyRow = {
   full_name: string;
-  block_order_index: number;
-  block_title: string;
-  rank_name: string | null;
+  phase_order_index: number;
+  phase_title: string;
+  dimension_name: string | null;
   issued_at: string;
   pdf_url: string | null;
 };
@@ -64,7 +64,8 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
   });
 
   if (error) {
-    return <VerificationError code={normalized} reason={error.message} />;
+    console.error("[verify] rpc verify_certificate failed:", error);
+    return <VerificationError code={normalized} />;
   }
   const rows = (data ?? []) as VerifyRow[];
   const cert = rows[0];
@@ -86,7 +87,7 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
     }
   }
 
-  const blockN = String(cert.block_order_index).padStart(2, "0");
+  const phaseN = String(cert.phase_order_index).padStart(2, "0");
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-background to-muted/30 px-6 py-16 sm:py-24">
@@ -125,13 +126,13 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
             <DataRow
               icon={null}
               label="Por completar"
-              value={`Fase ${blockN}: ${cert.block_title}`}
+              value={`Fase ${phaseN}: ${cert.phase_title}`}
             />
-            {cert.rank_name && (
+            {cert.dimension_name && (
               <DataRow
                 icon={null}
-                label="Dimensión alcanzado"
-                value={cert.rank_name}
+                label="Dimensión alcanzada"
+                value={cert.dimension_name}
                 emphColor
               />
             )}
@@ -207,13 +208,7 @@ function DataRow({
   );
 }
 
-function VerificationError({
-  code,
-  reason,
-}: {
-  code: string;
-  reason?: string;
-}) {
+function VerificationError({ code }: { code: string }) {
   return (
     <main className="min-h-screen bg-gradient-to-b from-background to-muted/30 px-6 py-16 sm:py-24">
       <div className="mx-auto max-w-2xl">
@@ -249,11 +244,6 @@ function VerificationError({
               . Verifica que el código esté escrito correctamente. Los códigos
               tienen 8 caracteres hexadecimales en mayúsculas.
             </p>
-            {reason && (
-              <p className="rounded-md border border-red-500/20 bg-red-500/5 p-3 text-xs text-red-700 dark:text-red-300">
-                {reason}
-              </p>
-            )}
             <div className="pt-2">
               <Button variant="outline" render={<Link href="/" />}>
                 Volver al inicio
