@@ -37,8 +37,8 @@ export default async function AdminExcorrectorPage() {
             </h1>
             <p className="mt-2 font-inter text-sm text-text-secondary">
               Este texto es el system prompt que recibe Claude cada vez que
-              corrige una tarea. Editalo para refinar el tono, agregar
-              ejemplos de cómo respondés, o ajustar la rúbrica de score.
+              corrige una tarea. Edítalo para refinar el tono, agregar
+              ejemplos de cómo respondes, o ajustar la rúbrica de score.
             </p>
           </div>
         </header>

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   Bell,
   Brain,
+  FileText,
   GraduationCap,
   Layers,
   LayoutDashboard,
@@ -27,6 +28,7 @@ const NAV = [
   { href: "/admin/en-vivo", label: "En vivo", icon: Radio, exact: false },
   { href: "/admin/tutor/documentos", label: "Tutor IA", icon: Brain, exact: false },
   { href: "/admin/excorrector", label: "Excorrector", icon: Sparkles, exact: false },
+  { href: "/admin/brief-pastores", label: "Brief pastores", icon: FileText, exact: false },
   { href: "/admin/push-test", label: "Test push", icon: Bell, exact: false },
 ];
 
