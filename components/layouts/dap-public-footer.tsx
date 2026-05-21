@@ -51,7 +51,7 @@ export function DapPublicFooter() {
       className="border-t border-white/[0.08] bg-surface-base text-text-primary"
     >
       <div className="mx-auto max-w-6xl px-6 py-16">
-        <div className="grid grid-cols-1 gap-12 md:grid-cols-[1.5fr_repeat(3,1fr)]">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr_1.3fr]">
           <div className="space-y-6">
             <Link
               href="/"
@@ -91,6 +91,29 @@ export function DapPublicFooter() {
               </ul>
             </div>
           ))}
+
+          {/* Respaldo oficial — Revival & Kingdom Ministries */}
+          <div>
+            <p className="mb-4 font-grotesk text-sm font-semibold uppercase tracking-widest text-text-tertiary">
+              Respaldo oficial
+            </p>
+            <div className="flex items-start gap-3">
+              <Image
+                src="/rkm-seal.png"
+                alt="Revival & Kingdom Ministries"
+                width={56}
+                height={56}
+                className="size-14 shrink-0 opacity-90"
+              />
+              <p className="font-inter text-xs leading-relaxed text-text-secondary">
+                DAP es un departamento de educación de{" "}
+                <span className="font-semibold text-text-primary">
+                  Revival &amp; Kingdom Ministries, INC
+                </span>
+                .
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Pilares del DAP — alineados debajo de las columnas, full-width */}
