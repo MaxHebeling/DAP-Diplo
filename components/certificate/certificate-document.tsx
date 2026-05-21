@@ -1,4 +1,6 @@
 /* eslint-disable jsx-a11y/alt-text -- @react-pdf/renderer <Image> no acepta alt; el lint rule asume HTML. */
+import { readFileSync, existsSync } from "node:fs";
+import { join } from "node:path";
 import {
   Document,
   Font,
@@ -9,163 +11,265 @@ import {
   StyleSheet,
 } from "@react-pdf/renderer";
 
-// Diseño basado en el template aportado por Max:
-// - Fondo púrpura halftone + panel cream + columna navy + cinta + logo DAP
-//   (todo dentro de public/cert/background-template.png).
-// - Sobre ese background superponemos solo los campos dinámicos.
-// - Tapamos la frase placeholder "quien favorablemente participó del
-//   Discipulado en la ciudad de Salta, Argentina, ..." con un rectángulo
-//   del color exacto del panel (#e0e0e0) y escribimos el body propio del
-//   fase/dimensión.
-//
-// Allura (script Google Font) se sirve desde public/cert/fonts/ del mismo
-// dominio en producción — autosuficiente, sin CDN externo, evita 401 / fetch
-// fallido en serverless.
+/**
+ * Certificado de bloque del DAP — pieza ceremonial generada al aprobar
+ * los 8 módulos de un bloque.
+ *
+ * Diseño alineado con la carta de admisión (lib/admission/generate-letter.tsx):
+ * misma paleta indigo midnight + coral, mismas bandas top/bottom, mismos
+ * logos en header, misma firma del Dr. Max. Pero LANDSCAPE y con el
+ * nombre del alumno en script Allura como elemento dominante.
+ */
 
 const APP_URL =
-  process.env.NEXT_PUBLIC_APP_URL ?? "https://dap-diplo.vercel.app";
+  process.env.NEXT_PUBLIC_APP_URL ?? "https://www.dapglobal.org";
 
 Font.register({
   family: "Allura",
   src: `${APP_URL}/cert/fonts/Allura-Regular.ttf`,
 });
 
-// Colores muestreados del template
-const PANEL_CREAM = "#e0e0e0";
-const NAVY_DEEP = "#1a1430";
-const INK = "#2a2438";
-const MUTED = "#6b6480";
+// Assets locales (mismo set que la carta de admisión)
+const ASSETS_DIR = join(process.cwd(), "public", "admission-assets");
+const LOGO_DAP = join(ASSETS_DIR, "logo-dap.png");
+const LOGO_RED = join(ASSETS_DIR, "logo-red-apostolica.png");
+const FIRMA = join(ASSETS_DIR, "firma-max-hebeling.png");
 
-// Letter landscape: 792 x 612 pt
-// Imagen base: 2200 x 1700 px @ 200 DPI = mismo aspect ratio exacto
-const PAGE_W = 792;
-const PAGE_H = 612;
+// Si los assets no existen al cargar el módulo (build time en algunos
+// edge cases), no rompemos — el render fallará después con un error
+// claro si realmente faltan.
+function assetExists(p: string): boolean {
+  try {
+    readFileSync(p);
+    return true;
+  } catch {
+    return false;
+  }
+}
+const HAS_FIRMA = existsSync(FIRMA);
 
-// Helpers para px → pt (image space → page space): pt = px * 792/2200
-const px2pt = (px: number) => px * (PAGE_W / 2200);
+const COLORS = {
+  ink: "#0B1736",
+  inkSoft: "#3A4565",
+  inkMuted: "#6B7390",
+  paperTint: "#FBFBFD",
+  divider: "#E2E5F0",
+  // Mismos colores del logo que usa la carta de admisión
+  logoDeep: "#150832",
+  logoAccent: "#E63E5C",
+};
 
 const styles = StyleSheet.create({
-  page: { backgroundColor: PANEL_CREAM, padding: 0, color: INK },
+  page: {
+    padding: 0,
+    fontFamily: "Helvetica",
+    backgroundColor: "#FFFFFF",
+    color: COLORS.ink,
+    fontSize: 10,
+    lineHeight: 1.5,
+  },
 
-  // Background: la imagen cubre toda la página (mismo aspect ratio)
-  bgImage: {
+  // ---- BANDS top/bottom (mismo estilo que la carta) ----
+  bandTop: { height: 9, backgroundColor: COLORS.logoDeep },
+  bandTopAccent: { height: 3, backgroundColor: COLORS.logoAccent },
+  bandBottom: {
     position: "absolute",
-    top: 0,
     left: 0,
-    width: PAGE_W,
-    height: PAGE_H,
+    right: 0,
+    bottom: 0,
+    height: 3,
+    backgroundColor: COLORS.logoAccent,
   },
-
-  // Mask: tapa SOLO el body placeholder "quien favorablemente participó
-  // del Discipulado en la ciudad de Salta, Argentina, a los 15 días del
-  // mes de Noviembre, del año 2025.-" → bandas detectadas en y 916-992.
-  // Padding generoso top/bottom para asegurar limpieza completa.
-  bodyMask: {
+  bandBottomAccent: {
     position: "absolute",
-    left: px2pt(740),
-    top: px2pt(890),
-    width: px2pt(1320),
-    height: px2pt(135),
-    backgroundColor: PANEL_CREAM,
+    left: 0,
+    right: 0,
+    bottom: 3,
+    height: 9,
+    backgroundColor: COLORS.logoDeep,
   },
 
-  // Nombre del alumno: va sobre el área vacía entre "El presente
-  // certificado se otorga a:" (banda y 663-684) y el body (y 916).
-  // Centrado en y ≈ 800 px.
+  inner: {
+    paddingHorizontal: 64,
+    paddingTop: 24,
+    paddingBottom: 60,
+    flexGrow: 1,
+  },
+
+  // ---- Header row con logos ----
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 14,
+  },
+  headerLogo: { width: 56, height: 56, objectFit: "contain" },
+  headerLogoDap: {
+    width: 56,
+    height: 56,
+    objectFit: "contain",
+    borderRadius: 6,
+  },
+
+  // ---- Eyebrow + Title ----
+  centerBlock: { alignItems: "center" },
+  eyebrow: {
+    fontSize: 8,
+    letterSpacing: 4.5,
+    color: COLORS.logoAccent,
+    textTransform: "uppercase",
+    fontFamily: "Helvetica-Bold",
+    marginBottom: 6,
+  },
+  title: {
+    fontSize: 30,
+    fontFamily: "Helvetica-Bold",
+    color: COLORS.logoDeep,
+    letterSpacing: 4,
+    textTransform: "uppercase",
+    marginBottom: 6,
+  },
+  subtitle: {
+    fontSize: 11,
+    color: COLORS.inkSoft,
+    letterSpacing: 1.2,
+    marginBottom: 12,
+  },
+
+  divider: {
+    width: 80,
+    height: 2,
+    backgroundColor: COLORS.logoAccent,
+    marginVertical: 10,
+    alignSelf: "center",
+  },
+
+  // ---- "Se otorga a:" ----
+  awardedTo: {
+    fontSize: 9.5,
+    letterSpacing: 2.5,
+    color: COLORS.inkMuted,
+    textTransform: "uppercase",
+    fontFamily: "Helvetica-Bold",
+    textAlign: "center",
+    marginBottom: 6,
+  },
+
+  // ---- NOMBRE — script Allura grande ----
   recipientName: {
-    position: "absolute",
-    left: px2pt(740),
-    top: px2pt(740),
-    width: px2pt(1320),
     fontFamily: "Allura",
     fontSize: 60,
-    color: NAVY_DEEP,
+    color: COLORS.logoDeep,
     textAlign: "center",
-    lineHeight: 1.0,
+    lineHeight: 1.05,
+    marginBottom: 12,
   },
 
-  // Body propio DAP (sustituye el placeholder)
-  bodyText: {
-    position: "absolute",
-    left: px2pt(760),
-    top: px2pt(900),
-    width: px2pt(1280),
-    fontFamily: "Allura",
-    fontSize: 24,
-    color: INK,
+  // ---- Body explanatory ----
+  body: {
+    fontSize: 11.5,
+    color: COLORS.ink,
     textAlign: "center",
-    lineHeight: 1.35,
+    lineHeight: 1.7,
+    maxWidth: 540,
+    marginHorizontal: "auto",
+    marginBottom: 14,
   },
-  bodyTextHi: {
-    fontFamily: "Times-Bold",
-    fontSize: 18,
-    color: NAVY_DEEP,
+  bodyHighlight: {
+    fontFamily: "Helvetica-Bold",
+    color: COLORS.logoDeep,
   },
 
-  // Verification code: esquina inferior derecha del panel cream.
-  verifyBlock: {
-    position: "absolute",
-    right: px2pt(160),
-    top: px2pt(1450),
-    flexDirection: "column",
-    alignItems: "flex-end",
+  // ---- Dimensión otorgada (highlight box) ----
+  dimensionBox: {
+    alignItems: "center",
+    marginVertical: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderTop: `1 solid ${COLORS.divider}`,
+    borderBottom: `1 solid ${COLORS.divider}`,
+    alignSelf: "center",
   },
-  verifyLabel: {
-    fontFamily: "Helvetica",
-    fontSize: 6.5,
-    color: MUTED,
-    letterSpacing: 1.3,
+  dimensionLabel: {
+    fontSize: 8,
+    letterSpacing: 3,
+    color: COLORS.inkMuted,
     textTransform: "uppercase",
-    marginBottom: 2,
+    fontFamily: "Helvetica-Bold",
+    marginBottom: 5,
+  },
+  dimensionName: {
+    fontSize: 22,
+    fontFamily: "Helvetica-Bold",
+    color: COLORS.logoDeep,
+    letterSpacing: 2,
+    textTransform: "uppercase",
+  },
+
+  // ---- Footer row: firma izq + verification der ----
+  footerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    marginTop: 18,
+  },
+  signatureBlock: { alignItems: "flex-start" },
+  signatureImage: {
+    width: 130,
+    height: 44,
+    objectFit: "contain",
+    marginBottom: -4,
+  },
+  signatureLine: {
+    width: 190,
+    borderBottomWidth: 0.8,
+    borderBottomColor: COLORS.ink,
+    marginBottom: 5,
+  },
+  signatureName: {
+    fontFamily: "Helvetica-Bold",
+    fontSize: 10.5,
+    color: COLORS.ink,
+  },
+  signatureTitle: {
+    fontSize: 8,
+    color: COLORS.inkSoft,
+    marginTop: 2,
+    lineHeight: 1.4,
+  },
+
+  verifyBlock: { alignItems: "flex-end" },
+  verifyLabel: {
+    fontSize: 7.5,
+    letterSpacing: 2,
+    color: COLORS.inkMuted,
+    textTransform: "uppercase",
+    fontFamily: "Helvetica-Bold",
+    marginBottom: 3,
   },
   verifyCode: {
     fontFamily: "Courier-Bold",
-    fontSize: 12,
-    color: NAVY_DEEP,
+    fontSize: 13,
+    color: COLORS.logoDeep,
     letterSpacing: 2.5,
-    marginBottom: 1,
+    marginBottom: 2,
   },
   verifyUrl: {
     fontFamily: "Helvetica",
-    fontSize: 6,
-    color: MUTED,
+    fontSize: 7,
+    color: COLORS.inkMuted,
   },
-
-  // Fecha de emisión: esquina inferior izquierda del panel cream.
-  issuedBlock: {
-    position: "absolute",
-    left: px2pt(780),
-    top: px2pt(1450),
-    flexDirection: "column",
-  },
-  issuedLabel: {
+  issuedDate: {
     fontFamily: "Helvetica",
-    fontSize: 6.5,
-    color: MUTED,
-    letterSpacing: 1.3,
-    textTransform: "uppercase",
-    marginBottom: 2,
-  },
-  issuedValue: {
-    fontFamily: "Helvetica-Bold",
-    fontSize: 10,
-    color: INK,
+    fontSize: 8,
+    color: COLORS.inkMuted,
+    marginTop: 4,
   },
 });
 
 const MONTHS_ES = [
-  "enero",
-  "febrero",
-  "marzo",
-  "abril",
-  "mayo",
-  "junio",
-  "julio",
-  "agosto",
-  "septiembre",
-  "octubre",
-  "noviembre",
-  "diciembre",
+  "enero", "febrero", "marzo", "abril", "mayo", "junio",
+  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
 ];
 
 function formatIssuedAt(d: Date): string {
@@ -195,53 +299,89 @@ export function CertificateDocument({
   verifyUrl,
 }: Props) {
   const phaseNumber = String(phaseOrderIndex).padStart(2, "0");
+  const hasLogos = assetExists(LOGO_DAP) && assetExists(LOGO_RED);
 
   return (
     <Document
       title={`Certificado DAP — ${fullName}`}
       author="Diplomado Apostólico Pastoral"
-      subject={`Fase ${phaseNumber}: ${phaseTitle}`}
+      subject={`Bloque ${phaseNumber}: ${phaseTitle}`}
     >
       <Page size="LETTER" orientation="landscape" style={styles.page}>
-        {/* 1. Fondo del template */}
-        <Image
-          src={`${APP_URL}/cert/background-template.png`}
-          style={styles.bgImage}
-        />
+        <View style={styles.bandTop} fixed />
+        <View style={styles.bandTopAccent} fixed />
 
-        {/* 2. Máscara del body placeholder (reemplaza con texto DAP) */}
-        <View style={styles.bodyMask} />
+        <View style={styles.inner}>
+          {/* Header: logos en esquinas */}
+          {hasLogos ? (
+            <View style={styles.headerRow}>
+              <Image src={LOGO_RED} style={styles.headerLogo} />
+              <Image src={LOGO_DAP} style={styles.headerLogoDap} />
+            </View>
+          ) : null}
 
-        {/* 3. Nombre del alumno (script Allura sobre el subrayado existente) */}
-        <Text style={styles.recipientName}>{fullName}</Text>
-
-        {/* 4. Body propio DAP */}
-        <View style={styles.bodyText}>
-          <Text>
-            Por haber completado satisfactoriamente el{" "}
-            <Text style={styles.bodyTextHi}>
-              Fase {phaseNumber}: {phaseTitle}
+          {/* Título central */}
+          <View style={styles.centerBlock}>
+            <Text style={styles.eyebrow}>
+              Diplomado Apostólico Pastoral
             </Text>
-            ,{"\n"}alcanzando la dimensión apostólico de{" "}
-            <Text style={styles.bodyTextHi}>{dimensionName}</Text>.
+            <Text style={styles.title}>Certificado de Bloque</Text>
+            <Text style={styles.subtitle}>
+              Bloque {phaseNumber} · {phaseTitle}
+            </Text>
+            <View style={styles.divider} />
+          </View>
+
+          {/* Otorgado a */}
+          <Text style={styles.awardedTo}>Se otorga a</Text>
+          <Text style={styles.recipientName}>{fullName}</Text>
+
+          {/* Body */}
+          <Text style={styles.body}>
+            En reconocimiento por haber completado satisfactoriamente los{" "}
+            <Text style={styles.bodyHighlight}>ocho módulos</Text> del
+            Bloque {phaseNumber} —{" "}
+            <Text style={styles.bodyHighlight}>{phaseTitle}</Text> — del
+            Diplomado Apostólico Pastoral, dando testimonio de la formación
+            integral recibida.
           </Text>
+
+          {/* Dimensión otorgada */}
+          <View style={styles.dimensionBox}>
+            <Text style={styles.dimensionLabel}>
+              Dimensión ministerial otorgada
+            </Text>
+            <Text style={styles.dimensionName}>{dimensionName}</Text>
+          </View>
+
+          {/* Footer: firma + verification */}
+          <View style={styles.footerRow}>
+            <View style={styles.signatureBlock}>
+              {HAS_FIRMA ? (
+                <Image src={FIRMA} style={styles.signatureImage} />
+              ) : null}
+              <View style={styles.signatureLine} />
+              <Text style={styles.signatureName}>Dr. Max Hebeling</Text>
+              <Text style={styles.signatureTitle}>
+                Apóstol & CEO{"\n"}
+                Red Apostólica Reino y Avivamiento{"\n"}
+                Revival &amp; Kingdom Ministries, INC
+              </Text>
+            </View>
+
+            <View style={styles.verifyBlock}>
+              <Text style={styles.verifyLabel}>Código de verificación</Text>
+              <Text style={styles.verifyCode}>{verificationCode}</Text>
+              <Text style={styles.verifyUrl}>{verifyUrl}</Text>
+              <Text style={styles.issuedDate}>
+                Emitido el {formatIssuedAt(issuedAt)}
+              </Text>
+            </View>
+          </View>
         </View>
 
-        {/* NOTA: la firma "Ap. Max Hebeling / Revival & Kingdom Ministries"
-           se conserva del background image (Max es el apóstol firmante). */}
-
-        {/* 6. Fecha de emisión (footer izq) */}
-        <View style={styles.issuedBlock}>
-          <Text style={styles.issuedLabel}>Emitido</Text>
-          <Text style={styles.issuedValue}>{formatIssuedAt(issuedAt)}</Text>
-        </View>
-
-        {/* 7. Verification code (footer der) */}
-        <View style={styles.verifyBlock}>
-          <Text style={styles.verifyLabel}>Código de verificación</Text>
-          <Text style={styles.verifyCode}>{verificationCode}</Text>
-          <Text style={styles.verifyUrl}>{verifyUrl}</Text>
-        </View>
+        <View style={styles.bandBottomAccent} fixed />
+        <View style={styles.bandBottom} fixed />
       </Page>
     </Document>
   );
