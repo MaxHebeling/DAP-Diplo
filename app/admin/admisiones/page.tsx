@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Filter } from "lucide-react";
+import { ChevronLeft, ChevronRight, Filter } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -70,10 +70,31 @@ function networkLabel(row: AdmissionRow): string {
   return "Sí";
 }
 
+const PAGE_SIZE = 25;
+
+// Escape para Supabase .or() — `,` y `)` rompen el parser del filtro
+// string. Reemplazos defensivos antes de inyectar el query del usuario.
+function escapeOrValue(s: string): string {
+  return s.replace(/,/g, "\\,").replace(/\)/g, "\\)");
+}
+
+function buildHref(
+  status: Status,
+  q: string,
+  page: number,
+): string {
+  const params = new URLSearchParams();
+  if (status !== "pending") params.set("status", status);
+  if (q) params.set("q", q);
+  if (page > 1) params.set("page", String(page));
+  const qs = params.toString();
+  return `/admin/admisiones${qs ? `?${qs}` : ""}`;
+}
+
 export default async function AdminAdmisionesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; q?: string }>;
+  searchParams: Promise<{ status?: string; q?: string; page?: string }>;
 }) {
   const params = await searchParams;
   const statusFilter = (
@@ -84,31 +105,40 @@ export default async function AdminAdmisionesPage({
       : "pending"
   ) as Status;
   const q = params.q?.trim() ?? "";
+  const page = Math.max(1, Number.parseInt(params.page ?? "1", 10) || 1);
+  const from = (page - 1) * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
 
   const supabase = await createClient();
   let query = supabase
     .from("admissions")
     .select(
       "id, full_name, email, country, city, church_name, belongs_to_network, network_name, status, submitted_at, approved_at, reviewed_at, admission_letter_sent_at",
+      { count: "exact" },
     )
     .order("submitted_at", { ascending: false })
-    .limit(200);
+    .range(from, to);
 
   if (statusFilter !== "all") {
     query = query.eq("status", statusFilter);
   }
   if (q) {
-    // ILIKE en full_name, email, church_name
+    // ILIKE en full_name, email, church_name (índices GIN trgm en migración 0022)
+    const safeQ = escapeOrValue(q);
     query = query.or(
-      `full_name.ilike.%${q}%,email.ilike.%${q}%,church_name.ilike.%${q}%`,
+      `full_name.ilike.%${safeQ}%,email.ilike.%${safeQ}%,church_name.ilike.%${safeQ}%`,
     );
   }
 
-  const { data, error } = await query.returns<AdmissionRow[]>();
+  const { data, error, count } = await query.returns<AdmissionRow[]>();
   if (error) {
     throw new Error(`No se pudieron cargar admisiones: ${error.message}`);
   }
   const rows = data ?? [];
+  const total = count ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const firstRow = total === 0 ? 0 : from + 1;
+  const lastRow = Math.min(to + 1, total);
 
   return (
     <main className="px-6 py-10 sm:px-10">
@@ -130,10 +160,8 @@ export default async function AdminAdmisionesPage({
         <div className="mb-6 flex flex-wrap items-center gap-3">
           <div className="flex flex-wrap gap-1.5">
             {STATUS_TABS.map((t) => {
-              const href =
-                t.key === "pending"
-                  ? `/admin/admisiones${q ? `?q=${encodeURIComponent(q)}` : ""}`
-                  : `/admin/admisiones?status=${t.key}${q ? `&q=${encodeURIComponent(q)}` : ""}`;
+              // Cambio de tab → reset a página 1
+              const href = buildHref(t.key, q, 1);
               const active = statusFilter === t.key;
               return (
                 <Link
@@ -222,6 +250,50 @@ export default async function AdminAdmisionesPage({
             </TableBody>
           </Table>
         </div>
+
+        {/* Paginación */}
+        {total > 0 && (
+          <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+            <p>
+              Mostrando <span className="font-medium text-foreground">{firstRow}</span>–
+              <span className="font-medium text-foreground">{lastRow}</span> de{" "}
+              <span className="font-medium text-foreground">{total}</span>
+            </p>
+            <div className="flex items-center gap-2">
+              {page > 1 ? (
+                <Link
+                  href={buildHref(statusFilter, q, page - 1)}
+                  className="inline-flex items-center gap-1 rounded-md border border-white/[0.1] px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:border-white/[0.2] hover:text-foreground"
+                >
+                  <ChevronLeft className="size-3.5" />
+                  Anterior
+                </Link>
+              ) : (
+                <span className="inline-flex items-center gap-1 rounded-md border border-white/[0.04] px-2.5 py-1 text-xs text-muted-foreground/40">
+                  <ChevronLeft className="size-3.5" />
+                  Anterior
+                </span>
+              )}
+              <span className="px-2 text-xs text-muted-foreground">
+                Página {page} / {totalPages}
+              </span>
+              {page < totalPages ? (
+                <Link
+                  href={buildHref(statusFilter, q, page + 1)}
+                  className="inline-flex items-center gap-1 rounded-md border border-white/[0.1] px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:border-white/[0.2] hover:text-foreground"
+                >
+                  Siguiente
+                  <ChevronRight className="size-3.5" />
+                </Link>
+              ) : (
+                <span className="inline-flex items-center gap-1 rounded-md border border-white/[0.04] px-2.5 py-1 text-xs text-muted-foreground/40">
+                  Siguiente
+                  <ChevronRight className="size-3.5" />
+                </span>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );
