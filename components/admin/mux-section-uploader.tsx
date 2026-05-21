@@ -16,6 +16,8 @@ export function MuxSectionUploader({
   hasExistingVideo,
 }: {
   sectionId: string;
+  // Misma prop por compat — Mux trata audio igual que video internamente.
+  // Renombrada conceptualmente: "ya existe asset en la sección".
   hasExistingVideo: boolean;
 }) {
   const [status, setStatus] = useState<Status>({ phase: "idle" });
@@ -40,11 +42,11 @@ export function MuxSectionUploader({
     <div className="space-y-3 rounded-lg border bg-muted/20 p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-medium">Subir video a Mux</p>
+          <p className="text-sm font-medium">Subir audio a Mux</p>
           <p className="text-xs text-muted-foreground">
             {hasExistingVideo
-              ? "Ya hay un video asociado. Subir otro lo reemplazará cuando termine el procesamiento."
-              : "Arrastra un archivo o haz click para seleccionarlo. Se sube directo a Mux."}
+              ? "Ya hay un audio asociado. Subir otro lo reemplazará cuando termine el procesamiento."
+              : "Arrastra un archivo de audio (MP3, WAV, M4A) o haz click para seleccionarlo. Se sube directo a Mux."}
           </p>
         </div>
         {status.phase === "processing" && (
@@ -56,7 +58,7 @@ export function MuxSectionUploader({
         {hasExistingVideo && status.phase === "idle" && (
           <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600">
             <CheckCircle2 className="size-3.5" />
-            Video activo
+            Audio activo
           </span>
         )}
       </div>
@@ -73,7 +75,7 @@ export function MuxSectionUploader({
         onSuccess={() => {
           setStatus({ phase: "processing" });
           toast.success(
-            "Video subido. Mux está procesando — la sección se actualiza sola en 1-3 minutos.",
+            "Audio subido. Mux está procesando — la sección se actualiza sola en 1-3 minutos.",
           );
         }}
         onUploadError={(e) => {
@@ -96,7 +98,7 @@ export function MuxSectionUploader({
             className="inline-flex items-center gap-2 rounded-md border bg-card px-4 py-2 text-sm font-medium hover:bg-brand-coral hover:text-brand-coral-foreground hover:border-brand-coral transition-colors"
           >
             <UploadCloud className="size-4" />
-            Elegir video…
+            Elegir audio…
           </button>
         </div>
       </MuxUploader>

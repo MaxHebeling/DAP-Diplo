@@ -78,37 +78,51 @@ export function SectionTeaching(props: SectionTeachingProps) {
     // Causa típica: el signed token (TTL 6h) expiró si el usuario dejó
     // la pestaña abierta mucho tiempo. Recargar genera tokens nuevos.
     toast.error(
-      "Hubo un problema cargando el video. Recarga la página para reintentar.",
+      "Hubo un problema cargando el audio. Recarga la página para reintentar.",
     );
   }
 
   return (
     <div className="space-y-8">
       {props.muxPlaybackId && props.muxTokens ? (
-        <div className="overflow-hidden rounded-xl border bg-black">
+        <div className="overflow-hidden rounded-xl border bg-gradient-to-br from-brand-violet/[0.08] via-surface-elevated to-brand-coral/[0.06] p-6">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex size-10 items-center justify-center rounded-full bg-brand-coral/15 text-brand-coral">
+              <Headphones className="size-5" strokeWidth={2} />
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-widest text-brand-coral">
+                Enseñanza · 40 min
+              </p>
+              <p className="text-sm text-text-secondary">
+                Audio principal del módulo
+              </p>
+            </div>
+          </div>
           <MuxPlayer
+            audio
             streamType="on-demand"
             playbackId={props.muxPlaybackId}
             tokens={props.muxTokens}
             startTime={props.startPositionSeconds}
             metadata={{
               video_id: props.sectionId,
-              video_title: "Enseñanza",
+              video_title: "Enseñanza (audio)",
             }}
             onTimeUpdate={handleTimeUpdate}
             onError={handlePlayerError}
-            style={{ aspectRatio: "16 / 9", width: "100%" }}
             accentColor="#fdad5a"
+            style={{ width: "100%" }}
           />
         </div>
       ) : props.muxPlaybackId ? (
-        <div className="flex aspect-video items-center justify-center rounded-xl border border-dashed bg-amber-500/10 px-6 text-center text-sm text-amber-700 dark:text-amber-300">
-          No pudimos cargar el video en este momento. Recarga la página o
+        <div className="flex items-center justify-center rounded-xl border border-dashed bg-amber-500/10 px-6 py-8 text-center text-sm text-amber-700 dark:text-amber-300">
+          No pudimos cargar el audio en este momento. Recarga la página o
           contáctanos si el problema persiste.
         </div>
       ) : (
-        <div className="flex aspect-video items-center justify-center rounded-xl border border-dashed bg-muted/30 text-sm text-muted-foreground">
-          Video pendiente de subir (sin mux_playback_id en esta sección).
+        <div className="flex items-center justify-center rounded-xl border border-dashed bg-muted/30 px-6 py-8 text-sm text-muted-foreground">
+          Audio pendiente de subir (sin mux_playback_id en esta sección).
         </div>
       )}
 

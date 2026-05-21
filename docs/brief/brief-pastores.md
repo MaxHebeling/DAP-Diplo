@@ -71,7 +71,7 @@ Cada **martes 00:01 am (hora San Diego)** se abre tu módulo de la semana. La ac
 Cada módulo tiene 5 secciones:
 
 1. **Introducción** — objetivo y contexto del módulo.
-2. **Enseñanza en video** del Dr. Max (45–60 minutos).
+2. **Enseñanza en audio** del Dr. Max (40 minutos, para escuchar donde quieras).
 3. **Activación práctica** escrita.
 4. **Evaluación** con quiz autocorregible (pasa con ≥70%).
 5. **Impartición** — palabra apostólica de cierre.

@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     .maybeSingle();
   if (profile?.role !== "admin") {
     return NextResponse.json(
-      { error: "Solo admin puede subir video." },
+      { error: "Solo admin puede subir el audio del módulo." },
       { status: 403 },
     );
   }
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
   }
   if (section.kind !== "teaching") {
     return NextResponse.json(
-      { error: "Solo la sección de enseñanza acepta video." },
+      { error: "Solo la sección de enseñanza acepta audio." },
       { status: 400 },
     );
   }

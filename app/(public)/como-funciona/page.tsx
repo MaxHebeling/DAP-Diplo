@@ -68,13 +68,13 @@ const WEEK = [
     day: "Martes 00:01",
     icon: BookOpen,
     title: "Abre tu módulo de la semana",
-    body: "El nuevo módulo aparece en tu dashboard con sus 5 partes: introducción, enseñanza en video, activación práctica, evaluación e impartición. Recibes email automático.",
+    body: "El nuevo módulo aparece en tu dashboard con sus 5 partes: introducción, enseñanza en audio, activación práctica, evaluación e impartición. Recibes email automático.",
   },
   {
     day: "De martes a lunes",
     icon: Sparkles,
     title: "Estudias a tu ritmo",
-    body: "Miras la enseñanza (45–60 min), haces el quiz autocorregible y entregas tu activación escrita. Todo a tu ritmo, dentro de tu semana.",
+    body: "Escuchas la enseñanza en audio (40 min) — en el auto, caminando o donde quieras — haces el quiz autocorregible y entregas tu activación escrita. Todo a tu ritmo, dentro de tu semana.",
   },
   {
     day: "Lunes 23:59",
@@ -105,7 +105,7 @@ const FIVE_PARTS = [
   {
     n: "02",
     title: "Enseñanza",
-    body: "Video principal del módulo (45–60 min). Doctrina + práctica.",
+    body: "Audio principal del módulo (40 min). Doctrina + práctica para escuchar donde quieras.",
   },
   {
     n: "03",

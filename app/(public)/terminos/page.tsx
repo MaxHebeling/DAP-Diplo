@@ -133,7 +133,7 @@ export default function TerminosPage() {
 
       <h2>5. Propiedad intelectual</h2>
       <p>
-        Todo el contenido del DAP (videos, textos, audios, PDFs, evaluaciones,
+        Todo el contenido del DAP (audios, textos, videos en vivo, PDFs, evaluaciones,
         marca, logos, diseño, código y materiales descargables) es propiedad
         exclusiva de Revival &amp; Kingdom Ministries, INC o de sus
         licenciantes, y está protegido por leyes de propiedad intelectual de

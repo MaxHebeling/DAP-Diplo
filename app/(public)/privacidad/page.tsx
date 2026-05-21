@@ -82,7 +82,7 @@ export default function PrivacidadPage() {
         <li><strong>Stripe, Inc.</strong> — procesamiento de pagos.</li>
         <li><strong>Supabase Inc.</strong> — base de datos y autenticación.</li>
         <li><strong>Vercel Inc.</strong> — hosting y entrega del sitio.</li>
-        <li><strong>Mux Inc.</strong> — alojamiento y reproducción de video.</li>
+        <li><strong>Mux Inc.</strong> — alojamiento y reproducción de audio y video.</li>
         <li><strong>Resend Inc.</strong> — envío de emails transaccionales.</li>
         <li><strong>Anthropic PBC</strong> — modelo de inteligencia artificial del tutor (las consultas se procesan sin asociarse a tu identidad pública).</li>
       </ul>

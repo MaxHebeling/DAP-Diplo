@@ -808,8 +808,8 @@ function BriefDocument() {
             <Text style={styles.para}>
               Cada módulo tiene 5 secciones:{" "}
               <Text style={styles.bold}>(1)</Text> introducción y contexto,{" "}
-              <Text style={styles.bold}>(2)</Text> enseñanza en video del
-              Dr. Max (45–60 min),{" "}
+              <Text style={styles.bold}>(2)</Text> enseñanza en audio del
+              Dr. Max (40 min, para escuchar donde quieras),{" "}
               <Text style={styles.bold}>(3)</Text> activación práctica
               escrita,{" "}
               <Text style={styles.bold}>(4)</Text> evaluación con quiz
