@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useTransition } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, useWatch, Controller } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { z } from "zod";
 import { ExternalLink, Save } from "lucide-react";
@@ -66,13 +66,13 @@ export function SectionEditForm({
     register,
     handleSubmit,
     control,
-    watch,
     setValue,
     formState: { errors, isDirty },
   } = form;
 
   const isTeaching = section.kind === "teaching";
-  const body = watch("body_md") ?? "";
+  // useWatch en vez de form.watch — compatible con React Compiler.
+  const body = useWatch({ control, name: "body_md" }) ?? "";
 
   function onSubmit(values: FormValues) {
     const fd = new FormData();

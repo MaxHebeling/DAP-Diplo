@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { z } from "zod";
 import { Plus, Save, Trash2, X } from "lucide-react";
@@ -141,12 +141,15 @@ export function QuizQuestionForm({
     register,
     handleSubmit,
     control,
-    watch,
     setValue,
+    getValues,
     formState: { errors },
   } = form;
-  const kind = watch("kind");
-  const options = watch("options") ?? [];
+  // useWatch en vez de form.watch para suscripciones reactivas
+  // (compatible con React Compiler). getValues para reads imperativos
+  // dentro de event handlers.
+  const kind = useWatch({ control, name: "kind" });
+  const options = useWatch({ control, name: "options" }) ?? [];
 
   function addOption() {
     if (options.length >= 6) return;
@@ -157,7 +160,7 @@ export function QuizQuestionForm({
     if (options.length <= 2) return;
     const next = options.filter((_, i) => i !== idx);
     setValue("options", next, { shouldDirty: true });
-    const cur = Number(watch("correct_index") ?? 0) || 0;
+    const cur = Number(getValues("correct_index") ?? 0) || 0;
     if (cur >= next.length) {
       setValue("correct_index", Math.max(0, next.length - 1), {
         shouldDirty: true,

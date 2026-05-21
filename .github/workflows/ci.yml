@@ -26,7 +26,9 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # Node 24 alinea con la deprecación de Node 20 en junio 2026
+          # para las propias actions (checkout, setup-node, pnpm/action-setup).
+          node-version: 24
           cache: pnpm
 
       - name: Install
@@ -35,11 +37,11 @@ jobs:
       - name: TypeScript
         run: pnpm tsc --noEmit
 
-      - name: ESLint (max-warnings=3)
-        # 3 warnings restantes son del React Compiler avisando que
-        # react-hook-form watch() no es optimizable (no son bugs).
-        # Cualquier nueva warning fuera de esas rompe CI.
-        run: pnpm lint --max-warnings 3
+      - name: ESLint (max-warnings=0)
+        # Lint estricto: cero warnings permitidos en main. Si necesitás
+        # introducir un warning legítimo, agregá un eslint-disable con
+        # justificación inline en vez de aflojar este gate.
+        run: pnpm lint --max-warnings 0
 
       - name: Build
         run: pnpm build

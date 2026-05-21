@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useTransition } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, useWatch, Controller } from "react-hook-form";
 // zodResolver (de "@hookform/resolvers/zod") espera Zod v3; usamos
 // standardSchemaResolver porque Zod v4 implementa la spec Standard Schema.
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -94,10 +94,11 @@ export function PhaseEditForm({
     handleSubmit,
     formState: { errors, isDirty },
     setValue,
-    watch,
   } = form;
 
-  const cover = watch("cover_image_url");
+  // useWatch en vez de form.watch — compatible con React Compiler.
+  const cover = useWatch({ control, name: "cover_image_url" });
+  const slug = useWatch({ control, name: "slug" });
 
   function onSubmit(values: FormValues) {
     const fd = new FormData();
@@ -191,7 +192,7 @@ export function PhaseEditForm({
             <FieldLabel htmlFor="slug">Slug</FieldLabel>
             <Input id="slug" {...register("slug")} />
             <p className="text-xs text-muted-foreground">
-              URL final: <code>/fases/{watch("slug")}</code>
+              URL final: <code>/fases/{slug}</code>
             </p>
             {errors.slug && <FieldError>{errors.slug.message}</FieldError>}
           </Field>
