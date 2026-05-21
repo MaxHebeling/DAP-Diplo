@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, useMotionValue, useSpring } from "motion/react";
+import { useMediaQuery } from "@/lib/hooks/use-media-query";
 
 /**
  * Cursor custom: círculo outline que sigue al mouse y crece sobre
@@ -16,7 +17,12 @@ import { motion, useMotionValue, useSpring } from "motion/react";
  *   <div data-cursor="hover" />
  */
 export function CustomCursor() {
-  const [enabled, setEnabled] = useState(false);
+  // Derivamos enabled de media queries via useSyncExternalStore en vez
+  // de un setState dentro de useEffect (anti-pattern en React 19 strict).
+  const canHover = useMediaQuery("(hover: hover) and (pointer: fine)");
+  const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const enabled = canHover && !reduceMotion;
+
   const [hovering, setHovering] = useState(false);
 
   const x = useMotionValue(-100);
@@ -27,13 +33,7 @@ export function CustomCursor() {
   const springY = useSpring(y, { stiffness: 380, damping: 28, mass: 0.4 });
 
   useEffect(() => {
-    const canHover = window.matchMedia("(hover: hover) and (pointer: fine)")
-      .matches;
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)")
-      .matches;
-    if (!canHover || reduceMotion) return;
-
-    setEnabled(true);
+    if (!enabled) return;
 
     const onMove = (e: MouseEvent) => {
       x.set(e.clientX);
@@ -65,7 +65,7 @@ export function CustomCursor() {
       document.removeEventListener("mouseover", onOver);
       document.removeEventListener("mouseout", onOut);
     };
-  }, [x, y]);
+  }, [enabled, x, y]);
 
   if (!enabled) return null;
 

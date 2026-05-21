@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { CheckCircle2, Loader2, Trash2 } from "lucide-react";
 
 type Step = {
@@ -27,6 +27,20 @@ export function CacheClearClient() {
     { label: "Limpiando almacenamiento local", status: "pending" },
   ]);
   const [done, setDone] = useState(false);
+
+  // useCallback estable (sin deps) para que el useEffect de abajo pueda
+  // depender de ella sin re-correr. Antes era una function declaration
+  // debajo del useEffect, y aunque JS la hoistea, ESLint la marcaba.
+  const setStepStatus = useCallback(
+    (idx: number, status: Step["status"], detail?: string) => {
+      setSteps((prev) => {
+        const copy = [...prev];
+        copy[idx] = { ...copy[idx], status, detail };
+        return copy;
+      });
+    },
+    [],
+  );
 
   useEffect(() => {
     (async () => {
@@ -78,16 +92,7 @@ export function CacheClearClient() {
 
       setDone(true);
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  function setStepStatus(idx: number, status: Step["status"], detail?: string) {
-    setSteps((prev) => {
-      const copy = [...prev];
-      copy[idx] = { ...copy[idx], status, detail };
-      return copy;
-    });
-  }
+  }, [setStepStatus]);
 
   return (
     <div className="rounded-2xl border border-white/[0.08] bg-surface-elevated/60 p-6 backdrop-blur-sm">

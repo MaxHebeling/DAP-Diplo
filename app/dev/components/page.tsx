@@ -332,7 +332,7 @@ export default function ComponentsDevPage() {
         {/* Extra icons used in design system mapping */}
         <section className="rounded-xl border border-white/10 bg-surface-elevated p-6">
           <p className="mb-4 text-sm font-medium text-text-secondary">
-            Mapeo "Formación integral" (6 áreas) — ver DESIGN-SYSTEM.md §4.2
+            Mapeo &ldquo;Formación integral&rdquo; (6 áreas) — ver DESIGN-SYSTEM.md §4.2
           </p>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6">
             {[

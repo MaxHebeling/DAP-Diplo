@@ -17,26 +17,38 @@ import {
  * "Notificaciones no configuradas" y no permite suscribirse.
  */
 export function PushSubscribeButton() {
-  const [supported, setSupported] = useState<boolean | null>(null);
-  const [permission, setPermission] = useState<NotificationPermission>("default");
+  // Feature detection y permission son síncronos desde el browser; los
+  // resolvemos con useState lazy init (corre 1 vez en mount client-only).
+  // `null` durante SSR/primer paint; cambia al primer render del cliente.
+  const [supported] = useState<boolean | null>(() => {
+    if (typeof window === "undefined") return null;
+    return (
+      "serviceWorker" in navigator &&
+      "PushManager" in window &&
+      "Notification" in window
+    );
+  });
+  const [, setPermission] = useState<NotificationPermission>(() => {
+    if (typeof window === "undefined" || !("Notification" in window)) {
+      return "default";
+    }
+    return Notification.permission;
+  });
   const [subscribed, setSubscribed] = useState(false);
   const [pending, startTransition] = useTransition();
 
+  // La suscripción del SW es async — sin alternativa al effect.
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const ok =
-      "serviceWorker" in navigator &&
-      "PushManager" in window &&
-      "Notification" in window;
-    setSupported(ok);
-    if (!ok) return;
-    setPermission(Notification.permission);
-    // ¿Ya está suscripto?
+    if (!supported) return;
+    let cancelled = false;
     navigator.serviceWorker.ready.then(async (reg) => {
       const sub = await reg.pushManager.getSubscription();
-      setSubscribed(!!sub);
+      if (!cancelled) setSubscribed(!!sub);
     });
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [supported]);
 
   if (supported === null) return null;
   if (supported === false) {

@@ -303,7 +303,7 @@ export default async function ComoFuncionaPage() {
                   8 módulos en algún momento.
                 </p>
                 <p className="mt-4 font-inter text-sm text-text-tertiary">
-                  Quita la ansiedad de "perder el mes". El llamado se desarrolla
+                  Quita la ansiedad de &ldquo;perder el mes&rdquo;. El llamado se desarrolla
                   con constancia, no con presión.
                 </p>
               </div>

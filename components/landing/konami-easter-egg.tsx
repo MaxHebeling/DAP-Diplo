@@ -52,15 +52,12 @@ function generateParticles(): Particle[] {
 export function KonamiEasterEgg() {
   const [triggered, setTriggered] = useState(false);
 
-  // Particles se regeneran en cada trigger. useState + effect en vez de
-  // useMemo porque el React Compiler trata useMemo como puro y puede
-  // descartar la memoización con valores aleatorios.
+  // Particles se generan en el momento del trigger (event handler), no
+  // en un effect — así evitamos el anti-pattern de setState dentro de
+  // useEffect y mantenemos la regeneración por trigger.
   const [particles, setParticles] = useState<Particle[]>(() =>
     generateParticles(),
   );
-  useEffect(() => {
-    if (triggered) setParticles(generateParticles());
-  }, [triggered]);
 
   useEffect(() => {
     let buffer: string[] = [];
@@ -74,6 +71,7 @@ export function KonamiEasterEgg() {
       const matched = SEQUENCE.every((k, i) => buffer[i] === k);
       if (matched) {
         buffer = [];
+        setParticles(generateParticles());
         setTriggered(true);
         window.setTimeout(() => setTriggered(false), 3500);
       }

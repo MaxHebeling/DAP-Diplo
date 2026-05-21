@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Particles, ParticlesProvider } from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
 import type { Engine, ISourceOptions } from "@tsparticles/engine";
+import { useMediaQuery } from "@/lib/hooks/use-media-query";
 
 type Intensity = "subtle" | "medium" | "cosmic";
 
@@ -34,27 +35,11 @@ const initEngine = async (engine: Engine) => {
 };
 
 function useReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduced(mq.matches);
-    const onChange = (e: MediaQueryListEvent) => setReduced(e.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-  return reduced;
+  return useMediaQuery("(prefers-reduced-motion: reduce)");
 }
 
 function useIsMobile(): boolean {
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 767px)");
-    setIsMobile(mq.matches);
-    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-  return isMobile;
+  return useMediaQuery("(max-width: 767px)");
 }
 
 export function HeroParticles({

@@ -102,8 +102,12 @@ export function DapStudentShell({
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // Cerrar drawer al cambiar de página
+  // Cerrar drawer al cambiar de página. React 19 strict marca esto como
+  // anti-pattern, pero las alternativas (key reset, ref render-phase
+  // setState, useSyncExternalStore) son peores para este caso de "UI
+  // que reacciona a un cambio externo (navegación) que no es derivable".
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDrawerOpen(false);
   }, [pathname]);
 
