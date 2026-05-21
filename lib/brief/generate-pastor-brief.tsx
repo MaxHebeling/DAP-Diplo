@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   Document,
+  Font,
   Image,
   Page,
   StyleSheet,
@@ -17,21 +18,52 @@ import {
 } from "@/lib/launch/config";
 
 /**
- * Brief apostólico del DAP en PDF — pieza institucional para que el
- * Dr. Max comparta con pastores de la red (y aspirantes) antes de la
- * apertura de inscripciones del 01 de Junio.
+ * Brief apostólico del DAP en PDF — pieza institucional editorial-grade.
+ *
+ * Tipografía premium registrada en runtime:
+ *   - Inter (sans) — headings, eyebrows, UI
+ *   - EB Garamond (serif) — body, lectura larga
  *
  * Estructura (4 páginas, sin blancos):
  *   1. Cover — fondo cosmic, logos, título grande, año, fechas
  *   2. Apertura · Para quién es · Visión
- *   3. Estructura · 9 dimensiones · Metodología semanal
- *   4. Lo que incluye · Inversión · Fechas · Cómo inscribirse · Firma
+ *   3. Estructura · 9 dimensiones · Metodología
+ *   4. Lo que incluye · Inversión · Fechas · Inscripción · Firma
  */
 
 const ASSETS_DIR = join(process.cwd(), "public", "admission-assets");
+const FONTS_DIR = join(process.cwd(), "public", "fonts");
 const LOGO_DAP = join(ASSETS_DIR, "logo-dap.png");
 const LOGO_RED = join(ASSETS_DIR, "logo-red-apostolica.png");
 const FIRMA = join(ASSETS_DIR, "firma-max-hebeling.png");
+
+// Registramos fuentes una sola vez al cargar el módulo.
+Font.register({
+  family: "Inter",
+  fonts: [
+    { src: join(FONTS_DIR, "Inter-Regular.ttf"), fontWeight: 400 },
+    { src: join(FONTS_DIR, "Inter-Medium.ttf"), fontWeight: 500 },
+    { src: join(FONTS_DIR, "Inter-SemiBold.ttf"), fontWeight: 600 },
+    { src: join(FONTS_DIR, "Inter-Bold.ttf"), fontWeight: 700 },
+  ],
+});
+Font.register({
+  family: "EB Garamond",
+  fonts: [
+    { src: join(FONTS_DIR, "EBGaramond-Regular.ttf"), fontWeight: 400 },
+    {
+      src: join(FONTS_DIR, "EBGaramond-Italic.ttf"),
+      fontWeight: 400,
+      fontStyle: "italic",
+    },
+    { src: join(FONTS_DIR, "EBGaramond-SemiBold.ttf"), fontWeight: 600 },
+  ],
+});
+
+// Desactivamos hyphenation automática — el español del DAP usa marcas
+// duras (em-dash, ·) y la hyphenation default deja palabras cortadas
+// que arruinan la justificación.
+Font.registerHyphenationCallback((word) => [word]);
 
 function assertAssetsExist(): void {
   for (const p of [LOGO_DAP, LOGO_RED, FIRMA]) {
@@ -54,242 +86,291 @@ const COLORS = {
   coral: "#FF4D6D",
   coralDark: "#E63E5C",
   divider: "#E2E5F0",
-  cardTint: "#FBFBFD",
+  cardTint: "#FAFAFC",
   cosmic: "#07142B",
 };
+
+const SANS = "Inter";
+const SERIF = "EB Garamond";
 
 const styles = StyleSheet.create({
   // ---------- Interior page chrome ----------
   page: {
     padding: 0,
-    fontFamily: "Helvetica",
+    fontFamily: SERIF,
     backgroundColor: "#FFFFFF",
     color: COLORS.ink,
-    fontSize: 10.5,
-    lineHeight: 1.65,
+    fontSize: 11,
+    lineHeight: 1.6,
   },
   bandTop: { height: 7, backgroundColor: COLORS.violet },
   bandTopAccent: { height: 3, backgroundColor: COLORS.coral },
   inner: {
-    paddingHorizontal: 58,
-    paddingTop: 44,
-    paddingBottom: 72,
+    paddingHorizontal: 64,
+    paddingTop: 46,
+    paddingBottom: 78,
     flexGrow: 1,
   },
 
-  // ---------- Interior page header (eyebrow + page number) ----------
+  // ---------- Interior page header ----------
   pageHeaderRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 30,
+    marginBottom: 34,
   },
   pageHeaderEyebrow: {
+    fontFamily: SANS,
     fontSize: 7.5,
-    letterSpacing: 3.5,
+    fontWeight: 600,
+    letterSpacing: 3,
     color: COLORS.coral,
     textTransform: "uppercase",
-    fontFamily: "Helvetica-Bold",
   },
   pageHeaderPage: {
+    fontFamily: SANS,
     fontSize: 8,
-    letterSpacing: 1.8,
+    fontWeight: 600,
+    letterSpacing: 1.5,
     color: COLORS.inkMuted,
     textTransform: "uppercase",
-    fontFamily: "Helvetica-Bold",
   },
 
-  // ---------- Typography ----------
+  // ---------- Typography hierarchy ----------
   sectionEyebrow: {
+    fontFamily: SANS,
     fontSize: 7.5,
-    letterSpacing: 3.5,
+    fontWeight: 600,
+    letterSpacing: 3,
     color: COLORS.violet,
-    fontFamily: "Helvetica-Bold",
     textTransform: "uppercase",
-    marginBottom: 8,
+    marginBottom: 10,
   },
   h1: {
-    fontSize: 22,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: SERIF,
+    fontWeight: 600,
+    fontSize: 26,
     color: COLORS.ink,
-    letterSpacing: 0.2,
+    letterSpacing: 0,
     marginBottom: 18,
-    lineHeight: 1.2,
+    lineHeight: 1.18,
   },
   h2: {
-    fontSize: 14,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: SERIF,
+    fontWeight: 600,
+    fontSize: 15,
     color: COLORS.ink,
     marginBottom: 12,
-    lineHeight: 1.25,
+    lineHeight: 1.3,
   },
   para: {
-    fontSize: 10.5,
+    fontFamily: SERIF,
+    fontSize: 11,
     color: COLORS.ink,
-    marginBottom: 12,
+    marginBottom: 13,
     textAlign: "justify",
-    lineHeight: 1.7,
+    lineHeight: 1.65,
+  },
+  paraIntro: {
+    fontFamily: SERIF,
+    fontStyle: "italic",
+    fontSize: 12,
+    color: COLORS.inkSoft,
+    marginBottom: 18,
+    lineHeight: 1.55,
   },
   paraSmall: {
+    fontFamily: SERIF,
     fontSize: 9.5,
     color: COLORS.inkSoft,
     marginBottom: 8,
     lineHeight: 1.6,
   },
-  bold: { fontFamily: "Helvetica-Bold", color: COLORS.ink },
-  highlight: { fontFamily: "Helvetica-Bold", color: COLORS.violet },
+  bold: {
+    fontFamily: SERIF,
+    fontWeight: 600,
+    color: COLORS.ink,
+  },
+  highlight: {
+    fontFamily: SERIF,
+    fontWeight: 600,
+    color: COLORS.violet,
+  },
 
-  // ---------- Section block spacing ----------
-  sectionBlock: { marginBottom: 28 },
-  sectionBlockTight: { marginBottom: 20 },
+  // ---------- Section spacing ----------
+  sectionBlock: { marginBottom: 30 },
+  sectionBlockTight: { marginBottom: 22 },
   dividerThin: {
     borderBottomWidth: 0.5,
     borderBottomColor: COLORS.divider,
-    marginTop: 4,
-    marginBottom: 22,
+    marginTop: 6,
+    marginBottom: 26,
+  },
+  rule: {
+    width: 40,
+    height: 2,
+    backgroundColor: COLORS.coral,
+    marginBottom: 14,
   },
 
   // ---------- Bullets ----------
   bulletList: { marginTop: 4 },
   bulletRow: {
     flexDirection: "row",
-    marginBottom: 10,
+    marginBottom: 11,
     paddingLeft: 2,
   },
   bulletDot: {
     width: 14,
-    fontSize: 10.5,
+    fontFamily: SANS,
+    fontSize: 11,
+    fontWeight: 700,
     color: COLORS.coral,
-    fontFamily: "Helvetica-Bold",
-    lineHeight: 1.7,
+    lineHeight: 1.65,
   },
   bulletNum: {
-    width: 18,
-    fontSize: 10.5,
+    width: 22,
+    fontFamily: SANS,
+    fontSize: 11,
+    fontWeight: 600,
     color: COLORS.violet,
-    fontFamily: "Helvetica-Bold",
-    lineHeight: 1.7,
+    lineHeight: 1.65,
   },
   bulletText: {
     flex: 1,
-    fontSize: 10.5,
+    fontFamily: SERIF,
+    fontSize: 11,
     color: COLORS.ink,
-    lineHeight: 1.7,
+    lineHeight: 1.65,
   },
 
   // ---------- 9 Dimensiones table ----------
   dimRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 8,
+    paddingVertical: 9,
     borderBottomWidth: 0.5,
     borderBottomColor: COLORS.divider,
   },
   dimRowLast: { borderBottomWidth: 0 },
   dimNum: {
-    width: 32,
-    fontSize: 12,
+    width: 34,
+    fontFamily: SANS,
+    fontWeight: 700,
+    fontSize: 13,
     color: COLORS.violet,
-    fontFamily: "Helvetica-Bold",
   },
   dimName: {
-    width: 108,
+    width: 115,
+    fontFamily: SANS,
+    fontWeight: 600,
     fontSize: 11,
     color: COLORS.ink,
-    fontFamily: "Helvetica-Bold",
+    letterSpacing: 0.1,
   },
   dimBloque: {
     flex: 1,
-    fontSize: 10,
+    fontFamily: SERIF,
+    fontSize: 10.5,
     color: COLORS.inkSoft,
   },
 
   // ---------- Callouts ----------
   callout: {
-    marginTop: 4,
+    marginTop: 6,
     marginBottom: 18,
-    padding: 18,
+    padding: 20,
     backgroundColor: COLORS.cardTint,
     borderLeft: `3 solid ${COLORS.coral}`,
     borderRadius: 4,
   },
   calloutTitle: {
+    fontFamily: SANS,
     fontSize: 7.5,
+    fontWeight: 600,
     letterSpacing: 2.5,
     color: COLORS.coral,
     textTransform: "uppercase",
-    fontFamily: "Helvetica-Bold",
-    marginBottom: 12,
+    marginBottom: 14,
   },
   calloutRow: {
     flexDirection: "row",
     marginBottom: 8,
   },
   calloutLabel: {
-    width: 145,
+    width: 155,
+    fontFamily: SANS,
     fontSize: 9.5,
     color: COLORS.inkSoft,
     lineHeight: 1.5,
   },
   calloutValue: {
     flex: 1,
+    fontFamily: SANS,
+    fontWeight: 600,
     fontSize: 10.5,
     color: COLORS.ink,
-    fontFamily: "Helvetica-Bold",
     lineHeight: 1.5,
   },
   priceBig: {
-    fontSize: 30,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: SANS,
+    fontWeight: 700,
+    fontSize: 34,
     color: COLORS.violet,
-    letterSpacing: 0.5,
+    letterSpacing: -0.5,
   },
   priceSmall: {
-    fontSize: 9,
+    fontFamily: SERIF,
+    fontSize: 9.5,
     color: COLORS.inkSoft,
-    marginTop: 4,
+    marginTop: 6,
     marginBottom: 10,
     lineHeight: 1.6,
   },
 
   // ---------- Signature ----------
   signatureBlock: {
-    marginTop: 24,
+    marginTop: 26,
     alignItems: "flex-start",
   },
   signatureImage: {
-    width: 150,
-    height: 56,
+    width: 156,
+    height: 58,
     objectFit: "contain",
   },
   signatureLine: {
-    width: 220,
+    width: 230,
     borderBottomWidth: 0.8,
     borderBottomColor: COLORS.ink,
     marginTop: 2,
-    marginBottom: 6,
+    marginBottom: 7,
   },
   signatureName: {
-    fontFamily: "Helvetica-Bold",
+    fontFamily: SANS,
+    fontWeight: 700,
     fontSize: 11.5,
     color: COLORS.ink,
   },
   signatureTitle: {
-    fontSize: 8.5,
+    fontFamily: SERIF,
+    fontStyle: "italic",
+    fontSize: 9,
     color: COLORS.inkSoft,
-    marginTop: 3,
+    marginTop: 4,
     lineHeight: 1.5,
   },
 
   // ---------- Interior page footer ----------
   footer: {
     position: "absolute",
-    bottom: 24,
-    left: 58,
-    right: 58,
+    bottom: 26,
+    left: 64,
+    right: 64,
     flexDirection: "row",
     justifyContent: "space-between",
+    fontFamily: SANS,
     fontSize: 7.5,
+    fontWeight: 500,
     color: COLORS.inkMuted,
     letterSpacing: 1.4,
     textTransform: "uppercase",
@@ -316,12 +397,11 @@ const styles = StyleSheet.create({
   // ============================================================
   coverPage: {
     padding: 0,
-    fontFamily: "Helvetica",
+    fontFamily: SANS,
     backgroundColor: COLORS.cosmic,
     color: "#FFFFFF",
     flexDirection: "column",
   },
-  // Gradient simulation: 2 layered semi-transparent blocks
   coverGlowTop: {
     position: "absolute",
     top: -40,
@@ -342,7 +422,6 @@ const styles = StyleSheet.create({
     opacity: 0.18,
     borderRadius: 190,
   },
-  // Left spine
   coverSpine: {
     position: "absolute",
     top: 0,
@@ -359,7 +438,6 @@ const styles = StyleSheet.create({
     width: 4,
     backgroundColor: COLORS.violet,
   },
-  // Bottom heavy bands
   coverBottomBand: {
     position: "absolute",
     left: 0,
@@ -378,55 +456,60 @@ const styles = StyleSheet.create({
   },
   coverInner: {
     flex: 1,
-    paddingTop: 60,
-    paddingBottom: 90,
-    paddingLeft: 64,
-    paddingRight: 64,
+    paddingTop: 64,
+    paddingBottom: 96,
+    paddingLeft: 70,
+    paddingRight: 70,
     flexDirection: "column",
   },
   coverHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 100,
+    marginBottom: 104,
   },
   coverLogoRed: {
-    width: 72,
-    height: 72,
+    width: 74,
+    height: 74,
     objectFit: "contain",
   },
   coverLogoDap: {
-    width: 72,
-    height: 72,
+    width: 74,
+    height: 74,
     objectFit: "contain",
   },
   coverEyebrow: {
+    fontFamily: SANS,
+    fontWeight: 600,
     fontSize: 9,
-    letterSpacing: 5,
+    letterSpacing: 4.5,
     color: COLORS.coral,
     textTransform: "uppercase",
-    fontFamily: "Helvetica-Bold",
-    marginBottom: 28,
+    marginBottom: 30,
   },
   coverTitle: {
-    fontSize: 44,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: SERIF,
+    fontWeight: 600,
+    fontSize: 50,
     color: "#FFFFFF",
-    letterSpacing: 0.5,
-    lineHeight: 1.1,
-    marginBottom: 22,
+    letterSpacing: -0.5,
+    lineHeight: 1.05,
+    marginBottom: 26,
   },
   coverTitleAccent: {
+    fontFamily: SERIF,
+    fontWeight: 600,
+    fontStyle: "italic",
     color: COLORS.coral,
   },
   coverTagline: {
-    fontSize: 13,
-    color: "rgba(255,255,255,0.78)",
+    fontFamily: SERIF,
+    fontSize: 14,
+    color: "rgba(255,255,255,0.82)",
     lineHeight: 1.65,
-    marginBottom: 36,
-    maxWidth: 400,
+    marginBottom: 40,
+    maxWidth: 420,
   },
-  // Bottom info block
   coverFooterRow: {
     flexDirection: "row",
     alignItems: "flex-end",
@@ -435,47 +518,55 @@ const styles = StyleSheet.create({
   },
   coverYearBlock: { flexDirection: "column" },
   coverYearLabel: {
+    fontFamily: SANS,
+    fontWeight: 600,
     fontSize: 8,
     letterSpacing: 3,
     color: "rgba(255,255,255,0.55)",
     textTransform: "uppercase",
-    fontFamily: "Helvetica-Bold",
-    marginBottom: 5,
+    marginBottom: 6,
   },
   coverYear: {
-    fontSize: 52,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: SANS,
+    fontWeight: 700,
+    fontSize: 56,
     color: "#FFFFFF",
     lineHeight: 1,
-    letterSpacing: 1,
+    letterSpacing: -1,
   },
   coverDateBlock: { alignItems: "flex-end" },
   coverDateLabel: {
+    fontFamily: SANS,
+    fontWeight: 600,
     fontSize: 8,
     letterSpacing: 3,
     color: "rgba(255,255,255,0.55)",
     textTransform: "uppercase",
-    fontFamily: "Helvetica-Bold",
-    marginBottom: 6,
+    marginBottom: 7,
   },
   coverDateValue: {
+    fontFamily: SANS,
+    fontWeight: 600,
     fontSize: 11,
     color: "#FFFFFF",
-    fontFamily: "Helvetica-Bold",
     marginBottom: 4,
   },
   coverDateSecond: {
+    fontFamily: SANS,
+    fontWeight: 400,
     fontSize: 10,
-    color: "rgba(255,255,255,0.7)",
+    color: "rgba(255,255,255,0.72)",
   },
   coverFooterCaption: {
+    fontFamily: SANS,
+    fontWeight: 500,
     fontSize: 7.5,
     letterSpacing: 1.8,
-    color: "rgba(255,255,255,0.5)",
+    color: "rgba(255,255,255,0.55)",
     textTransform: "uppercase",
     textAlign: "center",
     position: "absolute",
-    bottom: 34,
+    bottom: 36,
     left: 0,
     right: 0,
   },
@@ -585,6 +676,7 @@ function BriefDocument() {
 
           <View style={styles.sectionBlock}>
             <Text style={styles.sectionEyebrow}>Palabra de apertura</Text>
+            <View style={styles.rule} />
             <Text style={styles.h1}>Pastor amado,</Text>
             <Text style={styles.para}>
               El Señor está levantando una generación de{" "}
@@ -668,6 +760,7 @@ function BriefDocument() {
 
           <View style={styles.sectionBlock}>
             <Text style={styles.sectionEyebrow}>El programa</Text>
+            <View style={styles.rule} />
             <Text style={styles.h1}>
               18 meses · 72 módulos · 9 bloques
             </Text>
@@ -817,7 +910,7 @@ function BriefDocument() {
             </Text>
             <View style={styles.bulletList}>
               <View style={styles.bulletRow}>
-                <Text style={styles.bulletNum}>1.</Text>
+                <Text style={styles.bulletNum}>01.</Text>
                 <Text style={styles.bulletText}>
                   Entra a{" "}
                   <Text style={styles.bold}>dapglobal.org</Text> y
@@ -825,14 +918,14 @@ function BriefDocument() {
                 </Text>
               </View>
               <View style={styles.bulletRow}>
-                <Text style={styles.bulletNum}>2.</Text>
+                <Text style={styles.bulletNum}>02.</Text>
                 <Text style={styles.bulletText}>
                   Si no perteneces a la Red Apostólica, se requiere carta
                   de consentimiento de tu pastor o cobertura ministerial.
                 </Text>
               </View>
               <View style={styles.bulletRow}>
-                <Text style={styles.bulletNum}>3.</Text>
+                <Text style={styles.bulletNum}>03.</Text>
                 <Text style={styles.bulletText}>
                   El equipo revisa tu solicitud manualmente. Una vez
                   aprobada, activas tu suscripción y entras al programa.
