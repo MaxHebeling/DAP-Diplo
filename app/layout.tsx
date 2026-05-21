@@ -7,6 +7,8 @@ import {
   Space_Grotesk,
 } from "next/font/google";
 import { Suspense } from "react";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "@/components/ui/sonner";
 import { ToastFromQuery } from "@/components/toast-from-query";
 import { RegisterServiceWorker } from "@/components/pwa/register-sw";
@@ -137,6 +139,10 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <ToastFromQuery />
         </Suspense>
+        {/* Vercel observability: pageviews + Core Web Vitals reales
+            (LCP, INP, CLS). Gratis hasta 2.5k events/mes en Hobby. */}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
