@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     fontFamily: "Helvetica-Bold",
     color: COLORS.ink,
     letterSpacing: 1,
-    marginBottom: 4,
+    marginBottom: 16,
   },
   subtitle: {
     fontSize: 11,
