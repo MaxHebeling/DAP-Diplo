@@ -12,7 +12,7 @@ const STEPS = [
   {
     icon: CalendarClock,
     title: "1 módulo cada semana",
-    body: "Cada martes 00:01 se abre un módulo nuevo (de 72 en total). La activación práctica la corrige el Ap. Max Hebeling con feedback personal en 48h. MasterClass en vivo por evento — mínimo 1 al mes.",
+    body: "Cada martes 00:01 am se abre un módulo nuevo (de 72 en total). La activación práctica la corrige el Ap. Max Hebeling con feedback personal en 48h. MasterClass en vivo por evento — mínimo 1 al mes.",
     accent: "coral",
   },
   {

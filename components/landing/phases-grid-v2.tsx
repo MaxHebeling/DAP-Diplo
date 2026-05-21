@@ -81,7 +81,7 @@ export async function PhasesGridV2() {
               Los 9 bloques
             </p>
             <h2 className="font-grotesk text-h1 font-bold leading-tight text-text-primary">
-              Nueve dimensiones de la <span className="gradient-text">unción apostólica</span>
+              Nueve dimensiones de la <span className="gradient-text">unción apostólica</span>.
             </h2>
           </div>
           <p className="max-w-md text-justify font-inter text-sm leading-relaxed text-text-secondary">
