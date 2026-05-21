@@ -44,6 +44,10 @@ const COLORS = {
   coral: "#FF4D6D",
   divider: "#E2E5F0",
   paperTint: "#FBFBFD",
+  // Colores extraídos del logo DAP — usados en las bandas top/bottom
+  // para alineación visual con la identidad de marca.
+  logoDeep: "#241555",   // Indigo profundo del cuerpo "DAP"
+  logoAccent: "#E63E5C", // Rojo coral de las líneas/glow del logo
 };
 
 const styles = StyleSheet.create({
@@ -55,14 +59,14 @@ const styles = StyleSheet.create({
     fontSize: 11,
     lineHeight: 1.55,
   },
-  // Banda superior gradient simulada con 2 barras + sello violeta
+  // Banda superior: indigo profundo del logo + accent coral
   bandTop: {
     height: 8,
-    backgroundColor: COLORS.violet,
+    backgroundColor: COLORS.logoDeep,
   },
   bandTopAccent: {
     height: 3,
-    backgroundColor: COLORS.coral,
+    backgroundColor: COLORS.logoAccent,
   },
   inner: {
     paddingHorizontal: 56,
@@ -192,7 +196,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     height: 3,
-    backgroundColor: COLORS.coral,
+    backgroundColor: COLORS.logoAccent,
   },
   bandBottomAccent: {
     position: "absolute",
@@ -200,7 +204,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 3,
     height: 8,
-    backgroundColor: COLORS.violet,
+    backgroundColor: COLORS.logoDeep,
   },
 });
 
