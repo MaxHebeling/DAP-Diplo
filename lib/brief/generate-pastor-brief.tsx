@@ -357,10 +357,10 @@ function BriefDocument() {
           <Text style={styles.sectionH}>Pastor amado,</Text>
           <Text style={styles.para}>
             El Señor está levantando una generación de{" "}
-            <Text style={styles.highlight}>padres apostólicos</Text> capaces
-            de gobernar, formar y enviar. No basta con buenos predicadores
-            — la hora pide pastores con identidad de hijo, mentalidad de
-            Reino y capacidad real de construir.
+            <Text style={styles.highlight}>líderes de impacto</Text>{" "}
+            capaces de gobernar, formar y enviar. No basta con buenos
+            predicadores — la hora pide pastores con identidad de hijo,
+            mentalidad de Reino y capacidad real de construir.
           </Text>
           <Text style={styles.para}>
             El{" "}

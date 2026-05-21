@@ -110,6 +110,42 @@ export async function signOutAction() {
 }
 
 /**
+ * Inicia el flow OAuth con Google. Server action invocada por un form
+ * con `<button formAction={signInWithGoogleAction}>` (o un form normal).
+ *
+ * Supabase devuelve la URL del consent screen de Google; el server action
+ * redirige el browser a esa URL. Tras autorizar, Google manda al usuario
+ * a /auth/callback?code=… y de ahí a `next` (default /dashboard).
+ *
+ * IMPORTANTE: requiere que el provider Google esté habilitado en
+ * Supabase Dashboard → Authentication → Providers → Google con tus
+ * Client ID + Client Secret de Google Cloud Console.
+ */
+export async function signInWithGoogleAction(formData: FormData) {
+  const next = safeRedirectTo(formData.get("redirectTo"));
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://www.dapglobal.org";
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${baseUrl}/auth/callback?next=${encodeURIComponent(next)}`,
+      queryParams: {
+        access_type: "offline",
+        prompt: "consent",
+      },
+    },
+  });
+
+  if (error || !data?.url) {
+    redirect("/login?toast=oauth-google-error");
+  }
+
+  redirect(data.url);
+}
+
+/**
  * Solicita un email con link de recuperación. SIEMPRE devuelve ok aunque
  * el email no exista (anti-enumeration): el alumno nunca ve si el email
  * estaba registrado o no.

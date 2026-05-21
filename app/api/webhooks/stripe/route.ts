@@ -101,6 +101,11 @@ export async function POST(request: NextRequest) {
           event.data.object as Stripe.Invoice,
         );
         break;
+      case "charge.refunded":
+        result = await handleChargeRefunded(
+          event.data.object as Stripe.Charge,
+        );
+        break;
       default:
         result = { ok: true, detail: "no-handler" };
         break;
@@ -239,6 +244,75 @@ async function markSubscriptionCanceled(
     ok: true,
     userId: sub.metadata?.userId ?? null,
     detail: "canceled (progreso del alumno preservado)",
+  };
+}
+
+// Admin emitió un refund (full o partial) desde el dashboard de Stripe.
+// Sólo actuamos en refunds FULL: revocamos acceso inmediato marcando la
+// suscripción como canceled. Partial refunds las logueamos sin tocar
+// status — el admin debe decidir si cancela la suscripción aparte.
+//
+// Nota: este evento llega también para refunds de invoice.paid procesadas
+// vía Customer Portal. Tratamos todos igual: si revertieron el pago, el
+// usuario pierde acceso.
+async function handleChargeRefunded(
+  charge: Stripe.Charge,
+): Promise<EventResult> {
+  const captured = charge.amount_captured ?? 0;
+  const refunded = charge.amount_refunded ?? 0;
+  if (captured > 0 && refunded < captured) {
+    return {
+      ok: true,
+      detail: `partial refund (${refunded}/${captured}), no se revoca acceso`,
+    };
+  }
+
+  // Stripe 22 removió charge.invoice. Resolvemos via customer_id → nuestra
+  // DB. Asumimos 1 suscripción DAP activa por customer (modelo actual).
+  const customerRef = charge.customer;
+  const customerId =
+    typeof customerRef === "string" ? customerRef : (customerRef?.id ?? null);
+  if (!customerId) {
+    return { ok: true, detail: "charge sin customer" };
+  }
+
+  const admin = createAdminClient();
+  const { data: sub } = await admin
+    .from("subscriptions")
+    .select("user_id, status, stripe_subscription_id")
+    .eq("stripe_customer_id", customerId)
+    .maybeSingle<{
+      user_id: string;
+      status: string;
+      stripe_subscription_id: string;
+    }>();
+  if (!sub) {
+    return {
+      ok: true,
+      detail: `customer=${customerId} no tiene subscription en DB`,
+    };
+  }
+  if (sub.status === "canceled") {
+    return {
+      ok: true,
+      userId: sub.user_id,
+      detail: `sub=${sub.stripe_subscription_id} ya estaba canceled`,
+    };
+  }
+
+  const { error } = await admin
+    .from("subscriptions")
+    .update({
+      status: "canceled",
+      canceled_at: new Date().toISOString(),
+    })
+    .eq("stripe_subscription_id", sub.stripe_subscription_id);
+  if (error) throw new Error(`Refund cancel falló: ${error.message}`);
+
+  return {
+    ok: true,
+    userId: sub.user_id,
+    detail: `refunded (${refunded}/${captured}) → acceso revocado sub=${sub.stripe_subscription_id}`,
   };
 }
 
