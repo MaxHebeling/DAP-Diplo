@@ -70,20 +70,6 @@ export function DapPublicFooter() {
               Diplomado Apostólico Pastoral. Formación integral de 18 meses
               para pastores y líderes hispanohablantes.
             </p>
-            <ul className="flex flex-wrap gap-2">
-              {VALUES.map(({ icon: Icon, label }) => (
-                <li
-                  key={label}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-xs text-text-secondary"
-                >
-                  <Icon
-                    className="size-3.5 text-brand-violet"
-                    strokeWidth={2}
-                  />
-                  {label}
-                </li>
-              ))}
-            </ul>
           </div>
 
           {COLS.map((col) => (
@@ -107,7 +93,23 @@ export function DapPublicFooter() {
           ))}
         </div>
 
-        <div className="mt-12 flex flex-col gap-2 border-t border-white/[0.06] pt-6 text-xs text-text-tertiary sm:flex-row sm:items-center sm:justify-between">
+        {/* Pilares del DAP — alineados debajo de las columnas, full-width */}
+        <ul className="mt-12 flex flex-wrap justify-center gap-2 border-t border-white/[0.06] pt-8 sm:gap-3">
+          {VALUES.map(({ icon: Icon, label }) => (
+            <li
+              key={label}
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-xs text-text-secondary"
+            >
+              <Icon
+                className="size-3.5 text-brand-violet"
+                strokeWidth={2}
+              />
+              {label}
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-8 flex flex-col gap-2 pt-6 text-xs text-text-tertiary sm:flex-row sm:items-center sm:justify-between">
           <p>
             © {new Date().getFullYear()} DAP. Todos los derechos reservados.{" "}
             <span className="text-text-tertiary/60">|</span> Desarrollado por{" "}
