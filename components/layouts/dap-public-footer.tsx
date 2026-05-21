@@ -18,15 +18,6 @@ const VALUES = [
 
 const COLS = [
   {
-    title: "Programa",
-    links: [
-      { href: "/#bloques", label: "Los 9 bloques" },
-      { href: "/como-funciona", label: "Cómo funciona" },
-      { href: "/rangos", label: "Dimensiones y certificaciones" },
-      { href: "/suscribirme", label: "Empezar ahora" },
-    ],
-  },
-  {
     title: "Soporte",
     links: [
       { href: "/#faq", label: "Preguntas frecuentes" },
@@ -51,7 +42,7 @@ export function DapPublicFooter() {
       className="border-t border-white/[0.08] bg-surface-base text-text-primary"
     >
       <div className="mx-auto max-w-6xl px-6 py-16">
-        <div className="grid grid-cols-1 gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr_1.3fr]">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-[1.4fr_1fr_1fr_1.3fr]">
           <div className="space-y-6">
             <Link
               href="/"
