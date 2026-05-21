@@ -18,6 +18,10 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: import.meta.dirname,
   },
+  experimental: {
+    // Tree-shake mejor estas libs grandes con muchos imports nombrados.
+    optimizePackageImports: ["lucide-react", "motion", "@mux/mux-player-react"],
+  },
   images: {
     remotePatterns: [
       {

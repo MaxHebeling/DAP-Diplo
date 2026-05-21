@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import MuxPlayer from "@mux/mux-player-react";
 import { Download, FileText, Headphones, Link as LinkIcon } from "lucide-react";
+import { toast } from "sonner";
 import { AdvanceButton } from "@/components/module/advance-button";
 import { Markdown } from "@/components/module/markdown";
 import { saveLastPosition } from "@/lib/progress/actions";
@@ -73,6 +74,14 @@ export function SectionTeaching(props: SectionTeachingProps) {
     }
   }
 
+  function handlePlayerError() {
+    // Causa típica: el signed token (TTL 6h) expiró si el usuario dejó
+    // la pestaña abierta mucho tiempo. Recargar genera tokens nuevos.
+    toast.error(
+      "Hubo un problema cargando el video. Recarga la página para reintentar.",
+    );
+  }
+
   return (
     <div className="space-y-8">
       {props.muxPlaybackId && props.muxTokens ? (
@@ -87,6 +96,7 @@ export function SectionTeaching(props: SectionTeachingProps) {
               video_title: "Enseñanza",
             }}
             onTimeUpdate={handleTimeUpdate}
+            onError={handlePlayerError}
             style={{ aspectRatio: "16 / 9", width: "100%" }}
             accentColor="#fdad5a"
           />

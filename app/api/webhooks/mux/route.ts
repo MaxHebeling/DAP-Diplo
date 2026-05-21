@@ -175,6 +175,57 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ received: true, sectionId: section.id });
       }
 
+      case "video.asset.errored": {
+        // Mux falló procesando el upload (codec inválido, archivo corrupto,
+        // etc.). Sin este handler la sección quedaba en "Procesando…" para
+        // siempre. Limpiamos asset_id/upload_id para que el admin pueda
+        // re-intentar el upload desde cero.
+        const data = event.data as {
+          id?: string;
+          passthrough?: string;
+          errors?: { messages?: string[]; type?: string };
+        };
+        const assetId = data.id;
+        const passthrough = data.passthrough;
+        const errMessages = data.errors?.messages?.join("; ") ?? "unknown";
+
+        const section =
+          (passthrough && (await findSection(admin, "id", passthrough))) ||
+          (assetId && (await findSection(admin, "mux_asset_id", assetId)));
+        if (!section) {
+          console.error(
+            `[mux.webhook] asset.errored sin sección encontrada (assetId=${assetId}, passthrough=${passthrough}): ${errMessages}`,
+          );
+          return NextResponse.json({ received: true });
+        }
+
+        console.error(
+          `[mux.webhook] asset.errored sección=${section.id} asset=${assetId}: ${errMessages}`,
+        );
+        const { error } = await admin
+          .from("module_sections")
+          .update({
+            mux_asset_id: null,
+            mux_playback_id: null,
+            mux_upload_id: null,
+            duration_seconds: null,
+          })
+          .eq("id", section.id);
+        if (error) {
+          console.error("[mux.webhook] update asset.errored failed:", error);
+          return NextResponse.json(
+            { error: "Update failed" },
+            { status: 500 },
+          );
+        }
+        revalidatePath("/admin/fases", "layout");
+        return NextResponse.json({
+          received: true,
+          sectionId: section.id,
+          status: "errored",
+        });
+      }
+
       default:
         return NextResponse.json({ received: true, ignored: event.type });
     }

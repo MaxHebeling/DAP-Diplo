@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { muxClient } from "@/lib/mux/server";
 import {
   blockUpdateSchema,
   moduleUpdateSchema,
@@ -159,6 +160,33 @@ export async function updateSectionAction(
   if (!admin) return { ok: false, error: "Solo admin puede editar secciones." };
 
   const { id, ...rest } = parsed.data;
+
+  // Si el admin está PEGANDO un mux_playback_id manualmente (vs el flow
+  // de upload que lo setea via webhook), validamos contra Mux para que
+  // no quede persistido un ID inválido o de otra cuenta. Sólo cuando
+  // cambia: re-grabar el mismo valor no consume API calls.
+  if (rest.mux_playback_id) {
+    const { data: existing } = await supabase
+      .from("module_sections")
+      .select("mux_playback_id")
+      .eq("id", id)
+      .maybeSingle<{ mux_playback_id: string | null }>();
+    if (rest.mux_playback_id !== existing?.mux_playback_id) {
+      try {
+        await muxClient().video.playbackIds.retrieve(rest.mux_playback_id);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "no encontrado";
+        return {
+          ok: false,
+          error: `playback_id no válido en Mux (${msg.slice(0, 80)})`,
+          fieldErrors: {
+            mux_playback_id: ["No existe en tu cuenta de Mux"],
+          },
+        };
+      }
+    }
+  }
+
   const { error } = await supabase
     .from("module_sections")
     .update(rest)
