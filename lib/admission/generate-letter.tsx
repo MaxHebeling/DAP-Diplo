@@ -46,7 +46,7 @@ const COLORS = {
   paperTint: "#FBFBFD",
   // Colores extraídos del logo DAP — usados en las bandas top/bottom
   // para alineación visual con la identidad de marca.
-  logoDeep: "#241555",   // Indigo profundo del cuerpo "DAP"
+  logoDeep: "#150832",   // Indigo midnight — tono más profundo del logo, elegante
   logoAccent: "#E63E5C", // Rojo coral de las líneas/glow del logo
 };
 
