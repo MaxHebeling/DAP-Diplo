@@ -3,8 +3,6 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import { ArrowRight, CheckCircle2, X } from "lucide-react";
 
-import { cn } from "@/lib/utils";
-
 export type TourStep = {
   // Selector CSS del elemento a highlightear. Si no se encuentra, el step se centra en la pantalla.
   target?: string;

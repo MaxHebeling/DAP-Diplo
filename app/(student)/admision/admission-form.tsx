@@ -10,7 +10,6 @@ import {
   ALL_DIAL_CODES,
   COUNTRIES,
   COUNTRY_DIAL_ID,
-  COUNTRY_PHONE_PLACEHOLDER,
   NETWORK_OPTIONS,
   admissionFormSchema,
   type AdmissionFormInput,

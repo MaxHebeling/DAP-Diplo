@@ -22,7 +22,6 @@ import {
   type DapHeaderUser,
 } from "@/components/layouts/dap-public-header";
 import { DapPublicFooter } from "@/components/layouts/dap-public-footer";
-import { DapButton } from "@/components/ui-dap/button";
 import { EnrollmentCTA } from "@/components/launch/enrollment-cta";
 import {
   DapRankBadge,

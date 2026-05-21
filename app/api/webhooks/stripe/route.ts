@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     switch (event.type) {
       case "customer.subscription.created": {
         const sub = event.data.object as Stripe.Subscription;
-        result = await upsertSubscription(sub, { isCreate: true });
+        result = await upsertSubscription(sub);
         if (result.userId) {
           const emailRes = await sendWelcomeEmail(result.userId);
           logEmail("welcome", result.userId, emailRes);
@@ -85,7 +85,6 @@ export async function POST(request: NextRequest) {
       case "customer.subscription.updated":
         result = await upsertSubscription(
           event.data.object as Stripe.Subscription,
-          { isCreate: false },
         );
         break;
       case "customer.subscription.deleted":
@@ -182,7 +181,6 @@ function logEmail(
 
 async function upsertSubscription(
   sub: Stripe.Subscription,
-  _opts: { isCreate: boolean },
 ): Promise<EventResult> {
   const userId = sub.metadata?.userId;
   if (!userId) {

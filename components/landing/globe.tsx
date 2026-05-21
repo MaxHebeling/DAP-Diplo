@@ -80,7 +80,6 @@ export function Globe({
       }
       setEffect(localEffect);
     })().catch((err) => {
-      // eslint-disable-next-line no-console
       console.error("[Globe] vanta init failed", err);
     });
 

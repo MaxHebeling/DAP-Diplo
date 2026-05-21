@@ -36,7 +36,6 @@ export default async function OpengraphImage() {
         }}
       >
         {/* Logo */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={logoSrc}
           alt="DAP"

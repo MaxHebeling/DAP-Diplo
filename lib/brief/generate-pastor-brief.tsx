@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/alt-text -- @react-pdf/renderer <Image> no acepta alt; el lint rule asume HTML. */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {

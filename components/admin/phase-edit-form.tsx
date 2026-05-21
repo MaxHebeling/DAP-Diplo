@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { useForm, Controller } from "react-hook-form";
 // zodResolver (de "@hookform/resolvers/zod") espera Zod v3; usamos
@@ -72,7 +71,6 @@ export function PhaseEditForm({
   phase: BlockFormBlock;
   dimensions: Dimension[];
 }) {
-  const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   const form = useForm<FormValues>({

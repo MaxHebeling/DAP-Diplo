@@ -6,9 +6,9 @@ import { Skeleton } from "@/components/ui/skeleton";
  * así loading.tsx puede mostrarlo sin Suspense boundary externo.
  */
 export function StudentPageSkeleton({
-  title = "Cargando…",
   variant = "default",
 }: {
+  /** title prop reservada para futura UX (e.g. cabecera del skeleton). */
   title?: string;
   variant?: "default" | "dashboard" | "fases" | "progreso" | "player";
 }) {
