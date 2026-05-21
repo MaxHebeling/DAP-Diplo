@@ -16,6 +16,7 @@ export const runtime = "nodejs";
 type SectionLookup = {
   id: string;
   module_id: string;
+  mux_asset_id: string | null;
 };
 
 async function findSection(
@@ -25,10 +26,32 @@ async function findSection(
 ): Promise<SectionLookup | null> {
   const { data } = await admin
     .from("module_sections")
-    .select("id, module_id")
+    .select("id, module_id, mux_asset_id")
     .eq(column, value)
     .maybeSingle();
   return data ?? null;
+}
+
+// Borra el asset viejo en Mux cuando una sección recibe uno nuevo
+// (re-upload sobre la misma sección). Evita cost leak por huérfanos.
+// Best-effort: si la API de Mux falla, log y seguimos — no rompemos el
+// procesamiento del webhook por un cleanup.
+async function deleteMuxAssetIfOrphan(
+  oldAssetId: string | null,
+  newAssetId: string,
+): Promise<void> {
+  if (!oldAssetId || oldAssetId === newAssetId) return;
+  try {
+    await muxClient().video.assets.delete(oldAssetId);
+    console.log(
+      `[mux.webhook] cleanup: deleted orphan asset ${oldAssetId} (replaced by ${newAssetId})`,
+    );
+  } catch (err) {
+    console.error(
+      `[mux.webhook] cleanup failed for asset ${oldAssetId}:`,
+      err,
+    );
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -124,6 +147,10 @@ export async function POST(request: NextRequest) {
           );
           return NextResponse.json({ received: true });
         }
+
+        // Si la sección ya tenía un asset distinto, es un re-upload —
+        // borramos el viejo en Mux para evitar cost leak por huérfanos.
+        await deleteMuxAssetIfOrphan(section.mux_asset_id, assetId);
 
         const { error } = await admin
           .from("module_sections")

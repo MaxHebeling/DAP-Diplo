@@ -44,53 +44,52 @@ export default async function MisModulosPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?redirectTo=/fases");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name, avatar_url, program_start_date")
-    .eq("id", user.id)
-    .maybeSingle<ProfileRow>();
+  // 6 queries independientes tras tener user.id — paralelizamos.
+  // phases.id !== blocks.id (2 sets — el FK real es modules.block_id → blocks);
+  // mapeamos por slug. blocks se carga para construir blockIdBySlug.
+  const [
+    { data: profile },
+    { data: phases },
+    { data: allModules },
+    { data: progressRows },
+    { data: currentWeek },
+    { data: blocks },
+  ] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("full_name, avatar_url, program_start_date")
+      .eq("id", user.id)
+      .maybeSingle<ProfileRow>(),
+    supabase
+      .from("phases")
+      .select(
+        "id, order_index, slug, title, brand_name, promise, subtitle, dimension:dimensions(name, order_index)",
+      )
+      .order("order_index", { ascending: true })
+      .returns<PhaseRow[]>(),
+    supabase
+      .from("modules")
+      .select("id, block_id, course_week")
+      .order("course_week", { ascending: true })
+      .returns<BlockModulesRow[]>(),
+    supabase
+      .from("module_progress")
+      .select("module_id, completed")
+      .eq("user_id", user.id)
+      .returns<ProgressRow[]>(),
+    supabase.rpc("current_program_week", { p_user_id: user.id }),
+    supabase
+      .from("blocks")
+      .select("id, slug")
+      .returns<{ id: string; slug: string }[]>(),
+  ]);
+
   if (!profile) throw new Error("Perfil no encontrado");
 
-  // 9 bloques (phases) ordenados
-  const { data: phases } = await supabase
-    .from("phases")
-    .select(
-      "id, order_index, slug, title, brand_name, promise, subtitle, dimension:dimensions(name, order_index)",
-    )
-    .order("order_index", { ascending: true })
-    .returns<PhaseRow[]>();
-
-  // Todos los módulos con su block + course_week
-  const { data: allModules } = await supabase
-    .from("modules")
-    .select("id, block_id, course_week")
-    .order("course_week", { ascending: true })
-    .returns<BlockModulesRow[]>();
-
-  // Progreso del alumno
-  const { data: progressRows } = await supabase
-    .from("module_progress")
-    .select("module_id, completed")
-    .eq("user_id", user.id)
-    .returns<ProgressRow[]>();
   const completedByModuleId = new Map<string, boolean>(
     (progressRows ?? []).map((p) => [p.module_id, p.completed]),
   );
-
-  // current_program_week
-  const { data: currentWeek } = await supabase.rpc("current_program_week", {
-    p_user_id: user.id,
-  });
   const currentWeekN = typeof currentWeek === "number" ? currentWeek : 0;
-
-  // Agrupar módulos por block_id
-  // phases.id !== blocks.id (existen 2 sets — el FK real es modules.block_id → blocks)
-  // pero phases.slug === blocks.slug. Resolvemos por slug. Cargamos blocks
-  // para hacer ese mapeo.
-  const { data: blocks } = await supabase
-    .from("blocks")
-    .select("id, slug")
-    .returns<{ id: string; slug: string }[]>();
   const blockIdBySlug = new Map<string, string>(
     (blocks ?? []).map((b) => [b.slug, b.id]),
   );
