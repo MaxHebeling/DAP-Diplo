@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useMemo, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
 type RevealProps = {
   children: ReactNode;
@@ -19,11 +19,12 @@ export function Reveal({
   tilt = 1.5,
   className,
 }: RevealProps) {
-  // Tilt aleatorio determinístico por instancia (sutil, ±tilt grados).
-  // useMemo para que no cambie en re-renders.
-  const initialRotate = useMemo(
-    () => (tilt > 0 ? (Math.random() * 2 - 1) * tilt : 0),
-    [tilt],
+  // Tilt aleatorio por instancia (sutil, ±tilt grados). useState con
+  // lazy initializer corre 1 vez en mount y no se regenera. Antes era
+  // useMemo, pero el React Compiler trata useMemo como puro y puede
+  // descartar la memoización con valores aleatorios.
+  const [initialRotate] = useState(() =>
+    tilt > 0 ? (Math.random() * 2 - 1) * tilt : 0,
   );
 
   return (

@@ -45,13 +45,25 @@ export async function POST(request: NextRequest) {
 
   const admin = createAdminClient();
 
-  // Idempotency check
-  const { data: already } = await admin
+  // Idempotency claim atómica. Insertamos primero (con ON CONFLICT DO NOTHING)
+  // antes de procesar — si la fila ya existía, otra entrega del mismo evento
+  // ya lo está manejando o lo hizo. Evita la ventana de race en la que un
+  // patrón SELECT-then-INSERT dejaba pasar duplicados (welcome email 2x,
+  // upsert de subscription pisado, etc.).
+  const { data: claimed, error: claimErr } = await admin
     .from("stripe_events_processed")
-    .select("id")
-    .eq("id", event.id)
-    .maybeSingle();
-  if (already) {
+    .upsert(
+      { id: event.id, type: event.type },
+      { onConflict: "id", ignoreDuplicates: true },
+    )
+    .select("id");
+  if (claimErr) {
+    console.error(
+      `[stripe.webhook] event=${event.id} no se pudo reclamar: ${claimErr.message}`,
+    );
+    return NextResponse.json({ error: "claim failed" }, { status: 500 });
+  }
+  if (!claimed || claimed.length === 0) {
     console.log(
       `[stripe.webhook] event=${event.id} type=${event.type} → SKIP (already processed)`,
     );
@@ -98,6 +110,16 @@ export async function POST(request: NextRequest) {
     console.error(
       `[stripe.webhook] event=${event.id} type=${event.type} → FAILED: ${msg}`,
     );
+    // Soltar el claim para que el retry de Stripe lo pueda procesar.
+    const { error: delErr } = await admin
+      .from("stripe_events_processed")
+      .delete()
+      .eq("id", event.id);
+    if (delErr) {
+      console.error(
+        `[stripe.webhook] event=${event.id} no se pudo soltar claim tras fallo: ${delErr.message}`,
+      );
+    }
     // 500 → Stripe reintenta automáticamente.
     return NextResponse.json({ error: msg }, { status: 500 });
   }
@@ -105,16 +127,6 @@ export async function POST(request: NextRequest) {
   console.log(
     `[stripe.webhook] event=${event.id} type=${event.type} userId=${result.userId ?? "—"} → OK${result.detail ? ` (${result.detail})` : ""}`,
   );
-
-  // Mark processed (no fallar si ya existe por race condition)
-  const { error: insErr } = await admin
-    .from("stripe_events_processed")
-    .insert({ id: event.id, type: event.type });
-  if (insErr && !/duplicate|already exists/i.test(insErr.message)) {
-    console.error(
-      `[stripe.webhook] event=${event.id} no se pudo marcar como procesado: ${insErr.message}`,
-    );
-  }
 
   return NextResponse.json({ received: true });
 }

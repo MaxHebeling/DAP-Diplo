@@ -76,16 +76,24 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: true, notified: 0 });
   }
 
-  // Por cada alumno: módulo de su semana actual + email
+  // Pre-fetch en bulk: traer los modules para todas las weeks que vamos
+  // a notificar en este run. Antes era 1 query por alumno (N+1).
+  const uniqueWeeks = Array.from(new Set(alumnos.map((a) => a.course_week)));
+  const { data: modulesRaw } = await admin
+    .from("modules")
+    .select("id, slug, title, course_week, block:blocks(slug)")
+    .in("course_week", uniqueWeeks)
+    .returns<ModuleRow[]>();
+  const modulesByWeek = new Map<number, ModuleRow>();
+  for (const m of modulesRaw ?? []) {
+    modulesByWeek.set(m.course_week, m);
+  }
+
   let sent = 0;
   let failed = 0;
   for (const a of alumnos) {
     try {
-      const { data: mod } = await admin
-        .from("modules")
-        .select("id, slug, title, course_week, block:blocks(slug)")
-        .eq("course_week", a.course_week)
-        .maybeSingle<ModuleRow>();
+      const mod = modulesByWeek.get(a.course_week);
       if (!mod || !mod.block) {
         console.warn(
           `[cron/week-open-notify] sin módulo o block para week=${a.course_week}`,

@@ -110,16 +110,38 @@ export async function GET(request: NextRequest) {
     (profilesData ?? []).map((p) => [p.id, p.full_name ?? "Ministro"]),
   );
 
-  // listUsers no acepta filtro por id; tenemos que paginar y filtrar
-  // localmente. Para una base pequeña esto es OK.
+  // Antes hacíamos admin.auth.admin.getUserById en loop (N llamadas al
+  // Auth API, lentísimas). listUsers pagina TODOS los users en lotes de
+  // 1000 — para el tamaño esperado son 1-2 round-trips totales.
+  const activeUserIdSet = new Set(activeUserIds);
+  const emailById = new Map<string, string>();
+  for (let page = 1; page <= 50; page++) {
+    const { data: pageData, error: lErr } = await admin.auth.admin.listUsers({
+      page,
+      perPage: 1000,
+    });
+    if (lErr) {
+      console.error(
+        `[cron.live-reminders] listUsers page ${page} falló: ${lErr.message}`,
+      );
+      break;
+    }
+    for (const u of pageData.users ?? []) {
+      if (activeUserIdSet.has(u.id) && u.email) {
+        emailById.set(u.id, u.email);
+      }
+    }
+    if ((pageData.users ?? []).length < 1000) break;
+    if (emailById.size >= activeUserIdSet.size) break;
+  }
+
   const recipients: ReminderRecipient[] = [];
   for (const userId of activeUserIds) {
-    const { data: userData, error: uErr } =
-      await admin.auth.admin.getUserById(userId);
-    if (uErr || !userData.user?.email) continue;
+    const email = emailById.get(userId);
+    if (!email) continue;
     const fullName = fullNameById.get(userId) ?? "Ministro";
     recipients.push({
-      email: userData.user.email,
+      email,
       firstName: fullName.split(" ")[0] ?? "Ministro",
     });
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
 const SEQUENCE = [
@@ -23,26 +23,44 @@ const COLORS = ["#7B61FF", "#FF4D6D", "#FFB84D", "#4DFFB8", "#FFD700"];
  * partículas + un toast pequeño "Enviado detected".
  * Cero impacto fuera del trigger.
  */
+type Particle = {
+  id: number;
+  left: number;
+  color: string;
+  size: number;
+  dx: number;
+  dy: number;
+  rotate: number;
+  duration: number;
+  delay: number;
+};
+
+function generateParticles(): Particle[] {
+  return Array.from({ length: 60 }, (_, i) => ({
+    id: i,
+    left: 50 + (Math.random() - 0.5) * 60, // 20%..80% viewport
+    color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    size: 6 + Math.random() * 10,
+    dx: (Math.random() - 0.5) * 600,
+    dy: -300 - Math.random() * 400,
+    rotate: Math.random() * 720 - 360,
+    duration: 1.6 + Math.random() * 1.2,
+    delay: Math.random() * 0.3,
+  }));
+}
+
 export function KonamiEasterEgg() {
   const [triggered, setTriggered] = useState(false);
 
-  const particles = useMemo(
-    () =>
-      Array.from({ length: 60 }, (_, i) => ({
-        id: i,
-        // Spread horizontal alrededor del centro
-        left: 50 + (Math.random() - 0.5) * 60, // 20%..80% viewport
-        color: COLORS[Math.floor(Math.random() * COLORS.length)],
-        size: 6 + Math.random() * 10,
-        // Trayectoria
-        dx: (Math.random() - 0.5) * 600,
-        dy: -300 - Math.random() * 400,
-        rotate: Math.random() * 720 - 360,
-        duration: 1.6 + Math.random() * 1.2,
-        delay: Math.random() * 0.3,
-      })),
-    [triggered], // regenera en cada trigger
+  // Particles se regeneran en cada trigger. useState + effect en vez de
+  // useMemo porque el React Compiler trata useMemo como puro y puede
+  // descartar la memoización con valores aleatorios.
+  const [particles, setParticles] = useState<Particle[]>(() =>
+    generateParticles(),
   );
+  useEffect(() => {
+    if (triggered) setParticles(generateParticles());
+  }, [triggered]);
 
   useEffect(() => {
     let buffer: string[] = [];

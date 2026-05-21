@@ -100,6 +100,62 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: true, processed: 0 });
   }
 
+  // Pre-fetch en bulk todas las dimensiones que iban antes 1 query × submission
+  // (modules, module_sections, profiles, admissions). Bajamos de 4N a 4
+  // round-trips fijos por corrida del cron.
+  const moduleIds = Array.from(new Set(pending.map((p) => p.module_id)));
+  const sectionIds = Array.from(
+    new Set(pending.map((p) => p.module_section_id)),
+  );
+  const userIds = Array.from(new Set(pending.map((p) => p.user_id)));
+
+  const [modulesRes, sectionsRes, profilesRes, admissionsRes] =
+    await Promise.all([
+      admin
+        .from("modules")
+        .select(
+          "id, title, slug, objective, main_revelation, block:blocks(slug)",
+        )
+        .in("id", moduleIds)
+        .returns<ModuleInfo[]>(),
+      admin
+        .from("module_sections")
+        .select("id, body_md")
+        .in("id", sectionIds)
+        .returns<SectionInfo[]>(),
+      admin.from("profiles").select("id, full_name").in("id", userIds),
+      admin
+        .from("admissions")
+        .select("user_id, email, submitted_at")
+        .in("user_id", userIds)
+        .order("submitted_at", { ascending: false }),
+    ]);
+
+  const modulesById = new Map<string, ModuleInfo>();
+  for (const m of modulesRes.data ?? []) {
+    modulesById.set(m.id, m);
+  }
+  const sectionsById = new Map<string, SectionInfo>();
+  for (const s of sectionsRes.data ?? []) {
+    sectionsById.set(s.id, s);
+  }
+  const fullNameByUser = new Map<string, string>();
+  for (const p of (profilesRes.data ?? []) as Array<{
+    id: string;
+    full_name: string;
+  }>) {
+    fullNameByUser.set(p.id, p.full_name);
+  }
+  // El ORDER BY submitted_at DESC garantiza que la primera admission
+  // que aparece por user_id es la más reciente.
+  const emailByUser = new Map<string, string>();
+  for (const a of (admissionsRes.data ?? []) as Array<{
+    user_id: string;
+    email: string;
+  }>) {
+    if (!emailByUser.has(a.user_id)) emailByUser.set(a.user_id, a.email);
+  }
+
   const results: Array<{ id: string; ok: boolean; error?: string }> = [];
 
   for (const sub of pending) {
@@ -110,38 +166,12 @@ export async function GET(request: NextRequest) {
         .update({ status: "correcting", updated_at: new Date().toISOString() })
         .eq("id", sub.id);
 
-      // 2. Cargar contexto del módulo + sección
-      const { data: mod } = await admin
-        .from("modules")
-        .select(
-          "id, title, slug, objective, main_revelation, block:blocks(slug)",
-        )
-        .eq("id", sub.module_id)
-        .maybeSingle<ModuleInfo>();
-
-      const { data: sec } = await admin
-        .from("module_sections")
-        .select("id, body_md")
-        .eq("id", sub.module_section_id)
-        .maybeSingle<SectionInfo>();
-
-      const { data: profile } = await admin
-        .from("profiles")
-        .select("full_name")
-        .eq("id", sub.user_id)
-        .maybeSingle<{ full_name: string }>();
-
-      const { data: authUser } = await admin
-        .from("admissions")
-        .select("email")
-        .eq("user_id", sub.user_id)
-        .order("submitted_at", { ascending: false })
-        .limit(1)
-        .maybeSingle<{ email: string }>();
-
+      // 2. Lookup en los maps pre-cargados (era 4 queries en este punto)
+      const mod = modulesById.get(sub.module_id);
+      const sec = sectionsById.get(sub.module_section_id);
       const userInfo: UserInfo = {
-        email: authUser?.email ?? "",
-        full_name: profile?.full_name ?? "Estudiante",
+        email: emailByUser.get(sub.user_id) ?? "",
+        full_name: fullNameByUser.get(sub.user_id) ?? "Estudiante",
       };
 
       if (!mod) throw new Error(`módulo no encontrado: ${sub.module_id}`);
