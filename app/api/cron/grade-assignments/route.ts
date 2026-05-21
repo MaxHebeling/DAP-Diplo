@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { correctAssignment } from "@/lib/excorrector";
 import { sendAssignmentFeedbackEmail } from "@/lib/email/send-assignment-feedback";
 import { sendPushToUser } from "@/lib/push/send";
+import { MS_PER_HOUR } from "@/lib/constants/time";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -75,7 +76,7 @@ export async function GET(request: NextRequest) {
   }
 
   const admin = createAdminClient();
-  const cutoffIso = new Date(Date.now() - DELAY_HOURS * 60 * 60 * 1000).toISOString();
+  const cutoffIso = new Date(Date.now() - DELAY_HOURS * MS_PER_HOUR).toISOString();
 
   const { data: pending, error: fetchErr } = await admin
     .from("assignment_submissions")

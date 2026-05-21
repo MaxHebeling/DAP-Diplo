@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { MS_PER_HOUR } from "@/lib/constants/time";
 
 export const runtime = "nodejs";
 
@@ -214,7 +215,7 @@ export async function POST(
   const now = new Date();
   const revealAt = isAdmin
     ? now
-    : new Date(now.getTime() + REVEAL_DELAY_HOURS * 60 * 60 * 1000);
+    : new Date(now.getTime() + REVEAL_DELAY_HOURS * MS_PER_HOUR);
 
   const { data: attempt, error: attemptErr } = await supabase
     .from("quiz_attempts")

@@ -1,5 +1,6 @@
 import "server-only";
 import { muxClient } from "@/lib/mux/server";
+import { SECONDS_PER_HOUR } from "@/lib/constants/time";
 
 export type MuxPlayerTokens = {
   playback: string;
@@ -21,7 +22,7 @@ export type MuxPlayerTokens = {
  */
 export async function signMuxPlayerTokens(
   playbackId: string,
-  ttlSeconds = 6 * 60 * 60,
+  ttlSeconds = 6 * SECONDS_PER_HOUR,
 ): Promise<MuxPlayerTokens> {
   const raw = (await muxClient().jwt.signPlaybackId(playbackId, {
     expiration: `${ttlSeconds}s`,

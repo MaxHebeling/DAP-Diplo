@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancela runs viejos en el mismo branch cuando se hace push múltiple.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: tsc + lint + build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript
+        run: pnpm tsc --noEmit
+
+      - name: ESLint (max-warnings=3)
+        # 3 warnings restantes son del React Compiler avisando que
+        # react-hook-form watch() no es optimizable (no son bugs).
+        # Cualquier nueva warning fuera de esas rompe CI.
+        run: pnpm lint --max-warnings 3
+
+      - name: Build
+        run: pnpm build
+        env:
+          # Dummies para que el build no falle por env vars de runtime
+          # ausentes. Los valores reales viven en Vercel para deploys.
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-dummy
+          NEXT_PUBLIC_APP_URL: https://www.dapglobal.org
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_ci_dummy
+          NEXT_PUBLIC_VAPID_PUBLIC_KEY: ci-dummy

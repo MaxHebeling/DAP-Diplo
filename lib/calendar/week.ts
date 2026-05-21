@@ -12,6 +12,8 @@
  * pasá por la RPC.
  */
 
+import { MS_PER_DAY } from "@/lib/constants/time";
+
 export const DAP_TZ = "America/Los_Angeles";
 
 /**
@@ -50,7 +52,7 @@ export function formatDapDateTime(d: Date): string {
 export function daysUntil(target: Date): number {
   const ms = target.getTime() - Date.now();
   if (ms <= 0) return 0;
-  return Math.ceil(ms / (24 * 60 * 60 * 1000));
+  return Math.ceil(ms / MS_PER_DAY);
 }
 
 /**

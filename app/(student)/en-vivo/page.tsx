@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireActiveSubscription } from "@/lib/subscription/gate";
 import type { StudentSession } from "@/lib/live-sessions/types";
 import { cn } from "@/lib/utils";
+import { MS_PER_HOUR } from "@/lib/constants/time";
 
 export const metadata = { title: "En vivo — DAP" };
 
@@ -25,7 +26,7 @@ export default async function StudentEnVivoPage({ searchParams }: PageProps) {
   // eslint-disable-next-line react-hooks/purity
   const nowMs = Date.now();
   const nowIso = new Date(nowMs).toISOString();
-  const windowStartIso = new Date(nowMs - 4 * 60 * 60 * 1000).toISOString();
+  const windowStartIso = new Date(nowMs - 4 * MS_PER_HOUR).toISOString();
 
   // "Próximas" incluye: futuras + actualmente en vivo (within duration window).
   // Para simplificarlo y aprovechar el index por scheduled_at: traemos las que

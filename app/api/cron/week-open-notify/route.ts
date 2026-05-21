@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendWeekOpenedEmail } from "@/lib/email/send-week-opened";
 import { sendPushToUser } from "@/lib/push/send";
+import { MS_PER_DAY } from "@/lib/constants/time";
 
 // Corre 1x al día a las 12:00 UTC (05:00 PDT / 04:00 PST — San Diego), antes del
 // inicio del día académico (martes 00:01) … wait: en realidad lo más
@@ -112,7 +113,7 @@ export async function GET(request: NextRequest) {
 
       const closesAt = win?.closes_at
         ? new Date(win.closes_at)
-        : new Date(Date.now() + 6 * 24 * 60 * 60 * 1000);
+        : new Date(Date.now() + 6 * MS_PER_DAY);
 
       const moduleHref = `/fases/${mod.block.slug}/modulos/${mod.slug}`;
       const res = await sendWeekOpenedEmail({
@@ -190,9 +191,7 @@ async function fallbackNotify(
   for (const row of data ?? []) {
     if (!row.program_start_date) continue;
     const start = new Date(row.program_start_date + "T00:00:00Z");
-    const diffDays = Math.floor(
-      (todayMs - start.getTime()) / (1000 * 60 * 60 * 24),
-    );
+    const diffDays = Math.floor((todayMs - start.getTime()) / MS_PER_DAY);
     if (diffDays < 0) continue;
     if (diffDays % 7 !== 0) continue;
     const week = Math.floor(diffDays / 7) + 1;

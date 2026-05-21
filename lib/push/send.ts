@@ -1,6 +1,7 @@
 import webpush from "web-push";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { SECONDS_PER_DAY } from "@/lib/constants/time";
 
 let vapidConfigured = false;
 
@@ -72,7 +73,7 @@ export async function sendPushToUser(
             keys: { p256dh: s.p256dh, auth: s.auth },
           },
           json,
-          { TTL: 24 * 60 * 60 },
+          { TTL: SECONDS_PER_DAY },
         );
         sent++;
       } catch (err) {

@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { generateAdmissionLetter } from "@/lib/admission/generate-letter";
 import { uploadAdmissionLetter } from "@/lib/admission/storage";
 import { sendAdmissionLetterEmail } from "@/lib/email/send-admission-letter";
+import { MS_PER_DAY } from "@/lib/constants/time";
 
 // Necesitamos runtime nodejs para fs (cargar PNGs) y @react-pdf/renderer.
 export const runtime = "nodejs";
@@ -59,7 +60,7 @@ export async function GET(request: NextRequest) {
   const admin = createAdminClient();
 
   // 1. Encontrar admisiones elegibles
-  const cutoffIso = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const cutoffIso = new Date(Date.now() - MS_PER_DAY).toISOString();
 
   const { data: admissions, error: fetchErr } = await admin
     .from("admissions")

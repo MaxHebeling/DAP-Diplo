@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { SECONDS_PER_DAY } from "@/lib/constants/time";
 
 const BUCKET = "consent-letters";
 
@@ -53,7 +54,7 @@ export async function uploadConsentLetter(opts: {
  */
 export async function signedConsentLetterUrl(
   path: string,
-  expiresInSeconds = 60 * 60 * 24, // 24h
+  expiresInSeconds = SECONDS_PER_DAY,
 ): Promise<string | null> {
   const admin = createAdminClient();
   const { data, error } = await admin.storage
@@ -100,7 +101,7 @@ export async function uploadAdmissionLetter(opts: {
  */
 export async function signedAdmissionLetterUrl(
   path: string,
-  expiresInSeconds = 60 * 60 * 24,
+  expiresInSeconds = SECONDS_PER_DAY,
 ): Promise<string | null> {
   const admin = createAdminClient();
   const { data, error } = await admin.storage
