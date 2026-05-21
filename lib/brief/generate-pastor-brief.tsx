@@ -21,13 +21,11 @@ import {
  * Dr. Max comparta con pastores de la red (y aspirantes) antes de la
  * apertura de inscripciones del 01 de Junio.
  *
- * Reutiliza el mismo branding visual de la carta de admisión (paleta
- * violeta + coral, bandas superior/inferior, tipografía Helvetica) y
- * los assets de logo en /public/admission-assets/.
- *
- * El contenido no recibe parámetros — es un documento fijo. Si en algún
- * momento se necesita personalizar por aspirante (nombre, congregación,
- * etc.), agregar props acá.
+ * Estructura (4 páginas, sin blancos):
+ *   1. Cover — fondo cosmic, logos, título grande, año, fechas
+ *   2. Apertura · Para quién es · Visión
+ *   3. Estructura · 9 dimensiones · Metodología semanal
+ *   4. Lo que incluye · Inversión · Fechas · Cómo inscribirse · Firma
  */
 
 const ASSETS_DIR = join(process.cwd(), "public", "admission-assets");
@@ -52,205 +50,216 @@ const COLORS = {
   inkSoft: "#3A4565",
   inkMuted: "#6B7390",
   violet: "#7B61FF",
+  violetDark: "#5B43D1",
   coral: "#FF4D6D",
+  coralDark: "#E63E5C",
   divider: "#E2E5F0",
-  paperTint: "#FBFBFD",
-  highlight: "#FFF6F8",
+  cardTint: "#FBFBFD",
+  cosmic: "#07142B",
 };
 
 const styles = StyleSheet.create({
+  // ---------- Interior page chrome ----------
   page: {
     padding: 0,
     fontFamily: "Helvetica",
     backgroundColor: "#FFFFFF",
     color: COLORS.ink,
     fontSize: 10.5,
-    lineHeight: 1.55,
+    lineHeight: 1.65,
   },
-  bandTop: {
-    height: 8,
-    backgroundColor: COLORS.violet,
-  },
-  bandTopAccent: {
-    height: 3,
-    backgroundColor: COLORS.coral,
-  },
+  bandTop: { height: 7, backgroundColor: COLORS.violet },
+  bandTopAccent: { height: 3, backgroundColor: COLORS.coral },
   inner: {
-    paddingHorizontal: 52,
-    paddingTop: 30,
-    paddingBottom: 56,
+    paddingHorizontal: 58,
+    paddingTop: 44,
+    paddingBottom: 72,
     flexGrow: 1,
   },
-  headerRow: {
+
+  // ---------- Interior page header (eyebrow + page number) ----------
+  pageHeaderRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 22,
+    marginBottom: 30,
   },
-  headerLogo: {
-    width: 56,
-    height: 56,
-    objectFit: "contain",
-  },
-  headerLogoDap: {
-    width: 56,
-    height: 56,
-    objectFit: "contain",
-    borderRadius: 5,
-  },
-  eyebrow: {
+  pageHeaderEyebrow: {
     fontSize: 7.5,
-    letterSpacing: 4,
+    letterSpacing: 3.5,
     color: COLORS.coral,
     textTransform: "uppercase",
     fontFamily: "Helvetica-Bold",
-    marginBottom: 4,
   },
-  title: {
-    fontSize: 22,
+  pageHeaderPage: {
+    fontSize: 8,
+    letterSpacing: 1.8,
+    color: COLORS.inkMuted,
+    textTransform: "uppercase",
     fontFamily: "Helvetica-Bold",
-    color: COLORS.ink,
-    letterSpacing: 0.5,
-    marginBottom: 6,
-    lineHeight: 1.15,
   },
-  lede: {
-    fontSize: 11,
-    color: COLORS.inkSoft,
-    marginBottom: 18,
-    lineHeight: 1.5,
-  },
-  divider: {
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.divider,
-    marginVertical: 14,
-  },
-  sectionH: {
-    fontSize: 12.5,
-    fontFamily: "Helvetica-Bold",
-    color: COLORS.ink,
-    marginTop: 14,
-    marginBottom: 6,
-    letterSpacing: 0.3,
-  },
-  sectionHEyebrow: {
-    fontSize: 7,
-    letterSpacing: 3,
+
+  // ---------- Typography ----------
+  sectionEyebrow: {
+    fontSize: 7.5,
+    letterSpacing: 3.5,
     color: COLORS.violet,
     fontFamily: "Helvetica-Bold",
     textTransform: "uppercase",
-    marginTop: 16,
-    marginBottom: 3,
+    marginBottom: 8,
+  },
+  h1: {
+    fontSize: 22,
+    fontFamily: "Helvetica-Bold",
+    color: COLORS.ink,
+    letterSpacing: 0.2,
+    marginBottom: 18,
+    lineHeight: 1.2,
+  },
+  h2: {
+    fontSize: 14,
+    fontFamily: "Helvetica-Bold",
+    color: COLORS.ink,
+    marginBottom: 12,
+    lineHeight: 1.25,
   },
   para: {
     fontSize: 10.5,
     color: COLORS.ink,
-    marginBottom: 9,
+    marginBottom: 12,
     textAlign: "justify",
+    lineHeight: 1.7,
   },
   paraSmall: {
     fontSize: 9.5,
     color: COLORS.inkSoft,
     marginBottom: 8,
-    lineHeight: 1.5,
+    lineHeight: 1.6,
   },
-  bold: {
-    fontFamily: "Helvetica-Bold",
-    color: COLORS.ink,
+  bold: { fontFamily: "Helvetica-Bold", color: COLORS.ink },
+  highlight: { fontFamily: "Helvetica-Bold", color: COLORS.violet },
+
+  // ---------- Section block spacing ----------
+  sectionBlock: { marginBottom: 28 },
+  sectionBlockTight: { marginBottom: 20 },
+  dividerThin: {
+    borderBottomWidth: 0.5,
+    borderBottomColor: COLORS.divider,
+    marginTop: 4,
+    marginBottom: 22,
   },
-  highlight: {
-    fontFamily: "Helvetica-Bold",
-    color: COLORS.violet,
-  },
+
+  // ---------- Bullets ----------
+  bulletList: { marginTop: 4 },
   bulletRow: {
     flexDirection: "row",
-    marginBottom: 4,
-    paddingLeft: 4,
+    marginBottom: 10,
+    paddingLeft: 2,
   },
   bulletDot: {
-    width: 12,
+    width: 14,
     fontSize: 10.5,
     color: COLORS.coral,
     fontFamily: "Helvetica-Bold",
+    lineHeight: 1.7,
+  },
+  bulletNum: {
+    width: 18,
+    fontSize: 10.5,
+    color: COLORS.violet,
+    fontFamily: "Helvetica-Bold",
+    lineHeight: 1.7,
   },
   bulletText: {
     flex: 1,
     fontSize: 10.5,
     color: COLORS.ink,
-    lineHeight: 1.5,
+    lineHeight: 1.7,
   },
-  dimensionRow: {
+
+  // ---------- 9 Dimensiones table ----------
+  dimRow: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 5,
+    alignItems: "center",
+    paddingVertical: 8,
+    borderBottomWidth: 0.5,
+    borderBottomColor: COLORS.divider,
   },
-  dimensionNum: {
-    width: 28,
-    fontSize: 11,
+  dimRowLast: { borderBottomWidth: 0 },
+  dimNum: {
+    width: 32,
+    fontSize: 12,
     color: COLORS.violet,
     fontFamily: "Helvetica-Bold",
   },
-  dimensionName: {
-    width: 95,
-    fontSize: 10.5,
+  dimName: {
+    width: 108,
+    fontSize: 11,
     color: COLORS.ink,
     fontFamily: "Helvetica-Bold",
   },
-  dimensionBloque: {
+  dimBloque: {
     flex: 1,
     fontSize: 10,
     color: COLORS.inkSoft,
   },
-  // Caja destacada para fechas / pricing
+
+  // ---------- Callouts ----------
   callout: {
-    marginTop: 14,
-    marginBottom: 8,
-    padding: 14,
-    backgroundColor: COLORS.paperTint,
+    marginTop: 4,
+    marginBottom: 18,
+    padding: 18,
+    backgroundColor: COLORS.cardTint,
     borderLeft: `3 solid ${COLORS.coral}`,
     borderRadius: 4,
   },
   calloutTitle: {
-    fontSize: 8,
+    fontSize: 7.5,
     letterSpacing: 2.5,
     color: COLORS.coral,
     textTransform: "uppercase",
     fontFamily: "Helvetica-Bold",
-    marginBottom: 8,
+    marginBottom: 12,
   },
   calloutRow: {
     flexDirection: "row",
-    marginBottom: 5,
+    marginBottom: 8,
   },
   calloutLabel: {
-    width: 130,
+    width: 145,
     fontSize: 9.5,
     color: COLORS.inkSoft,
+    lineHeight: 1.5,
   },
   calloutValue: {
     flex: 1,
     fontSize: 10.5,
     color: COLORS.ink,
     fontFamily: "Helvetica-Bold",
+    lineHeight: 1.5,
   },
   priceBig: {
-    fontSize: 28,
+    fontSize: 30,
     fontFamily: "Helvetica-Bold",
     color: COLORS.violet,
-    marginBottom: 0,
+    letterSpacing: 0.5,
   },
   priceSmall: {
     fontSize: 9,
     color: COLORS.inkSoft,
-    marginBottom: 6,
+    marginTop: 4,
+    marginBottom: 10,
+    lineHeight: 1.6,
   },
+
+  // ---------- Signature ----------
   signatureBlock: {
-    marginTop: 28,
+    marginTop: 24,
     alignItems: "flex-start",
   },
   signatureImage: {
-    width: 140,
-    height: 54,
+    width: 150,
+    height: 56,
     objectFit: "contain",
   },
   signatureLine: {
@@ -258,28 +267,30 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.8,
     borderBottomColor: COLORS.ink,
     marginTop: 2,
-    marginBottom: 5,
+    marginBottom: 6,
   },
   signatureName: {
     fontFamily: "Helvetica-Bold",
-    fontSize: 11,
+    fontSize: 11.5,
     color: COLORS.ink,
   },
   signatureTitle: {
     fontSize: 8.5,
     color: COLORS.inkSoft,
-    marginTop: 2,
-    lineHeight: 1.4,
+    marginTop: 3,
+    lineHeight: 1.5,
   },
+
+  // ---------- Interior page footer ----------
   footer: {
     position: "absolute",
-    bottom: 18,
-    left: 52,
-    right: 52,
+    bottom: 24,
+    left: 58,
+    right: 58,
     flexDirection: "row",
     justifyContent: "space-between",
     fontSize: 7.5,
-    color: COLORS.inkSoft,
+    color: COLORS.inkMuted,
     letterSpacing: 1.4,
     textTransform: "uppercase",
   },
@@ -296,8 +307,177 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 3,
-    height: 8,
+    height: 7,
     backgroundColor: COLORS.violet,
+  },
+
+  // ============================================================
+  // COVER PAGE
+  // ============================================================
+  coverPage: {
+    padding: 0,
+    fontFamily: "Helvetica",
+    backgroundColor: COLORS.cosmic,
+    color: "#FFFFFF",
+    flexDirection: "column",
+  },
+  // Gradient simulation: 2 layered semi-transparent blocks
+  coverGlowTop: {
+    position: "absolute",
+    top: -40,
+    left: -40,
+    width: 360,
+    height: 360,
+    backgroundColor: COLORS.violetDark,
+    opacity: 0.35,
+    borderRadius: 180,
+  },
+  coverGlowBottom: {
+    position: "absolute",
+    bottom: -60,
+    right: -80,
+    width: 380,
+    height: 380,
+    backgroundColor: COLORS.coral,
+    opacity: 0.18,
+    borderRadius: 190,
+  },
+  // Left spine
+  coverSpine: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    width: 14,
+    backgroundColor: COLORS.coral,
+  },
+  coverSpineAccent: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 14,
+    width: 4,
+    backgroundColor: COLORS.violet,
+  },
+  // Bottom heavy bands
+  coverBottomBand: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 18,
+    backgroundColor: COLORS.coral,
+  },
+  coverBottomBandAccent: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 18,
+    height: 6,
+    backgroundColor: COLORS.violet,
+  },
+  coverInner: {
+    flex: 1,
+    paddingTop: 60,
+    paddingBottom: 90,
+    paddingLeft: 64,
+    paddingRight: 64,
+    flexDirection: "column",
+  },
+  coverHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 100,
+  },
+  coverLogoRed: {
+    width: 72,
+    height: 72,
+    objectFit: "contain",
+  },
+  coverLogoDap: {
+    width: 72,
+    height: 72,
+    objectFit: "contain",
+  },
+  coverEyebrow: {
+    fontSize: 9,
+    letterSpacing: 5,
+    color: COLORS.coral,
+    textTransform: "uppercase",
+    fontFamily: "Helvetica-Bold",
+    marginBottom: 28,
+  },
+  coverTitle: {
+    fontSize: 44,
+    fontFamily: "Helvetica-Bold",
+    color: "#FFFFFF",
+    letterSpacing: 0.5,
+    lineHeight: 1.1,
+    marginBottom: 22,
+  },
+  coverTitleAccent: {
+    color: COLORS.coral,
+  },
+  coverTagline: {
+    fontSize: 13,
+    color: "rgba(255,255,255,0.78)",
+    lineHeight: 1.65,
+    marginBottom: 36,
+    maxWidth: 400,
+  },
+  // Bottom info block
+  coverFooterRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    marginTop: "auto",
+  },
+  coverYearBlock: { flexDirection: "column" },
+  coverYearLabel: {
+    fontSize: 8,
+    letterSpacing: 3,
+    color: "rgba(255,255,255,0.55)",
+    textTransform: "uppercase",
+    fontFamily: "Helvetica-Bold",
+    marginBottom: 5,
+  },
+  coverYear: {
+    fontSize: 52,
+    fontFamily: "Helvetica-Bold",
+    color: "#FFFFFF",
+    lineHeight: 1,
+    letterSpacing: 1,
+  },
+  coverDateBlock: { alignItems: "flex-end" },
+  coverDateLabel: {
+    fontSize: 8,
+    letterSpacing: 3,
+    color: "rgba(255,255,255,0.55)",
+    textTransform: "uppercase",
+    fontFamily: "Helvetica-Bold",
+    marginBottom: 6,
+  },
+  coverDateValue: {
+    fontSize: 11,
+    color: "#FFFFFF",
+    fontFamily: "Helvetica-Bold",
+    marginBottom: 4,
+  },
+  coverDateSecond: {
+    fontSize: 10,
+    color: "rgba(255,255,255,0.7)",
+  },
+  coverFooterCaption: {
+    fontSize: 7.5,
+    letterSpacing: 1.8,
+    color: "rgba(255,255,255,0.5)",
+    textTransform: "uppercase",
+    textAlign: "center",
+    position: "absolute",
+    bottom: 34,
+    left: 0,
+    right: 0,
   },
 });
 
@@ -324,6 +504,13 @@ const INCLUIDO = [
   "Certificado, insignia y nueva dimensión ministerial al aprobar cada bloque",
 ];
 
+const FOR_WHOM = [
+  "Eres pastor, líder de ministerio o aspirante a serlo y quieres formación con cobertura apostólica real.",
+  "Sientes que tu llamado pide profundidad doctrinal, identidad de hijo y capacidad de gobernar — no sólo dones operando sueltos.",
+  "Quieres ser formado en ministerio, gobierno, finanzas, empresa y tecnología para no sólo levantar gente, sino estructuras del Reino.",
+  "Buscas un programa serio que respete tu tiempo: 100% online, a tu ritmo dentro de la semana, sin viajes obligatorios.",
+];
+
 function BriefDocument() {
   return (
     <Document
@@ -331,97 +518,129 @@ function BriefDocument() {
       author="Dr. Max Hebeling — Red Apostólica Reino y Avivamiento"
       subject="DAP — Convocatoria 2026"
     >
-      {/* ============ PAGE 1 — Apertura, Visión, Para Quién ============ */}
-      <Page size="LETTER" style={styles.page} wrap>
-        <View style={styles.bandTop} fixed />
-        <View style={styles.bandTopAccent} fixed />
+      {/* ============================================================ */}
+      {/* COVER PAGE                                                    */}
+      {/* ============================================================ */}
+      <Page size="LETTER" style={styles.coverPage}>
+        <View style={styles.coverGlowTop} fixed />
+        <View style={styles.coverGlowBottom} fixed />
+        <View style={styles.coverSpine} fixed />
+        <View style={styles.coverSpineAccent} fixed />
 
-        <View style={styles.inner}>
-          <View style={styles.headerRow}>
-            <Image src={LOGO_RED} style={styles.headerLogo} />
-            <Image src={LOGO_DAP} style={styles.headerLogoDap} />
+        <View style={styles.coverInner}>
+          <View style={styles.coverHeader}>
+            <Image src={LOGO_RED} style={styles.coverLogoRed} />
+            <Image src={LOGO_DAP} style={styles.coverLogoDap} />
           </View>
 
-          <Text style={styles.eyebrow}>
-            Brief Apostólico · Convocatoria 2026
+          <Text style={styles.coverEyebrow}>Brief de Convocatoria</Text>
+          <Text style={styles.coverTitle}>
+            Diplomado{"\n"}
+            Apostólico{"\n"}
+            <Text style={styles.coverTitleAccent}>Pastoral.</Text>
           </Text>
-          <Text style={styles.title}>Diplomado Apostólico Pastoral</Text>
-          <Text style={styles.lede}>
+          <Text style={styles.coverTagline}>
             Formación integral de dieciocho meses para pastores, líderes y
-            padres apostólicos que se están preparando para esta hora del
-            Reino.
+            padres apostólicos preparados para esta hora del Reino.
           </Text>
 
-          <View style={styles.divider} />
-
-          <Text style={styles.sectionHEyebrow}>Palabra de apertura</Text>
-          <Text style={styles.sectionH}>Pastor amado,</Text>
-          <Text style={styles.para}>
-            El Señor está levantando una generación de{" "}
-            <Text style={styles.highlight}>líderes de impacto</Text>{" "}
-            capaces de gobernar, formar y enviar. No basta con buenos
-            predicadores — la hora pide pastores con identidad de hijo,
-            mentalidad de Reino y capacidad real de construir.
-          </Text>
-          <Text style={styles.para}>
-            El{" "}
-            <Text style={styles.bold}>Diplomado Apostólico Pastoral (DAP)</Text>{" "}
-            nace de la{" "}
-            <Text style={styles.highlight}>
-              Red Apostólica Reino y Avivamiento
-            </Text>{" "}
-            como respuesta concreta a esa necesidad: no un curso más, sino
-            un proceso de dieciocho meses, paso a paso, donde cada semana
-            recibes enseñanza, corrección personal y activación práctica
-            en tu llamado.
-          </Text>
-
-          <Text style={styles.sectionHEyebrow}>Para quién es</Text>
-          <Text style={styles.sectionH}>Este diplomado es para ti si...</Text>
-          <View style={styles.bulletRow}>
-            <Text style={styles.bulletDot}>·</Text>
-            <Text style={styles.bulletText}>
-              Eres pastor, líder de ministerio o aspirante a serlo y quieres
-              formación con{" "}
-              <Text style={styles.bold}>cobertura apostólica real</Text>.
-            </Text>
+          <View style={styles.coverFooterRow}>
+            <View style={styles.coverYearBlock}>
+              <Text style={styles.coverYearLabel}>Convocatoria</Text>
+              <Text style={styles.coverYear}>2026</Text>
+            </View>
+            <View style={styles.coverDateBlock}>
+              <Text style={styles.coverDateLabel}>Fechas clave</Text>
+              <Text style={styles.coverDateValue}>
+                Inscripciones · 01 Junio 2026
+              </Text>
+              <Text style={styles.coverDateSecond}>
+                Clases · Martes 23 Junio 2026
+              </Text>
+            </View>
           </View>
-          <View style={styles.bulletRow}>
-            <Text style={styles.bulletDot}>·</Text>
-            <Text style={styles.bulletText}>
-              Sientes que tu llamado pide profundidad doctrinal, identidad
-              de hijo y capacidad de gobernar — no sólo dones operando
-              sueltos.
+        </View>
+
+        <Text style={styles.coverFooterCaption} fixed>
+          DAPGLOBAL.ORG  ·  RED APOSTÓLICA REINO Y AVIVAMIENTO
+        </Text>
+        <View style={styles.coverBottomBandAccent} fixed />
+        <View style={styles.coverBottomBand} fixed />
+      </Page>
+
+      {/* ============================================================ */}
+      {/* PAGE 2 — Apertura · Para quién · Visión                       */}
+      {/* ============================================================ */}
+      <Page size="LETTER" style={styles.page} wrap>
+        <View style={styles.bandTop} fixed />
+        <View style={styles.bandTopAccent} fixed />
+
+        <View style={styles.inner}>
+          <View style={styles.pageHeaderRow}>
+            <Text style={styles.pageHeaderEyebrow}>
+              Diplomado Apostólico Pastoral
             </Text>
+            <Text style={styles.pageHeaderPage}>02</Text>
           </View>
-          <View style={styles.bulletRow}>
-            <Text style={styles.bulletDot}>·</Text>
-            <Text style={styles.bulletText}>
-              Quieres ser formado en{" "}
+
+          <View style={styles.sectionBlock}>
+            <Text style={styles.sectionEyebrow}>Palabra de apertura</Text>
+            <Text style={styles.h1}>Pastor amado,</Text>
+            <Text style={styles.para}>
+              El Señor está levantando una generación de{" "}
+              <Text style={styles.highlight}>líderes de impacto</Text>{" "}
+              capaces de gobernar, formar y enviar. No basta con buenos
+              predicadores — la hora pide pastores con identidad de hijo,
+              mentalidad de Reino y capacidad real de construir.
+            </Text>
+            <Text style={styles.para}>
+              El{" "}
               <Text style={styles.bold}>
-                ministerio, gobierno, finanzas, empresa y tecnología
-              </Text>
-              {" "}para no sólo levantar gente, sino estructuras del Reino.
-            </Text>
-          </View>
-          <View style={styles.bulletRow}>
-            <Text style={styles.bulletDot}>·</Text>
-            <Text style={styles.bulletText}>
-              Buscas un programa serio que respete tu tiempo: 100% online,
-              a tu ritmo dentro de la semana, sin viajes obligatorios.
+                Diplomado Apostólico Pastoral (DAP)
+              </Text>{" "}
+              nace de la{" "}
+              <Text style={styles.highlight}>
+                Red Apostólica Reino y Avivamiento
+              </Text>{" "}
+              como respuesta concreta a esa necesidad: no un curso más,
+              sino un proceso de dieciocho meses, paso a paso, donde cada
+              semana recibes enseñanza, corrección personal y activación
+              práctica en tu llamado.
             </Text>
           </View>
 
-          <Text style={styles.sectionHEyebrow}>Visión</Text>
-          <Text style={styles.sectionH}>De Discípulo a Enviado</Text>
-          <Text style={styles.para}>
-            El DAP forma en{" "}
-            <Text style={styles.highlight}>nueve dimensiones ministeriales</Text>
-            , una por cada bloque del programa. Cada dimensión es una capa
-            de identidad y autoridad que se imparte sobre tu vida al
-            aprobar los 8 módulos del bloque correspondiente — desde la
-            primera dimensión de Discípulo hasta la novena de Enviado.
-          </Text>
+          <View style={styles.dividerThin} />
+
+          <View style={styles.sectionBlock}>
+            <Text style={styles.sectionEyebrow}>Para quién es</Text>
+            <Text style={styles.h2}>Este diplomado es para ti si...</Text>
+            <View style={styles.bulletList}>
+              {FOR_WHOM.map((item, i) => (
+                <View key={i} style={styles.bulletRow}>
+                  <Text style={styles.bulletDot}>·</Text>
+                  <Text style={styles.bulletText}>{item}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.dividerThin} />
+
+          <View style={styles.sectionBlockTight}>
+            <Text style={styles.sectionEyebrow}>Visión</Text>
+            <Text style={styles.h2}>De Discípulo a Enviado</Text>
+            <Text style={styles.para}>
+              El DAP forma en{" "}
+              <Text style={styles.highlight}>
+                nueve dimensiones ministeriales
+              </Text>
+              , una por cada bloque del programa. Cada dimensión es una
+              capa de identidad y autoridad que se imparte sobre tu vida
+              al aprobar los 8 módulos del bloque correspondiente — desde
+              la primera dimensión de Discípulo hasta la novena de
+              Enviado.
+            </Text>
+          </View>
         </View>
 
         <Text style={styles.footer} fixed>
@@ -432,61 +651,87 @@ function BriefDocument() {
         <View style={styles.bandBottom} fixed />
       </Page>
 
-      {/* ============ PAGE 2 — Estructura + Dimensiones + Metodología ============ */}
+      {/* ============================================================ */}
+      {/* PAGE 3 — Estructura · 9 Dimensiones · Metodología             */}
+      {/* ============================================================ */}
       <Page size="LETTER" style={styles.page} wrap>
         <View style={styles.bandTop} fixed />
         <View style={styles.bandTopAccent} fixed />
 
         <View style={styles.inner}>
-          <Text style={styles.sectionHEyebrow}>Estructura del programa</Text>
-          <Text style={styles.sectionH}>
-            18 meses · 72 módulos · 9 bloques · 9 dimensiones
-          </Text>
-          <Text style={styles.para}>
-            <Text style={styles.bold}>Un módulo nuevo cada semana</Text>,
-            durante 72 semanas. Cada bloque agrupa 8 módulos y, al
-            completarse, otorga una nueva dimensión ministerial al alumno.
-            Las 9 dimensiones del DAP son:
-          </Text>
+          <View style={styles.pageHeaderRow}>
+            <Text style={styles.pageHeaderEyebrow}>
+              Estructura del Programa
+            </Text>
+            <Text style={styles.pageHeaderPage}>03</Text>
+          </View>
 
-          {DIMENSIONS.map((d) => (
-            <View key={d.n} style={styles.dimensionRow}>
-              <Text style={styles.dimensionNum}>0{d.n}</Text>
-              <Text style={styles.dimensionName}>{d.name}</Text>
-              <Text style={styles.dimensionBloque}>
-                Bloque {d.n} — {d.bloque}
-              </Text>
-            </View>
-          ))}
+          <View style={styles.sectionBlock}>
+            <Text style={styles.sectionEyebrow}>El programa</Text>
+            <Text style={styles.h1}>
+              18 meses · 72 módulos · 9 bloques
+            </Text>
+            <Text style={styles.para}>
+              <Text style={styles.bold}>Un módulo nuevo cada semana</Text>
+              {" "}durante 72 semanas. Cada bloque agrupa 8 módulos y, al
+              completarse, otorga una nueva dimensión ministerial al
+              alumno. Las 9 dimensiones del DAP son:
+            </Text>
+          </View>
 
-          <Text style={styles.sectionHEyebrow}>Metodología semanal</Text>
-          <Text style={styles.sectionH}>De martes a lunes, paso a paso</Text>
-          <Text style={styles.para}>
-            Cada{" "}
-            <Text style={styles.bold}>martes 00:01 (hora San Diego)</Text>
-            {" "}se abre tu módulo de la semana. La activación práctica
-            cierra el{" "}
-            <Text style={styles.bold}>lunes 23:59</Text>. El contenido
-            pasado queda accesible para repaso indefinidamente.
-          </Text>
-          <Text style={styles.para}>
-            Cada módulo tiene 5 secciones:{" "}
-            <Text style={styles.bold}>(1)</Text> introducción y contexto,{" "}
-            <Text style={styles.bold}>(2)</Text> enseñanza en video del Dr.
-            Max (45–60 min),{" "}
-            <Text style={styles.bold}>(3)</Text> activación práctica escrita,{" "}
-            <Text style={styles.bold}>(4)</Text> evaluación con quiz
-            autocorregible (pasa con ≥70%), y{" "}
-            <Text style={styles.bold}>(5)</Text> impartición — palabra
-            apostólica de cierre.
-          </Text>
-          <Text style={styles.para}>
-            Tu activación escrita es revisada{" "}
-            <Text style={styles.highlight}>personalmente</Text> con la voz
-            pastoral del Dr. Max y devuelta en 48 horas con feedback
-            estructurado: lo que se vio, lo que necesitas afinar, tu
-            próximo paso y una palabra de impartación.
-          </Text>
+          <View style={styles.sectionBlock}>
+            {DIMENSIONS.map((d, i) => (
+              <View
+                key={d.n}
+                style={[
+                  styles.dimRow,
+                  i === DIMENSIONS.length - 1 ? styles.dimRowLast : {},
+                ]}
+              >
+                <Text style={styles.dimNum}>
+                  {String(d.n).padStart(2, "0")}
+                </Text>
+                <Text style={styles.dimName}>{d.name}</Text>
+                <Text style={styles.dimBloque}>
+                  Bloque {d.n} — {d.bloque}
+                </Text>
+              </View>
+            ))}
+          </View>
+
+          <View style={styles.dividerThin} />
+
+          <View style={styles.sectionBlockTight}>
+            <Text style={styles.sectionEyebrow}>Metodología semanal</Text>
+            <Text style={styles.h2}>De martes a lunes, paso a paso</Text>
+            <Text style={styles.para}>
+              Cada{" "}
+              <Text style={styles.bold}>martes 00:01 (hora San Diego)</Text>
+              {" "}se abre tu módulo de la semana. La activación práctica
+              cierra el{" "}
+              <Text style={styles.bold}>lunes 23:59</Text>. El contenido
+              pasado queda accesible para repaso indefinidamente.
+            </Text>
+            <Text style={styles.para}>
+              Cada módulo tiene 5 secciones:{" "}
+              <Text style={styles.bold}>(1)</Text> introducción y contexto,{" "}
+              <Text style={styles.bold}>(2)</Text> enseñanza en video del
+              Dr. Max (45–60 min),{" "}
+              <Text style={styles.bold}>(3)</Text> activación práctica
+              escrita,{" "}
+              <Text style={styles.bold}>(4)</Text> evaluación con quiz
+              autocorregible (pasa con ≥70%), y{" "}
+              <Text style={styles.bold}>(5)</Text> impartición — palabra
+              apostólica de cierre.
+            </Text>
+            <Text style={styles.para}>
+              Tu activación escrita es revisada{" "}
+              <Text style={styles.highlight}>personalmente</Text> con la
+              voz pastoral del Dr. Max y devuelta en 48 horas con feedback
+              estructurado: lo que se vio, lo que necesitas afinar, tu
+              próximo paso y una palabra de impartación.
+            </Text>
+          </View>
         </View>
 
         <Text style={styles.footer} fixed>
@@ -497,41 +742,60 @@ function BriefDocument() {
         <View style={styles.bandBottom} fixed />
       </Page>
 
-      {/* ============ PAGE 3 — Incluye, Inversión, Fechas, Cierre ============ */}
+      {/* ============================================================ */}
+      {/* PAGE 4 — Incluye · Inversión · Fechas · Inscripción · Firma   */}
+      {/* ============================================================ */}
       <Page size="LETTER" style={styles.page} wrap>
         <View style={styles.bandTop} fixed />
         <View style={styles.bandTopAccent} fixed />
 
         <View style={styles.inner}>
-          <Text style={styles.sectionHEyebrow}>Lo que incluye</Text>
-          <Text style={styles.sectionH}>Acceso completo al ecosistema DAP</Text>
-          {INCLUIDO.map((item, i) => (
-            <View key={i} style={styles.bulletRow}>
-              <Text style={styles.bulletDot}>·</Text>
-              <Text style={styles.bulletText}>{item}</Text>
+          <View style={styles.pageHeaderRow}>
+            <Text style={styles.pageHeaderEyebrow}>
+              Inversión & Convocatoria
+            </Text>
+            <Text style={styles.pageHeaderPage}>04</Text>
+          </View>
+
+          <View style={styles.sectionBlock}>
+            <Text style={styles.sectionEyebrow}>Lo que incluye</Text>
+            <Text style={styles.h2}>
+              Acceso completo al ecosistema DAP
+            </Text>
+            <View style={styles.bulletList}>
+              {INCLUIDO.map((item, i) => (
+                <View key={i} style={styles.bulletRow}>
+                  <Text style={styles.bulletDot}>·</Text>
+                  <Text style={styles.bulletText}>{item}</Text>
+                </View>
+              ))}
             </View>
-          ))}
+          </View>
 
           <View style={styles.callout}>
             <Text style={styles.calloutTitle}>Inversión</Text>
             <Text style={styles.priceBig}>$25 USD / mes</Text>
             <Text style={styles.priceSmall}>
-              Modelo de suscripción flexible. Cancelas cuando quieras desde
-              tu dashboard — tu progreso queda guardado. Si reactivas,
-              retomas desde la semana donde dejaste.
+              Modelo de suscripción flexible. Cancelas cuando quieras
+              desde tu dashboard — tu progreso queda guardado. Si
+              reactivas, retomas desde la semana donde dejaste.
             </Text>
             <Text style={styles.paraSmall}>
-              Garantía de 7 días: si dentro de la primera semana sientes
-              que el DAP no es para ti, te devolvemos el 100% del primer
-              pago.
+              <Text style={styles.bold}>Garantía de 7 días:</Text> si
+              dentro de la primera semana sientes que el DAP no es para
+              ti, te devolvemos el 100% del primer pago.
             </Text>
           </View>
 
           <View style={styles.callout}>
             <Text style={styles.calloutTitle}>Fechas clave</Text>
             <View style={styles.calloutRow}>
-              <Text style={styles.calloutLabel}>Apertura de inscripciones</Text>
-              <Text style={styles.calloutValue}>{ENROLLMENT_OPENS_LABEL}</Text>
+              <Text style={styles.calloutLabel}>
+                Apertura de inscripciones
+              </Text>
+              <Text style={styles.calloutValue}>
+                {ENROLLMENT_OPENS_LABEL}
+              </Text>
             </View>
             <View style={styles.calloutRow}>
               <Text style={styles.calloutLabel}>Inicio de clases</Text>
@@ -546,35 +810,40 @@ function BriefDocument() {
             </Text>
           </View>
 
-          <Text style={styles.sectionHEyebrow}>Cómo inscribirse</Text>
-          <Text style={styles.sectionH}>3 pasos a partir del 01 de Junio</Text>
-          <View style={styles.bulletRow}>
-            <Text style={styles.bulletDot}>1.</Text>
-            <Text style={styles.bulletText}>
-              Entra a{" "}
-              <Text style={styles.bold}>dapglobal.org</Text> y completa el
-              formulario de admisión.
+          <View style={styles.sectionBlock}>
+            <Text style={styles.sectionEyebrow}>Cómo inscribirse</Text>
+            <Text style={styles.h2}>
+              3 pasos a partir del 01 de Junio
+            </Text>
+            <View style={styles.bulletList}>
+              <View style={styles.bulletRow}>
+                <Text style={styles.bulletNum}>1.</Text>
+                <Text style={styles.bulletText}>
+                  Entra a{" "}
+                  <Text style={styles.bold}>dapglobal.org</Text> y
+                  completa el formulario de admisión.
+                </Text>
+              </View>
+              <View style={styles.bulletRow}>
+                <Text style={styles.bulletNum}>2.</Text>
+                <Text style={styles.bulletText}>
+                  Si no perteneces a la Red Apostólica, se requiere carta
+                  de consentimiento de tu pastor o cobertura ministerial.
+                </Text>
+              </View>
+              <View style={styles.bulletRow}>
+                <Text style={styles.bulletNum}>3.</Text>
+                <Text style={styles.bulletText}>
+                  El equipo revisa tu solicitud manualmente. Una vez
+                  aprobada, activas tu suscripción y entras al programa.
+                </Text>
+              </View>
+            </View>
+            <Text style={styles.paraSmall}>
+              Consultas:{" "}
+              <Text style={styles.bold}>admisiones@dapglobal.org</Text>
             </Text>
           </View>
-          <View style={styles.bulletRow}>
-            <Text style={styles.bulletDot}>2.</Text>
-            <Text style={styles.bulletText}>
-              Si no perteneces a la Red Apostólica, se requiere carta de
-              consentimiento de tu pastor o cobertura ministerial.
-            </Text>
-          </View>
-          <View style={styles.bulletRow}>
-            <Text style={styles.bulletDot}>3.</Text>
-            <Text style={styles.bulletText}>
-              El equipo revisa tu solicitud manualmente. Una vez aprobada,
-              activas tu suscripción y entras al programa.
-            </Text>
-          </View>
-
-          <Text style={styles.paraSmall}>
-            Consultas:{" "}
-            <Text style={styles.bold}>admisiones@dapglobal.org</Text>
-          </Text>
 
           <View style={styles.signatureBlock}>
             <Image src={FIRMA} style={styles.signatureImage} />

@@ -37,10 +37,6 @@ const FAQS = [
     q: "¿Hay material descargable?",
     a: "Sí. Cada módulo incluye PDFs y audios descargables relacionados con la enseñanza. El alumno los conserva mientras esté suscrito.",
   },
-  {
-    q: "¿Las clases en vivo son obligatorias?",
-    a: "No. Todas las sesiones en vivo (miércoles, viernes, mensual) se graban y quedan disponibles para verlas cuando puedas. El programa está pensado para que avances a tu propio ritmo.",
-  },
 ];
 
 export function FaqSection() {
