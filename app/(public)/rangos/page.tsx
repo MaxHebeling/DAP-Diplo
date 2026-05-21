@@ -118,7 +118,16 @@ export default async function RangosHubPage() {
       <main className="flex flex-1 flex-col">
         {/* Hero de la página */}
         <section className="relative isolate overflow-hidden border-b border-white/[0.06] px-6 py-28 sm:py-32">
-          <div className="absolute inset-0 -z-30 bg-gradient-cosmic" />
+          {/* Ciudad futurista del Reino — backdrop del hero */}
+          <Image
+            src="/rangos-hero.jpg"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="-z-40 object-cover opacity-55"
+          />
+          <div className="absolute inset-0 -z-30 bg-gradient-to-b from-surface-base/75 via-surface-base/55 to-surface-base" />
           <div className="absolute inset-0 -z-20 opacity-50 [background:radial-gradient(60%_45%_at_30%_42%,rgba(123,97,255,0.3),transparent_60%),radial-gradient(50%_40%_at_72%_58%,rgba(255,77,109,0.22),transparent_60%)]" />
 
           <div className="mx-auto max-w-4xl text-center">
