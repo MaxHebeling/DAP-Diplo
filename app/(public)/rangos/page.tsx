@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
@@ -53,6 +54,20 @@ const ICON_BY_RANK: Record<RankOrder, LucideIcon> = {
   7: Flame,
   8: Building2,
   9: Send,
+};
+
+// Cover image por dimensión (matched by order_index). Si después se
+// edita el mapping desde admin/bloques, mover esto a la DB.
+const IMAGE_BY_RANK: Record<RankOrder, string> = {
+  1: "/dimensions/01-discipulo.jpg",
+  2: "/dimensions/02-hijo.jpg",
+  3: "/dimensions/03-lider.jpg",
+  4: "/dimensions/04-pastor.jpg",
+  5: "/dimensions/05-administrador.jpg",
+  6: "/dimensions/06-mayordomo.jpg",
+  7: "/dimensions/07-reformador.jpg",
+  8: "/dimensions/08-arquitecto.jpg",
+  9: "/dimensions/09-enviado.jpg",
 };
 
 type DimensionRow = {
@@ -128,38 +143,53 @@ export default async function RangosHubPage() {
               {ranks.map((r, i) => {
                 const order = (r.order_index as RankOrder) ?? 1;
                 const Icon = ICON_BY_RANK[order];
+                const cover = IMAGE_BY_RANK[order];
                 const slug = rankSlug(r.name);
                 const theme = rankThemeFromDescription(r.description);
                 return (
                   <Reveal key={r.order_index} delay={i * 0.04}>
                     <Link
                       href={`/rangos/${slug}`}
-                      className="group relative flex h-full flex-col rounded-xl border border-white/[0.06] bg-surface-elevated p-6 transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-violet/30 hover:shadow-glow-violet"
+                      className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-white/[0.06] bg-surface-elevated transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-violet/30 hover:shadow-glow-violet"
                     >
-                      <div className="mb-6 flex items-start justify-between">
-                        <DapRankBadge
-                          rankOrder={order}
-                          size="md"
-                          icon={Icon}
-                          label={r.name}
+                      {/* Cover image */}
+                      <div className="relative aspect-[4/3] overflow-hidden">
+                        <Image
+                          src={cover}
+                          alt={`Dimensión ${r.name}`}
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
                         />
-                        <span className="gradient-text font-grotesk text-h4 font-bold leading-none">
+                        <div className="absolute inset-0 bg-gradient-to-t from-surface-elevated via-surface-elevated/30 to-transparent" />
+                        <span className="absolute right-4 top-4 gradient-text font-grotesk text-h3 font-bold leading-none drop-shadow-lg">
                           {String(order).padStart(2, "0")}
                         </span>
+                        <div className="absolute bottom-4 left-4">
+                          <DapRankBadge
+                            rankOrder={order}
+                            size="md"
+                            icon={Icon}
+                            label={r.name}
+                          />
+                        </div>
                       </div>
-                      <h2 className="mb-2 font-grotesk text-h3 font-semibold text-text-primary">
-                        {r.name}
-                      </h2>
-                      {theme && (
-                        <p className="font-inter text-sm leading-relaxed text-text-secondary">
-                          {theme}
-                        </p>
-                      )}
-                      <div className="mt-auto flex items-center justify-between border-t border-white/[0.05] pt-4 font-inter text-xs">
-                        <span className="font-medium uppercase tracking-wider text-brand-coral">
-                          Bloque {String(order).padStart(2, "0")}
-                        </span>
-                        <ArrowRight className="size-4 text-text-tertiary transition-colors group-hover:text-brand-coral" />
+
+                      <div className="flex flex-1 flex-col p-6">
+                        <h2 className="mb-2 font-grotesk text-h3 font-semibold text-text-primary">
+                          {r.name}
+                        </h2>
+                        {theme && (
+                          <p className="font-inter text-sm leading-relaxed text-text-secondary">
+                            {theme}
+                          </p>
+                        )}
+                        <div className="mt-auto flex items-center justify-between border-t border-white/[0.05] pt-4 font-inter text-xs">
+                          <span className="font-medium uppercase tracking-wider text-brand-coral">
+                            Bloque {String(order).padStart(2, "0")}
+                          </span>
+                          <ArrowRight className="size-4 text-text-tertiary transition-colors group-hover:text-brand-coral" />
+                        </div>
                       </div>
                     </Link>
                   </Reveal>
