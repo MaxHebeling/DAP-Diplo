@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient as createSupabasePlainClient } from "@supabase/supabase-js";
@@ -46,6 +47,19 @@ const ICON_BY_RANK: Record<RankOrder, LucideIcon> = {
   7: Flame,
   8: Building2,
   9: Send,
+};
+
+// Mismo mapping que el hub /rangos para mantener consistencia visual.
+const IMAGE_BY_RANK: Record<RankOrder, string> = {
+  1: "/dimensions/01-discipulo.jpg",
+  2: "/dimensions/02-hijo.jpg",
+  3: "/dimensions/03-lider.jpg",
+  4: "/dimensions/04-pastor.jpg",
+  5: "/dimensions/05-administrador.jpg",
+  6: "/dimensions/06-mayordomo.jpg",
+  7: "/dimensions/07-reformador.jpg",
+  8: "/dimensions/08-arquitecto.jpg",
+  9: "/dimensions/09-enviado.jpg",
 };
 
 type DimensionRow = {
@@ -202,7 +216,16 @@ export default async function RankDetailPage({ params }: PageProps) {
       <main className="flex flex-1 flex-col">
         {/* Hero */}
         <section className="relative isolate overflow-hidden border-b border-white/[0.06] px-6 py-24 sm:py-32">
-          <div className="absolute inset-0 -z-30 bg-gradient-cosmic" />
+          {/* Cover de la dimensión como background del hero */}
+          <Image
+            src={IMAGE_BY_RANK[order]}
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="-z-40 object-cover opacity-45"
+          />
+          <div className="absolute inset-0 -z-30 bg-gradient-to-b from-surface-base/80 via-surface-base/55 to-surface-base" />
           <div className="absolute inset-0 -z-20 opacity-50 [background:radial-gradient(60%_45%_at_30%_42%,rgba(123,97,255,0.32),transparent_60%),radial-gradient(50%_40%_at_72%_58%,rgba(255,77,109,0.24),transparent_60%)]" />
 
           <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
