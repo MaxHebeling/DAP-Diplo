@@ -2,7 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { generateAdmissionLetter } from "@/lib/admission/generate-letter";
+import { uploadAdmissionLetter } from "@/lib/admission/storage";
+import { sendAdmissionLetterEmail } from "@/lib/email/send-admission-letter";
 import { sendAdmissionRejectedEmail } from "@/lib/email/send-admission-rejected";
 import {
   approveAdmissionSchema,
@@ -138,4 +142,128 @@ export async function rejectAdmissionAction(
   revalidatePath("/admin/admisiones");
   revalidatePath(`/admin/admisiones/${parsed.data.admissionId}`);
   return { ok: true, message: "Rechazado y notificado." };
+}
+
+/**
+ * Reenvía la carta de admisión manualmente desde el panel admin.
+ *
+ * Mismo flow exacto que app/api/cron/admission-letters/route.ts pero
+ * disparado on-demand por un admin. Bypasea el delay de 24h. Idempotente
+ * con el cron (actualiza admission_letter_sent_at; el cron no la vuelve
+ * a procesar).
+ *
+ * Útil cuando:
+ *   - Se aprueba ahora y el alumno necesita la carta antes que corra el
+ *     cron diario.
+ *   - El alumno reporta que no le llegó y querés reenviarla.
+ *   - Cambiaste el template y querés regenerar/reenviar.
+ */
+export async function resendAdmissionLetterAction(
+  formData: FormData,
+): Promise<AdminActionResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Sesión expirada." };
+
+  const { data: profileMe } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle<{ role: string }>();
+  if (profileMe?.role !== "admin") {
+    return { ok: false, error: "No autorizado." };
+  }
+
+  const admissionId = formData.get("admissionId");
+  if (typeof admissionId !== "string" || !admissionId) {
+    return { ok: false, error: "Falta admissionId." };
+  }
+
+  const admin = createAdminClient();
+
+  const { data: adm, error: admErr } = await admin
+    .from("admissions")
+    .select("id, user_id, email, full_name, status")
+    .eq("id", admissionId)
+    .maybeSingle<{
+      id: string;
+      user_id: string;
+      email: string;
+      full_name: string;
+      status: string;
+    }>();
+  if (admErr) return { ok: false, error: `DB: ${admErr.message}` };
+  if (!adm) return { ok: false, error: "Admisión no encontrada." };
+  if (adm.status !== "approved") {
+    return {
+      ok: false,
+      error: `La admisión está en estado "${adm.status}". Solo se puede reenviar carta de admisiones aprobadas.`,
+    };
+  }
+
+  const { data: profile, error: profErr } = await admin
+    .from("profiles")
+    .select("matricula, program_start_date")
+    .eq("id", adm.user_id)
+    .maybeSingle<{ matricula: string; program_start_date: string }>();
+  if (profErr) return { ok: false, error: `DB: ${profErr.message}` };
+  if (!profile?.matricula || !profile.program_start_date) {
+    return {
+      ok: false,
+      error: "Profile sin matrícula o fecha de inicio. La aprobación no se completó.",
+    };
+  }
+
+  function parseDateOnly(iso: string): Date {
+    const [y, m, d] = iso.split("-").map((s) => parseInt(s, 10));
+    return new Date(y, (m ?? 1) - 1, d ?? 1);
+  }
+
+  try {
+    const pdfBuffer = await generateAdmissionLetter({
+      fullName: adm.full_name,
+      matricula: profile.matricula,
+      programStartDate: parseDateOnly(profile.program_start_date),
+      issuedDate: new Date(),
+    });
+
+    const { path } = await uploadAdmissionLetter({
+      userId: adm.user_id,
+      matricula: profile.matricula,
+      pdfBuffer,
+    });
+
+    const emailRes = await sendAdmissionLetterEmail({
+      to: adm.email,
+      fullName: adm.full_name,
+      matricula: profile.matricula,
+      programStartDate: parseDateOnly(profile.program_start_date),
+      pdfBuffer,
+    });
+    if (!emailRes.ok) {
+      return { ok: false, error: `Email no se envió: ${emailRes.error}` };
+    }
+
+    const { error: updErr } = await admin
+      .from("admissions")
+      .update({
+        admission_letter_url: path,
+        admission_letter_sent_at: new Date().toISOString(),
+      })
+      .eq("id", adm.id);
+    if (updErr) return { ok: false, error: `Update falló: ${updErr.message}` };
+
+    revalidatePath("/admin/admisiones");
+    revalidatePath(`/admin/admisiones/${admissionId}`);
+    return {
+      ok: true,
+      message: `Carta reenviada a ${adm.email} (matrícula ${profile.matricula}).`,
+    };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Error desconocido.";
+    console.error(`[resendAdmissionLetter] admission=${adm.id} failed: ${msg}`);
+    return { ok: false, error: msg };
+  }
 }

@@ -261,10 +261,15 @@ export default async function AdmissionDetailPage({
           )}
         </div>
 
-        {/* Acciones */}
-        {admission.status !== "approved" && admission.status !== "rejected" && (
+        {/* Acciones — pending/under_review muestra aprobar/rechazar.
+            approved muestra reenviar carta. rejected no muestra nada. */}
+        {admission.status !== "rejected" && (
           <div className="mt-8">
-            <AdmissionActions admissionId={admission.id} />
+            <AdmissionActions
+              admissionId={admission.id}
+              status={admission.status}
+              letterSentAt={admission.admission_letter_sent_at}
+            />
           </div>
         )}
       </div>

@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Check, Loader2, X } from "lucide-react";
+import { Check, Loader2, Mail, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -23,13 +23,20 @@ import {
 import {
   approveAdmissionAction,
   rejectAdmissionAction,
+  resendAdmissionLetterAction,
 } from "@/lib/admin/admissions/actions";
 
 type Props = {
   admissionId: string;
 };
 
-export function AdmissionActions({ admissionId }: Props) {
+type ApprovedProps = Props & {
+  status: string;
+  letterSentAt: string | null;
+};
+
+export function AdmissionActions({ admissionId, status, letterSentAt }: ApprovedProps) {
+  const isApproved = status === "approved";
   return (
     <div className="flex flex-col items-stretch gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between">
       <div>
@@ -37,15 +44,82 @@ export function AdmissionActions({ admissionId }: Props) {
           Decisión
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
-          Aprobar asigna matrícula + fecha de inicio + envía la carta PDF en
-          24h. Rechazar envía email al aspirante con el motivo.
+          {isApproved
+            ? letterSentAt
+              ? "Admisión aprobada y carta enviada. Podés reenviar la carta si el alumno reporta que no la recibió."
+              : "Admisión aprobada. La carta se enviará automáticamente en 24h por el cron. Podés reenviarla ahora si lo necesitás."
+            : "Aprobar asigna matrícula + fecha de inicio + envía la carta PDF en 24h. Rechazar envía email al aspirante con el motivo."}
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <RejectButton admissionId={admissionId} />
-        <ApproveButton admissionId={admissionId} />
+        {isApproved ? (
+          <ResendLetterButton admissionId={admissionId} />
+        ) : (
+          <>
+            <RejectButton admissionId={admissionId} />
+            <ApproveButton admissionId={admissionId} />
+          </>
+        )}
       </div>
     </div>
+  );
+}
+
+function ResendLetterButton({ admissionId }: Props) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [open, setOpen] = useState(false);
+
+  function handle() {
+    startTransition(async () => {
+      const fd = new FormData();
+      fd.set("admissionId", admissionId);
+      const res = await resendAdmissionLetterAction(fd);
+      if (!res.ok) {
+        toast.error(res.error);
+        return;
+      }
+      toast.success(res.message ?? "Carta reenviada.");
+      setOpen(false);
+      router.refresh();
+    });
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger render={<Button variant="outline" size="sm" />}>
+        <Mail className="size-4" />
+        Reenviar carta
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Reenviar carta de admisión</DialogTitle>
+          <DialogDescription>
+            Se va a generar el PDF de la carta con la fecha de hoy y se envía
+            al email del aspirante. Bypasea el cron diario (no esperás 24h).
+            Idempotente — no duplica el envío automático del cron.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)} disabled={pending}>
+            Cancelar
+          </Button>
+          <Button onClick={handle} disabled={pending}>
+            {pending ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Enviando…
+              </>
+            ) : (
+              <>
+                <Mail className="size-4" />
+                Reenviar ahora
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
