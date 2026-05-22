@@ -1,34 +1,26 @@
 "use client";
 
-import { useState } from "react";
-import { Play, Sparkles, Volume2 } from "lucide-react";
+import MuxPlayer from "@mux/mux-player-react";
+import { Sparkles } from "lucide-react";
 
 type Props = {
   /**
-   * URL del video del avatar IA (Mux playback URL, HeyGen public share,
-   * MP4 directo, o YouTube embed). Cuando es null/undefined se muestra
-   * el placeholder "Avatar IA en preparación".
+   * Mux playback ID (asset con playback policy "public") O URL completa.
+   * - Si empieza con "http", se renderiza como iframe (YouTube/Vimeo).
+   * - Sino, se trata como Mux playback ID (HLS adaptive via MuxPlayer).
+   * - null/undefined → placeholder.
    */
   videoUrl?: string | null;
-  /**
-   * Poster image opcional (imagen estática del avatar) para el state
-   * pre-play. Si no se pasa, usa un poster genérico cosmic.
-   */
   posterUrl?: string;
 };
 
 export function AvatarHost({ videoUrl, posterUrl }: Props) {
-  const [started, setStarted] = useState(false);
-
   if (!videoUrl) {
     return <AvatarPlaceholder />;
   }
 
-  // YouTube / Vimeo embed detection
-  const isYoutube = /youtube\.com|youtu\.be/i.test(videoUrl);
-  const isVimeo = /vimeo\.com/i.test(videoUrl);
-
-  if (isYoutube || isVimeo) {
+  // YouTube / Vimeo embed via iframe
+  if (/^https?:\/\/(www\.)?(youtube\.com|youtu\.be|vimeo\.com|player\.vimeo\.com)/i.test(videoUrl)) {
     return (
       <div className="relative mx-auto w-full max-w-4xl overflow-hidden rounded-2xl border border-white/[0.08] bg-black shadow-2xl shadow-brand-violet/10">
         <div className="aspect-video">
@@ -44,39 +36,21 @@ export function AvatarHost({ videoUrl, posterUrl }: Props) {
     );
   }
 
-  // MP4 directo o HLS
+  // Default: Mux playback ID (lo trata como tal)
+  // Soporta HLS adaptive en todos los browsers (Safari nativo, Chrome/FF via hls.js)
   return (
     <div className="relative mx-auto w-full max-w-4xl overflow-hidden rounded-2xl border border-white/[0.08] bg-black shadow-2xl shadow-brand-violet/10">
-      <video
-        controls
-        playsInline
-        autoPlay={started}
-        muted={!started}
+      <MuxPlayer
+        playbackId={videoUrl}
         poster={posterUrl}
-        className="aspect-video w-full"
-        onPlay={() => setStarted(true)}
-      >
-        <source src={videoUrl} />
-        Tu navegador no soporta video HTML5.
-      </video>
-      {!started && (
-        <button
-          type="button"
-          onClick={() => setStarted(true)}
-          className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity hover:bg-black/30"
-          aria-label="Reproducir video del avatar"
-        >
-          <span className="flex flex-col items-center gap-3">
-            <span className="flex size-20 items-center justify-center rounded-full bg-brand-coral text-white shadow-2xl shadow-brand-coral/40 transition-transform hover:scale-105">
-              <Play className="size-10 fill-white" strokeWidth={0} />
-            </span>
-            <span className="rounded-full bg-white/10 px-4 py-1.5 font-inter text-xs font-medium uppercase tracking-widest text-white backdrop-blur">
-              <Volume2 className="mr-1.5 inline size-3.5" />
-              Activá el audio
-            </span>
-          </span>
-        </button>
-      )}
+        streamType="on-demand"
+        accentColor="#FF4D6D"
+        metadata={{
+          video_id: "demo-avatar-host",
+          video_title: "Avatar IA — Guía del demo DAP",
+        }}
+        style={{ aspectRatio: "16 / 9", width: "100%" }}
+      />
     </div>
   );
 }
