@@ -252,15 +252,12 @@ function SidebarContent({
         >
           <Image
             src="/dap-logo-white.png"
-            alt=""
+            alt="DAP"
             width={32}
             height={32}
             className="size-8 rounded-md"
             priority
           />
-          <span className="font-grotesk text-lg font-bold tracking-tight">
-            DAP
-          </span>
         </Link>
         {showClose && (
           <button

@@ -72,6 +72,15 @@ export function HeroSectionV2() {
           />
         </motion.div>
 
+        <motion.p
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.7 }}
+          className="mb-8 font-grotesk text-xs font-medium uppercase tracking-[0.36em] text-text-secondary sm:text-sm"
+        >
+          Diplomado Apostólico Pastoral
+        </motion.p>
+
         <motion.h1
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
