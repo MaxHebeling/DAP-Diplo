@@ -32,6 +32,11 @@ import {
 import { DapStudentShell } from "@/components/layouts/dap-student-shell";
 import { DashboardTour } from "@/components/onboarding/dashboard-tour";
 
+// Force dynamic — el dashboard depende de auth (cookies) y del estado
+// de subscription en DB. Sin esto Next 16 puede cachear y mostrar el
+// estado "sin suscripción" después de un pago recién procesado.
+export const dynamic = "force-dynamic";
+
 export const metadata = { title: "Mi dashboard — DAP" };
 
 type ProfileRow = {
