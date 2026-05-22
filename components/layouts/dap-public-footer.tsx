@@ -123,8 +123,8 @@ export function DapPublicFooter() {
           ))}
         </ul>
 
-        <div className="mt-8 flex flex-col items-center gap-4 pt-6 text-xs text-text-tertiary sm:flex-row sm:justify-between">
-          <p className="text-center sm:text-left">
+        <div className="mt-8 flex flex-col gap-2 pt-6 text-xs text-text-tertiary sm:flex-row sm:items-center sm:justify-between">
+          <p>
             © {new Date().getFullYear()} DAP. Todos los derechos reservados.{" "}
             <span className="text-text-tertiary/60">|</span> Desarrollado por{" "}
             <a
@@ -136,17 +136,7 @@ export function DapPublicFooter() {
               iKingdom
             </a>
           </p>
-
-          {/* Logo Hebeling Imperium — centrado entre copyright e iKingdom */}
-          <Image
-            src="/hebeling-logo.png"
-            alt="Hebeling Imperium"
-            width={48}
-            height={48}
-            className="size-10 shrink-0 opacity-90"
-          />
-
-          <p className="text-center sm:text-right">
+          <p>
             Construido con propósito ·{" "}
             <span className="gradient-text font-semibold">Apostólico + Tech</span>
           </p>
