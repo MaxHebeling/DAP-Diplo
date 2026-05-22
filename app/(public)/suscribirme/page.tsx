@@ -71,10 +71,6 @@ export default async function SuscribirmePage() {
     .select("full_name, avatar_url, role")
     .eq("id", user.id)
     .maybeSingle();
-
-  // Admin bypass del launch gate: les permite testear el checkout
-  // y los flows de pago aunque las inscripciones públicas estén cerradas.
-  const isAdmin = profile?.role === "admin";
   const headerUser: HeaderUser = profile
     ? {
         fullName: profile.full_name ?? null,
@@ -138,7 +134,7 @@ export default async function SuscribirmePage() {
               </ul>
             </div>
 
-            {isEnrollmentOpen() || isAdmin ? (
+            {isEnrollmentOpen() ? (
               <>
                 <form
                   action="/api/checkout/create-subscription"
