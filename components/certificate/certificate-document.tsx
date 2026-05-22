@@ -90,9 +90,9 @@ const styles = StyleSheet.create({
   },
 
   inner: {
-    paddingHorizontal: 64,
-    paddingTop: 24,
-    paddingBottom: 60,
+    paddingHorizontal: 70,
+    paddingTop: 22,
+    paddingBottom: 50,
     flexGrow: 1,
   },
 
@@ -101,12 +101,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 14,
+    marginBottom: 28,
   },
-  headerLogo: { width: 56, height: 56, objectFit: "contain" },
+  headerLogo: { width: 52, height: 52, objectFit: "contain" },
   headerLogoDap: {
-    width: 56,
-    height: 56,
+    width: 52,
+    height: 52,
     objectFit: "contain",
     borderRadius: 6,
   },
@@ -119,28 +119,29 @@ const styles = StyleSheet.create({
     color: COLORS.logoAccent,
     textTransform: "uppercase",
     fontFamily: "Helvetica-Bold",
-    marginBottom: 6,
+    marginBottom: 12,
   },
   title: {
-    fontSize: 30,
+    fontSize: 32,
     fontFamily: "Helvetica-Bold",
     color: COLORS.logoDeep,
     letterSpacing: 4,
     textTransform: "uppercase",
-    marginBottom: 6,
+    marginBottom: 14,
+    lineHeight: 1.1,
   },
   subtitle: {
     fontSize: 11,
     color: COLORS.inkSoft,
     letterSpacing: 1.2,
-    marginBottom: 12,
   },
 
   divider: {
-    width: 80,
+    width: 72,
     height: 2,
     backgroundColor: COLORS.logoAccent,
-    marginVertical: 10,
+    marginTop: 18,
+    marginBottom: 28,
     alignSelf: "center",
   },
 
@@ -152,17 +153,17 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     fontFamily: "Helvetica-Bold",
     textAlign: "center",
-    marginBottom: 6,
+    marginBottom: 14,
   },
 
   // ---- NOMBRE — script Allura grande ----
   recipientName: {
     fontFamily: "Allura",
-    fontSize: 60,
+    fontSize: 62,
     color: COLORS.logoDeep,
     textAlign: "center",
     lineHeight: 1.05,
-    marginBottom: 12,
+    marginBottom: 28,
   },
 
   // ---- Body explanatory ----
@@ -170,10 +171,10 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     color: COLORS.ink,
     textAlign: "center",
-    lineHeight: 1.7,
+    lineHeight: 1.75,
     maxWidth: 540,
     marginHorizontal: "auto",
-    marginBottom: 14,
+    marginBottom: 24,
   },
   bodyHighlight: {
     fontFamily: "Helvetica-Bold",
@@ -183,9 +184,10 @@ const styles = StyleSheet.create({
   // ---- Dimensión otorgada (highlight box) ----
   dimensionBox: {
     alignItems: "center",
-    marginVertical: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 30,
+    marginTop: 8,
+    marginBottom: 36,
+    paddingVertical: 16,
+    paddingHorizontal: 36,
     borderTop: `1 solid ${COLORS.divider}`,
     borderBottom: `1 solid ${COLORS.divider}`,
     alignSelf: "center",
@@ -196,7 +198,7 @@ const styles = StyleSheet.create({
     color: COLORS.inkMuted,
     textTransform: "uppercase",
     fontFamily: "Helvetica-Bold",
-    marginBottom: 5,
+    marginBottom: 8,
   },
   dimensionName: {
     fontSize: 22,
@@ -211,7 +213,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-end",
-    marginTop: 18,
+    marginTop: "auto",
   },
   signatureBlock: { alignItems: "flex-start" },
   signatureImage: {
