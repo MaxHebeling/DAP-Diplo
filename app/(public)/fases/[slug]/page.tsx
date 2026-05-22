@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { EnrollmentCTAPhase } from "@/components/launch/enrollment-cta-phase";
 import { Reveal } from "@/components/landing/reveal";
 import { SiteHeader, type HeaderUser } from "@/components/landing/site-header";
-import { SiteFooter } from "@/components/landing/site-footer";
+import { DapPublicFooter } from "@/components/layouts/dap-public-footer";
 import { createClient } from "@/lib/supabase/server";
 import {
   courseSchema,
@@ -459,7 +459,7 @@ export default async function BlockDetailPage({ params }: PageProps) {
           </nav>
         )}
       </main>
-      <SiteFooter />
+      <DapPublicFooter />
     </div>
   );
 }

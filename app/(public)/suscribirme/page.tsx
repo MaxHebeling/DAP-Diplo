@@ -4,7 +4,7 @@ import { ArrowLeft, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/landing/reveal";
 import { SiteHeader, type HeaderUser } from "@/components/landing/site-header";
-import { SiteFooter } from "@/components/landing/site-footer";
+import { DapPublicFooter } from "@/components/layouts/dap-public-footer";
 import { createClient } from "@/lib/supabase/server";
 import {
   CLASSES_START_LABEL,
@@ -179,7 +179,7 @@ export default async function SuscribirmePage() {
           </div>
         </Reveal>
       </main>
-      <SiteFooter />
+      <DapPublicFooter />
     </div>
   );
 }
