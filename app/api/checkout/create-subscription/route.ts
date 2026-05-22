@@ -10,18 +10,29 @@ import { isEnrollmentOpen } from "@/lib/launch/config";
 export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
-  // Gate de lanzamiento: hasta la fecha de apertura, ningún checkout
-  // se procesa aunque alguien intente POSTear directo. Devolvemos a la
-  // página /suscribirme que ya muestra el cartel "Inscripciones abren…".
-  if (!isEnrollmentOpen()) {
-    const url = new URL("/suscribirme", request.url);
-    return NextResponse.redirect(url, { status: 303 });
-  }
-
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // Gate de lanzamiento: hasta la fecha de apertura, ningún checkout
+  // se procesa. EXCEPCIÓN: admins pueden bypassear para testear el
+  // flow end-to-end (smoke test pre-launch).
+  if (!isEnrollmentOpen()) {
+    let isAdmin = false;
+    if (user) {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle<{ role: string }>();
+      isAdmin = prof?.role === "admin";
+    }
+    if (!isAdmin) {
+      const url = new URL("/suscribirme", request.url);
+      return NextResponse.redirect(url, { status: 303 });
+    }
+  }
   if (!user || !user.email) {
     const url = new URL("/login?redirectTo=/suscribirme", request.url);
     return NextResponse.redirect(url, { status: 303 });
