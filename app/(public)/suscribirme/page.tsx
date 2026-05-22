@@ -13,6 +13,11 @@ import {
 } from "@/lib/launch/config";
 import { CalendarClock, GraduationCap } from "lucide-react";
 
+// Force dynamic — la página depende de auth (admin bypass) y status
+// de subscription. Sin esto Next 16 puede cachearla agresivamente y
+// servir la versión "coming soon" a usuarios admin recién logueados.
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Suscribirme",
   description:
