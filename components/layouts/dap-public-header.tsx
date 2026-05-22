@@ -44,6 +44,7 @@ const DEFAULT_LINKS: NavLink[] = [
   { href: "/como-funciona", label: "Cómo funciona" },
   { href: "/rangos", label: "Dimensiones" },
   { href: "/precios", label: "Precios" },
+  { href: "/demo", label: "Demo gratis" },
   { href: "/#faq", label: "Preguntas" },
 ];
 

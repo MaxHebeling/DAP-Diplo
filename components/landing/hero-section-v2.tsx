@@ -114,12 +114,12 @@ export function HeroSectionV2() {
             <ArrowRight />
           </EnrollmentCTA>
           <DapButton
-            render={<a href="#bloques" />}
+            render={<a href="/demo" />}
             variant="secondary"
             size="lg"
           >
             <PlayCircle />
-            Ver el diplomado
+            Probar demo gratis
           </DapButton>
         </motion.div>
 
