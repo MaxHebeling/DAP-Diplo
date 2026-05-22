@@ -1,0 +1,84 @@
+name: Preview checks (E2E + Lighthouse)
+
+# Se dispara cuando Vercel reporta un deployment_status. Filtramos por
+# state=success y environment=preview, así corremos los checks contra
+# la URL exacta del preview del PR (no contra prod).
+#
+# Ventaja sobre los workflows `e2e.yml` / `lighthouse.yml` (que corren
+# contra prod en push/PR): aquí validamos el código del PR ANTES de que
+# llegue a prod. Si el PR rompe algo, se ve en el deploy preview.
+on:
+  deployment_status:
+
+# Cancela runs viejos del mismo deployment cuando hay nuevos pushes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.deployment.sha }}
+  cancel-in-progress: true
+
+jobs:
+  preview-e2e:
+    name: E2E vs preview
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # continue-on-error mientras estabilizamos contra previews — algunos
+    # tests son sensitivos a cold start. Remover cuando esté estable.
+    continue-on-error: true
+    if: |
+      github.event.deployment_status.state == 'success' &&
+      contains(github.event.deployment.environment, 'Preview')
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.deployment.sha }}
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run Playwright vs preview
+        run: pnpm test:e2e
+        env:
+          BASE_URL: ${{ github.event.deployment_status.environment_url }}
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-preview-${{ github.event.deployment.sha }}
+          path: playwright-report/
+          retention-days: 7
+
+  preview-lighthouse:
+    name: Lighthouse vs preview
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true
+    if: |
+      github.event.deployment_status.state == 'success' &&
+      contains(github.event.deployment.environment, 'Preview')
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.deployment.sha }}
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Run Lighthouse CI vs preview
+        run: pnpm exec lhci autorun
+        env:
+          LHCI_BASE_URL: ${{ github.event.deployment_status.environment_url }}
