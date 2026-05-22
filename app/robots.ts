@@ -30,6 +30,8 @@ export default function robots(): MetadataRoute.Robots {
           // API + dev routes
           "/api/",
           "/dev/",
+          // Páginas privadas (campañas, promos, ofertas dirigidas)
+          "/dap-pastores-team",
         ],
       },
     ],
