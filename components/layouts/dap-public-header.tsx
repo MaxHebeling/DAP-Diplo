@@ -9,6 +9,7 @@ import { motion, useScroll, useSpring } from "motion/react";
 import { cn } from "@/lib/utils";
 import { DapAvatar } from "@/components/ui-dap/avatar";
 import { DapButton } from "@/components/ui-dap/button";
+import { EnrollmentCTA } from "@/components/launch/enrollment-cta";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -191,13 +192,11 @@ export function DapPublicHeader({
               >
                 {loginLabel}
               </Link>
-              <DapButton
-                render={<Link href={ctaHref} />}
-                size="sm"
-                className="hidden sm:inline-flex"
-              >
-                {ctaLabel}
-              </DapButton>
+              <span className="hidden sm:inline-flex">
+                <EnrollmentCTA href={ctaHref} size="sm">
+                  {ctaLabel}
+                </EnrollmentCTA>
+              </span>
             </>
           )}
 
@@ -237,9 +236,9 @@ export function DapPublicHeader({
                 >
                   {loginLabel}
                 </Link>
-                <DapButton render={<Link href={ctaHref} />} size="md">
+                <EnrollmentCTA href={ctaHref} size="md">
                   {ctaLabel}
-                </DapButton>
+                </EnrollmentCTA>
               </div>
             )}
           </nav>
