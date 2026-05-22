@@ -1,21 +1,14 @@
 /**
  * Configuración del demo público (/demo).
  *
- * Cuando Max produzca el avatar IA en HeyGen, reemplazar AVATAR_VIDEO_URL
- * con la URL del MP4 / embed / Mux playback. Soporta:
- *   - YouTube embed: "https://www.youtube.com/embed/<id>"
- *   - Vimeo embed:   "https://player.vimeo.com/video/<id>"
- *   - MP4 directo:   "https://cdn.dapglobal.org/demo-avatar.mp4"
- *   - Mux playback:  "https://stream.mux.com/<playback_id>.m3u8"
- *
- * Si AVATAR_VIDEO_URL es null, el demo muestra el placeholder
- * "Tu guía digital se está preparando" pero el resto del contenido
- * sigue siendo accesible normalmente.
+ * Avatar IA generado en HeyGen → hosteado en Mux con playback policy
+ * "public" (sin signed tokens, accesible sin auth). Asset:
+ * VD02wQIaFMlu7007TiB3nGmigqBTHpDlM02201Qo8kBl8VM
  */
-export const AVATAR_VIDEO_URL: string | null = null;
+const MUX_PLAYBACK_ID = "eUYbspAKctas1vc2yur7n0000reBgrz100wtP1YlUatrAo";
 
-/**
- * Poster (imagen previa al play) opcional. Si null, usa un poster
- * cosmic genérico generado por CSS.
- */
-export const AVATAR_POSTER_URL: string | null = null;
+export const AVATAR_VIDEO_URL: string | null =
+  `https://stream.mux.com/${MUX_PLAYBACK_ID}/medium.mp4`;
+
+export const AVATAR_POSTER_URL: string | null =
+  `https://image.mux.com/${MUX_PLAYBACK_ID}/thumbnail.jpg?time=2`;
