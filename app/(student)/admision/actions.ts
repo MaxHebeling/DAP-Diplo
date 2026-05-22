@@ -36,7 +36,7 @@ export async function submitAdmissionAction(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return { ok: false, error: "Sesión expirada. Volvé a iniciar sesión." };
+    return { ok: false, error: "Sesión expirada. Vuelve a iniciar sesión." };
   }
 
   // 2. Parse + valida payload

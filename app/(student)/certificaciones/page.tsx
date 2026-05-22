@@ -9,7 +9,7 @@ export default async function CertificacionesPage() {
       topbarTitle="Certificaciones"
       eyebrow="Próximamente"
       title="Tus certificados"
-      description="Acá vas a poder descargar todos tus certificados y compartir tus dimensiones obtenidas. Por ahora puedes ver tu progreso y las dimensiones ganadas desde Mi Progreso."
+      description="Aquí podrás descargar todos tus certificados y compartir tus dimensiones obtenidas. Por ahora puedes ver tu progreso y las dimensiones ganadas desde Mi Progreso."
       icon={Award}
       primaryAction={{ href: "/progreso", label: "Ver mi progreso" }}
       secondaryActions={[

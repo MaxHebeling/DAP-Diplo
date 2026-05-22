@@ -46,8 +46,8 @@ export function AdmissionActions({ admissionId, status, letterSentAt }: Approved
         <p className="mt-1 text-xs text-muted-foreground">
           {isApproved
             ? letterSentAt
-              ? "Admisión aprobada y carta enviada. Podés reenviar la carta si el alumno reporta que no la recibió."
-              : "Admisión aprobada. La carta se enviará automáticamente en 24h por el cron. Podés reenviarla ahora si lo necesitás."
+              ? "Admisión aprobada y carta enviada. Puedes reenviar la carta si el alumno reporta que no la recibió."
+              : "Admisión aprobada. La carta se enviará automáticamente en 24h por el cron. Puedes reenviarla ahora si lo necesitas."
             : "Aprobar asigna matrícula + fecha de inicio + envía la carta PDF en 24h. Rechazar envía email al aspirante con el motivo."}
         </p>
       </div>
@@ -96,7 +96,7 @@ function ResendLetterButton({ admissionId }: Props) {
           <DialogTitle>Reenviar carta de admisión</DialogTitle>
           <DialogDescription>
             Se va a generar el PDF de la carta con la fecha de hoy y se envía
-            al email del aspirante. Bypasea el cron diario (no esperás 24h).
+            al email del aspirante. Bypasea el cron diario (no esperas 24h).
             Idempotente — no duplica el envío automático del cron.
           </DialogDescription>
         </DialogHeader>

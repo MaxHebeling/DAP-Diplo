@@ -41,7 +41,7 @@ export default function PrivacidadPage() {
       </p>
 
       <h2>2. Datos que recolectamos</h2>
-      <h3>2.1 Datos que vos nos proporcionás</h3>
+      <h3>2.1 Datos que tú nos proporcionas</h3>
       <ul>
         <li>Nombre completo, email y contraseña (al crear la cuenta).</li>
         <li>Información del ministerio o iglesia (opcional).</li>
@@ -135,7 +135,7 @@ export default function PrivacidadPage() {
         datos personales:
       </p>
       <ul>
-        <li><strong>Acceso:</strong> obtener copia de los datos que tenemos sobre vos.</li>
+        <li><strong>Acceso:</strong> obtener copia de los datos que tenemos sobre ti.</li>
         <li><strong>Rectificación:</strong> corregir datos inexactos o incompletos.</li>
         <li><strong>Eliminación:</strong> solicitar el borrado de tus datos (&ldquo;derecho al olvido&rdquo;).</li>
         <li><strong>Portabilidad:</strong> recibir tus datos en formato estructurado y legible.</li>

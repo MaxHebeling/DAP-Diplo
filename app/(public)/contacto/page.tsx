@@ -40,7 +40,7 @@ const TOPICS = [
   {
     icon: HelpCircle,
     title: "Preguntas antes de inscribirte",
-    body: "¿Dudas sobre el contenido, la modalidad o si el DAP es para vos? Escribinos antes de pagar.",
+    body: "¿Dudas sobre el contenido, la modalidad o si el DAP es para ti? Escríbenos antes de pagar.",
     subject: "Consulta pre-venta DAP",
   },
   {

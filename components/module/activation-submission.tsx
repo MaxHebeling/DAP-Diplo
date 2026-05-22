@@ -143,7 +143,7 @@ function OpenForm({ submission }: { submission: ActivationSubmission }) {
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={10}
-          placeholder="Escribí tu activación acá. Tomalo en serio — el Dr. Max va a corregir tu entrega y te va a devolver feedback personal en 48 horas."
+          placeholder="Escribe tu activación aquí. Tómalo en serio — el Dr. Max va a corregir tu entrega y te va a devolver feedback personal en 48 horas."
           className="w-full resize-y rounded-md border border-white/[0.08] bg-white/[0.04] p-4 text-sm leading-relaxed outline-none placeholder:text-muted-foreground focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20"
         />
         <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">

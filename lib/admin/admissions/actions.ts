@@ -155,8 +155,8 @@ export async function rejectAdmissionAction(
  * Útil cuando:
  *   - Se aprueba ahora y el alumno necesita la carta antes que corra el
  *     cron diario.
- *   - El alumno reporta que no le llegó y querés reenviarla.
- *   - Cambiaste el template y querés regenerar/reenviar.
+ *   - El alumno reporta que no le llegó y quieres reenviarla.
+ *   - Cambiaste el template y quieres regenerar/reenviar.
  */
 export async function resendAdmissionLetterAction(
   formData: FormData,

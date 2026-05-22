@@ -167,7 +167,7 @@ export async function POST(
   if (pendingReveal && new Date(pendingReveal.reveal_at) > new Date()) {
     return NextResponse.json(
       {
-        error: "Tu último intento aún está en revisión. Vení después.",
+        error: "Tu último intento aún está en revisión. Vuelve después.",
         pending_reveal_at: pendingReveal.reveal_at,
       },
       { status: 409 },

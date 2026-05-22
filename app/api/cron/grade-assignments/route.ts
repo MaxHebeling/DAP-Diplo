@@ -274,7 +274,7 @@ export async function GET(request: NextRequest) {
         title: passed
           ? `✓ Tu tarea fue aprobada (${score}/100)`
           : `Tu corrección llegó (${score}/100)`,
-        body: `${mod.title} — El Ap. Max te dejó feedback. Tocá para verlo.`,
+        body: `${mod.title} — El Ap. Max te dejó feedback. Toca para verlo.`,
         url: moduleRelPath,
         tag: `grade-${sub.module_id}`,
       });

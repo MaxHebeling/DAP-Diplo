@@ -246,7 +246,7 @@ export default async function MiProgresoPage() {
                 </ul>
               ) : (
                 <p className="text-sm text-text-secondary">
-                  Aún no completaste ningún módulo. Empezá por el módulo de tu
+                  Aún no completaste ningún módulo. Empieza por el módulo de tu
                   semana actual desde{" "}
                   <Link href="/dashboard" className="text-brand-coral hover:underline">
                     Inicio

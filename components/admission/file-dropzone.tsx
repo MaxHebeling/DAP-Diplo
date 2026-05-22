@@ -141,7 +141,7 @@ export function FileDropzone({
                 {errorText}
               </p>
               <p className="mt-1 font-inter text-xs text-text-tertiary">
-                Probá de nuevo. PDF, JPG o PNG · max 10 MB.
+                Prueba de nuevo. PDF, JPG o PNG · max 10 MB.
               </p>
             </div>
           </>
