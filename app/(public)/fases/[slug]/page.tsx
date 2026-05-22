@@ -9,7 +9,12 @@ import { Reveal } from "@/components/landing/reveal";
 import { SiteHeader, type HeaderUser } from "@/components/landing/site-header";
 import { SiteFooter } from "@/components/landing/site-footer";
 import { createClient } from "@/lib/supabase/server";
-import { courseSchema, jsonLd } from "@/lib/seo/structured-data";
+import {
+  courseSchema,
+  jsonLd,
+  breadcrumbListSchema,
+  SITE_URL,
+} from "@/lib/seo/structured-data";
 import { formatDuration } from "@/lib/format";
 
 type ModuleRow = {
@@ -196,6 +201,22 @@ export default async function BlockDetailPage({ params }: PageProps) {
               description: phase.description,
               months_duration: phase.months_duration,
             }),
+          ),
+        }}
+      />
+      {/* JSON-LD BreadcrumbList: Inicio → Bloques → este bloque. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLd(
+            breadcrumbListSchema([
+              { name: "Inicio", url: SITE_URL },
+              { name: "Cómo funciona", url: `${SITE_URL}/como-funciona` },
+              {
+                name: `Bloque ${String(phase.order_index).padStart(2, "0")}: ${phase.title}`,
+                url: `${SITE_URL}/fases/${phase.slug}`,
+              },
+            ]),
           ),
         }}
       />

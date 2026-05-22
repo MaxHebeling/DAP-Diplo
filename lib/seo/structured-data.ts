@@ -30,6 +30,7 @@ export function organizationSchema() {
     description:
       "Formación apostólica integral para pastores y líderes hispanohablantes. 18 meses, 9 bloques, 200 módulos.",
     inLanguage: "es",
+    founder: personSchema(),
     sameAs: [
       // TODO: agregar URLs de redes sociales cuando existan
       // "https://www.instagram.com/dap_diplomado",
@@ -37,6 +38,52 @@ export function organizationSchema() {
       // "https://www.youtube.com/@dap_diplomado",
     ],
   } as const;
+}
+
+/**
+ * Person schema para el Dr. Max Hebeling — founder/instructor del DAP.
+ * Mejora el conocimiento de Google sobre quién está detrás del programa.
+ */
+export function personSchema() {
+  return {
+    "@type": "Person",
+    name: "Dr. Max Hebeling",
+    jobTitle: "Apóstol y fundador",
+    affiliation: {
+      "@type": "Organization",
+      name: "Red Apostólica Reino y Avivamiento",
+    },
+    worksFor: {
+      "@type": "EducationalOrganization",
+      name: SITE_FULL_NAME,
+      url: SITE_URL,
+    },
+  } as const;
+}
+
+/**
+ * BreadcrumbList — habilita el path navigable como rich snippet en
+ * Google. Items en orden de raíz → actual.
+ *
+ * Usage: breadcrumbListSchema([
+ *   { name: "Inicio", url: SITE_URL },
+ *   { name: "Las 9 Dimensiones", url: `${SITE_URL}/rangos` },
+ *   { name: phase.title, url: `${SITE_URL}/rangos/${slug}` },
+ * ])
+ */
+export type BreadcrumbItem = { name: string; url: string };
+
+export function breadcrumbListSchema(items: BreadcrumbItem[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((it, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: it.name,
+      item: it.url,
+    })),
+  };
 }
 
 export type CoursePhase = {
@@ -95,6 +142,32 @@ export function coursesItemListSchema(phases: CoursePhase[]) {
       position: i + 1,
       url: `${SITE_URL}/fases/${p.slug}`,
       name: p.title,
+    })),
+  };
+}
+
+/**
+ * ItemList genérico — para listados como "Las 9 Dimensiones" en /rangos.
+ * Diferente de coursesItemListSchema que asume el shape CoursePhase.
+ */
+export type RankItem = {
+  order_index: number;
+  name: string;
+  slug: string;
+};
+
+export function ranksItemListSchema(ranks: RankItem[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Las 9 Dimensiones del DAP",
+    itemListOrder: "https://schema.org/ItemListOrderAscending",
+    numberOfItems: ranks.length,
+    itemListElement: ranks.map((r) => ({
+      "@type": "ListItem",
+      position: r.order_index,
+      url: `${SITE_URL}/rangos/${r.slug}`,
+      name: r.name,
     })),
   };
 }

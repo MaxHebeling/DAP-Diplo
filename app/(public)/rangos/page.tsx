@@ -29,6 +29,12 @@ import {
   type RankOrder,
 } from "@/components/ui-dap/rank-badge";
 import { Reveal } from "@/components/landing/reveal";
+import {
+  jsonLd,
+  ranksItemListSchema,
+  breadcrumbListSchema,
+  SITE_URL,
+} from "@/lib/seo/structured-data";
 
 export const metadata: Metadata = {
   title: "Las 9 Dimensiones del Reino",
@@ -111,8 +117,30 @@ export default async function RangosHubPage() {
 
   const ranks = dimensions ?? [];
 
+  const itemListLd = ranksItemListSchema(
+    ranks.map((r) => ({
+      order_index: r.order_index,
+      name: r.name,
+      slug: rankSlug(r.name),
+    })),
+  );
+  const breadcrumbsLd = breadcrumbListSchema([
+    { name: "Inicio", url: SITE_URL },
+    { name: "Las 9 Dimensiones del Reino", url: `${SITE_URL}/rangos` },
+  ]);
+
   return (
     <div className="flex flex-1 flex-col bg-surface-base text-text-primary">
+      {/* JSON-LD: ItemList de las 9 dimensiones + breadcrumb. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(itemListLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbsLd) }}
+      />
+
       <DapPublicHeader user={headerUser} onSignOut={signOutAction} />
 
       <main className="flex flex-1 flex-col">

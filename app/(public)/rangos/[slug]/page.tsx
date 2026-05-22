@@ -21,7 +21,12 @@ import {
 import { signOutAction } from "@/lib/auth/actions";
 import { createClient } from "@/lib/supabase/server";
 import { rankSlug, rankThemeFromDescription } from "@/lib/ranks/slug";
-import { courseSchema, jsonLd } from "@/lib/seo/structured-data";
+import {
+  courseSchema,
+  jsonLd,
+  breadcrumbListSchema,
+  SITE_URL,
+} from "@/lib/seo/structured-data";
 import {
   DapPublicHeader,
   type DapHeaderUser,
@@ -210,6 +215,25 @@ export default async function RankDetailPage({ params }: PageProps) {
           }}
         />
       )}
+      {/* JSON-LD BreadcrumbList: Inicio → Dimensiones → este rango. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLd(
+            breadcrumbListSchema([
+              { name: "Inicio", url: SITE_URL },
+              {
+                name: "Las 9 Dimensiones del Reino",
+                url: `${SITE_URL}/rangos`,
+              },
+              {
+                name: rank.name,
+                url: `${SITE_URL}/rangos/${rankSlug(rank.name)}`,
+              },
+            ]),
+          ),
+        }}
+      />
 
       <DapPublicHeader user={headerUser} onSignOut={signOutAction} />
 
