@@ -158,7 +158,7 @@ Cada bloque completado entrega: insignia digital, certificado PDF descargable, r
 | Tutor IA | Claude API + Supabase pgvector + Voyage AI embeddings |
 | Tests E2E | Playwright (3 suites contra prod) |
 | Quality gates | ESLint `--max-warnings 0`, Lighthouse CI con thresholds CWV, tsc estricto |
-| Observability | Vercel Analytics + Speed Insights (Sentry pendiente — ver `docs/sentry-setup.md`) |
+| Observability | Vercel Analytics + Speed Insights (métricas) + **Sentry** (errores runtime, `lib/sentry/scrub.ts` filtra PII) |
 
 ---
 
@@ -485,6 +485,21 @@ Si Lighthouse CI empieza a fallar consistentemente, **investigar la regresión a
 
 ### 13.10 Observability
 
-- **Vercel Analytics** + **Speed Insights** instalados en `app/layout.tsx`. Visible en Vercel dashboard → tabs Analytics / Speed Insights.
-- **Sentry pendiente** — ver `docs/sentry-setup.md` (requiere acción manual del usuario para crear cuenta + DSN).
-- **Vercel Logs** sirven para debugging puntual; NO reemplazan tracking de errores agrupado.
+**Layer 1 — Métricas** (`app/layout.tsx`):
+- `@vercel/analytics` — pageviews, países, dispositivos
+- `@vercel/speed-insights` — Core Web Vitals reales de usuarios
+- Dashboards: Vercel project → tabs Analytics / Speed Insights
+
+**Layer 2 — Errores runtime** (`sentry.{client,server,edge}.config.ts`):
+- Sentry SDK con `tracesSampleRate: 0.2`, Session Replay solo on-error
+- `lib/sentry/scrub.ts` — `beforeSend` filtra PII (email, full_name, dirección, church_name, auth tokens) recursivamente antes de enviar
+- `tunnelRoute: "/monitoring"` evade ad-blockers que bloquean `*.sentry.io`
+- Org: `ikingdom-llc` · Project: `javascript-nextjs` · Dashboard: https://ikingdom-llc.sentry.io
+- Alerta activa: "New issue created" → email a Max al primer evento
+- Env vars en Vercel prod: `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`
+
+**NUNCA hacer:**
+- Logear el body completo de un webhook de Stripe/Mux (contiene PII). Para context custom usar `Sentry.setContext()` con keys que pasen por el scrub.
+- Setear `Sentry.setUser({ email, name })` directo — el scrub deja solo `id` pero conviene no enviar de entrada.
+
+**Vercel Logs** sirven para debugging puntual; NO reemplazan tracking de errores agrupado.
