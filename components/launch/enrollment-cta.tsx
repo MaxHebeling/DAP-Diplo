@@ -5,6 +5,7 @@ import { useState, type ReactNode } from "react";
 
 import { DapButton } from "@/components/ui-dap/button";
 import { EnrollmentGateDialog } from "@/components/launch/enrollment-gate-dialog";
+import { useOnboarding } from "@/components/onboarding/onboarding-provider";
 import { isEnrollmentOpen } from "@/lib/launch/config";
 
 type Props = {
@@ -16,15 +17,16 @@ type Props = {
 };
 
 /**
- * CTA gateado por la fecha de apertura de inscripciones.
+ * CTA principal de inscripción. Comportamiento por contexto:
  *
- * Si las inscripciones están abiertas → renderiza un `<DapButton>` que
- * navega al `href`.
- * Si están cerradas → renderiza un `<DapButton>` que abre el
- * `<EnrollmentGateDialog>` con el mensaje "Inscripciones abren el…".
+ *  1. Si está dentro de un <OnboardingProvider> (zona pública) →
+ *     abre el modal de onboarding (país → cuenta → Stripe).
+ *  2. Si NO hay provider (zona logueada como /dashboard) →
+ *     cae al comportamiento legacy: link directo a /suscribirme
+ *     si el gate está abierto, o popup de fechas si está cerrado.
  *
- * La decisión se toma en cada render con `isEnrollmentOpen()` — cuando
- * llegue la fecha, todos los CTAs vuelven a funcionar solos sin redeploy.
+ * Esto deja el dashboard de alumno (donde ya hay user + país)
+ * funcionando como antes sin requerir el onboarding modal.
  */
 export function EnrollmentCTA({
   href = "/suscribirme",
@@ -34,8 +36,24 @@ export function EnrollmentCTA({
   children,
 }: Props) {
   const [open, setOpen] = useState(false);
-  const enrollmentOpen = isEnrollmentOpen();
+  const onboarding = useOnboarding();
 
+  // Si estamos en zona pública (provider presente) → modal de onboarding.
+  if (onboarding) {
+    return (
+      <DapButton
+        size={size}
+        variant={variant}
+        className={className}
+        onClick={onboarding.open}
+      >
+        {children}
+      </DapButton>
+    );
+  }
+
+  // Fallback legacy para zonas sin provider (ej /dashboard).
+  const enrollmentOpen = isEnrollmentOpen();
   if (enrollmentOpen) {
     return (
       <DapButton

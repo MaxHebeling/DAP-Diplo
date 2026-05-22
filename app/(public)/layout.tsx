@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { CustomCursor } from "@/components/landing/custom-cursor";
 import { KonamiEasterEgg } from "@/components/landing/konami-easter-egg";
 import { WelcomePopup } from "@/components/landing/welcome-popup";
+import { OnboardingProvider } from "@/components/onboarding/onboarding-provider";
 
 /**
  * Layout específico de las rutas públicas (landing, /rangos, /precios,
@@ -25,7 +26,7 @@ export default function PublicLayout({
   const pathname = usePathname();
 
   return (
-    <>
+    <OnboardingProvider>
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={pathname}
@@ -42,6 +43,6 @@ export default function PublicLayout({
       <CustomCursor />
       <KonamiEasterEgg />
       <WelcomePopup />
-    </>
+    </OnboardingProvider>
   );
 }
