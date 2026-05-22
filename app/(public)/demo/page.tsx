@@ -19,9 +19,7 @@ import {
 import { DapPublicFooter } from "@/components/layouts/dap-public-footer";
 import { DapButton } from "@/components/ui-dap/button";
 import { EnrollmentCTA } from "@/components/launch/enrollment-cta";
-import { AvatarHost } from "@/components/demo/avatar-host";
 import { DemoQuiz } from "@/components/demo/demo-quiz";
-import { AVATAR_POSTER_URL, AVATAR_VIDEO_URL } from "@/lib/demo/config";
 
 export const metadata: Metadata = {
   title: "Demo gratis — Diplomado Apostólico Pastoral",
@@ -95,14 +93,6 @@ export default async function DemoPage() {
                 <BookOpen className="size-3.5 text-brand-coral" />
                 Módulo 01 · Raíces · Reino de Dios
               </span>
-            </div>
-
-            {/* Avatar IA — host virtual que guía el recorrido */}
-            <div className="mt-12">
-              <AvatarHost
-                videoUrl={AVATAR_VIDEO_URL}
-                posterUrl={AVATAR_POSTER_URL ?? undefined}
-              />
             </div>
           </div>
         </section>
