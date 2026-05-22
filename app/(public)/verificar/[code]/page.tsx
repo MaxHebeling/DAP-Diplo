@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { signedCertificateUrl } from "@/lib/certificates/upload";
+import { DapPublicFooter } from "@/components/layouts/dap-public-footer";
 
 type PageProps = { params: Promise<{ code: string }> };
 
@@ -173,6 +174,7 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
           Para reportar una sospecha de falsificación contacta al equipo.
         </p>
       </div>
+      <DapPublicFooter />
     </main>
   );
 }
@@ -252,6 +254,7 @@ function VerificationError({ code }: { code: string }) {
           </div>
         </div>
       </div>
+      <DapPublicFooter />
     </main>
   );
 }

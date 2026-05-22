@@ -3,6 +3,7 @@ import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/brand/logo";
 import { Reveal } from "@/components/landing/reveal";
+import { DapPublicFooter } from "@/components/layouts/dap-public-footer";
 
 export const metadata = {
   title: "¡Bienvenido al diplomado!",
@@ -49,6 +50,7 @@ export default function SubscribeSuccessPage() {
           </div>
         </Reveal>
       </main>
+      <DapPublicFooter />
     </div>
   );
 }
