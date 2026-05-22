@@ -699,7 +699,7 @@ function SubscriptionPanel({
               href="/tutor"
               className="text-text-primary hover:text-brand-coral"
             >
-              Tutor IA — preguntá sobre cualquier doctrina del DAP
+              Tutor IA — pregunta sobre cualquier doctrina del DAP
             </Link>
           </li>
           {isAdmin && (
@@ -752,7 +752,7 @@ function SubscriptionPanel({
             Tutor IA disponible
           </p>
           <p className="mt-1 font-inter text-xs leading-relaxed text-text-secondary">
-            Resolvé dudas doctrinales 24/7.
+            Resuelve dudas doctrinales 24/7.
           </p>
           <DapButton
             variant="ghost"
