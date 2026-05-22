@@ -11,7 +11,9 @@
  */
 
 // 01 de Junio 2026 — 00:01 hora San Diego (America/Los_Angeles, UTC-7 en junio).
-export const ENROLLMENT_OPENS_AT = new Date("2026-06-01T00:01:00-07:00");
+// ⚠ TEMPORALMENTE en el pasado para smoke test de Stripe LIVE.
+// REVERTIR a "2026-06-01T00:01:00-07:00" después del test.
+export const ENROLLMENT_OPENS_AT = new Date("2026-05-01T00:01:00-07:00");
 
 export const ENROLLMENT_OPENS_LABEL = "01 de Junio de 2026";
 
