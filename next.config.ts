@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const securityHeaders = [
   {
@@ -45,4 +46,24 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Sentry wrapper para upload de source maps en build (stack traces
+// legibles) + tunnel para bypassear ad-blockers en cliente.
+// Si las env vars SENTRY_ORG/PROJECT no están seteadas (dev local sin
+// auth token), el wrapper no rompe — solo skipea el upload.
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+
+  // Silencia logs de Sentry CLI durante build excepto cuando hay error.
+  silent: !process.env.CI,
+
+  // /monitoring → endpoint del cliente que evade ad-blockers que
+  // bloquean dominios *.sentry.io en el navegador.
+  tunnelRoute: "/monitoring",
+
+  // Source maps: subimos a Sentry pero no los servimos al cliente.
+  sourcemaps: { disable: false },
+
+  disableLogger: true,
+});
