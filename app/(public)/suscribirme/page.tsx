@@ -170,14 +170,14 @@ export default async function SuscribirmePage() {
                 </p>
                 <div className="mt-4 flex items-start gap-3 rounded-lg border border-brand-violet/30 bg-brand-violet/[0.08] p-3 text-left">
                   <GraduationCap className="mt-0.5 h-5 w-5 shrink-0 text-brand-violet" />
-                  <div className="text-sm leading-relaxed text-neutral-200">
-                    <p className="font-semibold text-neutral-50">
-                      Clases comienzan oficialmente
-                    </p>
-                    <p className="capitalize text-neutral-400">
+                  <p className="text-sm leading-relaxed text-neutral-200">
+                    <span className="font-semibold text-neutral-50">
+                      Inicio de clases:
+                    </span>{" "}
+                    <span className="capitalize text-neutral-400">
                       {CLASSES_START_LABEL}
-                    </p>
-                  </div>
+                    </span>
+                  </p>
                 </div>
               </div>
             )}

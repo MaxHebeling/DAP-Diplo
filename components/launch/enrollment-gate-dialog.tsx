@@ -43,12 +43,12 @@ export function EnrollmentGateDialog({ open, onOpenChange }: Props) {
         </DialogHeader>
         <div className="mt-1 flex items-start gap-3 rounded-lg border border-brand-violet/25 bg-brand-violet/[0.08] p-3 text-left">
           <GraduationCap className="mt-0.5 h-5 w-5 shrink-0 text-brand-violet" />
-          <div className="text-sm leading-relaxed text-text-secondary">
-            <p className="font-semibold text-text-primary">
-              Clases comienzan oficialmente
-            </p>
-            <p className="capitalize">{CLASSES_START_LABEL}</p>
-          </div>
+          <p className="text-sm leading-relaxed text-text-secondary">
+            <span className="font-semibold text-text-primary">
+              Inicio de clases:
+            </span>{" "}
+            <span className="capitalize">{CLASSES_START_LABEL}</span>
+          </p>
         </div>
       </DialogContent>
     </Dialog>

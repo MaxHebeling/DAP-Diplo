@@ -63,12 +63,12 @@ export default async function SignUpPage({
           <CardContent className="space-y-5">
             <div className="flex items-start gap-3 rounded-lg border border-brand-violet/25 bg-brand-violet/[0.06] p-4 text-left">
               <GraduationCap className="mt-0.5 h-5 w-5 shrink-0 text-brand-violet" />
-              <div className="text-sm leading-relaxed">
-                <p className="font-semibold">Clases comienzan oficialmente</p>
-                <p className="capitalize text-muted-foreground">
+              <p className="text-sm leading-relaxed">
+                <span className="font-semibold">Inicio de clases:</span>{" "}
+                <span className="capitalize text-muted-foreground">
                   {CLASSES_START_LABEL}
-                </p>
-              </div>
+                </span>
+              </p>
             </div>
             <Link
               href="/"
