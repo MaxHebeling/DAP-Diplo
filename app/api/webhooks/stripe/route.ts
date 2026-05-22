@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
   const { data: claimed, error: claimErr } = await admin
     .from("stripe_events_processed")
     .upsert(
-      { id: event.id, type: event.type },
+      { id: event.id, event_type: event.type },
       { onConflict: "id", ignoreDuplicates: true },
     )
     .select("id");
