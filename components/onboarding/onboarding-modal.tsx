@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Loader2, X } from "lucide-react";
+import { CalendarClock, GraduationCap, Loader2, X } from "lucide-react";
 
 import {
   Dialog,
@@ -11,6 +11,11 @@ import {
 import { type Country } from "@/lib/data/countries";
 import { CountrySelector } from "@/components/onboarding/country-selector";
 import { OnboardingSignupForm } from "@/components/onboarding/onboarding-signup-form";
+import {
+  CLASSES_START_LABEL,
+  ENROLLMENT_OPENS_LABEL,
+  isEnrollmentOpen,
+} from "@/lib/launch/config";
 
 type Step = "country" | "signup" | "redirecting";
 
@@ -32,6 +37,12 @@ type Props = {
 export function OnboardingModal({ open, onOpenChange }: Props) {
   const [step, setStep] = useState<Step>("country");
   const [country, setCountry] = useState<Country | null>(null);
+
+  // El gate del launch se evalúa al abrir. Si está cerrado, mostramos
+  // la pantalla "Próximamente" en lugar del flujo. La condición se
+  // re-evalúa cada render — cuando llegue el 01 Jun, no hay que tocar
+  // código: el modal pasa a mostrar el selector solo.
+  const enrollmentOpen = isEnrollmentOpen();
 
   // Resetear al abrir
   useEffect(() => {
@@ -83,7 +94,53 @@ export function OnboardingModal({ open, onOpenChange }: Props) {
         {/* Step content with animated transitions */}
         <div className="relative flex h-full flex-col">
           <AnimatePresence mode="wait" initial={false}>
-            {step === "country" && (
+            {!enrollmentOpen && (
+              <motion.div
+                key="closed"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center sm:px-12"
+              >
+                <div className="mb-5 flex size-16 items-center justify-center rounded-full bg-brand-coral/15 text-brand-coral">
+                  <CalendarClock className="size-8" strokeWidth={1.6} />
+                </div>
+                <p className="font-inter text-[10px] font-semibold uppercase tracking-[0.32em] text-brand-coral">
+                  Próximamente
+                </p>
+                <h2 className="mt-3 font-grotesk text-3xl font-bold leading-tight text-text-primary sm:text-4xl">
+                  Inscripciones abren el {ENROLLMENT_OPENS_LABEL}
+                </h2>
+                <p className="mt-4 max-w-md font-inter text-sm leading-relaxed text-text-secondary">
+                  La primera convocatoria del Diplomado Apostólico Pastoral
+                  abre inscripciones el{" "}
+                  <span className="font-semibold text-text-primary">
+                    {ENROLLMENT_OPENS_LABEL}
+                  </span>
+                  . Volvé en esa fecha para asegurar tu lugar.
+                </p>
+
+                <div className="mt-6 flex max-w-md items-start gap-3 rounded-2xl border border-brand-violet/25 bg-brand-violet/[0.08] p-4 text-left">
+                  <GraduationCap className="mt-0.5 size-5 shrink-0 text-brand-violet" />
+                  <p className="font-inter text-sm leading-relaxed text-text-secondary">
+                    <span className="font-semibold text-text-primary">
+                      Inicio de clases:
+                    </span>{" "}
+                    <span className="capitalize">{CLASSES_START_LABEL}</span>
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => onOpenChange(false)}
+                  className="mt-7 inline-flex items-center gap-2 rounded-full border border-white/[0.10] bg-white/[0.04] px-5 py-2.5 font-inter text-xs font-medium text-text-secondary backdrop-blur-sm transition-all hover:bg-white/[0.07] hover:text-text-primary"
+                >
+                  Cerrar
+                </button>
+              </motion.div>
+            )}
+
+            {enrollmentOpen && step === "country" && (
               <motion.div
                 key="country"
                 initial={{ opacity: 0, x: 24 }}
@@ -96,7 +153,7 @@ export function OnboardingModal({ open, onOpenChange }: Props) {
               </motion.div>
             )}
 
-            {step === "signup" && country && (
+            {enrollmentOpen && step === "signup" && country && (
               <motion.div
                 key="signup"
                 initial={{ opacity: 0, x: 24 }}
@@ -113,7 +170,7 @@ export function OnboardingModal({ open, onOpenChange }: Props) {
               </motion.div>
             )}
 
-            {step === "redirecting" && (
+            {enrollmentOpen && step === "redirecting" && (
               <motion.div
                 key="redirecting"
                 initial={{ opacity: 0 }}

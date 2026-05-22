@@ -157,3 +157,65 @@ export async function createSubscriptionCheckoutSession(opts: {
   };
   return stripeRequest<StripeCheckoutSession>("/checkout/sessions", body);
 }
+
+/**
+ * Checkout especial para matrimonios de Argentina. Crea una sola
+ * suscripción de USD $35/mes usando `price_data` inline (no requiere
+ * pre-crear un Price en Stripe Dashboard).
+ *
+ * La metadata viaja a:
+ *   - Checkout Session (consulta admin / debugging)
+ *   - Subscription (la webhook upsertea ambas filas spouse_1 + spouse_2
+ *     usando marriage_group_id + spouse_2_user_id derivados de aquí)
+ */
+export async function createMarriageCheckoutSession(opts: {
+  customerId: string;
+  userId: string;
+  marriageGroupId: string;
+  spouse1Email: string;
+  spouse2Email: string;
+  appUrl: string;
+}): Promise<StripeCheckoutSession> {
+  const {
+    customerId,
+    userId,
+    marriageGroupId,
+    spouse1Email,
+    spouse2Email,
+    appUrl,
+  } = opts;
+
+  const body: Record<string, string> = {
+    mode: "subscription",
+    customer: customerId,
+    "line_items[0][quantity]": "1",
+    "line_items[0][price_data][currency]": "usd",
+    "line_items[0][price_data][unit_amount]": "3500",
+    "line_items[0][price_data][recurring][interval]": "month",
+    "line_items[0][price_data][product_data][name]":
+      "DAP — Inscripción matrimonio Argentina",
+    "line_items[0][price_data][product_data][description]":
+      "Suscripción mensual única que cubre acceso completo al Diplomado Apostólico Pastoral para los dos cónyuges.",
+    success_url: `${appUrl}/suscribirme/exito?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${appUrl}/suscribirme`,
+    locale: "es",
+    client_reference_id: userId,
+    billing_address_collection: "auto",
+    "metadata[userId]": userId,
+    "metadata[registration_type]": "marriage",
+    "metadata[country]": "Argentina",
+    "metadata[marriage_group_id]": marriageGroupId,
+    "metadata[price_rule]": "argentina_marriage_35_usd",
+    "metadata[amount_usd]": "35",
+    "metadata[spouse_1_email]": spouse1Email,
+    "metadata[spouse_2_email]": spouse2Email,
+    // Subscription metadata — la webhook lee de aquí
+    "subscription_data[metadata][userId]": userId,
+    "subscription_data[metadata][registration_type]": "marriage",
+    "subscription_data[metadata][marriage_group_id]": marriageGroupId,
+    "subscription_data[metadata][country]": "Argentina",
+    "subscription_data[metadata][spouse_1_email]": spouse1Email,
+    "subscription_data[metadata][spouse_2_email]": spouse2Email,
+  };
+  return stripeRequest<StripeCheckoutSession>("/checkout/sessions", body);
+}

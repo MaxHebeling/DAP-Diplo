@@ -63,7 +63,7 @@ export function WelcomePopup() {
           <X className="size-5" strokeWidth={2.5} />
         </button>
         <Image
-          src="/welcome-popup.png"
+          src="/welcome-popup.jpg"
           alt="DAP — Bienvenidos · Inicio de clases martes 23 de junio de 2026 · Coming soon"
           width={1280}
           height={720}

@@ -1,11 +1,28 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, Mail } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Loader2,
+  Mail,
+  ShieldAlert,
+} from "lucide-react";
 
 import { type Country } from "@/lib/data/countries";
+import { AR_DIAL_CODE, isArgentinePhone } from "@/lib/data/argentina";
+import { findCountry } from "@/lib/data/countries";
 import { SignInWithGoogle } from "@/components/auth/google-button";
+import { MarriageToggle } from "@/components/onboarding/marriage-toggle";
+import { DiscountBanner } from "@/components/onboarding/discount-banner";
+import {
+  SpouseFields,
+  EMPTY_SPOUSE,
+  type SpouseData,
+} from "@/components/onboarding/spouse-fields";
 
 type Props = {
   country: Country;
@@ -13,16 +30,80 @@ type Props = {
   onSuccess: (checkoutUrl: string) => void;
 };
 
+type Errors = Record<string, string> & {
+  spouse_1?: Partial<Record<keyof SpouseData, string>>;
+  spouse_2?: Partial<Record<keyof SpouseData, string>>;
+};
+
 export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
+  const isArgentina = country.code === "AR";
+
   const [pending, startTransition] = useTransition();
+
+  // GeoIP — solo nos importa para Argentina (gate del beneficio matrimonio).
+  // null = todavía no detectado o local dev (sin headers Vercel).
+  const [geoCountry, setGeoCountry] = useState<string | null>(null);
+  const [geoChecked, setGeoChecked] = useState(false);
+  useEffect(() => {
+    if (!isArgentina) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/geo", { cache: "no-store" });
+        const json = (await res.json().catch(() => ({}))) as {
+          country?: string | null;
+        };
+        if (!cancelled) {
+          setGeoCountry(json.country ?? null);
+          setGeoChecked(true);
+        }
+      } catch {
+        if (!cancelled) setGeoChecked(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isArgentina]);
+
+  // Bloqueo SOLO del matrimonio AR: si GeoIP detectó algo distinto a AR,
+  // ocultamos el toggle. Si GeoIP devolvió null (local / sin header), no
+  // bloqueamos — no podemos afirmar mismatch.
+  const geoMismatch =
+    isArgentina && geoChecked && geoCountry !== null && geoCountry !== "AR";
+  const detectedCountryName = geoCountry
+    ? findCountry(geoCountry)?.name ?? geoCountry
+    : null;
+
+  // Cuenta primaria (cónyuge 1 = quien hace el registro)
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [ministryName, setMinistryName] = useState("");
-  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Campos AR-only
+  const [marriage, setMarriage] = useState(false);
+  const [spouse1, setSpouse1] = useState<SpouseData>({
+    ...EMPTY_SPOUSE,
+    phone: AR_DIAL_CODE + " ",
+  });
+  const [spouse2, setSpouse2] = useState<SpouseData>({
+    ...EMPTY_SPOUSE,
+    phone: AR_DIAL_CODE + " ",
+  });
+  const [declaredResidence, setDeclaredResidence] = useState(false);
+
+  const [errors, setErrors] = useState<Errors>({});
+
+  // Si la detección llega después de que el usuario ya activó matrimonio,
+  // forzamos reset para no enviar payload de marriage cuando no debe.
+  useEffect(() => {
+    if (geoMismatch && marriage) setMarriage(false);
+  }, [geoMismatch, marriage]);
 
   function validate(): boolean {
-    const e: Record<string, string> = {};
+    const e: Errors = {};
+
     if (!fullName.trim() || fullName.trim().length < 3) {
       e.fullName = "Mínimo 3 caracteres.";
     }
@@ -32,6 +113,43 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
     if (password.length < 8) {
       e.password = "Mínimo 8 caracteres.";
     }
+
+    if (isArgentina && marriage) {
+      // Cónyuge 1: usa fullName + email + password + ministryName de arriba,
+      // pero necesita phone y province propios.
+      const s1: Partial<Record<keyof SpouseData, string>> = {};
+      if (!isArgentinePhone(spouse1.phone)) {
+        s1.phone = `Debe empezar con ${AR_DIAL_CODE}`;
+      }
+      if (!spouse1.province) {
+        s1.province = "Seleccioná tu provincia.";
+      }
+      if (Object.keys(s1).length) e.spouse_1 = s1;
+
+      const s2: Partial<Record<keyof SpouseData, string>> = {};
+      if (!spouse2.fullName.trim() || spouse2.fullName.trim().length < 3) {
+        s2.fullName = "Mínimo 3 caracteres.";
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(spouse2.email)) {
+        s2.email = "Email inválido.";
+      }
+      if (spouse2.email.trim().toLowerCase() === email.trim().toLowerCase()) {
+        s2.email = "Debe ser distinto al del cónyuge 1.";
+      }
+      if (!isArgentinePhone(spouse2.phone)) {
+        s2.phone = `Debe empezar con ${AR_DIAL_CODE}`;
+      }
+      if (!spouse2.province) {
+        s2.province = "Seleccioná la provincia.";
+      }
+      if (Object.keys(s2).length) e.spouse_2 = s2;
+
+      if (!declaredResidence) {
+        e.declaredResidence =
+          "Necesitamos tu confirmación para aplicar el beneficio.";
+      }
+    }
+
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -42,29 +160,50 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
 
     startTransition(async () => {
       try {
+        const body: Record<string, unknown> = {
+          email: email.trim(),
+          password,
+          fullName: fullName.trim(),
+          ministryName: ministryName.trim() || null,
+          country: country.name,
+          countryCode: country.code,
+        };
+
+        if (isArgentina && marriage) {
+          body.registrationType = "marriage";
+          body.declaredResidenceInAr = declaredResidence;
+          body.spouse1 = {
+            fullName: fullName.trim(),
+            email: email.trim(),
+            phone: spouse1.phone.trim(),
+            province: spouse1.province,
+            ministry: ministryName.trim() || null,
+          };
+          body.spouse2 = {
+            fullName: spouse2.fullName.trim(),
+            email: spouse2.email.trim(),
+            phone: spouse2.phone.trim(),
+            province: spouse2.province,
+            ministry: spouse2.ministry.trim() || null,
+          };
+        }
+
         const res = await fetch("/api/onboarding/complete", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            email: email.trim(),
-            password,
-            fullName: fullName.trim(),
-            ministryName: ministryName.trim() || null,
-            country: country.name,
-            countryCode: country.code,
-          }),
+          body: JSON.stringify(body),
         });
-        const body = (await res.json().catch(() => ({}))) as {
+        const json = (await res.json().catch(() => ({}))) as {
           ok?: boolean;
           checkoutUrl?: string;
           error?: string;
         };
-        if (!res.ok || !body.ok || !body.checkoutUrl) {
-          toast.error(body.error ?? "No se pudo completar el registro.");
+        if (!res.ok || !json.ok || !json.checkoutUrl) {
+          toast.error(json.error ?? "No se pudo completar el registro.");
           return;
         }
         toast.success("Cuenta creada. Redirigiendo al pago seguro...");
-        onSuccess(body.checkoutUrl);
+        onSuccess(json.checkoutUrl);
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Error de red";
         toast.error(msg);
@@ -100,36 +239,103 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
         </div>
 
         <h2 className="mt-5 font-grotesk text-3xl font-bold leading-tight text-text-primary sm:text-4xl">
-          Creá tu cuenta
+          {marriage ? "Crearemos sus cuentas" : "Creá tu cuenta"}
         </h2>
         <p className="mt-3 max-w-md font-inter text-sm leading-relaxed text-text-secondary">
-          Después de esto pasás directo al pago seguro para activar
-          tu suscripción mensual.
+          {marriage
+            ? "Capturamos los datos de los dos cónyuges. Después pasás directo al pago seguro de USD $35/mes para ambos."
+            : "Después de esto pasás directo al pago seguro para activar tu suscripción mensual."}
         </p>
       </div>
 
       {/* Scrollable form */}
-      <div className="mt-5 flex-1 overflow-y-auto px-8 pb-8 sm:px-10 sm:pb-10">
-        {/* Google OAuth */}
-        <div className="space-y-3">
-          <SignInWithGoogle redirectTo="/suscribirme" label="Continuar con Google" />
-        </div>
+      <div className="mt-5 flex-1 overflow-y-auto px-8 pb-8 sm:px-10 sm:pb-10 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/10">
+        {/* Google OAuth — solo modo individual (matrimonio requiere campos extra) */}
+        {!marriage && (
+          <>
+            <div className="space-y-3">
+              <SignInWithGoogle
+                redirectTo="/suscribirme"
+                label="Continuar con Google"
+              />
+            </div>
 
-        <div className="relative my-5">
-          <div className="absolute inset-0 flex items-center" aria-hidden>
-            <span className="w-full border-t border-white/[0.06]" />
-          </div>
-          <div className="relative flex justify-center">
-            <span className="bg-surface-elevated px-3 font-inter text-xs uppercase tracking-widest text-text-tertiary">
-              o con tu correo
-            </span>
-          </div>
-        </div>
+            <div className="relative my-5">
+              <div className="absolute inset-0 flex items-center" aria-hidden>
+                <span className="w-full border-t border-white/[0.06]" />
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-surface-elevated px-3 font-inter text-xs uppercase tracking-widest text-text-tertiary">
+                  o con tu correo
+                </span>
+              </div>
+            </div>
+          </>
+        )}
 
-        {/* Email/password form */}
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+          {/* AR-only: toggle matrimonio (encima del form para que sea visible primero) */}
+          {isArgentina && !geoMismatch && (
+            <div className="space-y-3">
+              <MarriageToggle
+                checked={marriage}
+                onChange={setMarriage}
+                disabled={pending}
+              />
+
+              <AnimatePresence initial={false}>
+                {marriage && (
+                  <motion.div
+                    key="banner"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                    className="overflow-hidden"
+                  >
+                    <DiscountBanner />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+
+          {/* AR + GeoIP mismatch: explainer + opción de cambiar país */}
+          {isArgentina && geoMismatch && (
+            <div className="relative overflow-hidden rounded-2xl border border-amber-400/25 bg-amber-500/[0.05] p-4">
+              <div className="flex items-start gap-3.5">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-300">
+                  <ShieldAlert className="size-5" strokeWidth={1.8} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-grotesk text-sm font-semibold text-text-primary">
+                    Beneficio matrimonio Argentina no disponible
+                  </p>
+                  <p className="mt-1 font-inter text-xs leading-relaxed text-text-secondary">
+                    Detectamos que estás conectándote desde{" "}
+                    <span className="font-semibold text-text-primary">
+                      {detectedCountryName}
+                    </span>
+                    . La inscripción especial de matrimonio es exclusiva
+                    para residentes en Argentina. Podés seguir adelante
+                    con tu inscripción individual normal.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={onBack}
+                    className="mt-3 inline-flex items-center gap-1.5 font-inter text-xs font-medium text-brand-coral transition-colors hover:text-text-primary"
+                  >
+                    <ArrowLeft className="size-3.5" />
+                    Cambiar a {detectedCountryName ?? "otro país"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Cuenta primaria */}
           <Field
-            label="Nombre completo"
+            label={marriage ? "Nombre completo (cónyuge 1)" : "Nombre completo"}
             error={errors.fullName}
             input={
               <input
@@ -143,7 +349,7 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
             }
           />
           <Field
-            label="Correo electrónico"
+            label={marriage ? "Correo (cónyuge 1)" : "Correo electrónico"}
             error={errors.email}
             input={
               <input
@@ -185,6 +391,80 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
             }
           />
 
+          {/* AR + matrimonio: campos extra del cónyuge 1 (phone + province) */}
+          <AnimatePresence initial={false}>
+            {isArgentina && marriage && (
+              <motion.div
+                key="marriage-extra"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+                className="overflow-hidden"
+              >
+                <div className="space-y-5 pt-2">
+                  {/* Spouse 1 extra fields */}
+                  <SpouseFields
+                    prefix="spouse_1"
+                    legendNumber={1}
+                    data={{
+                      fullName,
+                      email,
+                      phone: spouse1.phone,
+                      province: spouse1.province,
+                      ministry: ministryName,
+                    }}
+                    errors={errors.spouse_1 ?? {}}
+                    disabled={pending}
+                    onChange={(next) => setSpouse1(next)}
+                    hideName
+                    hideMinistry
+                  />
+
+                  <div className="my-3 flex items-center gap-3">
+                    <span className="h-px flex-1 bg-white/[0.06]" />
+                    <span className="font-inter text-[10px] uppercase tracking-[0.32em] text-text-tertiary">
+                      Cónyuge 2
+                    </span>
+                    <span className="h-px flex-1 bg-white/[0.06]" />
+                  </div>
+
+                  <SpouseFields
+                    prefix="spouse_2"
+                    legendNumber={2}
+                    data={spouse2}
+                    errors={errors.spouse_2 ?? {}}
+                    disabled={pending}
+                    onChange={setSpouse2}
+                  />
+
+                  {/* Declaración de residencia */}
+                  <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/[0.08] bg-white/[0.02] p-3.5 transition-colors hover:bg-white/[0.04]">
+                    <input
+                      type="checkbox"
+                      checked={declaredResidence}
+                      onChange={(e) =>
+                        setDeclaredResidence(e.target.checked)
+                      }
+                      disabled={pending}
+                      className="mt-0.5 size-4 shrink-0 cursor-pointer accent-brand-violet"
+                    />
+                    <span className="font-inter text-xs leading-relaxed text-text-secondary">
+                      Confirmamos que residimos actualmente en Argentina y que
+                      esta inscripción corresponde a un matrimonio. Aceptamos
+                      verificación posterior si fuera necesario.
+                    </span>
+                  </label>
+                  {errors.declaredResidence && (
+                    <p className="-mt-2 font-inter text-xs text-brand-coral">
+                      {errors.declaredResidence}
+                    </p>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <button
             type="submit"
             disabled={pending}
@@ -193,11 +473,13 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
             {pending ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
-                Creando cuenta...
+                {marriage ? "Creando cuentas..." : "Creando cuenta..."}
               </>
             ) : (
               <>
-                Continuar al pago
+                {marriage
+                  ? "Continuar al pago — USD $35/mes"
+                  : "Continuar al pago"}
                 <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
               </>
             )}

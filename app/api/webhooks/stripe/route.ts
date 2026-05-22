@@ -202,27 +202,192 @@ async function upsertSubscription(
 
   const admin = createAdminClient();
 
-  const payload: Record<string, unknown> = {
-    user_id: userId,
+  // Inscripción matrimonio: necesitamos provisionar al cónyuge 2 antes
+  // de upsertear las filas en subscriptions (queremos 2 rows, una por
+  // user, ambas pegadas al mismo stripe_subscription_id).
+  const userIds = [userId];
+  if (sub.metadata?.registration_type === "marriage") {
+    const second = await provisionSpouse2(sub);
+    if (second) userIds.push(second);
+  }
+
+  const period = subscriptionPeriod(sub);
+  const baseRow = {
     stripe_customer_id: customerId,
     stripe_subscription_id: sub.id,
     stripe_price_id: priceId,
     status: sub.status,
-    current_period_start: tsToIso(subscriptionPeriod(sub).start),
-    current_period_end: tsToIso(subscriptionPeriod(sub).end),
+    current_period_start: tsToIso(period.start),
+    current_period_end: tsToIso(period.end),
     cancel_at_period_end: sub.cancel_at_period_end ?? false,
     canceled_at: tsToIso(sub.canceled_at),
   };
 
+  const rows = userIds.map((uid) => ({ ...baseRow, user_id: uid }));
   const { error } = await admin
     .from("subscriptions")
-    .upsert(payload, {
-      onConflict: "stripe_subscription_id",
+    .upsert(rows, {
+      onConflict: "stripe_subscription_id,user_id",
       ignoreDuplicates: false,
     });
   if (error) throw new Error(`Upsert subscriptions falló: ${error.message}`);
 
-  return { ok: true, userId, detail: `status=${sub.status}` };
+  return {
+    ok: true,
+    userId,
+    detail: `status=${sub.status}${
+      userIds.length > 1 ? ` (matrimonio, ${userIds.length} filas)` : ""
+    }`,
+  };
+}
+
+/**
+ * Para suscripciones de matrimonio Argentina: localiza la fila en
+ * marriage_registrations, crea la cuenta del cónyuge 2 (admin) si no
+ * existe, le manda un magic link de invite, y devuelve su user_id.
+ *
+ * Idempotente: si spouse_2_user_id ya está poblado, no recrea nada.
+ */
+async function provisionSpouse2(
+  sub: Stripe.Subscription,
+): Promise<string | null> {
+  const marriageGroupId = sub.metadata?.marriage_group_id;
+  if (!marriageGroupId) {
+    console.warn(
+      `[stripe.webhook] sub=${sub.id} registration_type=marriage pero sin marriage_group_id`,
+    );
+    return null;
+  }
+
+  const admin = createAdminClient();
+  const { data: reg, error: regErr } = await admin
+    .from("marriage_registrations")
+    .select(
+      "id, spouse_1_user_id, spouse_2_user_id, spouse_2_email, spouse_2_full_name, spouse_2_phone, spouse_2_province, spouse_2_ministry, marriage_group_id",
+    )
+    .eq("marriage_group_id", marriageGroupId)
+    .maybeSingle<{
+      id: string;
+      spouse_1_user_id: string | null;
+      spouse_2_user_id: string | null;
+      spouse_2_email: string;
+      spouse_2_full_name: string;
+      spouse_2_phone: string;
+      spouse_2_province: string;
+      spouse_2_ministry: string | null;
+      marriage_group_id: string;
+    }>();
+
+  if (regErr) {
+    throw new Error(
+      `provisionSpouse2: lookup falló para marriage_group=${marriageGroupId}: ${regErr.message}`,
+    );
+  }
+  if (!reg) {
+    console.warn(
+      `[stripe.webhook] marriage_group=${marriageGroupId} no encontrado en marriage_registrations`,
+    );
+    return null;
+  }
+
+  // Persistir stripe_subscription_id en la fila marriage_registrations
+  await admin
+    .from("marriage_registrations")
+    .update({
+      stripe_subscription_id: sub.id,
+      stripe_payment_status: sub.status,
+    })
+    .eq("id", reg.id);
+
+  if (reg.spouse_2_user_id) {
+    return reg.spouse_2_user_id;
+  }
+
+  // Crear cuenta del cónyuge 2 vía Admin API. invite_user_by_email
+  // crea el user + envía magic link para que defina su password.
+  const { data: invited, error: invErr } =
+    await admin.auth.admin.inviteUserByEmail(reg.spouse_2_email, {
+      data: {
+        full_name: reg.spouse_2_full_name,
+        ministry_name: reg.spouse_2_ministry,
+        country: "Argentina",
+        country_code: "AR",
+        phone: reg.spouse_2_phone,
+        province: reg.spouse_2_province,
+        spouse_role: "spouse_2",
+        marriage_group_id: reg.marriage_group_id,
+      },
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/login`,
+    });
+
+  if (invErr) {
+    // Si ya existe el email en auth.users (ej. el cónyuge ya tenía cuenta),
+    // intentamos resolverlo vía admin.listUsers / getUserByEmail.
+    const lower = invErr.message.toLowerCase();
+    if (lower.includes("already") || lower.includes("registered")) {
+      const { data: existing } = await admin.rpc("get_user_id_by_email", {
+        p_email: reg.spouse_2_email,
+      });
+      const existingId =
+        typeof existing === "string"
+          ? existing
+          : Array.isArray(existing)
+          ? (existing[0] as { id?: string })?.id ?? null
+          : null;
+      if (existingId) {
+        await admin
+          .from("profiles")
+          .update({
+            marriage_group_id: reg.marriage_group_id,
+            spouse_role: "spouse_2",
+            province: reg.spouse_2_province,
+            phone: reg.spouse_2_phone,
+          })
+          .eq("id", existingId);
+        await admin
+          .from("marriage_registrations")
+          .update({
+            spouse_2_user_id: existingId,
+            spouse_2_provisioned_at: new Date().toISOString(),
+          })
+          .eq("id", reg.id);
+        return existingId;
+      }
+    }
+    throw new Error(
+      `provisionSpouse2: invite falló (${reg.spouse_2_email}): ${invErr.message}`,
+    );
+  }
+
+  const spouse2UserId = invited?.user?.id;
+  if (!spouse2UserId) {
+    throw new Error(
+      `provisionSpouse2: invite no devolvió user.id para ${reg.spouse_2_email}`,
+    );
+  }
+
+  // El trigger handle_new_user ya creó el profile vía raw_user_meta_data;
+  // ajustamos los campos finales que el trigger no pone.
+  await admin
+    .from("profiles")
+    .update({
+      marriage_group_id: reg.marriage_group_id,
+      spouse_role: "spouse_2",
+      province: reg.spouse_2_province,
+      phone: reg.spouse_2_phone,
+    })
+    .eq("id", spouse2UserId);
+
+  await admin
+    .from("marriage_registrations")
+    .update({
+      spouse_2_user_id: spouse2UserId,
+      spouse_2_provisioned_at: new Date().toISOString(),
+      spouse_2_invite_sent_at: new Date().toISOString(),
+    })
+    .eq("id", reg.id);
+
+  return spouse2UserId;
 }
 
 async function markSubscriptionCanceled(
@@ -274,15 +439,20 @@ async function handleChargeRefunded(
   }
 
   const admin = createAdminClient();
-  const { data: sub } = await admin
+  // Customer puede compartirse entre 2 user_ids en matrimonio AR.
+  // Tomamos cualquier fila (todas comparten stripe_subscription_id).
+  const { data: subs } = await admin
     .from("subscriptions")
     .select("user_id, status, stripe_subscription_id")
     .eq("stripe_customer_id", customerId)
-    .maybeSingle<{
-      user_id: string;
-      status: string;
-      stripe_subscription_id: string;
-    }>();
+    .limit(2);
+  const sub = (subs as
+    | Array<{
+        user_id: string;
+        status: string;
+        stripe_subscription_id: string;
+      }>
+    | null)?.[0];
   if (!sub) {
     return {
       ok: true,
@@ -319,12 +489,12 @@ async function handleInvoicePaymentFailed(
   const subId = invoiceSubscriptionId(invoice);
   if (!subId) return { ok: true, detail: "invoice sin subscription" };
   const admin = createAdminClient();
-  const { data: sub } = await admin
+  // Una sub puede tener 1 fila (individual) o 2 filas (matrimonio AR).
+  const { data: subs } = await admin
     .from("subscriptions")
     .select("user_id")
-    .eq("stripe_subscription_id", subId)
-    .maybeSingle();
-  if (!sub) {
+    .eq("stripe_subscription_id", subId);
+  if (!subs || subs.length === 0) {
     return { ok: true, detail: `sub=${subId} no existe en DB todavía` };
   }
   await admin
@@ -332,13 +502,17 @@ async function handleInvoicePaymentFailed(
     .update({ status: "past_due" })
     .eq("stripe_subscription_id", subId);
 
-  const emailRes = await sendPaymentFailedEmail(sub.user_id);
-  logEmail("payment-failed", sub.user_id, emailRes);
+  // Notificar a todos los user_ids asociados (los dos cónyuges en matrimonio).
+  for (const row of subs) {
+    const uid = (row as { user_id: string }).user_id;
+    const emailRes = await sendPaymentFailedEmail(uid);
+    logEmail("payment-failed", uid, emailRes);
+  }
 
   return {
     ok: true,
-    userId: sub.user_id,
-    detail: `sub=${subId} → past_due`,
+    userId: (subs[0] as { user_id: string }).user_id,
+    detail: `sub=${subId} → past_due (${subs.length} usuarios)`,
   };
 }
 
@@ -358,21 +532,23 @@ async function handleInvoicePaid(
   }
 
   const admin = createAdminClient();
-  const { data: subRow, error: selErr } = await admin
+  // Multi-fila por matrimonio: leemos todas y operamos parejo.
+  const { data: subs, error: selErr } = await admin
     .from("subscriptions")
     .select("user_id, status")
-    .eq("stripe_subscription_id", subId)
-    .maybeSingle();
+    .eq("stripe_subscription_id", subId);
   if (selErr) throw new Error(`Lookup subscription falló: ${selErr.message}`);
-  if (!subRow) {
+  if (!subs || subs.length === 0) {
     // subscription.created todavía no se procesó: 500 → Stripe retry.
     throw new Error(
       `Subscription ${subId} no existe aún — invoice.paid llegó antes de subscription.created`,
     );
   }
 
-  // Si venía past_due → la marcamos active.
-  if (subRow.status !== "active") {
+  const wasInactive = subs.some(
+    (r) => (r as { status: string }).status !== "active",
+  );
+  if (wasInactive) {
     const { error: updErr } = await admin
       .from("subscriptions")
       .update({ status: "active" })
@@ -380,9 +556,12 @@ async function handleInvoicePaid(
     if (updErr) throw new Error(`Update status falló: ${updErr.message}`);
   }
 
+  const firstUserId = (subs[0] as { user_id: string }).user_id;
   return {
     ok: true,
-    userId: subRow.user_id,
-    detail: `reason=${reason}${subRow.status !== "active" ? " → active" : ""}`,
+    userId: firstUserId,
+    detail: `reason=${reason}${wasInactive ? " → active" : ""}${
+      subs.length > 1 ? ` (${subs.length} usuarios)` : ""
+    }`,
   };
 }
