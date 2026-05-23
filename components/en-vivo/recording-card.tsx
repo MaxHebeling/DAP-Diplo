@@ -1,8 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { CalendarClock, ExternalLink, Play, X } from "lucide-react";
-import MuxPlayer from "@mux/mux-player-react";
+
+// Lazy: el player solo se monta cuando el alumno abre la grabación.
+const MuxPlayer = dynamic(() => import("@mux/mux-player-react"), {
+  ssr: false,
+});
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LIVE_KIND_LABEL, type LiveKind } from "@/lib/live-sessions/schemas";

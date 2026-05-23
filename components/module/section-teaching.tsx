@@ -1,8 +1,14 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import MuxPlayer from "@mux/mux-player-react";
+import dynamic from "next/dynamic";
 import { Download, FileText, Headphones, Link as LinkIcon } from "lucide-react";
+
+// Lazy: @mux/mux-player-react pesa ~200KB y solo lo necesitamos cuando
+// efectivamente hay video que mostrar. Bundle del módulo se reduce ~200KB.
+const MuxPlayer = dynamic(() => import("@mux/mux-player-react"), {
+  ssr: false,
+});
 import { toast } from "sonner";
 import { AdvanceButton } from "@/components/module/advance-button";
 import { Markdown } from "@/components/module/markdown";

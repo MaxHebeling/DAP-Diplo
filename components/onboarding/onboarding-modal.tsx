@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { CalendarClock, GraduationCap, Loader2, X } from "lucide-react";
 
@@ -44,13 +44,14 @@ export function OnboardingModal({ open, onOpenChange }: Props) {
   // código: el modal pasa a mostrar el selector solo.
   const enrollmentOpen = isEnrollmentOpen();
 
-  // Resetear al abrir
-  useEffect(() => {
-    if (open) {
+  // Reset al cerrar (no en effect — evita cascading renders).
+  function handleOpenChange(next: boolean) {
+    if (!next) {
       setStep("country");
       setCountry(null);
     }
-  }, [open]);
+    onOpenChange(next);
+  }
 
   function handleCountrySelect(c: Country) {
     setCountry(c);
@@ -66,7 +67,7 @@ export function OnboardingModal({ open, onOpenChange }: Props) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         showCloseButton={false}
         className="h-[calc(100vh-2rem)] max-h-[760px] w-full max-w-3xl overflow-hidden border-white/[0.06] bg-surface-base/95 p-0 shadow-2xl backdrop-blur-xl sm:h-[760px]"
@@ -84,7 +85,7 @@ export function OnboardingModal({ open, onOpenChange }: Props) {
         {/* Close button (always visible) */}
         <button
           type="button"
-          onClick={() => onOpenChange(false)}
+          onClick={() => handleOpenChange(false)}
           className="absolute right-4 top-4 z-20 flex size-9 items-center justify-center rounded-full border border-white/[0.06] bg-white/[0.04] text-text-secondary backdrop-blur-sm transition-all hover:bg-white/[0.08] hover:text-text-primary"
           aria-label="Cerrar"
         >
@@ -132,7 +133,7 @@ export function OnboardingModal({ open, onOpenChange }: Props) {
 
                 <button
                   type="button"
-                  onClick={() => onOpenChange(false)}
+                  onClick={() => handleOpenChange(false)}
                   className="mt-7 inline-flex items-center gap-2 rounded-full border border-white/[0.10] bg-white/[0.04] px-5 py-2.5 font-inter text-xs font-medium text-text-secondary backdrop-blur-sm transition-all hover:bg-white/[0.07] hover:text-text-primary"
                 >
                   Cerrar

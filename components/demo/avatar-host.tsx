@@ -1,7 +1,13 @@
 "use client";
 
-import MuxPlayer from "@mux/mux-player-react";
+import dynamic from "next/dynamic";
 import { Sparkles } from "lucide-react";
+
+// Lazy: evitamos cargar ~200KB de MuxPlayer en /demo si el visitante
+// no llega a interactuar con el video.
+const MuxPlayer = dynamic(() => import("@mux/mux-player-react"), {
+  ssr: false,
+});
 
 type Props = {
   /**

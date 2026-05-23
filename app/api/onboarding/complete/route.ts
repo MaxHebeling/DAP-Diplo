@@ -13,6 +13,7 @@ import {
   ENROLLMENT_OPENS_LABEL,
   isEnrollmentOpen,
 } from "@/lib/launch/config";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -69,6 +70,21 @@ export async function POST(request: NextRequest) {
         error: `Las inscripciones abren el ${ENROLLMENT_OPENS_LABEL}.`,
       },
       { status: 403 },
+    );
+  }
+
+  // Rate limit: 5 attempts cada 10 min por IP. Signup real es una acción
+  // poco frecuente; 5 ya cubre retries por errores del usuario sin abrir
+  // la puerta a spam de cuentas o checkouts.
+  const limit = await checkRateLimit(request, {
+    scope: "onboarding-complete",
+    max: 5,
+    windowSeconds: 600,
+  });
+  if (!limit.ok) {
+    return NextResponse.json(
+      { error: "Demasiados intentos. Esperá unos minutos y volvé a intentar." },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfter) } },
     );
   }
 

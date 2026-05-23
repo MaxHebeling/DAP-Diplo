@@ -8,7 +8,6 @@ import { motion, useScroll, useSpring } from "motion/react";
 
 import { cn } from "@/lib/utils";
 import { DapAvatar } from "@/components/ui-dap/avatar";
-import { DapButton } from "@/components/ui-dap/button";
 import { EnrollmentCTA } from "@/components/launch/enrollment-cta";
 import {
   DropdownMenu,

@@ -453,14 +453,12 @@ function Stat({
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-15%" });
   const value = useMotionValue(0);
+  // Para el caso "∞" no hay animación — render directo en JSX, sin state.
+  // Para números, count-up vía animate() + suscripción a value.
   const [display, setDisplay] = useState<string>("0");
 
   useEffect(() => {
-    if (!inView) return;
-    if (to === "∞") {
-      setDisplay("∞");
-      return;
-    }
+    if (!inView || to === "∞") return;
     const controls = animate(value, to, {
       duration: 1.6,
       ease: [0.16, 1, 0.3, 1],
@@ -471,6 +469,8 @@ function Stat({
       unsub();
     };
   }, [inView, to, value]);
+
+  const rendered = to === "∞" ? "∞" : display;
 
   return (
     <div
@@ -488,7 +488,7 @@ function Stat({
         />
       )}
       <p className="relative font-grotesk text-4xl font-bold text-text-primary sm:text-5xl">
-        {display}
+        {rendered}
       </p>
       <p className="relative mt-1 font-inter text-[10px] uppercase tracking-[0.32em] text-text-tertiary">
         {label}

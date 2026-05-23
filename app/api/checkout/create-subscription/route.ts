@@ -6,6 +6,7 @@ import {
   createSubscriptionCheckoutSession,
 } from "@/lib/stripe/api";
 import { isEnrollmentOpen } from "@/lib/launch/config";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -16,6 +17,21 @@ export async function POST(request: NextRequest) {
   if (!isEnrollmentOpen()) {
     const url = new URL("/suscribirme", request.url);
     return NextResponse.redirect(url, { status: 303 });
+  }
+
+  // Rate limit: 10 attempts cada 10 min por IP. Un alumno logueado puede
+  // navegar a /suscribirme varias veces; 10 cubre intentos legítimos sin
+  // permitir bombardeo automatizado al endpoint de Stripe.
+  const limit = await checkRateLimit(request, {
+    scope: "create-subscription",
+    max: 10,
+    windowSeconds: 600,
+  });
+  if (!limit.ok) {
+    return NextResponse.json(
+      { error: "Demasiados intentos. Esperá unos minutos y volvé a intentar." },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfter) } },
+    );
   }
 
   const supabase = await createClient();

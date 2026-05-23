@@ -16,6 +16,7 @@ import { type Country } from "@/lib/data/countries";
 import { AR_DIAL_CODE, isArgentinePhone } from "@/lib/data/argentina";
 import { findCountry } from "@/lib/data/countries";
 import { SignInWithGoogle } from "@/components/auth/google-button";
+import { Field, fieldCx } from "@/components/onboarding/field";
 import { MarriageToggle } from "@/components/onboarding/marriage-toggle";
 import { DiscountBanner } from "@/components/onboarding/discount-banner";
 import {
@@ -95,11 +96,12 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
 
   const [errors, setErrors] = useState<Errors>({});
 
-  // Si la detección llega después de que el usuario ya activó matrimonio,
-  // forzamos reset para no enviar payload de marriage cuando no debe.
-  useEffect(() => {
-    if (geoMismatch && marriage) setMarriage(false);
-  }, [geoMismatch, marriage]);
+  // `marriage` guarda la intención del usuario (toggle). `effectiveMarriage`
+  // es lo que realmente cuenta: si GeoIP detectó país distinto a AR,
+  // descartamos la elección automáticamente sin tocar el state. Esto
+  // evita un setState-in-effect (cascading renders) y mantiene la
+  // intención si el usuario corrige país después.
+  const effectiveMarriage = marriage && !geoMismatch;
 
   function validate(): boolean {
     const e: Errors = {};
@@ -114,7 +116,7 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
       e.password = "Mínimo 8 caracteres.";
     }
 
-    if (isArgentina && marriage) {
+    if (isArgentina && effectiveMarriage) {
       // Cónyuge 1: usa fullName + email + password + ministryName de arriba,
       // pero necesita phone y province propios.
       const s1: Partial<Record<keyof SpouseData, string>> = {};
@@ -169,7 +171,7 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
           countryCode: country.code,
         };
 
-        if (isArgentina && marriage) {
+        if (isArgentina && effectiveMarriage) {
           body.registrationType = "marriage";
           body.declaredResidenceInAr = declaredResidence;
           body.spouse1 = {
@@ -239,10 +241,10 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
         </div>
 
         <h2 className="mt-5 font-grotesk text-3xl font-bold leading-tight text-text-primary sm:text-4xl">
-          {marriage ? "Crearemos sus cuentas" : "Creá tu cuenta"}
+          {effectiveMarriage ? "Crearemos sus cuentas" : "Creá tu cuenta"}
         </h2>
         <p className="mt-3 max-w-md font-inter text-sm leading-relaxed text-text-secondary">
-          {marriage
+          {effectiveMarriage
             ? "Capturamos los datos de los dos cónyuges. Después pasás directo al pago seguro de USD $35/mes para ambos."
             : "Después de esto pasás directo al pago seguro para activar tu suscripción mensual."}
         </p>
@@ -251,7 +253,7 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
       {/* Scrollable form */}
       <div className="mt-5 flex-1 overflow-y-auto px-8 pb-8 sm:px-10 sm:pb-10 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/10">
         {/* Google OAuth — solo modo individual (matrimonio requiere campos extra) */}
-        {!marriage && (
+        {!effectiveMarriage && (
           <>
             <div className="space-y-3">
               <SignInWithGoogle
@@ -335,7 +337,7 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
 
           {/* Cuenta primaria */}
           <Field
-            label={marriage ? "Nombre completo (cónyuge 1)" : "Nombre completo"}
+            label={effectiveMarriage ? "Nombre completo (cónyuge 1)" : "Nombre completo"}
             error={errors.fullName}
             input={
               <input
@@ -349,7 +351,7 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
             }
           />
           <Field
-            label={marriage ? "Correo (cónyuge 1)" : "Correo electrónico"}
+            label={effectiveMarriage ? "Correo (cónyuge 1)" : "Correo electrónico"}
             error={errors.email}
             input={
               <input
@@ -393,7 +395,7 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
 
           {/* AR + matrimonio: campos extra del cónyuge 1 (phone + province) */}
           <AnimatePresence initial={false}>
-            {isArgentina && marriage && (
+            {isArgentina && effectiveMarriage && (
               <motion.div
                 key="marriage-extra"
                 initial={{ opacity: 0, height: 0 }}
@@ -473,11 +475,11 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
             {pending ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
-                {marriage ? "Creando cuentas..." : "Creando cuenta..."}
+                {effectiveMarriage ? "Creando cuentas..." : "Creando cuenta..."}
               </>
             ) : (
               <>
-                {marriage
+                {effectiveMarriage
                   ? "Continuar al pago — USD $35/mes"
                   : "Continuar al pago"}
                 <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
@@ -508,43 +510,3 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
   );
 }
 
-function Field({
-  label,
-  hint,
-  error,
-  input,
-}: {
-  label: string;
-  hint?: string;
-  error?: string;
-  input: React.ReactNode;
-}) {
-  return (
-    <div>
-      <label className="mb-1.5 flex items-baseline justify-between">
-        <span className="font-inter text-xs font-medium text-text-secondary">
-          {label}
-        </span>
-        {hint && !error && (
-          <span className="font-inter text-[10px] text-text-tertiary">
-            {hint}
-          </span>
-        )}
-      </label>
-      {input}
-      {error && (
-        <p className="mt-1 font-inter text-xs text-brand-coral">{error}</p>
-      )}
-    </div>
-  );
-}
-
-function fieldCx(hasError: boolean): string {
-  return [
-    "w-full rounded-xl border bg-white/[0.03] px-4 py-3 font-inter text-sm text-text-primary outline-none transition-all placeholder:text-text-tertiary",
-    "focus:bg-white/[0.05] focus:ring-4",
-    hasError
-      ? "border-brand-coral/50 focus:border-brand-coral focus:ring-brand-coral/15"
-      : "border-white/[0.08] focus:border-brand-violet/40 focus:ring-brand-violet/15",
-  ].join(" ");
-}
