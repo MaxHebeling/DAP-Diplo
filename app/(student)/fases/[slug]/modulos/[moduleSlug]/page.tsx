@@ -201,6 +201,8 @@ export default async function ModulePlayerPage({
   }
 
   const startPosition = activeSection.progress?.[0]?.last_position_seconds ?? 0;
+  const teachingAlreadyCompleted =
+    !!sectionsByKind.get("teaching")?.progress?.[0]?.completed;
 
   // v3.3: si el alumno entra a la sección activation del módulo de su
   // semana actual, garantizamos que exista su assignment_submission con
@@ -445,6 +447,7 @@ export default async function ModulePlayerPage({
                   bodyMd={activeSection.body_md}
                   durationSeconds={activeSection.duration_seconds}
                   startPositionSeconds={startPosition}
+                  alreadyCompleted={teachingAlreadyCompleted}
                   resources={(mod.resources ?? [])
                     .slice()
                     .sort((a, b) => a.order_index - b.order_index)

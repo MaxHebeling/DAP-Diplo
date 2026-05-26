@@ -1,18 +1,25 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { Download, FileText, Headphones, Link as LinkIcon } from "lucide-react";
+import {
+  Download,
+  FileText,
+  Link as LinkIcon,
+  Lock,
+  PlayCircle,
+} from "lucide-react";
+import { toast } from "sonner";
+
+import { AdvanceButton } from "@/components/module/advance-button";
+import { Markdown } from "@/components/module/markdown";
+import { saveLastPosition } from "@/lib/progress/actions";
 
 // Lazy: @mux/mux-player-react pesa ~200KB y solo lo necesitamos cuando
 // efectivamente hay video que mostrar. Bundle del módulo se reduce ~200KB.
 const MuxPlayer = dynamic(() => import("@mux/mux-player-react"), {
   ssr: false,
 });
-import { toast } from "sonner";
-import { AdvanceButton } from "@/components/module/advance-button";
-import { Markdown } from "@/components/module/markdown";
-import { saveLastPosition } from "@/lib/progress/actions";
 
 type Resource = {
   id: string;
@@ -37,27 +44,52 @@ type SectionTeachingProps = {
   bodyMd: string | null;
   durationSeconds: number | null;
   startPositionSeconds: number;
+  /**
+   * Si el alumno ya completó esta sección en una visita previa, el
+   * botón "Marcar como visto y continuar" aparece habilitado de entrada
+   * (no lo obligamos a re-mirar todo el video).
+   */
+  alreadyCompleted: boolean;
   resources: Resource[];
 };
 
 const RESOURCE_ICON: Record<Resource["kind"], typeof FileText> = {
   pdf: FileText,
-  audio: Headphones,
+  audio: PlayCircle,
   link: LinkIcon,
   slides: FileText,
   other: FileText,
 };
 
+// Para considerar "visto" si el evento `ended` no dispara (a veces
+// falla por buffering, micro-skips, etc.). 95% es estándar en LMS.
+const COMPLETION_THRESHOLD = 0.95;
+
+// Tolerancia para diferenciar seek hacia adelante (skip) de drift normal
+// del browser al hacer pause/play.
+const FORWARD_SEEK_TOLERANCE_SECONDS = 2;
+
 export function SectionTeaching(props: SectionTeachingProps) {
   const lastSavedRef = useRef<number>(0);
   const lastKnownPositionRef = useRef<number>(props.startPositionSeconds);
+  // Track del segundo más alto que efectivamente vio. Cualquier seek
+  // hacia adelante más allá de esto se bloquea.
+  const maxReachedRef = useRef<number>(props.startPositionSeconds);
+  const skipBlockedToastRef = useRef<number>(0);
 
-  // Guarda last_position cada 10s + al unmount.
+  const [hasFinished, setHasFinished] = useState<boolean>(
+    props.alreadyCompleted,
+  );
+  // Dedup: si dos eventos disparan markFinished en el mismo tick
+  // (ej. onEnded + onTimeUpdate cruzando el 95%), el ref nos protege
+  // de doble persistencia. El state es solo para reactivar la UI.
+  const hasFinishedRef = useRef<boolean>(props.alreadyCompleted);
+
+  // Guarda last_position al unmount (cambio de ruta / cierre de pestaña).
   useEffect(() => {
     return () => {
       const pos = Math.round(lastKnownPositionRef.current);
       if (pos > 0 && pos !== Math.round(lastSavedRef.current)) {
-        // Fire-and-forget (la ruta puede haber cambiado pero queremos persistir).
         void saveLastPosition({
           sectionId: props.sectionId,
           lastPositionSeconds: pos,
@@ -66,27 +98,83 @@ export function SectionTeaching(props: SectionTeachingProps) {
     };
   }, [props.sectionId]);
 
+  // Marca completado UNA vez y persiste watched_seconds final.
+  const markFinished = useCallback(() => {
+    if (hasFinishedRef.current) return;
+    hasFinishedRef.current = true;
+    setHasFinished(true);
+    const finalSeconds = Math.round(maxReachedRef.current);
+    void saveLastPosition({
+      sectionId: props.sectionId,
+      lastPositionSeconds: finalSeconds,
+      watchedSeconds: finalSeconds,
+    });
+  }, [props.sectionId]);
+
   function handleTimeUpdate(e: Event) {
-    const player = e.target as HTMLMediaElement & { currentTime: number };
+    const player = e.target as HTMLMediaElement;
     const t = Math.round(player.currentTime ?? 0);
+    const duration = player.duration || props.durationSeconds || 0;
+
     lastKnownPositionRef.current = t;
+    if (t > maxReachedRef.current) {
+      maxReachedRef.current = t;
+    }
+
+    // Fallback de "visto" si el evento `ended` no dispara: 95% del total.
+    if (
+      !hasFinishedRef.current &&
+      duration > 0 &&
+      t / duration >= COMPLETION_THRESHOLD
+    ) {
+      markFinished();
+    }
+
+    // Persistencia cada 10s (last_position + watched).
     if (t - Math.round(lastSavedRef.current) >= 10) {
       lastSavedRef.current = t;
       void saveLastPosition({
         sectionId: props.sectionId,
         lastPositionSeconds: t,
-        watchedSeconds: t,
+        watchedSeconds: Math.round(maxReachedRef.current),
       });
     }
+  }
+
+  // Bloquea skip hacia adelante: si el alumno intenta saltar a una
+  // parte que aún no vio, lo devolvemos al máximo alcanzado. Permite
+  // pausar y rewindear libremente.
+  function handleSeeking(e: Event) {
+    if (hasFinishedRef.current) return; // ya completó, libre de moverse
+    const player = e.target as HTMLMediaElement;
+    const target = player.currentTime ?? 0;
+    const max = maxReachedRef.current + FORWARD_SEEK_TOLERANCE_SECONDS;
+    if (target > max) {
+      player.currentTime = maxReachedRef.current;
+      // Mostrar toast como máximo una vez cada 3s (evita spam).
+      const now = Date.now();
+      if (now - skipBlockedToastRef.current > 3000) {
+        skipBlockedToastRef.current = now;
+        toast.info("Para marcar como visto, tenés que ver el video sin adelantar.");
+      }
+    }
+  }
+
+  function handleEnded() {
+    markFinished();
   }
 
   function handlePlayerError() {
     // Causa típica: el signed token (TTL 6h) expiró si el usuario dejó
     // la pestaña abierta mucho tiempo. Recargar genera tokens nuevos.
     toast.error(
-      "Hubo un problema cargando el audio. Recarga la página para reintentar.",
+      "Hubo un problema cargando el video. Recargá la página para reintentar.",
     );
   }
+
+  const durationLabel = props.durationSeconds
+    ? `${Math.round(props.durationSeconds / 60)} min`
+    : null;
 
   return (
     <div className="space-y-8">
@@ -94,41 +182,49 @@ export function SectionTeaching(props: SectionTeachingProps) {
         <div className="overflow-hidden rounded-xl border bg-gradient-to-br from-brand-violet/[0.08] via-surface-elevated to-brand-coral/[0.06] p-6">
           <div className="mb-4 flex items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-full bg-brand-coral/15 text-brand-coral">
-              <Headphones className="size-5" strokeWidth={2} />
+              <PlayCircle className="size-5" strokeWidth={2} />
             </div>
             <div>
               <p className="text-xs font-medium uppercase tracking-widest text-brand-coral">
-                Enseñanza · 40 min
+                Enseñanza{durationLabel ? ` · ${durationLabel}` : ""}
               </p>
               <p className="text-sm text-text-secondary">
-                Audio principal del módulo
+                Video principal del módulo
               </p>
             </div>
           </div>
           <MuxPlayer
-            audio
             streamType="on-demand"
             playbackId={props.muxPlaybackId}
             tokens={props.muxTokens}
             startTime={props.startPositionSeconds}
             metadata={{
               video_id: props.sectionId,
-              video_title: "Enseñanza (audio)",
+              video_title: "Enseñanza (video)",
             }}
             onTimeUpdate={handleTimeUpdate}
+            onSeeking={handleSeeking}
+            onEnded={handleEnded}
             onError={handlePlayerError}
             accentColor="#fdad5a"
-            style={{ width: "100%" }}
+            style={{ width: "100%", aspectRatio: "16/9" }}
           />
+          {!hasFinished && (
+            <p className="mt-3 flex items-center gap-1.5 text-xs text-text-tertiary">
+              <Lock className="size-3" strokeWidth={2} />
+              Tenés que terminar el video para marcarlo como visto.
+              Podés pausar cuando necesites.
+            </p>
+          )}
         </div>
       ) : props.muxPlaybackId ? (
         <div className="flex items-center justify-center rounded-xl border border-dashed bg-amber-500/10 px-6 py-8 text-center text-sm text-amber-700 dark:text-amber-300">
-          No pudimos cargar el audio en este momento. Recarga la página o
-          contáctanos si el problema persiste.
+          No pudimos cargar el video en este momento. Recargá la página o
+          contactanos si el problema persiste.
         </div>
       ) : (
         <div className="flex items-center justify-center rounded-xl border border-dashed bg-muted/30 px-6 py-8 text-sm text-muted-foreground">
-          Audio pendiente de subir (sin mux_playback_id en esta sección).
+          Video pendiente de subir (sin mux_playback_id en esta sección).
         </div>
       )}
 
@@ -171,6 +267,8 @@ export function SectionTeaching(props: SectionTeachingProps) {
           moduleSlug={props.moduleSlug}
           nextSection="activation"
           label="Marcar como visto y continuar"
+          disabled={!hasFinished}
+          disabledReason="Completá el video para continuar"
         />
       </div>
     </div>
