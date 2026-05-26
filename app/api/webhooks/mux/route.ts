@@ -173,95 +173,32 @@ export async function POST(request: NextRequest) {
         revalidatePath("/admin/fases", "layout");
         revalidatePath("/fases", "layout");
 
-        // Solicita a Mux que genere captions automáticos en español. Cuando
-        // Mux termine, dispara `video.asset.track.ready` y ahí llamamos a
-        // Polyglot AI para traducir a inglés / portugués. Best-effort: si la
-        // request falla, los captions se pueden re-encolar manualmente.
+        // Dispara Polyglot AI con la URL firmada del audio del asset.
+        // Polyglot lo descarga, lo pasa por Whisper (transcripción ES) y
+        // luego traduce con Claude Opus 4.7 a los idiomas configurados.
+        // Best-effort: si falla, se puede re-disparar manualmente.
         try {
-          // text_source: "generated_vod" pide a Mux que genere los captions
-          // automáticamente. La typings del SDK no lo expone aún (REST API sí).
-          await muxClient().video.assets.createTrack(assetId, {
-            type: "text",
-            text_type: "subtitles",
-            language_code: "es",
-            name: "Español (auto)",
-            closed_captions: false,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ...({ text_source: "generated_vod" } as any),
-          });
-        } catch (e) {
-          console.error(
-            `[mux.webhook] failed to request ES auto-captions for ${assetId}:`,
-            e,
-          );
-        }
-        return NextResponse.json({ received: true, sectionId: section.id });
-      }
-
-      case "video.asset.track.ready": {
-        // Mux acaba de terminar de generar una pista de texto. Solo nos
-        // interesan las auto-generadas en español → las traducimos.
-        const data = event.data as {
-          id?: string; // track_id
-          asset_id?: string;
-          text_source?: string;
-          language_code?: string;
-        };
-        const trackId = data.id;
-        const assetId = data.asset_id;
-        if (
-          !trackId ||
-          !assetId ||
-          data.text_source !== "generated_vod" ||
-          data.language_code !== "es"
-        ) {
-          return NextResponse.json({ received: true, ignored: "track filter" });
-        }
-
-        const section = await findSection(admin, "mux_asset_id", assetId);
-        if (!section) {
-          console.warn(`[mux.webhook] track.ready sin sección para asset ${assetId}`);
-          return NextResponse.json({ received: true });
-        }
-
-        // Descargamos el VTT server-side. Para signed playback, firmamos un
-        // token corto con el SDK de Mux (type:"video" cubre text tracks).
-        let vttText: string;
-        try {
-          const { data: full } = await admin
-            .from("module_sections")
-            .select("mux_playback_id")
-            .eq("id", section.id)
-            .maybeSingle();
-          if (!full?.mux_playback_id) throw new Error("no mux_playback_id");
-
-          const raw = (await muxClient().jwt.signPlaybackId(full.mux_playback_id, {
-            expiration: "600s",
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+          const webhookSecret = process.env.POLYGLOT_WEBHOOK_SECRET;
+          if (!appUrl || !webhookSecret) {
+            throw new Error("Missing NEXT_PUBLIC_APP_URL or POLYGLOT_WEBHOOK_SECRET");
+          }
+          // Token firmado 1h para que Whisper alcance a descargar el audio.
+          const raw = (await muxClient().jwt.signPlaybackId(playback, {
+            expiration: "3600s",
             type: "video",
           })) as unknown as Record<string, string>;
           const token = raw["playback-token"] ?? raw.video;
-          if (!token) throw new Error("no playback token returned");
-          const vttUrl = `https://stream.mux.com/${full.mux_playback_id}/text/${trackId}.vtt?token=${token}`;
-          const r = await fetch(vttUrl);
-          if (!r.ok) throw new Error(`fetch VTT ${r.status}`);
-          vttText = await r.text();
-        } catch (e) {
-          console.error(`[mux.webhook] failed to download ES VTT:`, e);
-          return NextResponse.json({ received: true, error: (e as Error).message });
-        }
+          if (!token) throw new Error("no playback token");
+          const audioUrl = `https://stream.mux.com/${playback}/audio.m4a?token=${token}`;
 
-        // Llamamos a Polyglot AI para traducir.
-        try {
-          const appUrl = process.env.NEXT_PUBLIC_APP_URL;
           const { enqueueTranslation } = await import("@/lib/polyglot/client");
           const targetLangs = (process.env.DAP_TARGET_LANGUAGES ?? "en,pt")
             .split(",")
             .map((s) => s.trim())
             .filter(Boolean);
-          const webhookSecret = process.env.POLYGLOT_WEBHOOK_SECRET;
-          if (!webhookSecret) throw new Error("POLYGLOT_WEBHOOK_SECRET missing");
           const { jobId } = await enqueueTranslation({
-            sourceCaptionsVtt: vttText,
+            videoUrl: audioUrl,
             sourceLanguage: "es",
             targetLanguages: targetLangs,
             domainHint: "Christian theological class for pastors",
@@ -270,10 +207,19 @@ export async function POST(request: NextRequest) {
           });
           console.log(`[mux.webhook] polyglot job ${jobId} enqueued for section ${section.id}`);
         } catch (e) {
-          console.error(`[mux.webhook] polyglot enqueue failed:`, e);
+          console.error(
+            `[mux.webhook] polyglot enqueue failed for ${assetId}:`,
+            e,
+          );
         }
-
         return NextResponse.json({ received: true, sectionId: section.id });
+      }
+
+      case "video.asset.track.ready": {
+        // Path Whisper: no dependemos de Mux Smart Captions, esto se ignora.
+        // Si en el futuro se vuelve a habilitar Smart Captions, mover el
+        // handler de descarga + enqueue acá.
+        return NextResponse.json({ received: true, ignored: "smart captions path disabled" });
       }
 
       case "video.asset.errored": {

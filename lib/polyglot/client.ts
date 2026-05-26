@@ -24,7 +24,9 @@ export function polyglotConfig() {
 
 /** Encola un job de traducción. Devuelve jobId; el resultado llega vía webhook. */
 export async function enqueueTranslation(opts: {
-  sourceCaptionsVtt: string;
+  sourceCaptionsVtt?: string;
+  sourceCaptionsUrl?: string;
+  videoUrl?: string;
   sourceLanguage: string;
   targetLanguages: string[];
   domainHint?: string;
