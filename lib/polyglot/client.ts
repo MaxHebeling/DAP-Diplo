@@ -8,9 +8,11 @@ export type PolyglotTranslation = {
   target_language: string;
   vtt_url: string;
   srt_url: string;
+  audio_url: string | null;
   raw_text: string;
   model: string;
   cost_usd: number;
+  audio_cost_usd: number | null;
 };
 
 export function polyglotConfig() {

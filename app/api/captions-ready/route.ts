@@ -89,21 +89,38 @@ export async function POST(req: Request) {
   const failures: { lang: string; err: string }[] = [];
 
   for (const t of translations) {
+    const langName = LANG_NAMES[t.target_language] ?? t.target_language.toUpperCase();
     try {
+      // Text track (subtitles)
       await mux.video.assets.createTrack(section.mux_asset_id, {
         url: t.vtt_url,
         type: "text",
         text_type: "subtitles",
         language_code: t.target_language,
-        name: LANG_NAMES[t.target_language] ?? t.target_language.toUpperCase(),
+        name: langName,
         closed_captions: false,
       });
       captions[t.target_language] = t.vtt_url;
-      attached.push(t.target_language);
+      attached.push(`${t.target_language}/text`);
     } catch (e) {
       const msg = (e as Error).message;
-      console.error(`[captions-ready] attach ${t.target_language} failed:`, msg);
-      failures.push({ lang: t.target_language, err: msg });
+      console.error(`[captions-ready] attach text ${t.target_language} failed:`, msg);
+      failures.push({ lang: `${t.target_language}/text`, err: msg });
+    }
+    // Audio dub track (alternate audio)
+    if (t.audio_url) {
+      try {
+        await mux.video.assets.createTrack(section.mux_asset_id, {
+          url: t.audio_url,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ...({ type: "audio", language_code: t.target_language, name: `${langName} (dub)` } as any),
+        });
+        attached.push(`${t.target_language}/audio`);
+      } catch (e) {
+        const msg = (e as Error).message;
+        console.error(`[captions-ready] attach audio ${t.target_language} failed:`, msg);
+        failures.push({ lang: `${t.target_language}/audio`, err: msg });
+      }
     }
   }
 
