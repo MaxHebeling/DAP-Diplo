@@ -28,6 +28,7 @@ import {
   DapRankBadge,
   type RankOrder,
 } from "@/components/ui-dap/rank-badge";
+import { EsdrasFloatingBubble } from "@/components/tutor/esdras-floating-bubble";
 
 type NavGroup = {
   title?: string;
@@ -216,6 +217,10 @@ export function DapStudentShell({
           );
         })}
       </nav>
+
+      {/* Chat flotante de Esdras — disponible en todas las páginas del
+          portal del alumno. Se auto-oculta en /tutor (página dedicada). */}
+      <EsdrasFloatingBubble />
     </div>
   );
 }

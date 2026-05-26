@@ -61,10 +61,17 @@ export function ChatWindow({
   conversationId,
   conversationTitle,
   initialMessages,
+  embedded = false,
 }: {
   conversationId: string;
   conversationTitle: string | null;
   initialMessages: DbMessage[];
+  /**
+   * Cuando true, el componente se renderiza sin propio header ni
+   * background full-screen — para vivir dentro de un sheet/drawer
+   * (ej. el bubble flotante de Esdras). El bg lo provee el wrapper.
+   */
+  embedded?: boolean;
 }) {
   const [input, setInput] = useState("");
   const initial = hydrateInitialMessages(initialMessages);
@@ -118,31 +125,41 @@ export function ChatWindow({
   }
 
   return (
-    <div className="relative flex min-h-screen flex-col bg-[#04081A] text-text-primary">
-      {/* Cinematic background — sutiles glows DAP */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 [background:radial-gradient(50%_40%_at_50%_0%,rgba(123,97,255,0.12),transparent_60%),radial-gradient(40%_30%_at_50%_100%,rgba(255,77,109,0.08),transparent_60%)]"
-      />
+    <div
+      className={
+        embedded
+          ? "relative flex h-full flex-col text-text-primary"
+          : "relative flex min-h-screen flex-col bg-[#04081A] text-text-primary"
+      }
+    >
+      {!embedded && (
+        <>
+          {/* Cinematic background — sutiles glows DAP (solo full-screen) */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 -z-10 [background:radial-gradient(50%_40%_at_50%_0%,rgba(123,97,255,0.12),transparent_60%),radial-gradient(40%_30%_at_50%_100%,rgba(255,77,109,0.08),transparent_60%)]"
+          />
 
-      {/* Header con identidad Esdras */}
-      <header className="relative z-10 flex items-center gap-3 border-b border-white/[0.06] bg-[#04081A]/80 px-6 py-3 backdrop-blur-xl">
-        <EsdrasAvatar size="md" />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <p className="font-grotesk text-sm font-semibold text-text-primary">
-              Esdras
-            </p>
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 font-inter text-[10px] font-medium text-emerald-400">
-              <span className="size-1.5 rounded-full bg-emerald-400" />
-              En línea
-            </span>
-          </div>
-          <p className="truncate font-inter text-[11px] text-text-tertiary">
-            {conversationTitle ?? "Tutor del Diplomado Apostólico Pastoral"}
-          </p>
-        </div>
-      </header>
+          {/* Header con identidad Esdras */}
+          <header className="relative z-10 flex items-center gap-3 border-b border-white/[0.06] bg-[#04081A]/80 px-6 py-3 backdrop-blur-xl">
+            <EsdrasAvatar size="md" />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <p className="font-grotesk text-sm font-semibold text-text-primary">
+                  Esdras
+                </p>
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 font-inter text-[10px] font-medium text-emerald-400">
+                  <span className="size-1.5 rounded-full bg-emerald-400" />
+                  En línea
+                </span>
+              </div>
+              <p className="truncate font-inter text-[11px] text-text-tertiary">
+                {conversationTitle ?? "Tutor del Diplomado Apostólico Pastoral"}
+              </p>
+            </div>
+          </header>
+        </>
+      )}
 
       {/* Scrollable conversation */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-8 sm:px-6">
