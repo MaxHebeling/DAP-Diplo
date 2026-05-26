@@ -38,76 +38,85 @@ export async function sendWelcomeEmail(userId: string): Promise<SendEmailResult>
   }
 
   const firstName = profile.full_name?.split(" ")[0] ?? "Ministro";
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://dap-diplo.vercel.app";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.dapglobal.org";
 
   const html = renderWelcomeHtml({ firstName, appUrl });
 
   return await sendEmail({
     to: userData.user.email,
-    subject: "Bienvenido al DAP — tu formación apostólica comienza.",
+    subject: "Bienvenido al DAP · Tu formación apostólica comienza.",
     html,
   });
 }
 
 // --- template HTML --------------------------------------------------
 
+/**
+ * Template inline-styled (los clientes de email no respetan stylesheets).
+ * Brand DAP: Midnight Navy #07142B base · Violet #7B61FF + Coral #FF4D6D
+ * accents · White highlights #F8FAFC.
+ * Bulletproof tables para compatibilidad Outlook.
+ */
 function renderWelcomeHtml(opts: {
   firstName: string;
   appUrl: string;
 }): string {
   const { firstName, appUrl } = opts;
-  // Inline styles — los clientes de email no respetan stylesheets.
-  // Bulletproof button via table cell para Outlook.
+
   return `<!doctype html>
 <html lang="es">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="color-scheme" content="light dark">
+    <meta name="color-scheme" content="dark light">
     <title>Bienvenido al DAP</title>
   </head>
-  <body style="margin:0;padding:0;background:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#e5e5e5;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0a0a0a;">
+  <body style="margin:0;padding:0;background:#04081A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#F8FAFC;-webkit-text-size-adjust:100%;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#04081A;">
       <tr>
-        <td align="center" style="padding:40px 20px;">
-          <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background:#0a0a0a;">
+        <td align="center" style="padding:48px 20px 24px;">
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
+
+            <!-- Logo DAP -->
             <tr>
-              <td align="center" style="padding:0 0 32px 0;">
-                <div style="font-family:Georgia,'Playfair Display',serif;font-size:32px;font-weight:600;letter-spacing:-0.5px;color:#fafafa;">
-                  DAP<span style="color:#fdad5a;">.</span>
+              <td align="center" style="padding:0 0 40px 0;">
+                <div style="font-family:'Space Grotesk',-apple-system,Helvetica,sans-serif;font-size:42px;font-weight:700;letter-spacing:-1px;color:#F8FAFC;background:linear-gradient(135deg,#F8FAFC 0%,#A28BFF 60%,#FF4D6D 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;color:transparent;">
+                  DAP
                 </div>
               </td>
             </tr>
 
+            <!-- Eyebrow + Headline -->
             <tr>
               <td style="padding:0 8px;">
-                <p style="margin:0 0 14px;font-size:11px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:#fdad5a;">
-                  Diplomado Apostólico Pastoral
+                <p style="margin:0 0 18px;font-size:11px;font-weight:600;letter-spacing:4.5px;text-transform:uppercase;color:#FF4D6D;">
+                  Tu inscripción está activa
                 </p>
-                <h1 style="margin:0 0 24px;font-family:Georgia,'Playfair Display',serif;font-size:36px;line-height:1.15;font-weight:600;color:#fafafa;">
-                  Bienvenido, ${escapeHtml(firstName)}.
+                <h1 style="margin:0 0 28px;font-family:'Space Grotesk',-apple-system,Georgia,serif;font-size:36px;line-height:1.1;font-weight:700;color:#F8FAFC;letter-spacing:-0.5px;">
+                  Bienvenido,<br>${escapeHtml(firstName)}.
                 </h1>
-                <p style="margin:0 0 18px;font-size:16px;line-height:1.6;color:#d4d4d4;">
-                  Tu suscripción de <strong style="color:#fafafa;">$25 USD/mes</strong> está activa.
-                  Ya tienes acceso al <strong style="color:#fafafa;">Fase 1 — Fundamentos Espirituales</strong>,
-                  con sus 22 módulos.
+                <p style="margin:0 0 18px;font-size:16px;line-height:1.65;color:#CBD5E1;">
+                  Tu suscripción de <strong style="color:#F8FAFC;font-weight:600;">USD $25 al mes</strong> quedó activa.
+                  Ya tenés acceso al <strong style="color:#F8FAFC;font-weight:600;">Bloque 1 — Raíces (Fundamentos Espirituales)</strong>,
+                  el primero de los nueve bloques del proceso.
                 </p>
-                <p style="margin:0 0 32px;font-size:16px;line-height:1.6;color:#d4d4d4;">
-                  Cada 2 meses se libera una fase nuevo. En 18 meses completas
-                  los 9 fases y obtienes los 9 dimensiones ministeriales — de
-                  Discípulo hasta Enviado.
+                <p style="margin:0 0 36px;font-size:16px;line-height:1.65;color:#CBD5E1;">
+                  Cada martes a las 00:01 (hora San Diego) se abre un módulo nuevo.
+                  Tu camino: <strong style="color:#F8FAFC;font-weight:600;">72 semanas · 9 bloques · 9 dimensiones ministeriales</strong>,
+                  de Discípulo hasta Enviado.
                 </p>
               </td>
             </tr>
 
+            <!-- CTA Button (bulletproof) -->
             <tr>
-              <td align="center" style="padding:0 8px 36px;">
+              <td align="center" style="padding:0 8px 40px;">
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                   <tr>
-                    <td align="center" bgcolor="#fdad5a" style="background:#fdad5a;border-radius:8px;">
+                    <td align="center" bgcolor="#7B61FF" style="background:linear-gradient(135deg,#7B61FF 0%,#FF4D6D 100%);background-color:#7B61FF;border-radius:12px;">
                       <a href="${appUrl}/dashboard" target="_blank"
-                         style="display:inline-phase;padding:14px 32px;font-size:15px;font-weight:600;color:#0a0a0a;text-decoration:none;font-family:inherit;">
-                        Ir a mi dashboard →
+                         style="display:inline-block;padding:16px 36px;font-size:15px;font-weight:600;color:#FFFFFF;text-decoration:none;font-family:'Space Grotesk',inherit;letter-spacing:0.3px;">
+                        Entrar al dashboard
                       </a>
                     </td>
                   </tr>
@@ -115,29 +124,59 @@ function renderWelcomeHtml(opts: {
               </td>
             </tr>
 
+            <!-- Qué te espera (highlight box) -->
             <tr>
-              <td style="padding:24px 8px 0;border-top:1px solid #1f1f1f;">
-                <p style="margin:0 0 12px;font-size:13px;line-height:1.6;color:#737373;">
-                  <strong style="color:#a3a3a3;">¿Cómo gestiono mi suscripción?</strong>
+              <td style="padding:0 8px 32px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:rgba(123,97,255,0.06);border:1px solid rgba(123,97,255,0.18);border-radius:14px;">
+                  <tr>
+                    <td style="padding:24px 24px;">
+                      <p style="margin:0 0 12px;font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#FF4D6D;">
+                        Qué te espera
+                      </p>
+                      <p style="margin:0 0 12px;font-size:14px;line-height:1.6;color:#CBD5E1;">
+                        <strong style="color:#F8FAFC;font-weight:600;">→ 1 módulo cada semana</strong> · cada martes 00:01
+                      </p>
+                      <p style="margin:0 0 12px;font-size:14px;line-height:1.6;color:#CBD5E1;">
+                        <strong style="color:#F8FAFC;font-weight:600;">→ Activación práctica corregida personalmente</strong> · feedback en 48 horas
+                      </p>
+                      <p style="margin:0;font-size:14px;line-height:1.6;color:#CBD5E1;">
+                        <strong style="color:#F8FAFC;font-weight:600;">→ MasterClass en vivo mensual</strong> · comunidad apostólica
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Gestionar suscripción -->
+            <tr>
+              <td style="padding:32px 8px 0;border-top:1px solid rgba(248,250,252,0.06);">
+                <p style="margin:0 0 10px;font-size:13px;line-height:1.6;color:#94A3B8;">
+                  <strong style="color:#CBD5E1;font-weight:600;">¿Cómo gestionás tu suscripción?</strong>
                 </p>
-                <p style="margin:0 0 24px;font-size:13px;line-height:1.6;color:#737373;">
-                  Desde tu dashboard, en el card "Tu suscripción", click
-                  "Gestionar mi suscripción" para cambiar tarjeta, ver
-                  facturas o cancelar cuando quieras. Si cancelas, conservas
-                  tu progreso para cuando reactives.
+                <p style="margin:0 0 28px;font-size:13px;line-height:1.65;color:#94A3B8;">
+                  Desde tu dashboard, en el card <em>“Tu suscripción”</em>, clickeá
+                  <em>“Gestionar mi suscripción”</em> para cambiar la tarjeta,
+                  ver tus facturas o cancelar cuando quieras. Si cancelás,
+                  conservás tu progreso para cuando reactives.
                 </p>
               </td>
             </tr>
 
+            <!-- Footer institucional -->
             <tr>
               <td align="center" style="padding:24px 8px 0;">
-                <p style="margin:0;font-size:11px;color:#525252;">
-                  © 2026 DAP — Diplomado Apostólico Pastoral.<br>
-                  Recibes este correo porque te suscribiste en
-                  <a href="${appUrl}" style="color:#737373;text-decoration:underline;">dap-diplo.vercel.app</a>.
+                <p style="margin:0 0 8px;font-size:11px;line-height:1.6;color:#64748B;">
+                  © 2026 DAP · Diplomado Apostólico Pastoral
+                </p>
+                <p style="margin:0;font-size:10px;line-height:1.6;color:#475569;">
+                  Departamento de educación de Revival &amp; Kingdom Ministries, INC.<br>
+                  Recibís este correo porque te suscribiste en
+                  <a href="${appUrl}" style="color:#7B61FF;text-decoration:none;">dapglobal.org</a>
                 </p>
               </td>
             </tr>
+
           </table>
         </td>
       </tr>

@@ -259,6 +259,8 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
               <SignInWithGoogle
                 redirectTo="/suscribirme"
                 label="Continuar con Google"
+                country={country.name}
+                countryCode={country.code}
               />
             </div>
 

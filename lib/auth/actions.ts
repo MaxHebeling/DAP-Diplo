@@ -1,5 +1,6 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -125,6 +126,31 @@ export async function signInWithGoogleAction(formData: FormData) {
   const next = safeRedirectTo(formData.get("redirectTo"));
   const baseUrl =
     process.env.NEXT_PUBLIC_APP_URL ?? "https://www.dapglobal.org";
+
+  // Si el button trae país seleccionado (onboarding modal), guardamos
+  // en cookie temporal para recuperar en /auth/callback. Sin esto, el
+  // profile queda con country=NULL después del flow OAuth.
+  const country = formData.get("country");
+  const countryCode = formData.get("countryCode");
+  if (typeof country === "string" && country.length > 0) {
+    const jar = await cookies();
+    jar.set("dap_pending_country", country, {
+      maxAge: 600, // 10 min — más que suficiente para el OAuth roundtrip
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+    });
+    if (typeof countryCode === "string" && countryCode.length === 2) {
+      jar.set("dap_pending_country_code", countryCode, {
+        maxAge: 600,
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        path: "/",
+      });
+    }
+  }
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({

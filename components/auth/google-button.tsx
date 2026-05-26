@@ -52,16 +52,31 @@ function GoogleButton({ label }: { label: string }) {
 type Props = {
   redirectTo?: string;
   label?: string;
+  /**
+   * Si el botón está dentro del onboarding modal con país ya
+   * elegido, lo pasamos como hidden input para que el server action
+   * lo guarde en una cookie temporal antes de redirigir a Google. La
+   * cookie se consume en /auth/callback y se persiste a profile.country.
+   * Sin esto, el OAuth flow pierde la selección de país.
+   */
+  country?: string;
+  countryCode?: string;
 };
 
 export function SignInWithGoogle({
   redirectTo,
   label = "Continuar con Google",
+  country,
+  countryCode,
 }: Props) {
   return (
     <form action={signInWithGoogleAction} className="w-full">
       {redirectTo && (
         <input type="hidden" name="redirectTo" value={redirectTo} />
+      )}
+      {country && <input type="hidden" name="country" value={country} />}
+      {countryCode && (
+        <input type="hidden" name="countryCode" value={countryCode} />
       )}
       <GoogleButton label={label} />
     </form>
