@@ -155,15 +155,17 @@ export async function POST(request: NextRequest) {
     // Defensa en profundidad: si GeoIP detectó un país distinto a AR,
     // rechazamos el matrimonio independientemente del cliente. GeoIP
     // null (local dev / sin header Vercel) NO bloquea.
-    const geoCountry = getGeoIpCountry(request);
-    if (geoCountry && geoCountry.toUpperCase() !== "AR") {
-      return NextResponse.json(
-        {
-          error: `El beneficio matrimonial es exclusivo para Argentina. Detectamos tu conexión desde ${geoCountry.toUpperCase()}.`,
-        },
-        { status: 403 },
-      );
-    }
+    // !!! TEMP-SMOKE-TEST-AR !!! Bypaseado durante el smoke test.
+    // REVERTIR (descomentar el bloque) cuando termine el test.
+    // const geoCountry = getGeoIpCountry(request);
+    // if (geoCountry && geoCountry.toUpperCase() !== "AR") {
+    //   return NextResponse.json(
+    //     {
+    //       error: `El beneficio matrimonial es exclusivo para Argentina. Detectamos tu conexión desde ${geoCountry.toUpperCase()}.`,
+    //     },
+    //     { status: 403 },
+    //   );
+    // }
   }
 
   const supabase = await createClient();
