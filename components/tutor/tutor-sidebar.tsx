@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useTransition } from "react";
-import { Brain, Loader2, MessageSquare, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Loader2, MessageSquare, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
-import { Logo } from "@/components/brand/logo";
+import { EsdrasAvatar } from "@/components/tutor/esdras-avatar";
 import {
   deleteConversationAction,
   newConversationRedirectAction,
@@ -24,27 +25,38 @@ export function TutorSidebar({
   messagesToday: number;
 }) {
   return (
-    <aside className="hidden border-r bg-card/30 lg:flex lg:w-72 lg:flex-col">
-      <div className="flex h-16 items-center gap-3 border-b px-5">
-        <Logo size="sm" />
-        <span className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-widest text-brand-coral">
-          <Brain className="size-3.5" />
-          Tutor
-        </span>
+    <aside className="hidden border-r border-white/[0.06] bg-[#04081A]/95 backdrop-blur-xl lg:flex lg:w-72 lg:flex-col">
+      {/* Brand header con Esdras */}
+      <div className="flex items-center gap-3 border-b border-white/[0.06] px-5 py-4">
+        <EsdrasAvatar size="md" />
+        <div className="min-w-0 flex-1">
+          <p className="font-grotesk text-sm font-semibold text-text-primary">
+            Esdras
+          </p>
+          <p className="font-inter text-[10px] uppercase tracking-[0.32em] text-brand-coral">
+            Tutor IA · DAP
+          </p>
+        </div>
       </div>
 
-      <div className="p-3 border-b">
+      {/* Nueva conversación */}
+      <div className="border-b border-white/[0.06] p-3">
         <form action={newConversationRedirectAction}>
-          <Button type="submit" className="w-full" size="sm">
+          <Button
+            type="submit"
+            size="sm"
+            className="w-full bg-gradient-to-br from-brand-violet to-brand-coral text-white shadow-md shadow-brand-coral/15 hover:opacity-95"
+          >
             <Plus className="size-3.5" />
             Nueva conversación
           </Button>
         </form>
       </div>
 
+      {/* Lista de conversaciones */}
       <nav className="flex-1 overflow-y-auto p-2">
         {conversations.length === 0 ? (
-          <p className="px-3 py-6 text-center text-xs text-muted-foreground">
+          <p className="px-3 py-6 text-center font-inter text-xs text-text-tertiary">
             Aún no tienes conversaciones.
           </p>
         ) : (
@@ -60,29 +72,48 @@ export function TutorSidebar({
         )}
       </nav>
 
-      <div className="border-t p-4">
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-muted-foreground">Mensajes hoy</span>
+      {/* Rate limit + back to dashboard */}
+      <div className="border-t border-white/[0.06] p-4">
+        <div className="flex items-center justify-between font-inter text-xs">
+          <span className="text-text-tertiary">Mensajes hoy</span>
           <span
             className={cn(
               "font-medium tabular-nums",
               messagesToday >= 25
-                ? "text-red-500"
+                ? "text-red-400"
                 : messagesToday >= 20
-                  ? "text-amber-500"
-                  : "text-foreground",
+                  ? "text-amber-400"
+                  : "text-text-primary",
             )}
           >
             {messagesToday} / 30
           </span>
         </div>
+        {/* Progress bar visual */}
+        <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/[0.06]">
+          <div
+            className={cn(
+              "h-full transition-all duration-500",
+              messagesToday >= 25
+                ? "bg-red-400"
+                : messagesToday >= 20
+                  ? "bg-amber-400"
+                  : "bg-gradient-to-r from-brand-violet to-brand-coral",
+            )}
+            style={{
+              width: `${Math.min(100, (messagesToday / 30) * 100)}%`,
+            }}
+          />
+        </div>
+
         <Button
           variant="ghost"
           size="sm"
-          className="mt-3 w-full justify-start text-muted-foreground hover:text-foreground"
+          className="mt-4 w-full justify-start font-inter text-xs text-text-tertiary hover:bg-white/[0.04] hover:text-text-primary"
           render={<Link href="/dashboard" />}
         >
-          ← Ir a mi dashboard
+          <ArrowLeft className="size-3.5" />
+          Ir a mi dashboard
         </Button>
       </div>
     </aside>
@@ -109,7 +140,6 @@ function ConversationRow({
       if (!res.ok) toast.error(res.error);
       else {
         toast.success("Conversación eliminada.");
-        // Si estoy en la página que borré, vuelvo al index
         if (active) window.location.href = "/tutor";
       }
     });
@@ -120,10 +150,10 @@ function ConversationRow({
       <Link
         href={`/tutor/${conversation.id}`}
         className={cn(
-          "group flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
+          "group flex items-center gap-2 rounded-lg px-3 py-2 font-inter text-sm transition-colors",
           active
-            ? "bg-brand-coral/10 text-foreground"
-            : "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
+            ? "bg-gradient-to-r from-brand-violet/15 to-brand-coral/10 text-text-primary"
+            : "text-text-secondary hover:bg-white/[0.04] hover:text-text-primary",
         )}
         aria-current={active ? "page" : undefined}
       >
@@ -135,7 +165,7 @@ function ConversationRow({
           type="button"
           onClick={onDelete}
           disabled={pending}
-          className="opacity-0 group-hover:opacity-100 transition-opacity rounded p-0.5 hover:bg-red-500/10 hover:text-red-500"
+          className="rounded p-0.5 opacity-0 transition-opacity hover:bg-red-500/10 hover:text-red-400 group-hover:opacity-100"
           aria-label="Eliminar"
         >
           {pending ? (

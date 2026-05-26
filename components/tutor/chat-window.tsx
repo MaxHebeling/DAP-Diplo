@@ -3,12 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { ArrowUp, FileText, Loader2 } from "lucide-react";
+import { ArrowUp, FileText, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Markdown } from "@/components/module/markdown";
+import { EsdrasAvatar } from "@/components/tutor/esdras-avatar";
 
 type Citation = {
   source_id: string;
@@ -35,6 +36,12 @@ type TutorUIMessage = {
     | { type: string; [key: string]: unknown }
   >;
 };
+
+const SUGGESTED_PROMPTS = [
+  "¿Qué se enseña en el Bloque 1 sobre los fundamentos espirituales?",
+  "Explícame qué significa autoridad apostólica según el DAP",
+  "¿Cuál es la diferencia entre un pastor y un apóstol en este programa?",
+];
 
 function hydrateInitialMessages(rows: DbMessage[]): TutorUIMessage[] {
   return rows.map((r) => {
@@ -81,7 +88,6 @@ export function ChatWindow({
     },
   });
 
-  // Auto-scroll al final cuando se añade un mensaje o llega texto streaming.
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -89,6 +95,7 @@ export function ChatWindow({
   }, [messages.length, status]);
 
   const isStreaming = status === "submitted" || status === "streaming";
+  const isEmpty = messages.length === 0;
 
   function onSubmit(e?: React.FormEvent) {
     if (e) e.preventDefault();
@@ -96,6 +103,11 @@ export function ChatWindow({
     if (!text || isStreaming) return;
     sendMessage({ text });
     setInput("");
+  }
+
+  function onSuggested(text: string) {
+    if (isStreaming) return;
+    sendMessage({ text });
   }
 
   function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -106,81 +118,160 @@ export function ChatWindow({
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="border-b px-6 py-4">
-        <h1 className="truncate font-medium">
-          {conversationTitle ?? "Nueva conversación"}
-        </h1>
+    <div className="relative flex min-h-screen flex-col bg-[#04081A] text-text-primary">
+      {/* Cinematic background — sutiles glows DAP */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 [background:radial-gradient(50%_40%_at_50%_0%,rgba(123,97,255,0.12),transparent_60%),radial-gradient(40%_30%_at_50%_100%,rgba(255,77,109,0.08),transparent_60%)]"
+      />
+
+      {/* Header con identidad Esdras */}
+      <header className="relative z-10 flex items-center gap-3 border-b border-white/[0.06] bg-[#04081A]/80 px-6 py-3 backdrop-blur-xl">
+        <EsdrasAvatar size="md" />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <p className="font-grotesk text-sm font-semibold text-text-primary">
+              Esdras
+            </p>
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 font-inter text-[10px] font-medium text-emerald-400">
+              <span className="size-1.5 rounded-full bg-emerald-400" />
+              En línea
+            </span>
+          </div>
+          <p className="truncate font-inter text-[11px] text-text-tertiary">
+            {conversationTitle ?? "Tutor del Diplomado Apostólico Pastoral"}
+          </p>
+        </div>
       </header>
 
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto px-6 py-8"
-      >
-        <div className="mx-auto max-w-3xl space-y-6">
-          {messages.length === 0 && (
-            <div className="rounded-2xl border border-dashed bg-muted/10 px-6 py-12 text-center">
-              <p className="text-sm text-muted-foreground">
-                Escribe tu primera pregunta. Te respondo solo con base en los
-                materiales del DAP.
-              </p>
+      {/* Scrollable conversation */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-8 sm:px-6">
+        <div className="mx-auto max-w-3xl">
+          {isEmpty ? (
+            <EmptyState onSuggested={onSuggested} />
+          ) : (
+            <div className="space-y-6">
+              {messages.map((m) => (
+                <MessageRow
+                  key={m.id}
+                  message={m as unknown as TutorUIMessage}
+                />
+              ))}
+
+              {isStreaming &&
+                !messages.some(
+                  (m) =>
+                    m.role === "assistant" &&
+                    hasTextInParts(m as unknown as TutorUIMessage),
+                ) && <TypingRow />}
             </div>
           )}
-
-          {messages.map((m) => (
-            <MessageRow key={m.id} message={m as unknown as TutorUIMessage} />
-          ))}
-
-          {isStreaming &&
-            !messages.some(
-              (m) =>
-                m.role === "assistant" &&
-                hasTextInParts(m as unknown as TutorUIMessage),
-            ) && (
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Loader2 className="size-4 animate-spin" />
-                Pensando…
-              </div>
-            )}
         </div>
       </div>
 
+      {/* Composer */}
       <form
         onSubmit={onSubmit}
-        className="border-t bg-background px-6 py-4"
+        className="sticky bottom-0 z-10 border-t border-white/[0.06] bg-[#04081A]/95 px-4 py-4 backdrop-blur-xl sm:px-6"
       >
         <div className="mx-auto max-w-3xl">
-          <div className="flex items-end gap-2 rounded-2xl border bg-card p-2">
+          <div className="group flex items-end gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-2 transition-colors focus-within:border-brand-violet/40 focus-within:bg-white/[0.05]">
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={onKeyDown}
-              placeholder="Pregúntale al tutor… (⌘ + Enter para enviar)"
+              placeholder="Pregúntale a Esdras…  (⌘ + Enter para enviar)"
               rows={2}
-              className="flex-1 resize-none border-0 bg-transparent px-3 py-2 text-sm focus-visible:ring-0 shadow-none"
+              className="flex-1 resize-none border-0 bg-transparent px-3 py-2 font-inter text-sm text-text-primary placeholder:text-text-tertiary shadow-none focus-visible:ring-0"
               disabled={isStreaming}
             />
             <Button
               type="submit"
               size="icon"
               disabled={!input.trim() || isStreaming}
+              className="size-10 shrink-0 rounded-xl bg-gradient-to-br from-brand-violet to-brand-coral text-white shadow-lg shadow-brand-coral/20 hover:opacity-95 disabled:opacity-30 disabled:shadow-none"
             >
               {isStreaming ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
-                <ArrowUp className="size-4" />
+                <ArrowUp className="size-4" strokeWidth={2.5} />
               )}
             </Button>
           </div>
-          <p className="mt-2 px-1 text-[11px] text-muted-foreground">
-            El tutor puede equivocarse. Responde solo con base en documentos
-            ingestados.
+          <p className="mt-2 px-1 font-inter text-[11px] text-text-tertiary">
+            Esdras responde solo con base en el material del DAP. Las
+            respuestas pueden contener errores — verificá con tu pastor.
           </p>
         </div>
       </form>
     </div>
   );
 }
+
+// ============================================================
+// EMPTY STATE — welcome con avatar grande
+// ============================================================
+
+function EmptyState({ onSuggested }: { onSuggested: (text: string) => void }) {
+  return (
+    <div className="flex flex-col items-center pt-12 text-center sm:pt-20">
+      <EsdrasAvatar size="xl" showGlow />
+
+      <p className="mt-8 font-inter text-[10px] font-semibold uppercase tracking-[0.42em] text-brand-coral">
+        Tutor IA · DAP
+      </p>
+      <h2 className="mt-3 font-grotesk text-3xl font-bold leading-tight text-text-primary sm:text-4xl">
+        Soy <span className="bg-gradient-to-r from-brand-violet via-[#A28BFF] to-brand-coral bg-clip-text text-transparent">Esdras</span>.
+      </h2>
+      <p className="mt-4 max-w-md font-inter text-sm leading-relaxed text-text-secondary">
+        Estoy aquí para acompañarte en tu formación. Te respondo
+        únicamente con base en el material oficial del Diplomado, con
+        reverencia y precisión.
+      </p>
+
+      <div className="mt-10 w-full max-w-lg">
+        <p className="mb-3 font-inter text-[10px] font-semibold uppercase tracking-[0.32em] text-text-tertiary">
+          <Sparkles className="mr-1 inline size-3 text-brand-violet" />
+          Para empezar
+        </p>
+        <div className="space-y-2">
+          {SUGGESTED_PROMPTS.map((p, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => onSuggested(p)}
+              className="group flex w-full items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-left font-inter text-sm text-text-secondary transition-all hover:border-brand-violet/30 hover:bg-brand-violet/[0.06] hover:text-text-primary"
+            >
+              <span className="size-1.5 shrink-0 rounded-full bg-gradient-to-br from-brand-violet to-brand-coral opacity-60 transition-opacity group-hover:opacity-100" />
+              <span className="flex-1">{p}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// TYPING INDICATOR — avatar + 3 dots pulsantes
+// ============================================================
+
+function TypingRow() {
+  return (
+    <div className="flex items-end gap-3">
+      <EsdrasAvatar size="sm" />
+      <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-white/[0.06] bg-white/[0.03] px-4 py-3">
+        <span className="size-1.5 animate-pulse rounded-full bg-brand-violet [animation-delay:0ms]" />
+        <span className="size-1.5 animate-pulse rounded-full bg-brand-violet [animation-delay:200ms]" />
+        <span className="size-1.5 animate-pulse rounded-full bg-brand-violet [animation-delay:400ms]" />
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
 
 function hasTextInParts(m: TutorUIMessage): boolean {
   return m.parts?.some(
@@ -200,17 +291,14 @@ function MessageRow({ message }: { message: TutorUIMessage }) {
       p.type === "data-citations",
   );
   const citations = citationsPart?.data ?? [];
-  // Dedup por source_id para no repetir la misma fuente.
   const uniqueSources = Array.from(
-    new Map(
-      citations.map((c) => [c.source_id, c.source_title]),
-    ).entries(),
+    new Map(citations.map((c) => [c.source_id, c.source_title])).entries(),
   );
 
   if (isUser) {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[80%] rounded-2xl bg-brand-coral/15 px-4 py-2.5 text-sm">
+        <div className="max-w-[80%] rounded-2xl rounded-br-md bg-gradient-to-br from-brand-violet to-brand-coral px-4 py-2.5 font-inter text-sm text-white shadow-lg shadow-brand-coral/15">
           {text}
         </div>
       </div>
@@ -218,28 +306,28 @@ function MessageRow({ message }: { message: TutorUIMessage }) {
   }
 
   return (
-    <div className="flex gap-3">
-      <Avatar className="size-8 shrink-0">
-        <AvatarFallback className="bg-foreground/10 text-foreground/70">
-          T
-        </AvatarFallback>
-      </Avatar>
-      <div className="min-w-0 flex-1">
-        <div className="prose prose-sm prose-neutral max-w-none dark:prose-invert">
-          <Markdown>{text}</Markdown>
+    <div className="flex items-end gap-3">
+      <EsdrasAvatar size="sm" />
+      <div className="min-w-0 flex-1 space-y-3">
+        <div className="rounded-2xl rounded-bl-md border border-white/[0.06] bg-white/[0.03] px-4 py-3">
+          <div className="prose prose-sm prose-invert max-w-none font-inter">
+            <Markdown>{text}</Markdown>
+          </div>
         </div>
+
         {uniqueSources.length > 0 && (
-          <div className="mt-4 rounded-lg border bg-muted/10 px-3 py-2.5">
-            <p className="mb-2 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+          <div className="rounded-xl border border-brand-violet/15 bg-brand-violet/[0.04] px-4 py-2.5">
+            <p className="mb-2 flex items-center gap-1.5 font-inter text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-violet">
+              <FileText className="size-3" strokeWidth={2} />
               Fuentes citadas
             </p>
             <ul className="space-y-1">
               {uniqueSources.map(([sourceId, title]) => (
                 <li
                   key={sourceId}
-                  className="flex items-center gap-2 text-xs text-muted-foreground"
+                  className="flex items-center gap-2 font-inter text-xs text-text-secondary"
                 >
-                  <FileText className="size-3" />
+                  <span className="size-1 shrink-0 rounded-full bg-brand-violet" />
                   <span>{title}</span>
                 </li>
               ))}
