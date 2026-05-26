@@ -11,9 +11,7 @@
  */
 
 // 01 de Junio 2026 — 00:01 hora San Diego (America/Los_Angeles, UTC-7 en junio).
-// !!! TEMP-SMOKE-TEST-AR !!! Bajado al pasado para smoke test matrimonio AR.
-// REVERTIR A "2026-06-01T00:01:00-07:00" cuando termine el test.
-export const ENROLLMENT_OPENS_AT = new Date("2026-05-01T00:00:00-07:00");
+export const ENROLLMENT_OPENS_AT = new Date("2026-06-01T00:01:00-07:00");
 
 export const ENROLLMENT_OPENS_LABEL = "01 de Junio de 2026";
 
