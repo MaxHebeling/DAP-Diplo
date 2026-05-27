@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { CheckCircle2, Loader2, Trash2 } from "lucide-react";
 
 type Step = {
@@ -21,10 +22,11 @@ type Step = {
  * pueden hacer Cmd+Shift+R.
  */
 export function CacheClearClient() {
-  const [steps, setSteps] = useState<Step[]>([
-    { label: "Detectando service workers", status: "pending" },
-    { label: "Borrando cachés de la PWA", status: "pending" },
-    { label: "Limpiando almacenamiento local", status: "pending" },
+  const t = useTranslations("CacheClear");
+  const [steps, setSteps] = useState<Step[]>(() => [
+    { label: t("step1"), status: "pending" },
+    { label: t("step2"), status: "pending" },
+    { label: t("step3"), status: "pending" },
   ]);
   const [done, setDone] = useState(false);
 
@@ -50,9 +52,9 @@ export function CacheClearClient() {
         if ("serviceWorker" in navigator) {
           const regs = await navigator.serviceWorker.getRegistrations();
           await Promise.all(regs.map((r) => r.unregister()));
-          setStepStatus(0, "done", `${regs.length} unregistered`);
+          setStepStatus(0, "done", t("unregistered", { count: regs.length }));
         } else {
-          setStepStatus(0, "skipped", "no soportado");
+          setStepStatus(0, "skipped", t("notSupported"));
         }
       } catch (err) {
         setStepStatus(0, "error", (err as Error).message);
@@ -64,9 +66,9 @@ export function CacheClearClient() {
         if ("caches" in window) {
           const keys = await caches.keys();
           await Promise.all(keys.map((k) => caches.delete(k)));
-          setStepStatus(1, "done", `${keys.length} cachés borrados`);
+          setStepStatus(1, "done", t("cachesCleared", { count: keys.length }));
         } else {
-          setStepStatus(1, "skipped", "no soportado");
+          setStepStatus(1, "skipped", t("notSupported"));
         }
       } catch (err) {
         setStepStatus(1, "error", (err as Error).message);
@@ -92,7 +94,7 @@ export function CacheClearClient() {
 
       setDone(true);
     })();
-  }, [setStepStatus]);
+  }, [setStepStatus, t]);
 
   return (
     <div className="rounded-2xl border border-white/[0.08] bg-surface-elevated/60 p-6 backdrop-blur-sm">
@@ -101,9 +103,9 @@ export function CacheClearClient() {
           <Trash2 className="size-5" />
         </div>
         <div>
-          <h1 className="font-grotesk text-xl font-bold">Limpiar caché DAP</h1>
+          <h1 className="font-grotesk text-xl font-bold">{t("heading")}</h1>
           <p className="font-inter text-xs text-text-secondary">
-            Borrá la caché local y volvé a empezar.
+            {t("subheading")}
           </p>
         </div>
       </div>
@@ -132,19 +134,19 @@ export function CacheClearClient() {
       {done && (
         <div className="mt-5 space-y-3">
           <p className="rounded-md border border-emerald-500/30 bg-emerald-500/[0.05] p-3 text-center font-inter text-sm text-emerald-300">
-            Listo. Caché limpia. Cierra esta pestaña y abre el sitio de nuevo.
+            {t("doneMessage")}
           </p>
           <Link
             href="/login"
             className="block w-full rounded-md bg-brand-coral px-4 py-3 text-center font-inter text-sm font-semibold text-white hover:bg-brand-coral/90"
           >
-            Ir a iniciar sesión
+            {t("goToLogin")}
           </Link>
           <Link
             href="/"
             className="block w-full rounded-md border border-white/[0.1] px-4 py-3 text-center font-inter text-sm font-medium text-text-secondary hover:border-white/[0.2] hover:text-text-primary"
           >
-            Ir al inicio
+            {t("goToHome")}
           </Link>
         </div>
       )}

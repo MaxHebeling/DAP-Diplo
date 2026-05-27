@@ -1,39 +1,43 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { Tour, type TourStep } from "./tour";
 
-const STEPS: TourStep[] = [
-  {
-    title: "Bienvenido al DAP",
-    body: "Te llevamos en un tour rápido para que veas todo lo que tienes disponible. Lleva 30 segundos.",
-    placement: "center",
-  },
-  {
-    target: '[data-tour="current-module"]',
-    title: "Tu módulo de la semana",
-    body: "Aquí ves el módulo que se abrió este martes. Tienes hasta el lunes 23:59 para entregar la activación.",
-    placement: "bottom",
-  },
-  {
-    target: '[data-tour="progress"]',
-    title: "Tu progreso",
-    body: "Vas a llenar esta barra durante 72 semanas. Al completar los 8 módulos de un bloque, recibes una dimensión.",
-    placement: "bottom",
-  },
-  {
-    target: '[data-tour="upcoming"]',
-    title: "Lo que viene",
-    body: "Los próximos módulos quedan bloqueados hasta su martes. El contenido pasado queda accesible para repaso.",
-    placement: "top",
-  },
-  {
-    target: '[data-tour="resources"]',
-    title: "Recursos extra",
-    body: "Comunidad, sesiones en vivo y tutor IA. Disponibles 24/7.",
-    placement: "top",
-  },
-];
-
 export function DashboardTour() {
-  return <Tour steps={STEPS} />;
+  const t = useTranslations("Onboarding.dashboardTour");
+
+  const steps: TourStep[] = [
+    {
+      title: t("welcomeTitle"),
+      body: t("welcomeBody"),
+      placement: "center",
+    },
+    {
+      target: '[data-tour="current-module"]',
+      title: t("currentModuleTitle"),
+      body: t("currentModuleBody"),
+      placement: "bottom",
+    },
+    {
+      target: '[data-tour="progress"]',
+      title: t("progressTitle"),
+      body: t("progressBody"),
+      placement: "bottom",
+    },
+    {
+      target: '[data-tour="upcoming"]',
+      title: t("upcomingTitle"),
+      body: t("upcomingBody"),
+      placement: "top",
+    },
+    {
+      target: '[data-tour="resources"]',
+      title: t("resourcesTitle"),
+      body: t("resourcesBody"),
+      placement: "top",
+    },
+  ];
+
+  return <Tour steps={steps} />;
 }

@@ -1,19 +1,24 @@
 import { Award } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { ComingSoonPage } from "@/components/student/coming-soon-page";
 
-export const metadata = { title: "Certificaciones — DAP" };
+export async function generateMetadata() {
+  const t = await getTranslations("Student");
+  return { title: t("certifications.metaTitle") };
+}
 
 export default async function CertificacionesPage() {
+  const t = await getTranslations("Student");
   return (
     <ComingSoonPage
-      topbarTitle="Certificaciones"
-      eyebrow="Próximamente"
-      title="Tus certificados"
-      description="Aquí podrás descargar todos tus certificados y compartir tus dimensiones obtenidas. Por ahora puedes ver tu progreso y las dimensiones ganadas desde Mi Progreso."
+      topbarTitle={t("certifications.topbarTitle")}
+      eyebrow={t("certifications.eyebrow")}
+      title={t("certifications.title")}
+      description={t("certifications.description")}
       icon={Award}
-      primaryAction={{ href: "/progreso", label: "Ver mi progreso" }}
+      primaryAction={{ href: "/progreso", label: t("certifications.primaryAction") }}
       secondaryActions={[
-        { href: "/dashboard", label: "Volver al inicio" },
+        { href: "/dashboard", label: t("certifications.secondaryAction") },
       ]}
     />
   );

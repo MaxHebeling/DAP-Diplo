@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,15 +19,17 @@ const initialState: AuthFormState = { ok: false };
 
 function SubmitButton() {
   const { pending } = useFormStatus();
+  const t = useTranslations("Auth");
   return (
     <Button type="submit" disabled={pending} className="w-full">
-      {pending ? "Entrando..." : "Entrar"}
+      {pending ? t("login.submitting") : t("login.submit")}
     </Button>
   );
 }
 
 export function LoginForm({ redirectTo }: { redirectTo?: string }) {
   const [state, formAction] = useActionState(signInAction, initialState);
+  const t = useTranslations("Auth");
 
   return (
     <div className="flex flex-col gap-6">
@@ -38,7 +41,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
         </div>
         <div className="relative flex justify-center text-xs uppercase">
           <span className="bg-card px-2 text-muted-foreground">
-            o con tu correo
+            {t("divider.orWithEmail")}
           </span>
         </div>
       </div>
@@ -48,7 +51,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
 
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor="email">Correo</FieldLabel>
+          <FieldLabel htmlFor="email">{t("login.emailLabel")}</FieldLabel>
           <Input
             id="email"
             name="email"
@@ -63,12 +66,12 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
 
         <Field>
           <div className="flex items-baseline justify-between">
-            <FieldLabel htmlFor="password">Contraseña</FieldLabel>
+            <FieldLabel htmlFor="password">{t("login.passwordLabel")}</FieldLabel>
             <Link
               href="/reset-password"
               className="text-xs text-brand-coral hover:underline"
             >
-              ¿Olvidaste tu contraseña?
+              {t("login.forgotPassword")}
             </Link>
           </div>
           <Input
@@ -93,9 +96,9 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
       <SubmitButton />
 
       <p className="text-center text-sm text-muted-foreground">
-        ¿No tienes cuenta?{" "}
+        {t("login.noAccount")}{" "}
         <Link href="/signup" className="underline underline-offset-4">
-          Crea una
+          {t("login.createOne")}
         </Link>
       </p>
     </form>

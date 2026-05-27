@@ -9,6 +9,8 @@ import {
   Sparkles,
 } from "lucide-react";
 
+import { getTranslations } from "next-intl/server";
+
 import { signOutAction } from "@/lib/auth/actions";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -22,49 +24,51 @@ import { Reveal } from "@/components/landing/reveal";
 
 const SUPPORT_EMAIL = "contacto@dapglobal.org";
 
-export const metadata: Metadata = {
-  title: "Contacto",
-  description:
-    "Hablemos. Para soporte técnico, preguntas pre-venta o consultas pastorales escríbenos a contacto@dapglobal.org. Respondemos en menos de 24 horas hábiles.",
-  alternates: { canonical: "/contacto" },
-  openGraph: {
-    type: "website",
-    url: "/contacto",
-    title: "Contacto · DAP",
-    description:
-      "Hablemos — soporte, ventas o consultas pastorales del Diplomado Apostólico Pastoral.",
-  },
-};
-
-const TOPICS = [
-  {
-    icon: HelpCircle,
-    title: "Preguntas antes de inscribirte",
-    body: "¿Dudas sobre el contenido, la modalidad o si el DAP es para ti? Escríbenos antes de pagar.",
-    subject: "Consulta pre-venta DAP",
-  },
-  {
-    icon: CreditCard,
-    title: "Soporte de suscripción o pago",
-    body: "Problemas con tu cobro, cancelación o reembolso (dentro de los 7 días).",
-    subject: "Soporte suscripción DAP",
-  },
-  {
-    icon: MessageSquare,
-    title: "Soporte técnico de la plataforma",
-    body: "No puedes acceder, no carga un módulo, falla un quiz. Te ayudamos a resolverlo.",
-    subject: "Soporte técnico DAP",
-  },
-  {
-    icon: Sparkles,
-    title: "Consultas pastorales o ministeriales",
-    body: "Si quieres conversar sobre tu llamado, una iglesia interesada en sumarse, o colaboraciones.",
-    subject: "Consulta pastoral DAP",
-  },
-];
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("PublicPages");
+  return {
+    title: t("contact.metaTitle"),
+    description: t("contact.metaDescription"),
+    alternates: { canonical: "/contacto" },
+    openGraph: {
+      type: "website",
+      url: "/contacto",
+      title: t("contact.ogTitle"),
+      description: t("contact.ogDescription"),
+    },
+  };
+}
 
 export default async function ContactoPage() {
+  const t = await getTranslations("PublicPages");
   const supabase = await createClient();
+
+  const TOPICS = [
+    {
+      icon: HelpCircle,
+      title: t("contact.topics.topic1Title"),
+      body: t("contact.topics.topic1Body"),
+      subject: t("contact.topics.topic1Subject"),
+    },
+    {
+      icon: CreditCard,
+      title: t("contact.topics.topic2Title"),
+      body: t("contact.topics.topic2Body"),
+      subject: t("contact.topics.topic2Subject"),
+    },
+    {
+      icon: MessageSquare,
+      title: t("contact.topics.topic3Title"),
+      body: t("contact.topics.topic3Body"),
+      subject: t("contact.topics.topic3Subject"),
+    },
+    {
+      icon: Sparkles,
+      title: t("contact.topics.topic4Title"),
+      body: t("contact.topics.topic4Body"),
+      subject: t("contact.topics.topic4Subject"),
+    },
+  ];
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -97,14 +101,16 @@ export default async function ContactoPage() {
 
           <div className="mx-auto max-w-3xl text-center">
             <p className="mb-4 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-              Estamos para ayudarte
+              {t("contact.heroEyebrow")}
             </p>
             <h1 className="font-grotesk text-display font-bold leading-[1.05] text-text-primary">
-              <span className="gradient-text">Hablemos</span>.
+              <span className="gradient-text">
+                {t("contact.heroTitleAccent")}
+              </span>
+              {t("contact.heroTitlePost")}
             </h1>
             <p className="mx-auto mt-6 max-w-xl font-inter text-base text-text-secondary md:text-lg">
-              Para cualquier consulta, soporte o conversación pastoral,
-              escríbenos. Respondemos en menos de 24 horas hábiles.
+              {t("contact.heroBody")}
             </p>
           </div>
         </section>
@@ -122,13 +128,13 @@ export default async function ContactoPage() {
                 </div>
                 <div className="flex-1">
                   <p className="font-inter text-xs font-medium uppercase tracking-widest text-text-tertiary">
-                    Email de contacto
+                    {t("contact.emailLabel")}
                   </p>
                   <p className="mt-1 font-grotesk text-h3 font-bold text-text-primary sm:text-h2">
                     {SUPPORT_EMAIL}
                   </p>
                   <p className="mt-2 font-inter text-sm text-text-secondary">
-                    Respuesta en menos de 24 horas hábiles.
+                    {t("contact.emailResponse")}
                   </p>
                 </div>
                 <ArrowRight className="size-5 text-text-tertiary transition-all group-hover:translate-x-1 group-hover:text-brand-coral" />
@@ -142,19 +148,23 @@ export default async function ContactoPage() {
           <div className="mx-auto max-w-6xl">
             <Reveal>
               <p className="mb-4 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-                Sobre qué nos puedes escribir
+                {t("contact.topicsEyebrow")}
               </p>
               <h2 className="mb-12 max-w-2xl font-grotesk text-h1 font-bold leading-tight text-text-primary">
-                Cualquiera de estos <span className="gradient-text">temas</span>.
+                {t("contact.topicsHeadingPre")}
+                <span className="gradient-text">
+                  {t("contact.topicsHeadingAccent")}
+                </span>
+                {t("contact.topicsHeadingPost")}
               </h2>
             </Reveal>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {TOPICS.map((t, i) => {
-                const Icon = t.icon;
-                const subject = encodeURIComponent(t.subject);
+              {TOPICS.map((topic, i) => {
+                const Icon = topic.icon;
+                const subject = encodeURIComponent(topic.subject);
                 return (
-                  <Reveal key={t.title} delay={i * 0.05}>
+                  <Reveal key={topic.title} delay={i * 0.05}>
                     <a
                       href={`mailto:${SUPPORT_EMAIL}?subject=${subject}`}
                       className="group flex h-full flex-col rounded-xl border border-white/[0.06] bg-surface-elevated p-6 transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-violet/30 hover:shadow-glow-violet"
@@ -163,13 +173,13 @@ export default async function ContactoPage() {
                         <Icon className="size-5" strokeWidth={1.8} />
                       </div>
                       <h3 className="mb-2 font-grotesk text-h4 font-semibold text-text-primary">
-                        {t.title}
+                        {topic.title}
                       </h3>
                       <p className="text-justify font-inter text-sm leading-relaxed text-text-secondary">
-                        {t.body}
+                        {topic.body}
                       </p>
                       <p className="mt-4 inline-flex items-center gap-1 font-inter text-xs font-medium text-brand-coral">
-                        Escribir
+                        {t("contact.topicsWrite")}
                         <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
                       </p>
                     </a>
@@ -190,18 +200,17 @@ export default async function ContactoPage() {
                   strokeWidth={2}
                 />
                 <h3 className="mb-3 font-grotesk text-h3 font-bold text-text-primary">
-                  ¿Antes de escribirnos?
+                  {t("contact.faqTitle")}
                 </h3>
                 <p className="mb-6 font-inter text-base leading-relaxed text-text-secondary">
-                  La mayoría de las preguntas las respondemos en la sección
-                  de preguntas frecuentes del landing.
+                  {t("contact.faqBody")}
                 </p>
                 <DapButton
                   render={<Link href="/#faq" />}
                   variant="secondary"
                   size="md"
                 >
-                  Ver preguntas frecuentes
+                  {t("contact.faqButton")}
                   <ArrowRight />
                 </DapButton>
               </div>
@@ -215,15 +224,18 @@ export default async function ContactoPage() {
           <div className="absolute inset-0 -z-10 opacity-70 [background:radial-gradient(50%_50%_at_50%_50%,rgba(123,97,255,0.35),transparent_55%)]" />
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="font-grotesk text-h1 font-bold leading-tight text-text-primary">
-              ¿Listo para <span className="gradient-text">empezar</span>?
+              {t("contact.ctaTitlePre")}
+              <span className="gradient-text">
+                {t("contact.ctaTitleAccent")}
+              </span>
+              {t("contact.ctaTitlePost")}
             </h2>
             <p className="mx-auto mt-6 max-w-xl font-inter text-base text-text-secondary md:text-lg">
-              No hace falta escribirnos antes. Suscríbete, prueba los
-              primeros 7 días — si no es para ti, te devolvemos todo.
+              {t("contact.ctaBody")}
             </p>
             <div className="mt-10">
               <EnrollmentCTA href="/suscribirme" size="lg">
-                Comienza tu transformación
+                {t("contact.ctaButton")}
                 <ArrowRight />
               </EnrollmentCTA>
             </div>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { Controller, useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { z } from "zod";
@@ -38,11 +39,11 @@ import {
 // usamos el formato local del <input type="datetime-local">.
 const formSchema = z.object({
   kind: z.enum(LIVE_KINDS),
-  title: z.string().trim().min(4, "Mínimo 4 caracteres").max(160),
+  title: z.string().trim().min(4, "titleMin").max(160),
   description: z.string().trim().max(4000),
-  scheduled_at: z.string().min(10, "Selecciona fecha y hora"),
+  scheduled_at: z.string().min(10, "scheduledAtRequired"),
   duration_minutes: z.coerce.number().int().min(15).max(480),
-  meeting_url: z.string().trim().url("URL inválida").max(500),
+  meeting_url: z.string().trim().url("urlInvalid").max(500),
   host_name: z.string().trim().max(120),
   phase_id: z.string().optional().nullable(),
   // Solo en edición:
@@ -83,10 +84,21 @@ type Props = {
   session?: LiveSessionFormSession;
 };
 
+// Resuelve los mensajes de validación que vienen como key del schema Zod.
+const LIVE_FORM_ERROR_KEYS = new Set([
+  "titleMin",
+  "scheduledAtRequired",
+  "urlInvalid",
+]);
+
 export function LiveSessionForm({ phases, session }: Props) {
+  const t = useTranslations("AdminUI");
   const [pending, startTransition] = useTransition();
   const [pendingDelete, startDelete] = useTransition();
   const isEdit = !!session;
+
+  const fieldError = (msg: string | undefined): string | undefined =>
+    msg && LIVE_FORM_ERROR_KEYS.has(msg) ? t(`liveSession.${msg}`) : msg;
 
   const form = useForm<FormValues>({
     resolver: standardSchemaResolver(formSchema),
@@ -151,19 +163,14 @@ export function LiveSessionForm({ phases, session }: Props) {
 
   function onDelete() {
     if (!isEdit) return;
-    if (
-      !confirm(
-        "¿Eliminar esta sesión? Si fue una sesión pasada, también pierdes el link al recording asociado.",
-      )
-    )
-      return;
+    if (!confirm(t("liveSession.deleteConfirm"))) return;
     const fd = new FormData();
     fd.set("id", session!.id);
     startDelete(async () => {
       const res = await deleteLiveSessionAction(undefined, fd);
       if (!res.ok) toast.error(res.error);
       else {
-        toast.success("Sesión eliminada.");
+        toast.success(t("liveSession.deleted"));
         window.location.href = "/admin/en-vivo";
       }
     });
@@ -178,23 +185,23 @@ export function LiveSessionForm({ phases, session }: Props) {
       {/* IDENTIDAD */}
       <section className="rounded-xl border bg-card p-6">
         <h2 className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-          Identidad
+          {t("liveSession.identityHeading")}
         </h2>
         <FieldGroup>
           <div className="grid gap-4 sm:grid-cols-[1fr_200px]">
             <Field>
-              <FieldLabel htmlFor="title">Título</FieldLabel>
+              <FieldLabel htmlFor="title">{t("liveSession.titleLabel")}</FieldLabel>
               <Input
                 id="title"
                 {...register("title")}
-                placeholder="Ej. Activación: Llamado pastoral"
+                placeholder={t("liveSession.titlePlaceholder")}
               />
               {errors.title && (
-                <FieldError>{errors.title.message}</FieldError>
+                <FieldError>{fieldError(errors.title.message)}</FieldError>
               )}
             </Field>
             <Field>
-              <FieldLabel htmlFor="kind">Tipo</FieldLabel>
+              <FieldLabel htmlFor="kind">{t("liveSession.kindLabel")}</FieldLabel>
               <Controller
                 control={control}
                 name="kind"
@@ -221,19 +228,19 @@ export function LiveSessionForm({ phases, session }: Props) {
 
           <Field>
             <FieldLabel htmlFor="description">
-              Descripción (opcional)
+              {t("liveSession.descriptionLabel")}
             </FieldLabel>
             <Textarea
               id="description"
               rows={3}
               {...register("description")}
-              placeholder="Resumen breve: qué se trabajará, quién la imparte, expectativa..."
+              placeholder={t("liveSession.descriptionPlaceholder")}
             />
           </Field>
 
           <Field>
             <FieldLabel htmlFor="phase_id">
-              Fase relacionado (opcional)
+              {t("liveSession.phaseLabel")}
             </FieldLabel>
             <Controller
               control={control}
@@ -244,14 +251,16 @@ export function LiveSessionForm({ phases, session }: Props) {
                   onValueChange={field.onChange}
                 >
                   <SelectTrigger id="phase_id">
-                    <SelectValue placeholder="Ninguno" />
+                    <SelectValue placeholder={t("liveSession.phasePlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={NONE}>Sin fase específico</SelectItem>
+                    <SelectItem value={NONE}>{t("liveSession.noPhase")}</SelectItem>
                     {phases.map((b) => (
                       <SelectItem key={b.id} value={b.id}>
-                        Fase {String(b.order_index).padStart(2, "0")} ·{" "}
-                        {b.title}
+                        {t("liveSession.phaseOption", {
+                          index: String(b.order_index).padStart(2, "0"),
+                          title: b.title,
+                        })}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -265,13 +274,13 @@ export function LiveSessionForm({ phases, session }: Props) {
       {/* CALENDARIZACIÓN */}
       <section className="rounded-xl border bg-card p-6">
         <h2 className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-          Calendarización
+          {t("liveSession.schedulingHeading")}
         </h2>
         <FieldGroup>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field>
               <FieldLabel htmlFor="scheduled_at">
-                Fecha y hora (tu zona horaria)
+                {t("liveSession.scheduledAtLabel")}
               </FieldLabel>
               <Input
                 id="scheduled_at"
@@ -279,16 +288,15 @@ export function LiveSessionForm({ phases, session }: Props) {
                 {...register("scheduled_at")}
               />
               {errors.scheduled_at && (
-                <FieldError>{errors.scheduled_at.message}</FieldError>
+                <FieldError>{fieldError(errors.scheduled_at.message)}</FieldError>
               )}
               <p className="text-xs text-muted-foreground">
-                Se almacena en UTC y se muestra a cada alumno en su zona
-                local.
+                {t("liveSession.scheduledAtHint")}
               </p>
             </Field>
             <Field>
               <FieldLabel htmlFor="duration_minutes">
-                Duración (minutos)
+                {t("liveSession.durationLabel")}
               </FieldLabel>
               <Input
                 id="duration_minutes"
@@ -301,24 +309,24 @@ export function LiveSessionForm({ phases, session }: Props) {
           </div>
 
           <Field>
-            <FieldLabel htmlFor="meeting_url">URL de la reunión</FieldLabel>
+            <FieldLabel htmlFor="meeting_url">{t("liveSession.meetingUrlLabel")}</FieldLabel>
             <Input
               id="meeting_url"
               type="url"
               {...register("meeting_url")}
-              placeholder="https://zoom.us/j/... o https://meet.google.com/..."
+              placeholder={t("liveSession.meetingUrlPlaceholder")}
             />
             {errors.meeting_url && (
-              <FieldError>{errors.meeting_url.message}</FieldError>
+              <FieldError>{fieldError(errors.meeting_url.message)}</FieldError>
             )}
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="host_name">Host / Apóstol</FieldLabel>
+            <FieldLabel htmlFor="host_name">{t("liveSession.hostLabel")}</FieldLabel>
             <Input
               id="host_name"
               {...register("host_name")}
-              placeholder="Ej. Ap. Max Hebeling"
+              placeholder={t("liveSession.hostPlaceholder")}
             />
           </Field>
         </FieldGroup>
@@ -328,34 +336,32 @@ export function LiveSessionForm({ phases, session }: Props) {
       {isEdit && (
         <section className="rounded-xl border bg-card p-6">
           <h2 className="mb-1 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-            Grabación
+            {t("liveSession.recordingHeading")}
           </h2>
           <p className="mb-4 text-xs text-muted-foreground">
-            Llenar después de que la sesión termine. Si subiste el video a
-            Mux, usa el Playback ID (preferido). Si es un link externo
-            (YouTube no-listado, Zoom cloud, Drive), usa la URL.
+            {t("liveSession.recordingHint")}
           </p>
           <FieldGroup>
             <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
               <Field>
-                <FieldLabel htmlFor="recording_url">URL externa</FieldLabel>
+                <FieldLabel htmlFor="recording_url">{t("liveSession.externalUrlLabel")}</FieldLabel>
                 <Input
                   id="recording_url"
                   type="url"
-                  placeholder="https://youtube.com/watch?v=... (opcional)"
+                  placeholder={t("liveSession.externalUrlPlaceholder")}
                   {...register("recording_url")}
                 />
                 {errors.recording_url && (
-                  <FieldError>{errors.recording_url.message}</FieldError>
+                  <FieldError>{fieldError(errors.recording_url.message)}</FieldError>
                 )}
               </Field>
               <Field>
                 <FieldLabel htmlFor="recording_mux_playback_id">
-                  Mux Playback ID
+                  {t("liveSession.muxPlaybackIdLabel")}
                 </FieldLabel>
                 <Input
                   id="recording_mux_playback_id"
-                  placeholder="ej. nVw01YQrLcsRZ..."
+                  placeholder={t("liveSession.muxPlaybackIdPlaceholder")}
                   {...register("recording_mux_playback_id")}
                 />
               </Field>
@@ -375,21 +381,21 @@ export function LiveSessionForm({ phases, session }: Props) {
               className="text-red-500 hover:bg-red-500/10 hover:text-red-600"
             >
               <Trash2 className="size-4" />
-              {pendingDelete ? "Eliminando…" : "Eliminar sesión"}
+              {pendingDelete ? t("liveSession.deleting") : t("liveSession.deleteSession")}
             </Button>
           )}
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" render={<Link href="/admin/en-vivo" />}>
-            Cancelar
+            {t("liveSession.cancel")}
           </Button>
           <Button type="submit" disabled={pending || (isEdit && !isDirty)}>
             <Save className="size-4" />
             {pending
-              ? "Guardando…"
+              ? t("liveSession.saving")
               : isEdit
-                ? "Guardar cambios"
-                : "Crear sesión"}
+                ? t("liveSession.saveChanges")
+                : t("liveSession.createSession")}
           </Button>
         </div>
       </div>

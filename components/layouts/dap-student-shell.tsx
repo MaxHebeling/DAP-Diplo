@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Award,
   BookOpen,
@@ -40,40 +41,6 @@ type NavGroup = {
   }[];
 };
 
-const DEFAULT_GROUPS: NavGroup[] = [
-  {
-    items: [
-      { href: "/dashboard", icon: Home, label: "Inicio" },
-      { href: "/fases", icon: BookOpen, label: "Mis Módulos" },
-      { href: "/progreso", icon: GraduationCap, label: "Mi Progreso" },
-    ],
-  },
-  {
-    title: "Comunidad",
-    items: [
-      { href: "/comunidad", icon: MessageCircle, label: "Comunidad" },
-      { href: "/en-vivo", icon: Radio, label: "En vivo" },
-      { href: "/tutor", icon: Sparkles, label: "Tutor IA" },
-    ],
-  },
-  {
-    title: "Tu cuenta",
-    items: [
-      { href: "/certificaciones", icon: Award, label: "Certificaciones" },
-      { href: "/agenda", icon: Calendar, label: "Agenda" },
-      { href: "/configuracion", icon: Settings, label: "Configuración" },
-    ],
-  },
-];
-
-// Bottom nav (mobile-only): los 4 destinos más usados.
-const BOTTOM_NAV = [
-  { href: "/dashboard", icon: Home, label: "Inicio" },
-  { href: "/fases", icon: BookOpen, label: "Módulos" },
-  { href: "/comunidad", icon: MessageCircle, label: "Comunidad" },
-  { href: "/configuracion", icon: Settings, label: "Cuenta" },
-];
-
 export type DapStudentShellProps = {
   userName: string;
   userEmail?: string;
@@ -100,8 +67,67 @@ export function DapStudentShell({
   onSignOut,
   children,
 }: DapStudentShellProps) {
+  const t = useTranslations("Shell");
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const navGroups: NavGroup[] = [
+    {
+      items: [
+        { href: "/dashboard", icon: Home, label: t("studentShell.navHome") },
+        { href: "/fases", icon: BookOpen, label: t("studentShell.navModules") },
+        {
+          href: "/progreso",
+          icon: GraduationCap,
+          label: t("studentShell.navProgress"),
+        },
+      ],
+    },
+    {
+      title: t("studentShell.groupCommunity"),
+      items: [
+        {
+          href: "/comunidad",
+          icon: MessageCircle,
+          label: t("studentShell.navCommunity"),
+        },
+        { href: "/en-vivo", icon: Radio, label: t("studentShell.navLive") },
+        { href: "/tutor", icon: Sparkles, label: t("studentShell.navTutor") },
+      ],
+    },
+    {
+      title: t("studentShell.groupAccount"),
+      items: [
+        {
+          href: "/certificaciones",
+          icon: Award,
+          label: t("studentShell.navCertifications"),
+        },
+        { href: "/agenda", icon: Calendar, label: t("studentShell.navAgenda") },
+        {
+          href: "/configuracion",
+          icon: Settings,
+          label: t("studentShell.navSettings"),
+        },
+      ],
+    },
+  ];
+
+  // Bottom nav (mobile-only): los 4 destinos más usados.
+  const bottomNav = [
+    { href: "/dashboard", icon: Home, label: t("studentShell.bottomNavHome") },
+    { href: "/fases", icon: BookOpen, label: t("studentShell.bottomNavModules") },
+    {
+      href: "/comunidad",
+      icon: MessageCircle,
+      label: t("studentShell.bottomNavCommunity"),
+    },
+    {
+      href: "/configuracion",
+      icon: Settings,
+      label: t("studentShell.bottomNavAccount"),
+    },
+  ];
 
   // Cerrar drawer al cambiar de página. React 19 strict marca esto como
   // anti-pattern, pero las alternativas (key reset, ref render-phase
@@ -133,7 +159,7 @@ export function DapStudentShell({
       {/* SIDEBAR DESKTOP (lg+) */}
       <aside
         className="hidden h-screen w-[260px] shrink-0 flex-col border-r border-white/[0.06] bg-surface-base lg:sticky lg:top-0 lg:flex"
-        aria-label="Navegación del estudiante"
+        aria-label={t("studentShell.studentNav")}
       >
         <SidebarContent
           userName={userName}
@@ -142,6 +168,7 @@ export function DapStudentShell({
           rank={rank}
           isActive={isActive}
           onSignOut={onSignOut}
+          groups={navGroups}
         />
       </aside>
 
@@ -151,14 +178,14 @@ export function DapStudentShell({
           {/* Overlay */}
           <button
             type="button"
-            aria-label="Cerrar menú"
+            aria-label={t("studentShell.closeMenu")}
             onClick={() => setDrawerOpen(false)}
             className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
           />
           {/* Panel */}
           <aside
             className="fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col border-r border-white/[0.08] bg-surface-base shadow-2xl lg:hidden"
-            aria-label="Navegación del estudiante"
+            aria-label={t("studentShell.studentNav")}
           >
             <SidebarContent
               userName={userName}
@@ -167,6 +194,7 @@ export function DapStudentShell({
               rank={rank}
               isActive={isActive}
               onSignOut={onSignOut}
+              groups={navGroups}
               showClose
               onClose={() => setDrawerOpen(false)}
             />
@@ -188,9 +216,9 @@ export function DapStudentShell({
       {/* BOTTOM NAV (mobile only) */}
       <nav
         className="fixed inset-x-0 bottom-0 z-30 flex h-16 items-center justify-around border-t border-white/[0.08] bg-surface-base/95 backdrop-blur-xl lg:hidden"
-        aria-label="Navegación rápida"
+        aria-label={t("studentShell.quickNav")}
       >
-        {BOTTOM_NAV.map((item) => {
+        {bottomNav.map((item) => {
           const active = isActive(item.href);
           const Icon = item.icon;
           return (
@@ -234,6 +262,7 @@ function SidebarContent({
   rank,
   isActive,
   onSignOut,
+  groups,
   showClose = false,
   onClose,
 }: {
@@ -243,9 +272,11 @@ function SidebarContent({
   rank?: { order: RankOrder; label: string } | null;
   isActive: (href: string) => boolean;
   onSignOut?: () => void | Promise<void>;
+  groups: NavGroup[];
   showClose?: boolean;
   onClose?: () => void;
 }) {
+  const t = useTranslations("Shell");
   return (
     <>
       {/* Logo */}
@@ -253,7 +284,7 @@ function SidebarContent({
         <Link
           href="/dashboard"
           className="inline-flex items-center gap-2"
-          aria-label="DAP — Inicio"
+          aria-label={t("studentShell.logoHomeAria")}
         >
           <Image
             src="/dap-logo-white.png"
@@ -268,7 +299,7 @@ function SidebarContent({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Cerrar menú"
+            aria-label={t("studentShell.closeMenu")}
             className="inline-flex size-9 items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-white/[0.04] hover:text-text-primary"
           >
             <X className="size-5" />
@@ -277,7 +308,7 @@ function SidebarContent({
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 py-4">
-        {DEFAULT_GROUPS.map((group, idx) => (
+        {groups.map((group, idx) => (
           <div key={idx} className={cn(idx > 0 && "mt-6")}>
             {group.title && (
               <p className="mb-2 px-4 font-grotesk text-xs font-semibold uppercase tracking-widest text-text-tertiary">
@@ -320,7 +351,7 @@ function SidebarContent({
               {userName}
             </p>
             <p className="truncate font-inter text-xs text-text-secondary">
-              {rank?.label ?? userEmail ?? "Alumno"}
+              {rank?.label ?? userEmail ?? t("studentShell.studentFallback")}
             </p>
           </div>
         </div>
@@ -330,17 +361,17 @@ function SidebarContent({
             className="flex items-center gap-2 rounded-md px-2 py-1.5 font-inter text-xs text-text-tertiary transition-colors hover:text-text-primary"
           >
             <Compass className="size-3.5" />
-            Mi recorrido
+            {t("studentShell.myJourney")}
           </Link>
           {onSignOut && (
             <form action={onSignOut}>
               <button
                 type="submit"
-                aria-label="Cerrar sesión"
+                aria-label={t("studentShell.signOut")}
                 className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 font-inter text-xs text-text-tertiary transition-colors hover:text-brand-coral"
               >
                 <LogOut className="size-3.5" />
-                Salir
+                {t("studentShell.exit")}
               </button>
             </form>
           )}
@@ -357,6 +388,7 @@ function DapStudentTopbarInline({
   title?: string;
   onOpenMenu: () => void;
 }) {
+  const t = useTranslations("Shell");
   return (
     <header
       className={cn(
@@ -367,7 +399,7 @@ function DapStudentTopbarInline({
       <button
         type="button"
         onClick={onOpenMenu}
-        aria-label="Abrir menú"
+        aria-label={t("studentShell.openMenu")}
         className="inline-flex size-9 shrink-0 items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-white/[0.04] hover:text-text-primary lg:hidden"
       >
         <Menu className="size-5" />

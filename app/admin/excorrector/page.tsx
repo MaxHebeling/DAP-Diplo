@@ -1,14 +1,19 @@
 import { Sparkles } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { EXCORRECTOR_VOICE_MANUAL } from "@/lib/excorrector/voice-manual";
 import { VoiceManualForm } from "./voice-manual-form";
 
-export const metadata = { title: "Excorrector — Admin DAP" };
+export async function generateMetadata() {
+  const t = await getTranslations("Admin");
+  return { title: t("excorrector.metaTitle") };
+}
 
 type Setting = { value: string; updated_at: string };
 
 export default async function AdminExcorrectorPage() {
+  const t = await getTranslations("Admin");
   const supabase = await createClient();
 
   const { data: setting } = await supabase
@@ -30,15 +35,13 @@ export default async function AdminExcorrectorPage() {
           </div>
           <div>
             <p className="font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-              Excorrector IA · Voice manual
+              {t("excorrector.eyebrow")}
             </p>
             <h1 className="mt-1 font-grotesk text-3xl font-bold tracking-tight">
-              Voz del Dr. Max
+              {t("excorrector.title")}
             </h1>
             <p className="mt-2 font-inter text-sm text-text-secondary">
-              Este texto es el system prompt que recibe Claude cada vez que
-              corrige una tarea. Edítalo para refinar el tono, agregar
-              ejemplos de cómo respondes, o ajustar la rúbrica de score.
+              {t("excorrector.description")}
             </p>
           </div>
         </header>
@@ -46,11 +49,11 @@ export default async function AdminExcorrectorPage() {
         <VoiceManualForm initial={initial} lastEditedAt={lastEditedAt} />
 
         <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4 text-xs text-text-tertiary">
-          <p className="font-medium text-text-secondary">Notas</p>
+          <p className="font-medium text-text-secondary">{t("excorrector.notesTitle")}</p>
           <ul className="mt-2 space-y-1">
-            <li>· Los cambios afectan inmediatamente la próxima corrección que dispare el cron.</li>
-            <li>· Si dejas el campo vacío, vuelve al voice manual hardcoded del repo.</li>
-            <li>· El texto se manda como system prompt a Claude — incluye ejemplos, reglas duras, y la rúbrica de score.</li>
+            <li>{t("excorrector.note1")}</li>
+            <li>{t("excorrector.note2")}</li>
+            <li>{t("excorrector.note3")}</li>
           </ul>
         </div>
       </div>

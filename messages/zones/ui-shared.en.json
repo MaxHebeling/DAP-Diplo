@@ -1,0 +1,52 @@
+{
+  "UiDap": {
+    "moduleCard": {
+      "ctaReview": "Review",
+      "ctaStart": "Start",
+      "stateApproved": "Approved",
+      "stateLocked": "Locked"
+    },
+    "rankBadge": {
+      "ariaLabel": "Rank {order}"
+    }
+  },
+  "Pwa": {
+    "install": {
+      "dialogLabel": "Install DAP",
+      "closeLabel": "Close",
+      "title": "Install DAP on your phone",
+      "description": "Quick access to your dashboard, reminders when your weekly module opens, no need to go through the browser.",
+      "installButton": "Install",
+      "dismissButton": "Not now"
+    },
+    "push": {
+      "notSupported": "Your browser does not support push notifications.",
+      "notConfigured": "Push notifications are not configured on this site yet.",
+      "permissionBlocked": "Permission blocked. Enable it manually from your browser settings.",
+      "permissionNeeded": "We need your permission to send you notifications.",
+      "subscribeSuccess": "Done — we'll notify you when your module opens.",
+      "subscribeError": "Could not subscribe: {message}",
+      "unsubscribeSuccess": "Notifications disabled.",
+      "unsubscribeError": "Could not disable: {message}",
+      "deactivateButton": "Disable notifications",
+      "activateButton": "Enable notifications"
+    }
+  },
+  "Toast": {
+    "alreadySubscribed": "You already have an active subscription.",
+    "subscriptionCanceled": "Your subscription was canceled.",
+    "phaseLocked": "You don't have access to this phase yet. It unlocks every 2 months of subscription.",
+    "moduleCompleted": "Module completed! Move on to the next one.",
+    "phaseCompleted": "Phase completed! You'll receive your dimension soon.",
+    "phaseSaved": "Phase saved successfully.",
+    "moduleSaved": "Module saved successfully.",
+    "sectionSaved": "Section saved successfully.",
+    "threadSaved": "Thread updated.",
+    "threadClosed": "Thread closed. It no longer accepts replies.",
+    "postCreated": "Reply posted.",
+    "communityNeedsSub": "The community is only for active DAP subscribers.",
+    "liveCreated": "Session created.",
+    "liveSaved": "Session updated."
+  },
+  "Ui": {}
+}

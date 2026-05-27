@@ -10,6 +10,7 @@ import {
   PlayCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 import { AdvanceButton } from "@/components/module/advance-button";
 import { Markdown } from "@/components/module/markdown";
@@ -70,6 +71,7 @@ const COMPLETION_THRESHOLD = 0.95;
 const FORWARD_SEEK_TOLERANCE_SECONDS = 2;
 
 export function SectionTeaching(props: SectionTeachingProps) {
+  const t = useTranslations("Module");
   const lastSavedRef = useRef<number>(0);
   const lastKnownPositionRef = useRef<number>(props.startPositionSeconds);
   // Track del segundo más alto que efectivamente vio. Cualquier seek
@@ -155,7 +157,7 @@ export function SectionTeaching(props: SectionTeachingProps) {
       const now = Date.now();
       if (now - skipBlockedToastRef.current > 3000) {
         skipBlockedToastRef.current = now;
-        toast.info("Para marcar como visto, tenés que ver el video sin adelantar.");
+        toast.info(t("teaching.skipBlockedToast"));
       }
     }
   }
@@ -167,13 +169,11 @@ export function SectionTeaching(props: SectionTeachingProps) {
   function handlePlayerError() {
     // Causa típica: el signed token (TTL 6h) expiró si el usuario dejó
     // la pestaña abierta mucho tiempo. Recargar genera tokens nuevos.
-    toast.error(
-      "Hubo un problema cargando el video. Recargá la página para reintentar.",
-    );
+    toast.error(t("teaching.playerErrorToast"));
   }
 
   const durationLabel = props.durationSeconds
-    ? `${Math.round(props.durationSeconds / 60)} min`
+    ? t("teaching.minutes", { minutes: Math.round(props.durationSeconds / 60) })
     : null;
 
   return (
@@ -186,10 +186,12 @@ export function SectionTeaching(props: SectionTeachingProps) {
             </div>
             <div>
               <p className="text-xs font-medium uppercase tracking-widest text-brand-coral">
-                Enseñanza{durationLabel ? ` · ${durationLabel}` : ""}
+                {durationLabel
+                  ? t("teaching.teachingLabelWithDuration", { duration: durationLabel })
+                  : t("teaching.teachingLabel")}
               </p>
               <p className="text-sm text-text-secondary">
-                Video principal del módulo
+                {t("teaching.mainVideo")}
               </p>
             </div>
           </div>
@@ -200,7 +202,7 @@ export function SectionTeaching(props: SectionTeachingProps) {
             startTime={props.startPositionSeconds}
             metadata={{
               video_id: props.sectionId,
-              video_title: "Enseñanza (video)",
+              video_title: t("teaching.videoMetadataTitle"),
             }}
             onTimeUpdate={handleTimeUpdate}
             onSeeking={handleSeeking}
@@ -212,19 +214,17 @@ export function SectionTeaching(props: SectionTeachingProps) {
           {!hasFinished && (
             <p className="mt-3 flex items-center gap-1.5 text-xs text-text-tertiary">
               <Lock className="size-3" strokeWidth={2} />
-              Tenés que terminar el video para marcarlo como visto.
-              Podés pausar cuando necesites.
+              {t("teaching.finishToMark")}
             </p>
           )}
         </div>
       ) : props.muxPlaybackId ? (
         <div className="flex items-center justify-center rounded-xl border border-dashed bg-amber-500/10 px-6 py-8 text-center text-sm text-amber-700 dark:text-amber-300">
-          No pudimos cargar el video en este momento. Recargá la página o
-          contactanos si el problema persiste.
+          {t("teaching.loadError")}
         </div>
       ) : (
         <div className="flex items-center justify-center rounded-xl border border-dashed bg-muted/30 px-6 py-8 text-sm text-muted-foreground">
-          Video pendiente de subir (sin mux_playback_id en esta sección).
+          {t("teaching.videoPending")}
         </div>
       )}
 
@@ -233,7 +233,7 @@ export function SectionTeaching(props: SectionTeachingProps) {
       {props.resources.length > 0 && (
         <section>
           <h3 className="mb-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            Recursos descargables
+            {t("teaching.resources")}
           </h3>
           <ul className="divide-y rounded-lg border bg-card">
             {props.resources.map((r) => {
@@ -266,9 +266,9 @@ export function SectionTeaching(props: SectionTeachingProps) {
           phaseSlug={props.phaseSlug}
           moduleSlug={props.moduleSlug}
           nextSection="activation"
-          label="Marcar como visto y continuar"
+          label={t("teaching.advanceLabel")}
           disabled={!hasFinished}
-          disabledReason="Completá el video para continuar"
+          disabledReason={t("teaching.advanceDisabledReason")}
         />
       </div>
     </div>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useTransition } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { closeThreadAction } from "@/lib/forum/actions";
 
@@ -14,16 +15,12 @@ export function ThreadAuthorActions({
   threadId: string;
   closed: boolean;
 }) {
+  const t = useTranslations("Forum");
   const [pending, startTransition] = useTransition();
 
   function onClose() {
     if (closed) return;
-    if (
-      !confirm(
-        "¿Cerrar este hilo? Ya no se aceptarán respuestas. La conversación queda visible.",
-      )
-    )
-      return;
+    if (!confirm(t("authorActions.closeConfirm"))) return;
     const fd = new FormData();
     fd.set("id", threadId);
     startTransition(async () => {
@@ -40,7 +37,7 @@ export function ThreadAuthorActions({
         render={<Link href={`/comunidad/${threadId}/editar`} />}
       >
         <Pencil className="size-3.5" />
-        Editar
+        {t("authorActions.edit")}
       </Button>
       <Button
         size="sm"
@@ -50,7 +47,11 @@ export function ThreadAuthorActions({
         className="text-red-500 hover:bg-red-500/10 hover:text-red-600"
       >
         <Trash2 className="size-3.5" />
-        {closed ? "Cerrado" : pending ? "Cerrando…" : "Cerrar"}
+        {closed
+          ? t("authorActions.closed")
+          : pending
+            ? t("authorActions.closing")
+            : t("authorActions.close")}
       </Button>
     </div>
   );

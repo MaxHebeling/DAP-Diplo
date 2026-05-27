@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useTransition } from "react";
 import { ArrowLeft, Loader2, MessageSquare, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { EsdrasAvatar } from "@/components/tutor/esdras-avatar";
@@ -24,6 +25,7 @@ export function TutorSidebar({
   activeId: string | null;
   messagesToday: number;
 }) {
+  const t = useTranslations("Tutor");
   return (
     <aside className="hidden border-r border-white/[0.06] bg-[#04081A]/95 backdrop-blur-xl lg:flex lg:w-72 lg:flex-col">
       {/* Brand header con Esdras */}
@@ -34,7 +36,7 @@ export function TutorSidebar({
             Esdras
           </p>
           <p className="font-inter text-[10px] uppercase tracking-[0.32em] text-brand-coral">
-            Tutor IA · DAP
+            {t("sidebar.subtitle")}
           </p>
         </div>
       </div>
@@ -48,7 +50,7 @@ export function TutorSidebar({
             className="w-full bg-gradient-to-br from-brand-violet to-brand-coral text-white shadow-md shadow-brand-coral/15 hover:opacity-95"
           >
             <Plus className="size-3.5" />
-            Nueva conversación
+            {t("sidebar.newConversation")}
           </Button>
         </form>
       </div>
@@ -57,7 +59,7 @@ export function TutorSidebar({
       <nav className="flex-1 overflow-y-auto p-2">
         {conversations.length === 0 ? (
           <p className="px-3 py-6 text-center font-inter text-xs text-text-tertiary">
-            Aún no tienes conversaciones.
+            {t("sidebar.noConversations")}
           </p>
         ) : (
           <ul className="space-y-0.5">
@@ -75,7 +77,7 @@ export function TutorSidebar({
       {/* Rate limit + back to dashboard */}
       <div className="border-t border-white/[0.06] p-4">
         <div className="flex items-center justify-between font-inter text-xs">
-          <span className="text-text-tertiary">Mensajes hoy</span>
+          <span className="text-text-tertiary">{t("sidebar.messagesToday")}</span>
           <span
             className={cn(
               "font-medium tabular-nums",
@@ -86,7 +88,7 @@ export function TutorSidebar({
                   : "text-text-primary",
             )}
           >
-            {messagesToday} / 30
+            {t("sidebar.messagesCount", { count: messagesToday })}
           </span>
         </div>
         {/* Progress bar visual */}
@@ -113,7 +115,7 @@ export function TutorSidebar({
           render={<Link href="/dashboard" />}
         >
           <ArrowLeft className="size-3.5" />
-          Ir a mi dashboard
+          {t("sidebar.goToDashboard")}
         </Button>
       </div>
     </aside>
@@ -127,19 +129,20 @@ function ConversationRow({
   conversation: Conv;
   active: boolean;
 }) {
+  const t = useTranslations("Tutor");
   const [pending, startTransition] = useTransition();
 
   function onDelete(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    if (!confirm("¿Eliminar esta conversación? No reversible.")) return;
+    if (!confirm(t("sidebar.deleteConfirm"))) return;
     const fd = new FormData();
     fd.set("id", conversation.id);
     startTransition(async () => {
       const res = await deleteConversationAction(undefined, fd);
       if (!res.ok) toast.error(res.error);
       else {
-        toast.success("Conversación eliminada.");
+        toast.success(t("sidebar.deletedToast"));
         if (active) window.location.href = "/tutor";
       }
     });
@@ -159,14 +162,14 @@ function ConversationRow({
       >
         <MessageSquare className="size-3.5 shrink-0" strokeWidth={1.7} />
         <span className="flex-1 truncate">
-          {conversation.title ?? "Nueva conversación"}
+          {conversation.title ?? t("sidebar.untitledConversation")}
         </span>
         <button
           type="button"
           onClick={onDelete}
           disabled={pending}
           className="rounded p-0.5 opacity-0 transition-opacity hover:bg-red-500/10 hover:text-red-400 group-hover:opacity-100"
-          aria-label="Eliminar"
+          aria-label={t("sidebar.deleteLabel")}
         >
           {pending ? (
             <Loader2 className="size-3 animate-spin" />

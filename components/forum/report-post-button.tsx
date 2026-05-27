@@ -3,18 +3,20 @@
 import { useState, useTransition } from "react";
 import { Flag } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { reportPostAction } from "@/lib/forum/report-actions";
 
 export function ReportPostButton({ postId }: { postId: string }) {
+  const t = useTranslations("Forum");
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [pending, startTransition] = useTransition();
 
   function onSubmit() {
     if (reason.trim().length < 4) {
-      toast.error("Escribe al menos 4 caracteres de motivo.");
+      toast.error(t("reportPost.minReason"));
       return;
     }
     const fd = new FormData();
@@ -26,7 +28,7 @@ export function ReportPostButton({ postId }: { postId: string }) {
         toast.error(res.error);
         return;
       }
-      toast.success("Reporte enviado. Lo revisaremos pronto.");
+      toast.success(t("reportPost.success"));
       setReason("");
       setOpen(false);
     });
@@ -38,10 +40,10 @@ export function ReportPostButton({ postId }: { postId: string }) {
         type="button"
         onClick={() => setOpen(true)}
         className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-red-500 transition-colors"
-        title="Reportar este post"
+        title={t("reportPost.triggerTitle")}
       >
         <Flag className="size-3" />
-        Reportar
+        {t("reportPost.trigger")}
       </button>
     );
   }
@@ -49,12 +51,12 @@ export function ReportPostButton({ postId }: { postId: string }) {
   return (
     <div className="mt-3 rounded-lg border border-red-500/20 bg-red-500/5 p-3 space-y-2">
       <p className="text-xs font-medium uppercase tracking-widest text-red-600">
-        Reportar este post
+        {t("reportPost.heading")}
       </p>
       <Textarea
         autoFocus
         rows={3}
-        placeholder="¿Por qué reportas este post? (mín. 4 caracteres)"
+        placeholder={t("reportPost.reasonPlaceholder")}
         value={reason}
         onChange={(e) => setReason(e.target.value)}
         className="text-sm"
@@ -70,14 +72,14 @@ export function ReportPostButton({ postId }: { postId: string }) {
           }}
           disabled={pending}
         >
-          Cancelar
+          {t("reportPost.cancel")}
         </Button>
         <Button
           size="sm"
           onClick={onSubmit}
           disabled={pending || reason.trim().length < 4}
         >
-          {pending ? "Enviando…" : "Enviar reporte"}
+          {pending ? t("reportPost.sending") : t("reportPost.sendReport")}
         </Button>
       </div>
     </div>

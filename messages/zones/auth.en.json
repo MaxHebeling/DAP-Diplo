@@ -1,0 +1,115 @@
+{
+  "Auth": {
+    "signOut": {
+      "signingOut": "Signing out...",
+      "label": "Log out"
+    },
+    "google": {
+      "connecting": "Connecting...",
+      "continueWithGoogle": "Continue with Google"
+    },
+    "divider": {
+      "orWithEmail": "or with your email"
+    },
+    "login": {
+      "metaTitle": "Log in",
+      "metaDescription": "Access your Diplomado Apostólico Pastoral account.",
+      "title": "Log in",
+      "description": "Access your modules and pick up where you left off.",
+      "submit": "Log in",
+      "submitting": "Logging in...",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "forgotPassword": "Forgot your password?",
+      "noAccount": "Don't have an account?",
+      "createOne": "Create one"
+    },
+    "signup": {
+      "metaTitle": "Create your account",
+      "metaDescription": "Join the Diplomado Apostólico Pastoral. $25 USD/month.",
+      "title": "Create your account",
+      "description": "Permanent access to the modules you purchase. Advance at your own pace.",
+      "submit": "Create account",
+      "submitting": "Creating account...",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "fullNameLabel": "Full name",
+      "ministryLabel": "Ministry",
+      "ministryOptional": "(optional)",
+      "countryLabel": "Country",
+      "haveAccount": "Already have an account?",
+      "logIn": "Log in",
+      "enrollmentClosed": {
+        "title": "Enrollment opens on {date}",
+        "body": "The first cohort of the Diplomado Apostólico Pastoral opens enrollment on <strong>{launchDate}</strong>. Come back on that date to submit your admission and secure your spot.",
+        "launchDate": "June 1, 2026",
+        "classesStartLabel": "Classes start:",
+        "backToHome": "Back to home"
+      }
+    },
+    "resetRequest": {
+      "metaTitle": "Recover password",
+      "metaDescription": "Request a link to recover your Diplomado Apostólico Pastoral password.",
+      "title": "Recover your password",
+      "description": "We'll send a link to your email so you can create a new one.",
+      "submit": "Send recovery link",
+      "submitting": "Sending…",
+      "emailLabel": "Your email",
+      "emailPlaceholder": "you@email.com",
+      "successTitle": "Check your email",
+      "successBody": "If the email exists in our records, you'll receive a link to create a new password. It may take 1–2 minutes.",
+      "rememberedQuestion": "Remembered it?",
+      "backToLogin": "Back to log in"
+    },
+    "updatePassword": {
+      "metaTitle": "Create new password",
+      "title": "Create your new password",
+      "description": "It must be at least 8 characters long.",
+      "submit": "Save new password",
+      "submitting": "Saving…",
+      "passwordLabel": "New password",
+      "confirmLabel": "Repeat the password",
+      "expiredTitle": "Expired or invalid link",
+      "expiredBody": "The recovery link is no longer valid. Request a new one to continue.",
+      "requestNewLink": "Request a new link"
+    },
+    "subscribe": {
+      "metaTitle": "Subscribe",
+      "metaDescription": "$25 USD a month. Full access to the Diplomado Apostólico Pastoral. Cancel anytime.",
+      "ogTitle": "Subscribe · DAP",
+      "ogDescription": "Full access to the Diplomado Apostólico Pastoral for $25 USD/month. 72 modules in 18 months · 1 module per week · cancel anytime.",
+      "backToHome": "Back to home",
+      "eyebrow": "Subscription",
+      "title": "Diplomado Apostólico Pastoral",
+      "intro": "A single monthly subscription gives you access to the complete 18-month diploma. You receive a new module every week (Tuesday 00:01). Cancel anytime from your dashboard — your progress is saved.",
+      "price": "$25",
+      "priceUnit": "USD per month",
+      "planSingle": "Single plan",
+      "included": {
+        "item1": "Personal weekly calendar: 1 module per week for 72 weeks",
+        "item2": "Live MasterClass by event (minimum 1 guaranteed per month)",
+        "item3": "Group mentoring by the apostle's call",
+        "item4": "Personalized feedback on your activation in Dr. Max's voice (48h)",
+        "item5": "Private community of pastors in training",
+        "item6": "Downloadable material per module (PDFs, templates, extra resources)",
+        "item7": "Certificate, badge, and a new dimension upon completing each block"
+      },
+      "continueToPayment": "Continue to payment",
+      "paymentNote": "Processed by Stripe. No contract. Cancel in one click anytime.",
+      "enrollmentClosed": {
+        "title": "Enrollment opens on {date}",
+        "body": "The first cohort of the Diplomado Apostólico Pastoral opens enrollment on <strong>{launchDate}</strong>. On that date you'll be able to activate your subscription and secure your spot.",
+        "launchDate": "June 1, 2026",
+        "classesStartLabel": "Classes start:"
+      }
+    },
+    "subscribeSuccess": {
+      "metaTitle": "Welcome to the diploma!",
+      "eyebrow": "Subscription confirmed",
+      "title": "Welcome to the diploma!",
+      "body": "Your subscription is being activated. In a few seconds you'll receive an email from Stripe confirming your payment. From your dashboard you'll be able to start Phase 1.",
+      "goToDashboard": "Go to my dashboard",
+      "accessNote": "Don't see your access yet? Reload the dashboard in 10 seconds."
+    }
+  }
+}

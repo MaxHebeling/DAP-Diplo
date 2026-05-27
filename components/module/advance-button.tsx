@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { ArrowRight, Check, Lock } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { markSectionCompleted } from "@/lib/progress/actions";
@@ -43,6 +44,7 @@ function SubmitInner({
   disabledReason?: string;
 }) {
   const { pending } = useFormStatus();
+  const t = useTranslations("Module");
   const isDisabled = disabled || pending;
 
   if (disabled && !pending) {
@@ -71,7 +73,7 @@ function SubmitInner({
       {pending ? (
         <>
           <Check className="size-4 animate-in fade-in duration-150" />
-          ¡Listo!
+          {t("advanceButton.done")}
         </>
       ) : (
         <>

@@ -3,56 +3,60 @@
 import { useEffect, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
-const MESSAGES: Record<string, { msg: string; type?: "success" | "info" | "warning" }> = {
-  "already-subscribed": { msg: "Ya tienes una suscripción activa.", type: "info" },
-  "subscription-canceled": { msg: "Tu suscripción fue cancelada.", type: "info" },
+const MESSAGES: Record<
+  string,
+  { key: string; type?: "success" | "info" | "warning" }
+> = {
+  "already-subscribed": { key: "alreadySubscribed", type: "info" },
+  "subscription-canceled": { key: "subscriptionCanceled", type: "info" },
   "phase-locked": {
-    msg: "Aún no tienes acceso a esta fase. Se desbloquea cada 2 meses de suscripción.",
+    key: "phaseLocked",
     type: "warning",
   },
   "module-completed": {
-    msg: "¡Módulo completado! Sigue al siguiente.",
+    key: "moduleCompleted",
     type: "success",
   },
   "phase-completed": {
-    msg: "¡Fase completado! Pronto recibirás tu dimensión.",
+    key: "phaseCompleted",
     type: "success",
   },
   "phase-saved": {
-    msg: "Fase guardado correctamente.",
+    key: "phaseSaved",
     type: "success",
   },
   "module-saved": {
-    msg: "Módulo guardado correctamente.",
+    key: "moduleSaved",
     type: "success",
   },
   "section-saved": {
-    msg: "Sección guardada correctamente.",
+    key: "sectionSaved",
     type: "success",
   },
   "thread-saved": {
-    msg: "Hilo actualizado.",
+    key: "threadSaved",
     type: "success",
   },
   "thread-closed": {
-    msg: "Hilo cerrado. Ya no acepta respuestas.",
+    key: "threadClosed",
     type: "info",
   },
   "post-created": {
-    msg: "Respuesta publicada.",
+    key: "postCreated",
     type: "success",
   },
   "community-needs-sub": {
-    msg: "La comunidad es solo para suscriptores activos del DAP.",
+    key: "communityNeedsSub",
     type: "warning",
   },
   "live-created": {
-    msg: "Sesión creada.",
+    key: "liveCreated",
     type: "success",
   },
   "live-saved": {
-    msg: "Sesión actualizada.",
+    key: "liveSaved",
     type: "success",
   },
 };
@@ -62,6 +66,7 @@ const MESSAGES: Record<string, { msg: string; type?: "success" | "info" | "warni
  * Limpia el query param después para que no se re-dispare en refresh.
  */
 export function ToastFromQuery() {
+  const t = useTranslations("Toast");
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -75,17 +80,18 @@ export function ToastFromQuery() {
 
     const entry = MESSAGES[key];
     if (entry) {
-      if (entry.type === "success") toast.success(entry.msg);
-      else if (entry.type === "warning") toast.warning(entry.msg);
-      else if (entry.type === "info") toast.info(entry.msg);
-      else toast(entry.msg);
+      const msg = t(entry.key);
+      if (entry.type === "success") toast.success(msg);
+      else if (entry.type === "warning") toast.warning(msg);
+      else if (entry.type === "info") toast.info(msg);
+      else toast(msg);
     }
 
     const next = new URLSearchParams(params.toString());
     next.delete("toast");
     const qs = next.toString();
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
-  }, [params, router, pathname]);
+  }, [params, router, pathname, t]);
 
   return null;
 }

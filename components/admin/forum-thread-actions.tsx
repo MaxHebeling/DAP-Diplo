@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { useTranslations } from "next-intl";
 import {
   EyeOff,
   Eye,
@@ -25,6 +26,7 @@ type Props = {
 };
 
 export function ForumThreadActions({ threadId, pinned, closed, hidden }: Props) {
+  const t = useTranslations("AdminUI");
   const [pendingPin, startPin] = useTransition();
   const [pendingClose, startClose] = useTransition();
   const [pendingHide, startHide] = useTransition();
@@ -54,12 +56,12 @@ export function ForumThreadActions({ threadId, pinned, closed, hidden }: Props) 
         disabled={pendingPin}
         onClick={() =>
           run(
-            pinned ? "Despineado." : "Pineado arriba.",
+            pinned ? t("forumThread.unpinned") : t("forumThread.pinnedTop"),
             toggleThreadPinnedAction,
             startPin,
           )
         }
-        title={pinned ? "Despinear" : "Pinear arriba"}
+        title={pinned ? t("forumThread.unpinTitle") : t("forumThread.pinTitle")}
       >
         {pinned ? (
           <PinOff className="size-3.5" />
@@ -73,12 +75,12 @@ export function ForumThreadActions({ threadId, pinned, closed, hidden }: Props) 
         disabled={pendingClose}
         onClick={() =>
           run(
-            closed ? "Hilo reabierto." : "Hilo cerrado.",
+            closed ? t("forumThread.threadReopened") : t("forumThread.threadClosed"),
             toggleThreadClosedAction,
             startClose,
           )
         }
-        title={closed ? "Reabrir" : "Cerrar"}
+        title={closed ? t("forumThread.reopenTitle") : t("forumThread.closeTitle")}
       >
         {closed ? (
           <LockOpen className="size-3.5" />
@@ -92,12 +94,12 @@ export function ForumThreadActions({ threadId, pinned, closed, hidden }: Props) 
         disabled={pendingHide}
         onClick={() =>
           run(
-            hidden ? "Hilo restaurado." : "Hilo ocultado.",
+            hidden ? t("forumThread.threadRestored") : t("forumThread.threadHidden"),
             toggleThreadHiddenAction,
             startHide,
           )
         }
-        title={hidden ? "Restaurar (mostrar)" : "Ocultar (soft delete)"}
+        title={hidden ? t("forumThread.restoreTitle") : t("forumThread.hideTitle")}
         className={
           hidden
             ? ""

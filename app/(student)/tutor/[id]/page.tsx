@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { TutorSidebar } from "@/components/tutor/tutor-sidebar";
 import { ChatWindow } from "@/components/tutor/chat-window";
 import { createClient } from "@/lib/supabase/server";
@@ -6,7 +7,10 @@ import { requireActiveSubscription } from "@/lib/subscription/gate";
 
 type PageProps = { params: Promise<{ id: string }> };
 
-export const metadata = { title: "Tutor IA — DAP" };
+export async function generateMetadata() {
+  const t = await getTranslations("Student");
+  return { title: t("tutor.metaTitle") };
+}
 
 type DbMessage = {
   id: string;

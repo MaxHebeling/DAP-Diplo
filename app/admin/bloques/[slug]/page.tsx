@@ -2,11 +2,15 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { BlockEditForm } from "./block-edit-form";
 
-export const metadata = { title: "Editar bloque — Admin DAP" };
+export async function generateMetadata() {
+  const t = await getTranslations("Admin");
+  return { title: t("blockEdit.metaTitle") };
+}
 
 type Row = {
   id: string;
@@ -28,6 +32,7 @@ export default async function EditBloquePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const t = await getTranslations("Admin");
   const supabase = await createClient();
   const { data: block } = await supabase
     .from("blocks")
@@ -46,17 +51,23 @@ export default async function EditBloquePage({
           className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-3.5" />
-          Volver a bloques
+          {t("blockEdit.backToBlocks")}
         </Link>
 
         <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-              Bloque {String(block.order_index).padStart(2, "0")}
-              {block.dimension ? ` · ${block.dimension.name}` : ""}
+              {block.dimension
+                ? t("blockEdit.blockEyebrowWithDimension", {
+                    index: String(block.order_index).padStart(2, "0"),
+                    dimension: block.dimension.name,
+                  })
+                : t("blockEdit.blockEyebrow", {
+                    index: String(block.order_index).padStart(2, "0"),
+                  })}
             </p>
             <h1 className="mt-1 font-grotesk text-3xl font-bold tracking-tight">
-              Editar bloque
+              {t("blockEdit.title")}
             </h1>
           </div>
           {block.cover_image_url && (

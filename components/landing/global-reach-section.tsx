@@ -1,6 +1,9 @@
+import { getTranslations } from "next-intl/server";
+
 import { Globe } from "./globe";
 
-export function GlobalReachSection() {
+export async function GlobalReachSection() {
+  const t = await getTranslations("Landing");
   return (
     <section
       id="diplomado"
@@ -10,34 +13,27 @@ export function GlobalReachSection() {
         {/* Copy */}
         <div>
           <p className="mb-4 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-            ¿Por qué el DAP?
+            {t("globalReach.eyebrow")}
           </p>
           <h2 className="font-grotesk text-h1 font-bold leading-tight text-text-primary">
-            No es otro curso. Es una{" "}
-            <span className="gradient-text">formación integral</span>.
+            {t("globalReach.titleLead")}{" "}
+            <span className="gradient-text">{t("globalReach.titleHighlight")}</span>.
           </h2>
           <div className="mt-8 space-y-5 font-inter text-base leading-relaxed text-text-secondary">
             <p>
-              La mayoría de las escuelas ministeriales del mundo hispano solo
-              forman{" "}
-              <span className="font-medium text-text-primary">predicadores</span>.
-              El pastor sale sabiendo exponer un texto, pero llega a su iglesia
-              y no sabe organizar un equipo, leer un estado de cuentas,
-              levantar una fundación, plantar una empresa del Reino, ni
-              gobernar una ciudad.
+              {t("globalReach.p1a")}{" "}
+              <span className="font-medium text-text-primary">{t("globalReach.p1Highlight")}</span>
+              {t("globalReach.p1b")}
             </p>
             <p>
-              El DAP existe para formar al{" "}
+              {t("globalReach.p2a")}{" "}
               <span className="font-medium text-text-primary">
-                líder apostólico completo
+                {t("globalReach.p2Highlight")}
               </span>
-              : pastor + administrador + reformador + empresario + estratega
-              + mentor + comunicador + gobernador espiritual. Las 9
-              dimensiones de la unción apostólica en un solo programa.
+              {t("globalReach.p2b")}
             </p>
             <p className="text-text-tertiary">
-              No es un curso para acumular información. Es un proceso de
-              formación que entrega autoridad ministerial.
+              {t("globalReach.p3")}
             </p>
           </div>
         </div>

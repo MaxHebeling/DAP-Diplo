@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { getTranslations } from "next-intl/server";
 
 import { signOutAction } from "@/lib/auth/actions";
 import { createClient } from "@/lib/supabase/server";
@@ -26,6 +27,7 @@ export async function LegalPageLayout({
   updatedAt,
   children,
 }: LegalPageLayoutProps) {
+  const t = await getTranslations("Legal");
   const supabase = await createClient();
   const {
     data: { user },
@@ -61,7 +63,7 @@ export async function LegalPageLayout({
               {title}
             </h1>
             <p className="mt-4 font-inter text-sm text-text-tertiary">
-              Última actualización: {updatedAt}
+              {t("lastUpdated", { date: updatedAt })}
             </p>
           </div>
         </section>

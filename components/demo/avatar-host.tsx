@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useTranslations } from "next-intl";
 import { Sparkles } from "lucide-react";
 
 // Lazy: evitamos cargar ~200KB de MuxPlayer en /demo si el visitante
@@ -21,6 +22,8 @@ type Props = {
 };
 
 export function AvatarHost({ videoUrl, posterUrl }: Props) {
+  const t = useTranslations("Demo.avatarHost");
+
   if (!videoUrl) {
     return <AvatarPlaceholder />;
   }
@@ -35,7 +38,7 @@ export function AvatarHost({ videoUrl, posterUrl }: Props) {
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             className="size-full"
-            title="Avatar IA — Guía del demo"
+            title={t("iframeTitle")}
           />
         </div>
       </div>
@@ -62,6 +65,7 @@ export function AvatarHost({ videoUrl, posterUrl }: Props) {
 }
 
 function AvatarPlaceholder() {
+  const t = useTranslations("Demo.avatarHost");
   return (
     <div className="mx-auto w-full max-w-4xl">
       <div className="relative aspect-video overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-br from-brand-violet/20 via-surface-elevated to-brand-coral/15">
@@ -74,12 +78,10 @@ function AvatarPlaceholder() {
             <Sparkles className="size-8" strokeWidth={1.6} />
           </div>
           <p className="mb-2 font-grotesk text-xl font-bold text-text-primary">
-            Tu guía digital se está preparando
+            {t("placeholderTitle")}
           </p>
           <p className="max-w-md font-inter text-sm leading-relaxed text-text-secondary">
-            En breve un avatar virtual te va a recibir y te va a llevar
-            paso a paso por el módulo. Mientras tanto, podés bajar y
-            explorar todo el contenido del módulo directamente.
+            {t("placeholderBody")}
           </p>
         </div>
       </div>

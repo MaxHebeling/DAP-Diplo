@@ -7,35 +7,38 @@ import {
   Cpu,
   Sparkles,
 } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
-const VALUES = [
-  { icon: BookOpen, label: "Bíblico" },
-  { icon: Briefcase, label: "Práctico" },
-  { icon: Compass, label: "Estratégico" },
-  { icon: Cpu, label: "Tecnológico" },
-  { icon: Sparkles, label: "Apostólico" },
-];
+export async function DapPublicFooter() {
+  const t = await getTranslations("Footer");
 
-const COLS = [
-  {
-    title: "Soporte",
-    links: [
-      { href: "/#faq", label: "Preguntas frecuentes" },
-      { href: "/login", label: "Iniciar sesión" },
-      { href: "/contacto", label: "Contacto" },
-    ],
-  },
-  {
-    title: "Legal",
-    links: [
-      { href: "/terminos", label: "Términos" },
-      { href: "/privacidad", label: "Privacidad" },
-      { href: "/reembolso", label: "Reembolsos" },
-    ],
-  },
-];
+  const VALUES = [
+    { icon: BookOpen, label: t("values.biblical") },
+    { icon: Briefcase, label: t("values.practical") },
+    { icon: Compass, label: t("values.strategic") },
+    { icon: Cpu, label: t("values.technological") },
+    { icon: Sparkles, label: t("values.apostolic") },
+  ];
 
-export function DapPublicFooter() {
+  const COLS = [
+    {
+      title: t("cols.support.title"),
+      links: [
+        { href: "/#faq", label: t("cols.support.faq") },
+        { href: "/login", label: t("cols.support.login") },
+        { href: "/contacto", label: t("cols.support.contact") },
+      ],
+    },
+    {
+      title: t("cols.legal.title"),
+      links: [
+        { href: "/terminos", label: t("cols.legal.terms") },
+        { href: "/privacidad", label: t("cols.legal.privacy") },
+        { href: "/reembolso", label: t("cols.legal.refunds") },
+      ],
+    },
+  ];
+
   return (
     <footer
       data-slot="dap-public-footer"
@@ -47,7 +50,7 @@ export function DapPublicFooter() {
             <Link
               href="/"
               className="inline-flex items-center"
-              aria-label="DAP — Inicio"
+              aria-label={t("home")}
             >
               <Image
                 src="/dap-logo-white.png"
@@ -58,8 +61,7 @@ export function DapPublicFooter() {
               />
             </Link>
             <p className="max-w-sm text-sm leading-relaxed text-text-secondary">
-              Diplomado Apostólico Pastoral. Formación integral de 18 meses
-              para pastores y líderes hispanohablantes.
+              {t("tagline")}
             </p>
           </div>
 
@@ -86,7 +88,7 @@ export function DapPublicFooter() {
           {/* Respaldo oficial — Revival & Kingdom Ministries */}
           <div>
             <p className="mb-4 font-grotesk text-sm font-semibold uppercase tracking-widest text-text-tertiary">
-              Respaldo oficial
+              {t("backing.title")}
             </p>
             <div className="flex items-start gap-3">
               <Image
@@ -97,11 +99,13 @@ export function DapPublicFooter() {
                 className="size-14 shrink-0 opacity-90"
               />
               <p className="font-inter text-xs leading-relaxed text-text-secondary">
-                DAP es un departamento de educación de{" "}
-                <span className="font-semibold text-text-primary">
-                  Revival &amp; Kingdom Ministries, INC
-                </span>
-                .
+                {t.rich("backing.description", {
+                  org: (chunks) => (
+                    <span className="font-semibold text-text-primary">
+                      {chunks}
+                    </span>
+                  ),
+                })}
               </p>
             </div>
           </div>
@@ -125,8 +129,9 @@ export function DapPublicFooter() {
 
         <div className="mt-8 flex flex-col gap-2 pt-6 text-xs text-text-tertiary sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © {new Date().getFullYear()} DAP. Todos los derechos reservados.{" "}
-            <span className="text-text-tertiary/60">|</span> Desarrollado por{" "}
+            {t("legalBar.copyright", { year: new Date().getFullYear() })}{" "}
+            <span className="text-text-tertiary/60">|</span>{" "}
+            {t("legalBar.developedBy")}{" "}
             <a
               href="https://www.ikingdom.org"
               target="_blank"
@@ -137,15 +142,17 @@ export function DapPublicFooter() {
             </a>
           </p>
           <p>
-            Construido con propósito ·{" "}
-            <span className="gradient-text font-semibold">Apostólico + Tech</span>
+            {t("legalBar.builtWithPurpose")} ·{" "}
+            <span className="gradient-text font-semibold">
+              {t("legalBar.apostolicTech")}
+            </span>
           </p>
         </div>
       </div>
 
       {/* Marquee slogan band — última franja del footer */}
       <div
-        aria-label="Ecosistema integral de educación, gobierno y liderazgo de Reino"
+        aria-label={t("marquee")}
         className="overflow-hidden border-t border-white/[0.06] bg-surface-elevated/40 py-5"
       >
         <div className="dap-marquee flex w-max items-center gap-12 whitespace-nowrap">
@@ -155,7 +162,7 @@ export function DapPublicFooter() {
               className="inline-flex items-center gap-12 font-grotesk text-sm font-semibold uppercase tracking-[0.32em] text-text-secondary"
               aria-hidden={i > 0}
             >
-              Ecosistema integral de educación, gobierno y liderazgo de Reino
+              {t("marquee")}
               <span className="gradient-text text-lg">✦</span>
             </span>
           ))}

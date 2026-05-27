@@ -10,6 +10,11 @@ import {
   View,
   StyleSheet,
 } from "@react-pdf/renderer";
+import { type useTranslations } from "next-intl";
+
+// @react-pdf requiere un componente SÍNCRONO; por eso el `t` se resuelve
+// en el caller async (lib/certificates/generate.ts) y se pasa como prop.
+type CertificateTranslator = ReturnType<typeof useTranslations<"Certificate">>;
 
 /**
  * Certificado de bloque del DAP — pieza ceremonial generada al aprobar
@@ -289,6 +294,7 @@ type Props = {
   verificationCode: string;
   issuedAt: Date;
   verifyUrl: string;
+  t: CertificateTranslator;
 };
 
 export function CertificateDocument({
@@ -299,15 +305,16 @@ export function CertificateDocument({
   verificationCode,
   issuedAt,
   verifyUrl,
+  t,
 }: Props) {
   const phaseNumber = String(phaseOrderIndex).padStart(2, "0");
   const hasLogos = assetExists(LOGO_DAP) && assetExists(LOGO_RED);
 
   return (
     <Document
-      title={`Certificado DAP — ${fullName}`}
-      author="Diplomado Apostólico Pastoral"
-      subject={`Bloque ${phaseNumber}: ${phaseTitle}`}
+      title={t("document.docTitle", { fullName })}
+      author={t("document.author")}
+      subject={t("document.subject", { phaseNumber, phaseTitle })}
     >
       <Page size="LETTER" orientation="landscape" style={styles.page}>
         <View style={styles.bandTop} fixed />
@@ -325,33 +332,32 @@ export function CertificateDocument({
           {/* Título central */}
           <View style={styles.centerBlock}>
             <Text style={styles.eyebrow}>
-              Diplomado Apostólico Pastoral
+              {t("document.eyebrow")}
             </Text>
-            <Text style={styles.title}>Certificado de Bloque</Text>
+            <Text style={styles.title}>{t("document.title")}</Text>
             <Text style={styles.subtitle}>
-              Bloque {phaseNumber} · {phaseTitle}
+              {t("document.subtitle", { phaseNumber, phaseTitle })}
             </Text>
             <View style={styles.divider} />
           </View>
 
           {/* Otorgado a */}
-          <Text style={styles.awardedTo}>Se otorga a</Text>
+          <Text style={styles.awardedTo}>{t("document.awardedTo")}</Text>
           <Text style={styles.recipientName}>{fullName}</Text>
 
           {/* Body */}
           <Text style={styles.body}>
-            En reconocimiento por haber completado satisfactoriamente los{" "}
-            <Text style={styles.bodyHighlight}>ocho módulos</Text> del
-            Bloque {phaseNumber} —{" "}
-            <Text style={styles.bodyHighlight}>{phaseTitle}</Text> — del
-            Diplomado Apostólico Pastoral, dando testimonio de la formación
-            integral recibida.
+            {t("document.bodyBefore")}
+            <Text style={styles.bodyHighlight}>{t("document.bodyModules")}</Text>
+            {t("document.bodyMiddle", { phaseNumber })}
+            <Text style={styles.bodyHighlight}>{phaseTitle}</Text>
+            {t("document.bodyAfter")}
           </Text>
 
           {/* Dimensión otorgada */}
           <View style={styles.dimensionBox}>
             <Text style={styles.dimensionLabel}>
-              Dimensión ministerial otorgada
+              {t("document.dimensionLabel")}
             </Text>
             <Text style={styles.dimensionName}>{dimensionName}</Text>
           </View>
@@ -363,20 +369,18 @@ export function CertificateDocument({
                 <Image src={FIRMA} style={styles.signatureImage} />
               ) : null}
               <View style={styles.signatureLine} />
-              <Text style={styles.signatureName}>Dr. Max Hebeling</Text>
+              <Text style={styles.signatureName}>{t("document.signatureName")}</Text>
               <Text style={styles.signatureTitle}>
-                Apóstol & CEO{"\n"}
-                Red Apostólica Reino y Avivamiento{"\n"}
-                Revival &amp; Kingdom Ministries, INC
+                {t("document.signatureTitle")}
               </Text>
             </View>
 
             <View style={styles.verifyBlock}>
-              <Text style={styles.verifyLabel}>Código de verificación</Text>
+              <Text style={styles.verifyLabel}>{t("document.verifyLabel")}</Text>
               <Text style={styles.verifyCode}>{verificationCode}</Text>
               <Text style={styles.verifyUrl}>{verifyUrl}</Text>
               <Text style={styles.issuedDate}>
-                Emitido el {formatIssuedAt(issuedAt)}
+                {t("document.issuedOn", { date: formatIssuedAt(issuedAt) })}
               </Text>
             </View>
           </View>

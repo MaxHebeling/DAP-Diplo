@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { CheckCircle2, Loader2, UploadCloud, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ type Phase =
   | { kind: "error"; message: string };
 
 export function DocumentUpload() {
+  const t = useTranslations("AdminUI");
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>({ kind: "idle" });
   const [file, setFile] = useState<File | null>(null);
@@ -32,20 +34,20 @@ export function DocumentUpload() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!file) {
-      toast.error("Selecciona un PDF primero.");
+      toast.error(t("documentUpload.selectPdfFirst"));
       return;
     }
     if (file.type !== "application/pdf") {
-      toast.error("Solo PDFs.");
+      toast.error(t("documentUpload.onlyPdfs"));
       return;
     }
     if (file.size > 20 * 1024 * 1024) {
-      toast.error("Máximo 20 MB.");
+      toast.error(t("documentUpload.maxSize"));
       return;
     }
     const cleanTitle = title.trim();
     if (cleanTitle.length < 2) {
-      toast.error("Ponle un título descriptivo.");
+      toast.error(t("documentUpload.needTitle"));
       return;
     }
 
@@ -79,7 +81,7 @@ export function DocumentUpload() {
       const body = await urlRes.json().catch(() => ({}));
       setPhase({
         kind: "error",
-        message: body.error ?? "No se pudo iniciar la subida.",
+        message: body.error ?? t("documentUpload.couldNotStartUpload"),
       });
       return;
     }
@@ -121,7 +123,10 @@ export function DocumentUpload() {
       },
     });
     toast.success(
-      `Ingestado: ${ingestBody.chunks_count} chunks, ${ingestBody.tokens_used} tokens.`,
+      t("documentUpload.ingested", {
+        chunks: ingestBody.chunks_count,
+        tokens: ingestBody.tokens_used,
+      }),
     );
     setFile(null);
     setTitle("");
@@ -133,10 +138,10 @@ export function DocumentUpload() {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <Field>
-        <FieldLabel htmlFor="title">Título descriptivo</FieldLabel>
+        <FieldLabel htmlFor="title">{t("documentUpload.titleLabel")}</FieldLabel>
         <Input
           id="title"
-          placeholder="Ej. Apostolado neotestamentario — Fundamentos"
+          placeholder={t("documentUpload.titlePlaceholder")}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           disabled={isBusy}
@@ -144,7 +149,7 @@ export function DocumentUpload() {
       </Field>
 
       <Field>
-        <FieldLabel htmlFor="pdf">Archivo PDF</FieldLabel>
+        <FieldLabel htmlFor="pdf">{t("documentUpload.pdfLabel")}</FieldLabel>
         <Input
           id="pdf"
           type="file"
@@ -159,15 +164,18 @@ export function DocumentUpload() {
         <Button type="submit" disabled={isBusy || !file || title.length < 2}>
           {phase.kind === "uploading" ? (
             <>
-              <Loader2 className="size-4 animate-spin" /> Subiendo PDF…
+              <Loader2 className="size-4 animate-spin" />{" "}
+              {t("documentUpload.uploadingPdf")}
             </>
           ) : phase.kind === "ingesting" ? (
             <>
-              <Loader2 className="size-4 animate-spin" /> Chunkeando + embebiendo…
+              <Loader2 className="size-4 animate-spin" />{" "}
+              {t("documentUpload.chunkingEmbedding")}
             </>
           ) : (
             <>
-              <UploadCloud className="size-4" /> Subir e ingestar
+              <UploadCloud className="size-4" />{" "}
+              {t("documentUpload.uploadAndIngest")}
             </>
           )}
         </Button>
@@ -177,13 +185,16 @@ export function DocumentUpload() {
 }
 
 function PhaseIndicator({ phase }: { phase: Phase }) {
+  const t = useTranslations("AdminUI");
   if (phase.kind === "idle") return null;
   if (phase.kind === "done") {
     return (
       <div className="inline-flex items-center gap-2 text-xs text-emerald-600">
         <CheckCircle2 className="size-3.5" />
-        {phase.result.chunks_count} chunks ·{" "}
-        {phase.result.tokens_used.toLocaleString()} tokens
+        {t("documentUpload.chunksTokens", {
+          chunks: phase.result.chunks_count,
+          tokens: phase.result.tokens_used.toLocaleString(),
+        })}
       </div>
     );
   }
@@ -199,8 +210,8 @@ function PhaseIndicator({ phase }: { phase: Phase }) {
     <div className="inline-flex items-center gap-2 text-xs text-muted-foreground">
       <Loader2 className="size-3.5 animate-spin" />
       {phase.kind === "uploading"
-        ? "Subiendo PDF al storage…"
-        : "Procesando con Voyage AI…"}
+        ? t("documentUpload.uploadingToStorage")
+        : t("documentUpload.processingWithVoyage")}
     </div>
   );
 }

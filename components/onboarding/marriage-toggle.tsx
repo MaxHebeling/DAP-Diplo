@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { motion } from "motion/react";
 import { Heart, Sparkles } from "lucide-react";
 
@@ -17,6 +18,7 @@ type Props = {
  * activa, sin checkbox nativo (toda la card es clickable).
  */
 export function MarriageToggle({ checked, onChange, disabled }: Props) {
+  const t = useTranslations("Onboarding.marriageToggle");
   return (
     <button
       type="button"
@@ -61,13 +63,13 @@ export function MarriageToggle({ checked, onChange, disabled }: Props) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <p className="font-grotesk text-sm font-semibold text-text-primary">
-              Registrarnos como matrimonio
+              {t("title")}
             </p>
             <span className="text-xs">🇦🇷</span>
           </div>
           <p className="mt-1 font-inter text-xs leading-relaxed text-text-secondary">
-            Inscripción especial para esposos argentinos.{" "}
-            <span className="text-brand-coral">Una sola cuota cubre a los dos.</span>
+            {t("descriptionBefore")}
+            <span className="text-brand-coral">{t("descriptionHighlight")}</span>
           </p>
         </div>
 

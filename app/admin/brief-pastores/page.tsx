@@ -1,31 +1,35 @@
 import { FileText, Download, Calendar, GraduationCap } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 import {
   CLASSES_START_LABEL,
   ENROLLMENT_OPENS_LABEL,
 } from "@/lib/launch/config";
 
-export const metadata = { title: "Brief para pastores — Admin DAP" };
+export async function generateMetadata() {
+  const t = await getTranslations("Admin");
+  return { title: t("pastorBrief.metaTitle") };
+}
 
-const SECCIONES = [
-  {
-    n: 1,
-    title: "Apertura apostólica",
-    body: "Saludo al pastor, visión del momento del Reino, qué es el DAP y para quién es.",
-  },
-  {
-    n: 2,
-    title: "Estructura y dimensiones",
-    body: "18 meses · 72 módulos · 9 bloques · listado completo de las 9 dimensiones (Discípulo → Enviado) + metodología semanal martes-lunes.",
-  },
-  {
-    n: 3,
-    title: "Lo que incluye, inversión y fechas clave",
-    body: "Bullets de valor, precio $25 USD/mes, garantía de 7 días, fechas (inscripciones 01 Jun · clases 23 Jun), pasos para inscribirse y firma del Dr. Max.",
-  },
-];
-
-export default function AdminBriefPastoresPage() {
+export default async function AdminBriefPastoresPage() {
+  const t = await getTranslations("Admin");
+  const secciones = [
+    {
+      n: 1,
+      title: t("pastorBrief.section1Title"),
+      body: t("pastorBrief.section1Body"),
+    },
+    {
+      n: 2,
+      title: t("pastorBrief.section2Title"),
+      body: t("pastorBrief.section2Body"),
+    },
+    {
+      n: 3,
+      title: t("pastorBrief.section3Title"),
+      body: t("pastorBrief.section3Body"),
+    },
+  ];
   return (
     <main className="px-6 py-10 sm:px-10">
       <div className="mx-auto max-w-4xl space-y-8">
@@ -35,16 +39,13 @@ export default function AdminBriefPastoresPage() {
           </div>
           <div>
             <p className="font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-              Material institucional · Convocatoria 2026
+              {t("pastorBrief.eyebrow")}
             </p>
             <h1 className="mt-1 font-grotesk text-3xl font-bold tracking-tight">
-              Brief para pastores
+              {t("pastorBrief.title")}
             </h1>
             <p className="mt-2 max-w-2xl font-inter text-sm leading-relaxed text-text-secondary">
-              PDF de 3 páginas con todo el contenido del DAP — visión,
-              estructura, dimensiones, metodología, inversión y fechas.
-              Pensado para enviar por email, WhatsApp o imprimir y entregar
-              en reuniones con pastores que estén considerando el programa.
+              {t("pastorBrief.description")}
             </p>
           </div>
         </header>
@@ -56,7 +57,7 @@ export default function AdminBriefPastoresPage() {
                 brief-dap-pastores-2026.pdf
               </p>
               <p className="font-inter text-sm text-text-secondary">
-                3 páginas · Branding DAP · Firma del Dr. Max incluida
+                {t("pastorBrief.fileMeta")}
               </p>
             </div>
             <a
@@ -65,17 +66,17 @@ export default function AdminBriefPastoresPage() {
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-br from-brand-violet to-brand-coral px-6 py-3 font-inter text-sm font-semibold text-white shadow-lg shadow-brand-violet/20 transition-transform hover:scale-[1.02]"
             >
               <Download className="size-4" />
-              Descargar PDF
+              {t("pastorBrief.downloadPdf")}
             </a>
           </div>
         </div>
 
         <section className="space-y-4">
           <h2 className="font-grotesk text-lg font-semibold text-text-primary">
-            Qué hay dentro
+            {t("pastorBrief.whatsInside")}
           </h2>
           <div className="grid gap-4 sm:grid-cols-3">
-            {SECCIONES.map((s) => (
+            {secciones.map((s) => (
               <div
                 key={s.n}
                 className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-5"
@@ -99,7 +100,7 @@ export default function AdminBriefPastoresPage() {
             <Calendar className="mt-0.5 size-5 shrink-0 text-brand-coral" />
             <div>
               <p className="font-inter text-xs uppercase tracking-widest text-brand-coral">
-                Apertura de inscripciones
+                {t("pastorBrief.enrollmentOpensLabel")}
               </p>
               <p className="mt-1 font-grotesk text-base font-semibold text-text-primary">
                 {ENROLLMENT_OPENS_LABEL}
@@ -110,7 +111,7 @@ export default function AdminBriefPastoresPage() {
             <GraduationCap className="mt-0.5 size-5 shrink-0 text-brand-violet" />
             <div>
               <p className="font-inter text-xs uppercase tracking-widest text-brand-violet">
-                Inicio de clases
+                {t("pastorBrief.classesStartLabel")}
               </p>
               <p className="mt-1 font-grotesk text-base font-semibold capitalize text-text-primary">
                 {CLASSES_START_LABEL}
@@ -120,21 +121,21 @@ export default function AdminBriefPastoresPage() {
         </section>
 
         <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4 text-xs text-text-tertiary">
-          <p className="font-medium text-text-secondary">Notas</p>
+          <p className="font-medium text-text-secondary">{t("pastorBrief.notesTitle")}</p>
           <ul className="mt-2 space-y-1">
-            <li>· El contenido del brief vive en{" "}
+            <li>{t("pastorBrief.note1Prefix")}{" "}
               <code className="rounded bg-white/[0.06] px-1 py-0.5 font-mono text-[11px]">
                 lib/brief/generate-pastor-brief.tsx
               </code>
-              {" "}— edítalo ahí si necesitas cambiar copy.
+              {" "}{t("pastorBrief.note1Suffix")}
             </li>
-            <li>· Las fechas se importan de{" "}
+            <li>{t("pastorBrief.note2Prefix")}{" "}
               <code className="rounded bg-white/[0.06] px-1 py-0.5 font-mono text-[11px]">
                 lib/launch/config.ts
               </code>
-              {" "}— si las muevo, el brief se actualiza solo.
+              {" "}{t("pastorBrief.note2Suffix")}
             </li>
-            <li>· El PDF se genera on-demand cada vez que clickeas descargar — no hay cache.</li>
+            <li>{t("pastorBrief.note3")}</li>
           </ul>
         </div>
       </div>

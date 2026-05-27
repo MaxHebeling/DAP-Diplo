@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { motion } from "motion/react";
 import { ChevronDown } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 /**
  * Hero cinematográfico: foto futurista de ciudad + red neuronal con
@@ -12,6 +13,7 @@ import { ChevronDown } from "lucide-react";
  * + neural lines + partículas.
  */
 export function PromoHero() {
+  const t = useTranslations("PastoresTeam");
   return (
     <section className="relative isolate flex min-h-[100svh] w-full items-center justify-center overflow-hidden px-6">
       {/* Imagen de fondo con Ken Burns */}
@@ -100,7 +102,7 @@ export function PromoHero() {
           transition={{ duration: 0.6, delay: 0.25 }}
           className="font-inter text-[11px] font-semibold uppercase tracking-[0.42em] text-brand-coral"
         >
-          Oportunidad exclusiva · Pastores & Líderes
+          {t("hero.eyebrow")}
         </motion.p>
 
         <motion.h1
@@ -110,11 +112,11 @@ export function PromoHero() {
           className="mt-5 font-grotesk text-[42px] font-bold leading-[1.05] tracking-tight [text-shadow:0_2px_24px_rgba(4,8,26,0.85),0_0_60px_rgba(4,8,26,0.6)] sm:text-6xl md:text-7xl"
         >
           <span className="bg-gradient-to-br from-white via-white to-white/70 bg-clip-text text-transparent">
-            LEVANTEMOS
+            {t("hero.headlineTop")}
           </span>
           <br />
           <span className="bg-gradient-to-br from-brand-violet via-[#A28BFF] to-brand-coral bg-clip-text text-transparent">
-            LÍDERES JUNTOS
+            {t("hero.headlineBottom")}
           </span>
         </motion.h1>
 
@@ -124,8 +126,8 @@ export function PromoHero() {
           transition={{ duration: 0.7, delay: 0.55 }}
           className="mt-7 max-w-xl font-inter text-base leading-relaxed text-text-secondary [text-shadow:0_2px_16px_rgba(4,8,26,0.85)] sm:text-lg"
         >
-          Tu liderazgo puede abrir puertas para muchos…{" "}
-          <span className="text-text-primary">y también para ti.</span>
+          {t("hero.subheadlineLead")}{" "}
+          <span className="text-text-primary">{t("hero.subheadlineEmphasis")}</span>
         </motion.p>
 
         <motion.div
@@ -135,7 +137,7 @@ export function PromoHero() {
           className="mt-14 flex flex-col items-center gap-2"
         >
           <span className="font-inter text-[10px] uppercase tracking-[0.32em] text-text-tertiary">
-            Conoce la propuesta
+            {t("hero.scrollCue")}
           </span>
           <motion.div
             animate={{ y: [0, 6, 0] }}

@@ -1,4 +1,5 @@
 import { renderToBuffer } from "@react-pdf/renderer";
+import { getTranslations } from "next-intl/server";
 import { CertificateDocument } from "@/components/certificate/certificate-document";
 
 export type CertificateData = {
@@ -16,7 +17,8 @@ export async function generateCertificate(
   const appUrl =
     process.env.NEXT_PUBLIC_APP_URL ?? "https://dap-diplo.vercel.app";
   const verifyUrl = `${appUrl}/verificar/${data.verificationCode}`;
+  const t = await getTranslations("Certificate");
   return await renderToBuffer(
-    CertificateDocument({ ...data, verifyUrl }),
+    CertificateDocument({ ...data, verifyUrl, t }),
   );
 }

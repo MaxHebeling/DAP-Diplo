@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Loader2, Send } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -28,6 +29,7 @@ type AdmissionFormProps = {
 type FieldErrors = Partial<Record<keyof AdmissionFormInput, string>>;
 
 export function AdmissionForm({ prefill }: AdmissionFormProps) {
+  const t = useTranslations("AdmissionForm");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
@@ -98,13 +100,12 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
     e.preventDefault();
     if (belongsToNetwork === null) {
       setErrors({
-        belongs_to_network:
-          "Indicá si perteneces a la Red.",
+        belongs_to_network: t("selectNetworkError"),
       });
       return;
     }
     if (!clientValidate()) {
-      toast.error("Revisá los campos marcados.");
+      toast.error(t("reviewFieldsError"));
       return;
     }
 
@@ -134,7 +135,7 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
         }
         return;
       }
-      toast.success("¡Solicitud enviada!");
+      toast.success(t("submittedSuccess"));
       router.push("/admision/estado");
     });
   }
@@ -142,8 +143,8 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-12" noValidate>
       {/* Sección 1 — Datos personales */}
-      <Section title="01 · Datos personales" subtitle="Estos campos son obligatorios.">
-        <Field label="Nombre completo" error={errors.full_name} required>
+      <Section title={t("section1Title")} subtitle={t("section1Subtitle")}>
+        <Field label={t("fullName")} error={errors.full_name} required>
           <Input
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
@@ -152,7 +153,7 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
         </Field>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Fecha de nacimiento" error={errors.birth_date} required>
+          <Field label={t("birthDate")} error={errors.birth_date} required>
             <Input
               type="date"
               value={birthDate}
@@ -160,13 +161,13 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
               max={new Date().toISOString().slice(0, 10)}
             />
           </Field>
-          <Field label="Email" error={errors.email} hint="Tu cuenta DAP">
+          <Field label={t("email")} error={errors.email} hint={t("emailHint")}>
             <Input type="email" value={email} disabled />
           </Field>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="País" error={errors.country} required>
+          <Field label={t("country")} error={errors.country} required>
             <Select
               value={country}
               onChange={(e) => {
@@ -185,23 +186,23 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
             </Select>
           </Field>
           {country === "Otro" && (
-            <Field label="¿Cuál?" error={errors.country_other} required>
+            <Field label={t("countryOther")} error={errors.country_other} required>
               <Input
                 value={countryOther}
                 onChange={(e) => setCountryOther(e.target.value)}
-                placeholder="Tu país"
+                placeholder={t("countryOtherPlaceholder")}
               />
             </Field>
           )}
-          <Field label="Ciudad" error={errors.city} required>
+          <Field label={t("city")} error={errors.city} required>
             <Input value={city} onChange={(e) => setCity(e.target.value)} />
           </Field>
         </div>
 
         <Field
-          label="Teléfono"
+          label={t("phone")}
           error={errors.phone}
-          hint="El prefijo se actualiza con el país. Cambialo desde el dropdown si quieres."
+          hint={t("phoneHint")}
           required
         >
           <div className="flex gap-2">
@@ -209,7 +210,7 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
               value={dialId}
               onChange={(e) => setDialId(e.target.value)}
               className="w-24 shrink-0 sm:w-28"
-              aria-label="Código de país"
+              aria-label={t("countryCode")}
               title={
                 ALL_DIAL_CODES.find((d) => d.id === dialId)?.country ?? ""
               }
@@ -234,33 +235,33 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
 
       {/* Sección 2 — Pertenencia */}
       <Section
-        title="02 · Pertenencia"
-        subtitle="Contanos tu contexto ministerial y profesional."
+        title={t("section2Title")}
+        subtitle={t("section2Subtitle")}
       >
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Iglesia" error={errors.church_name}>
+          <Field label={t("church")} error={errors.church_name}>
             <Input
               value={churchName}
               onChange={(e) => setChurchName(e.target.value)}
-              placeholder="Iglesia local"
+              placeholder={t("churchPlaceholder")}
             />
           </Field>
-          <Field label="Ministerio" error={errors.ministry_name}>
+          <Field label={t("ministry")} error={errors.ministry_name}>
             <Input
               value={ministryName}
               onChange={(e) => setMinistryName(e.target.value)}
-              placeholder="Nombre del ministerio"
+              placeholder={t("ministryPlaceholder")}
             />
           </Field>
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Profesión" error={errors.profession}>
+          <Field label={t("profession")} error={errors.profession}>
             <Input
               value={profession}
               onChange={(e) => setProfession(e.target.value)}
             />
           </Field>
-          <Field label="Empresa / sector" error={errors.company_or_sector}>
+          <Field label={t("companyOrSector")} error={errors.company_or_sector}>
             <Input
               value={companyOrSector}
               onChange={(e) => setCompanyOrSector(e.target.value)}
@@ -271,11 +272,11 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
 
       {/* Sección 3 — Pertenencia a la Red */}
       <Section
-        title="03 · Pertenencia a la Red"
-        subtitle="Si NO perteneces a nuestra red, debés subir una carta de tu pastor."
+        title={t("section3Title")}
+        subtitle={t("section3Subtitle")}
       >
         <Field
-          label="¿Perteneces a la Red Apostólica Reino y Avivamiento o a Revival & Kingdom Ministries, INC?"
+          label={t("belongsToNetwork")}
           error={errors.belongs_to_network}
           required
         >
@@ -283,19 +284,19 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
             <RadioPill
               checked={belongsToNetwork === true}
               onClick={() => setBelongsToNetwork(true)}
-              label="Sí"
+              label={t("yes")}
             />
             <RadioPill
               checked={belongsToNetwork === false}
               onClick={() => setBelongsToNetwork(false)}
-              label="No"
+              label={t("no")}
             />
           </div>
         </Field>
 
         {belongsToNetwork === true && (
           <Field
-            label="¿A cuál?"
+            label={t("whichNetwork")}
             error={errors.network_name}
             required
           >
@@ -307,7 +308,7 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
                 )
               }
             >
-              <option value="">Seleccioná…</option>
+              <option value="">{t("selectPlaceholder")}</option>
               {NETWORK_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>
                   {o.label}
@@ -319,9 +320,9 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
 
         {belongsToNetwork === false && (
           <Field
-            label="Carta de consentimiento firmada por tu pastor"
+            label={t("consentLetter")}
             error={errors.consent_letter_url}
-            hint="PDF, JPG o PNG · máximo 10 MB"
+            hint={t("consentLetterHint")}
             required
           >
             <FileDropzone
@@ -337,26 +338,26 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
       {/* Submit */}
       <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="font-inter text-xs text-text-tertiary">
-          Al enviar aceptas los{" "}
+          {t("termsPrefix")}
           <a href="/terminos" className="text-brand-coral hover:underline">
-            términos
-          </a>{" "}
-          y la{" "}
-          <a href="/privacidad" className="text-brand-coral hover:underline">
-            política de privacidad
+            {t("termsLink")}
           </a>
-          .
+          {t("termsAnd")}
+          <a href="/privacidad" className="text-brand-coral hover:underline">
+            {t("privacyLink")}
+          </a>
+          {t("termsSuffix")}
         </p>
         <DapButton type="submit" size="lg" disabled={pending}>
           {pending ? (
             <>
               <Loader2 className="size-4 animate-spin" />
-              Enviando…
+              {t("sending")}
             </>
           ) : (
             <>
               <Send />
-              Enviar solicitud
+              {t("submit")}
             </>
           )}
         </DapButton>

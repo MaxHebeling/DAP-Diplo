@@ -1,4 +1,5 @@
 import { createClient as createSupabasePlainClient } from "@supabase/supabase-js";
+import { getTranslations, getLocale } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -9,6 +10,8 @@ import { Reveal } from "@/components/landing/reveal";
 import { SiteHeader, type HeaderUser } from "@/components/landing/site-header";
 import { DapPublicFooter } from "@/components/layouts/dap-public-footer";
 import { createClient } from "@/lib/supabase/server";
+import { localized } from "@/lib/i18n/localized";
+import type { Locale } from "@/i18n/config";
 import {
   courseSchema,
   jsonLd,
@@ -22,12 +25,15 @@ type ModuleRow = {
   order_index: number;
   slug: string;
   title: string;
+  title_en: string | null;
   subtitle: string | null;
+  subtitle_en: string | null;
   duration_minutes: number | null;
 };
 
 type RankRef = {
   name: string;
+  name_en: string | null;
   order_index: number;
 } | null;
 
@@ -36,10 +42,15 @@ type BlockDetail = {
   order_index: number;
   slug: string;
   title: string;
+  title_en: string | null;
   brand_name: string | null;
+  brand_name_en: string | null;
   promise: string | null;
+  promise_en: string | null;
   subtitle: string | null;
+  subtitle_en: string | null;
   description: string | null;
+  description_en: string | null;
   cover_image_url: string | null;
   months_duration: number;
   published: boolean;
@@ -51,6 +62,7 @@ type NeighborBlock = {
   slug: string;
   order_index: number;
   title: string;
+  title_en: string | null;
 };
 
 type PageProps = { params: Promise<{ slug: string }> };
@@ -77,23 +89,32 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
+  const t = await getTranslations("PublicPages");
+  const locale = (await getLocale()) as Locale;
   const supabase = await createClient();
   const { data } = await supabase
     .from("phases")
-    .select("title, brand_name, promise, subtitle, description")
+    .select(
+      "title, title_en, brand_name, brand_name_en, promise, promise_en, subtitle, subtitle_en, description, description_en",
+    )
     .eq("slug", slug)
     .eq("published", true)
     .maybeSingle();
   if (!data) {
     return {
-      title: "Bloque no encontrado",
+      title: t("phases.notFoundTitle"),
       robots: { index: false, follow: true },
     };
   }
   const url = `/fases/${slug}`;
-  const heroTitle = data.brand_name ?? data.title;
+  const title = localized(data, "title", locale) ?? data.title;
+  const heroTitle = localized(data, "brand_name", locale) ?? title;
   const description =
-    data.promise ?? data.subtitle ?? data.description ?? undefined;
+    localized(data, "promise", locale) ??
+    localized(data, "subtitle", locale) ??
+    localized(data, "description", locale) ??
+    undefined;
+  const ogTitle = t("phases.ogTitleSuffix", { title: heroTitle });
   return {
     title: heroTitle,
     description,
@@ -101,12 +122,12 @@ export async function generateMetadata({ params }: PageProps) {
     openGraph: {
       type: "article",
       url,
-      title: `${heroTitle} · DAP`,
+      title: ogTitle,
       description,
     },
     twitter: {
       card: "summary_large_image",
-      title: `${heroTitle} · DAP`,
+      title: ogTitle,
       description,
     },
   };
@@ -114,6 +135,8 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function BlockDetailPage({ params }: PageProps) {
   const { slug } = await params;
+  const t = await getTranslations("PublicPages");
+  const locale = (await getLocale()) as Locale;
   const supabase = await createClient();
 
   // Fase + dimensión + módulos en una sola query (sin filtrar published acá
@@ -121,16 +144,17 @@ export default async function BlockDetailPage({ params }: PageProps) {
   const { data: phase, error } = await supabase
     .from("phases")
     .select(
-      `id, order_index, slug, title, brand_name, promise, subtitle, description, cover_image_url,
-       months_duration, published,
-       dimension:dimensions(name, order_index),
-       modules(id, order_index, slug, title, subtitle, duration_minutes)`,
+      `id, order_index, slug, title, title_en, brand_name, brand_name_en,
+       promise, promise_en, subtitle, subtitle_en, description, description_en,
+       cover_image_url, months_duration, published,
+       dimension:dimensions(name, name_en, order_index),
+       modules(id, order_index, slug, title, title_en, subtitle, subtitle_en, duration_minutes)`,
     )
     .eq("slug", slug)
     .maybeSingle<BlockDetail>();
 
   if (error) {
-    throw new Error(`No se pudo cargar la fase: ${error.message}`);
+    throw new Error(t("phases.loadError", { message: error.message }));
   }
   if (!phase) notFound();
 
@@ -170,7 +194,7 @@ export default async function BlockDetailPage({ params }: PageProps) {
   // Vecinos prev/next entre los 9 fases publicados.
   const { data: allBlocks } = await supabase
     .from("phases")
-    .select("slug, order_index, title")
+    .select("slug, order_index, title, title_en")
     .eq("published", true)
     .order("order_index", { ascending: true })
     .returns<NeighborBlock[]>();
@@ -186,6 +210,16 @@ export default async function BlockDetailPage({ params }: PageProps) {
     0,
   );
 
+  // Valores localizados para el render (slug/URLs/order quedan en base).
+  const phaseTitle = localized(phase, "title", locale) ?? phase.title;
+  const phaseHeroTitle = localized(phase, "brand_name", locale) ?? phaseTitle;
+  const phaseSubtitle = localized(phase, "subtitle", locale);
+  const phasePromise = localized(phase, "promise", locale);
+  const phaseDescription = localized(phase, "description", locale);
+  const dimensionName = phase.dimension
+    ? localized(phase.dimension, "name", locale)
+    : null;
+
   return (
     <div className="flex flex-1 flex-col bg-neutral-950 text-neutral-50">
       {/* JSON-LD Course (rich result oportunidad) */}
@@ -196,9 +230,9 @@ export default async function BlockDetailPage({ params }: PageProps) {
             courseSchema({
               slug: phase.slug,
               order_index: phase.order_index,
-              title: phase.title,
-              subtitle: phase.subtitle,
-              description: phase.description,
+              title: phaseTitle,
+              subtitle: phaseSubtitle,
+              description: phaseDescription,
               months_duration: phase.months_duration,
             }),
           ),
@@ -210,10 +244,16 @@ export default async function BlockDetailPage({ params }: PageProps) {
         dangerouslySetInnerHTML={{
           __html: jsonLd(
             breadcrumbListSchema([
-              { name: "Inicio", url: SITE_URL },
-              { name: "Cómo funciona", url: `${SITE_URL}/como-funciona` },
+              { name: t("phases.breadcrumbHome"), url: SITE_URL },
               {
-                name: `Bloque ${String(phase.order_index).padStart(2, "0")}: ${phase.title}`,
+                name: t("phases.breadcrumbHowItWorks"),
+                url: `${SITE_URL}/como-funciona`,
+              },
+              {
+                name: t("phases.breadcrumbBlock", {
+                  number: String(phase.order_index).padStart(2, "0"),
+                  title: phaseTitle,
+                }),
                 url: `${SITE_URL}/fases/${phase.slug}`,
               },
             ]),
@@ -247,49 +287,54 @@ export default async function BlockDetailPage({ params }: PageProps) {
                 className="mb-10 inline-flex items-center gap-2 text-sm text-neutral-400 transition-colors hover:text-brand-coral"
               >
                 <ArrowLeft className="size-4" />
-                Volver a los bloques
+                {t("phases.backToBlocks")}
               </Link>
 
               {!phase.published && (
                 <Badge className="mb-6 bg-amber-500/15 text-amber-300 hover:bg-amber-500/20">
-                  Preview admin — bloque sin publicar
+                  {t("phases.previewBadge")}
                 </Badge>
               )}
 
               {/* Eyebrow: Dimensión NN · Nombre */}
               <p className="mb-3 font-inter text-xs font-semibold uppercase tracking-[0.3em] text-brand-coral">
-                Dimensión{" "}
-                {String(
-                  phase.dimension?.order_index ?? phase.order_index,
-                ).padStart(2, "0")}
-                {phase.dimension?.name ? ` · ${phase.dimension.name}` : ""}
+                {dimensionName
+                  ? t("phases.eyebrowDimensionWithName", {
+                      number: String(
+                        phase.dimension?.order_index ?? phase.order_index,
+                      ).padStart(2, "0"),
+                      name: dimensionName,
+                    })
+                  : t("phases.eyebrowDimension", {
+                      number: String(
+                        phase.dimension?.order_index ?? phase.order_index,
+                      ).padStart(2, "0"),
+                    })}
               </p>
 
               {/* Brand name (título grande gradiente) o fallback al title académico */}
               <h1 className="mb-3 font-serif text-balance text-5xl font-semibold leading-[1.05] sm:text-6xl">
-                <span className="gradient-text">
-                  {phase.brand_name ?? phase.title}
-                </span>
+                <span className="gradient-text">{phaseHeroTitle}</span>
               </h1>
 
               {/* Subtítulo descriptivo */}
-              {phase.subtitle && (
+              {phaseSubtitle && (
                 <p className="mb-6 max-w-3xl font-inter text-xl leading-snug text-neutral-300">
-                  {phase.subtitle}
+                  {phaseSubtitle}
                 </p>
               )}
 
               {/* Línea de promesa */}
-              {phase.promise && (
+              {phasePromise && (
                 <p className="mb-8 max-w-3xl font-inter text-lg italic leading-relaxed text-neutral-200">
-                  {phase.promise}
+                  {phasePromise}
                 </p>
               )}
 
               {/* Descripción larga (si existe) */}
-              {phase.description && (
+              {phaseDescription && (
                 <p className="mb-10 max-w-3xl text-justify text-base leading-relaxed text-neutral-400 hyphens-auto">
-                  {phase.description}
+                  {phaseDescription}
                 </p>
               )}
 
@@ -298,7 +343,9 @@ export default async function BlockDetailPage({ params }: PageProps) {
                   variant="secondary"
                   className="bg-white/5 text-neutral-200"
                 >
-                  Bloque {String(phase.order_index).padStart(2, "0")} de 9
+                  {t("phases.blockBadge", {
+                    number: String(phase.order_index).padStart(2, "0"),
+                  })}
                 </Badge>
                 <span className="text-neutral-700">·</span>
                 <Badge
@@ -306,14 +353,20 @@ export default async function BlockDetailPage({ params }: PageProps) {
                   className="bg-white/5 text-neutral-200"
                 >
                   {modules.length}{" "}
-                  {modules.length === 1 ? "módulo" : "módulos"}
+                  {modules.length === 1
+                    ? t("phases.moduleSingular")
+                    : t("phases.modulePlural")}
                 </Badge>
                 <span className="text-neutral-700">·</span>
-                <span>1 módulo por semana</span>
+                <span>{t("phases.oneModulePerWeek")}</span>
                 {totalMinutes > 0 && (
                   <>
                     <span className="text-neutral-700">·</span>
-                    <span>{formatDuration(totalMinutes * 60)} de contenido</span>
+                    <span>
+                      {t("phases.contentDuration", {
+                        duration: formatDuration(totalMinutes * 60),
+                      })}
+                    </span>
                   </>
                 )}
               </div>
@@ -326,17 +379,14 @@ export default async function BlockDetailPage({ params }: PageProps) {
           <div className="mx-auto max-w-3xl">
             <Reveal>
               <p className="mb-4 text-xs font-medium uppercase tracking-[0.32em] text-brand-coral">
-                ¿Qué aprenderás?
+                {t("phases.whatYouLearnEyebrow")}
               </p>
               <h2 className="mb-10 font-serif text-balance text-3xl font-semibold leading-tight text-neutral-50 sm:text-4xl">
-                Los objetivos clave de esta fase.
+                {t("phases.whatYouLearnHeading")}
               </h2>
               <div className="rounded-2xl border border-dashed border-white/10 bg-neutral-900/30 p-8 sm:p-10">
                 <p className="text-justify text-sm leading-relaxed text-neutral-400 hyphens-auto">
-                  El detalle de objetivos de aprendizaje, palabras clave del
-                  fase y entregables esperados se editan desde el panel
-                  administrativo. Cada fase tendrá aquí su descripción
-                  curricular completa antes del lanzamiento público.
+                  {t("phases.whatYouLearnBody")}
                 </p>
               </div>
             </Reveal>
@@ -348,18 +398,18 @@ export default async function BlockDetailPage({ params }: PageProps) {
           <div className="mx-auto max-w-4xl">
             <Reveal>
               <p className="mb-4 text-xs font-medium uppercase tracking-[0.32em] text-brand-coral">
-                Módulos de esta fase
+                {t("phases.modulesEyebrow")}
               </p>
               <h2 className="mb-12 font-serif text-balance text-3xl font-semibold leading-tight text-neutral-50 sm:text-4xl">
-                {modules.length}{" "}
-                {modules.length === 1 ? "clase" : "clases"} de 40 min en video
-                cada una.
+                {modules.length === 1
+                  ? t("phases.modulesHeadingSingular", { count: modules.length })
+                  : t("phases.modulesHeadingPlural", { count: modules.length })}
               </h2>
             </Reveal>
 
             {modules.length === 0 ? (
               <p className="rounded-2xl border border-dashed border-white/10 bg-white/5 p-8 text-center text-sm text-neutral-400">
-                esta fase aún no tiene módulos publicados.
+                {t("phases.noModules")}
               </p>
             ) : (
               <ol className="grid gap-2 sm:grid-cols-2">
@@ -373,16 +423,18 @@ export default async function BlockDetailPage({ params }: PageProps) {
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-neutral-50">
-                        {m.title}
+                        {localized(m, "title", locale) ?? m.title}
                       </p>
-                      {m.subtitle && (
+                      {localized(m, "subtitle", locale) && (
                         <p className="truncate text-xs text-neutral-500">
-                          {m.subtitle}
+                          {localized(m, "subtitle", locale)}
                         </p>
                       )}
                     </div>
                     <span className="shrink-0 text-xs tabular-nums text-neutral-500">
-                      ≈{m.duration_minutes ?? 50} min
+                      {t("phases.moduleMinutes", {
+                        minutes: m.duration_minutes ?? 50,
+                      })}
                     </span>
                   </li>
                 ))}
@@ -400,17 +452,16 @@ export default async function BlockDetailPage({ params }: PageProps) {
           <div className="mx-auto max-w-3xl text-center text-brand-coral-foreground">
             <Reveal>
               <h2 className="mb-5 font-serif text-balance text-4xl font-semibold leading-tight sm:text-5xl">
-                Suscríbete para acceder a esta fase.
+                {t("phases.ctaHeading")}
               </h2>
               <p className="mb-10 text-balance text-base sm:text-lg">
-                $25 USD/mes. Acceso al contenido grabado, las sesiones en vivo y
-                la mentoría grupal. Cancela cuando quieras.
+                {t("phases.ctaBody")}
               </p>
               <EnrollmentCTAPhase
                 href="/suscribirme"
                 className="h-12 bg-neutral-950 px-8 text-base font-medium text-neutral-50 hover:bg-neutral-900"
               >
-                Suscribirme — $25/mes
+                {t("phases.ctaButton")}
               </EnrollmentCTAPhase>
             </Reveal>
           </div>
@@ -419,7 +470,7 @@ export default async function BlockDetailPage({ params }: PageProps) {
         {/* PREV / NEXT */}
         {(prev || next) && (
           <nav
-            aria-label="Navegación entre fases"
+            aria-label={t("phases.navAriaLabel")}
             className="border-t border-white/5 px-6 py-16"
           >
             <div className="mx-auto flex max-w-5xl flex-col gap-4 sm:flex-row sm:justify-between">
@@ -430,10 +481,12 @@ export default async function BlockDetailPage({ params }: PageProps) {
                 >
                   <span className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-neutral-500">
                     <ArrowLeft className="size-3.5" />
-                    Fase {String(prev.order_index).padStart(2, "0")}
+                    {t("phases.navPhase", {
+                      number: String(prev.order_index).padStart(2, "0"),
+                    })}
                   </span>
                   <span className="font-serif text-lg font-medium text-neutral-50 group-hover:text-brand-coral">
-                    {prev.title}
+                    {localized(prev, "title", locale) ?? prev.title}
                   </span>
                 </Link>
               ) : (
@@ -445,11 +498,13 @@ export default async function BlockDetailPage({ params }: PageProps) {
                   className="group flex flex-col items-end gap-1 rounded-xl border border-white/5 bg-neutral-900/30 px-6 py-5 transition-colors hover:border-brand-coral/30"
                 >
                   <span className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-neutral-500">
-                    Fase {String(next.order_index).padStart(2, "0")}
+                    {t("phases.navPhase", {
+                      number: String(next.order_index).padStart(2, "0"),
+                    })}
                     <ArrowRight className="size-3.5" />
                   </span>
                   <span className="font-serif text-lg font-medium text-neutral-50 group-hover:text-brand-coral">
-                    {next.title}
+                    {localized(next, "title", locale) ?? next.title}
                   </span>
                 </Link>
               ) : (

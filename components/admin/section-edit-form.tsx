@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useForm, useWatch, Controller } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { z } from "zod";
@@ -39,12 +40,12 @@ export type SectionFormSection = {
   duration_seconds: number | null;
 };
 
-const KIND_LABEL: Record<SectionFormSection["kind"], string> = {
-  intro: "Introducción",
-  teaching: "Enseñanza",
-  activation: "Activación",
-  evaluation: "Evaluación",
-  impartation: "Frase de impartición",
+const KIND_LABEL_KEY: Record<SectionFormSection["kind"], string> = {
+  intro: "kindIntro",
+  teaching: "kindTeaching",
+  activation: "kindActivation",
+  evaluation: "kindEvaluation",
+  impartation: "kindImpartation",
 };
 
 export function SectionEditForm({
@@ -52,6 +53,7 @@ export function SectionEditForm({
 }: {
   section: SectionFormSection;
 }) {
+  const t = useTranslations("AdminUI");
   const [pending, startTransition] = useTransition();
   const form = useForm<FormValues>({
     resolver: standardSchemaResolver(formSchema),
@@ -106,18 +108,20 @@ export function SectionEditForm({
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-10" noValidate>
       <section className="rounded-xl border bg-card p-6">
         <p className="mb-1 text-xs font-medium uppercase tracking-widest text-brand-coral">
-          Sección · {KIND_LABEL[section.kind]}
+          {t("sectionEdit.sectionEyebrow", {
+            kind: t(`sectionEdit.${KIND_LABEL_KEY[section.kind]}`),
+          })}
         </p>
         <FieldGroup>
           <Field>
-            <FieldLabel htmlFor="title">Título visible</FieldLabel>
+            <FieldLabel htmlFor="title">{t("sectionEdit.titleLabel")}</FieldLabel>
             <Input id="title" {...register("title")} />
             {errors.title && <FieldError>{errors.title.message}</FieldError>}
           </Field>
 
           <Field>
             <FieldLabel htmlFor="body_md">
-              Cuerpo (Markdown)
+              {t("sectionEdit.bodyLabel")}
             </FieldLabel>
             <Controller
               control={control}
@@ -131,8 +135,8 @@ export function SectionEditForm({
                   }
                   placeholder={
                     section.kind === "impartation"
-                      ? "Texto opcional de cierre. La frase grande viene del campo `impartation_phrase` del módulo."
-                      : "Escribe el contenido en Markdown. Soporta encabezados, listas, **negrita**, _itálica_, [enlaces](url), citas, etc."
+                      ? t("sectionEdit.impartationPlaceholder")
+                      : t("sectionEdit.bodyPlaceholder")
                   }
                 />
               )}
@@ -141,7 +145,7 @@ export function SectionEditForm({
               <FieldError>{errors.body_md.message}</FieldError>
             )}
             <p className="text-xs text-muted-foreground">
-              {body.length.toLocaleString()} caracteres
+              {t("sectionEdit.charCount", { count: body.length.toLocaleString() })}
             </p>
           </Field>
 
@@ -155,23 +159,22 @@ export function SectionEditForm({
               <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
                 <Field>
                   <FieldLabel htmlFor="mux_playback_id">
-                    Mux Playback ID
+                    {t("sectionEdit.muxPlaybackIdLabel")}
                   </FieldLabel>
                   <Input
                     id="mux_playback_id"
                     {...register("mux_playback_id")}
-                    placeholder="ej. nVw01YQrLcsRZTpKxw2HmkkAFTQqyLOpRr01TR2..."
+                    placeholder={t("sectionEdit.muxPlaybackIdPlaceholder")}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Se rellena automáticamente cuando el video termina de
-                    procesarse. También puedes pegarlo a mano.{" "}
+                    {t("sectionEdit.muxPlaybackIdHint")}{" "}
                     <a
                       href="https://dashboard.mux.com/video/assets"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-brand-coral hover:underline"
                     >
-                      Abrir Mux Dashboard
+                      {t("sectionEdit.openMuxDashboard")}
                       <ExternalLink className="size-3" />
                     </a>
                   </p>
@@ -181,7 +184,7 @@ export function SectionEditForm({
                 </Field>
                 <Field>
                   <FieldLabel htmlFor="duration_seconds">
-                    Duración (segundos)
+                    {t("sectionEdit.durationLabel")}
                   </FieldLabel>
                   <Input
                     id="duration_seconds"
@@ -214,11 +217,11 @@ export function SectionEditForm({
             />
           }
         >
-          Cancelar
+          {t("sectionEdit.cancel")}
         </Button>
         <Button type="submit" disabled={pending || !isDirty}>
           <Save className="size-4" />
-          {pending ? "Guardando…" : "Guardar sección"}
+          {pending ? t("sectionEdit.saving") : t("sectionEdit.saveSection")}
         </Button>
       </div>
     </form>

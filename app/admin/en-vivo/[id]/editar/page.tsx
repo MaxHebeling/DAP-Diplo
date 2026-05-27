@@ -5,15 +5,20 @@ import {
   LiveSessionForm,
   type LiveSessionFormSession,
 } from "@/components/admin/live-session-form";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import type { LiveKind } from "@/lib/live-sessions/schemas";
 
 type PageProps = { params: Promise<{ id: string }> };
 
-export const metadata = { title: "Editar sesión — Admin DAP" };
+export async function generateMetadata() {
+  const t = await getTranslations("Admin");
+  return { title: t("liveEdit.metaTitle") };
+}
 
 export default async function EditarSesionPage({ params }: PageProps) {
   const { id } = await params;
+  const t = await getTranslations("Admin");
   const supabase = await createClient();
 
   const { data: session } = await supabase
@@ -52,14 +57,14 @@ export default async function EditarSesionPage({ params }: PageProps) {
           className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-brand-coral"
         >
           <ArrowLeft className="size-4" />
-          Volver a sesiones
+          {t("liveEdit.backToSessions")}
         </Link>
 
         <header className="mb-8">
           <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
-            Admin · En vivo
+            {t("liveEdit.eyebrow")}
           </p>
-          <h1 className="font-serif text-3xl font-semibold">Editar sesión</h1>
+          <h1 className="font-serif text-3xl font-semibold">{t("liveEdit.title")}</h1>
         </header>
 
         <LiveSessionForm

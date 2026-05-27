@@ -11,51 +11,21 @@ import {
   Network,
   Sparkles,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 const ITEMS = [
-  {
-    icon: BookOpen,
-    title: "Formación bíblica",
-    desc: "Fundamentos sólidos, doctrina apostólica con visión moderna del Reino.",
-  },
-  {
-    icon: Compass,
-    title: "Liderazgo",
-    desc: "Carácter, gobierno, mentoreo. Formas líderes que forman líderes.",
-  },
-  {
-    icon: Coins,
-    title: "Finanzas",
-    desc: "Mayordomía, economía del Reino, multiplicación con sabiduría.",
-  },
-  {
-    icon: Building2,
-    title: "Administración",
-    desc: "Estructura, orden, sistemas que sostienen el crecimiento ministerial.",
-  },
-  {
-    icon: Network,
-    title: "Empresas",
-    desc: "Plantar empresas del Reino. Influencia desde el mercado y la cultura.",
-  },
-  {
-    icon: Cpu,
-    title: "Tecnología & IA",
-    desc: "Domina las herramientas que dominan el siglo XXI. Sin perder el alma.",
-  },
-  {
-    icon: Sparkles,
-    title: "Comunicación moderna",
-    desc: "Storytelling, medios, marca personal. Tu mensaje llega más lejos.",
-  },
-  {
-    icon: Crown,
-    title: "Gobierno del Reino",
-    desc: "Reforma territorios. Autoridad apostólica que va más allá del púlpito.",
-  },
-];
+  { icon: BookOpen, key: "biblical" },
+  { icon: Compass, key: "leadership" },
+  { icon: Coins, key: "finances" },
+  { icon: Building2, key: "administration" },
+  { icon: Network, key: "business" },
+  { icon: Cpu, key: "technology" },
+  { icon: Sparkles, key: "communication" },
+  { icon: Crown, key: "government" },
+] as const;
 
 export function PromoBenefits() {
+  const t = useTranslations("PastoresTeam");
   return (
     <section className="relative px-6 py-28 sm:py-36">
       <div className="mx-auto max-w-6xl">
@@ -67,26 +37,30 @@ export function PromoBenefits() {
           className="text-center"
         >
           <p className="font-inter text-[10px] font-semibold uppercase tracking-[0.42em] text-brand-coral">
-            Lo que incluye
+            {t("benefits.eyebrow")}
           </p>
           <h2 className="mt-4 font-grotesk text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
             <span className="bg-gradient-to-br from-white via-white to-white/70 bg-clip-text text-transparent">
-              Una formación
+              {t("benefits.headingLead")}
             </span>{" "}
             <span className="bg-gradient-to-r from-brand-violet to-brand-coral bg-clip-text text-transparent">
-              integral.
+              {t("benefits.headingEmphasis")}
             </span>
           </h2>
           <p className="mx-auto mt-5 max-w-2xl font-inter text-base leading-relaxed text-text-secondary">
-            8 dimensiones, 72 semanas. El DAP forma al líder completo:
-            pastor, administrador, reformador, comunicador, mentor,
-            empresario, estratega y gobernador espiritual.
+            {t("benefits.body")}
           </p>
         </motion.div>
 
         <div className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {ITEMS.map((item, i) => (
-            <BenefitCard key={item.title} {...item} delay={(i % 4) * 0.08} />
+            <BenefitCard
+              key={item.key}
+              icon={item.icon}
+              title={t(`benefits.items.${item.key}.title`)}
+              desc={t(`benefits.items.${item.key}.desc`)}
+              delay={(i % 4) * 0.08}
+            />
           ))}
         </div>
       </div>

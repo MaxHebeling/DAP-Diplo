@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { ImagePlus, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ type CoverUploadProps = {
 };
 
 export function CoverUpload({ value, onChange, phaseId }: CoverUploadProps) {
+  const t = useTranslations("AdminUI");
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -22,7 +24,7 @@ export function CoverUpload({ value, onChange, phaseId }: CoverUploadProps) {
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("Imagen demasiado grande. Máximo 5 MB.");
+      toast.error(t("coverUpload.tooLarge"));
       return;
     }
 
@@ -36,7 +38,7 @@ export function CoverUpload({ value, onChange, phaseId }: CoverUploadProps) {
         .from("phases-covers")
         .upload(path, file, { cacheControl: "3600", upsert: true });
       if (upErr) {
-        toast.error(`Upload falló: ${upErr.message}`);
+        toast.error(t("coverUpload.uploadFailed", { message: upErr.message }));
         return;
       }
 
@@ -45,9 +47,9 @@ export function CoverUpload({ value, onChange, phaseId }: CoverUploadProps) {
         .getPublicUrl(path);
 
       onChange(pub.publicUrl);
-      toast.success("Portada subida.");
+      toast.success(t("coverUpload.uploaded"));
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Error subiendo imagen";
+      const msg = err instanceof Error ? err.message : t("coverUpload.uploadError");
       toast.error(msg);
     } finally {
       setUploading(false);
@@ -69,7 +71,7 @@ export function CoverUpload({ value, onChange, phaseId }: CoverUploadProps) {
           />
         ) : (
           <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-            Sin portada
+            {t("coverUpload.noCover")}
           </div>
         )}
         {uploading && (
@@ -96,7 +98,7 @@ export function CoverUpload({ value, onChange, phaseId }: CoverUploadProps) {
           disabled={uploading}
         >
           <ImagePlus className="size-4" />
-          {value ? "Cambiar portada" : "Subir portada"}
+          {value ? t("coverUpload.changeCover") : t("coverUpload.uploadCover")}
         </Button>
         {value && (
           <Button
@@ -107,12 +109,12 @@ export function CoverUpload({ value, onChange, phaseId }: CoverUploadProps) {
             className="text-muted-foreground hover:text-destructive"
           >
             <Trash2 className="size-4" />
-            Quitar
+            {t("coverUpload.remove")}
           </Button>
         )}
       </div>
       <p className="text-xs text-muted-foreground">
-        JPG/PNG/WebP/AVIF · máx 5 MB · ratio 16:9 recomendado.
+        {t("coverUpload.hint")}
       </p>
     </div>
   );

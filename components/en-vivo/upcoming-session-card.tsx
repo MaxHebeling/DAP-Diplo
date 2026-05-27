@@ -1,4 +1,5 @@
 import { CalendarClock, ExternalLink, Radio } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Markdown } from "@/components/module/markdown";
@@ -13,7 +14,8 @@ const KIND_BADGE_COLOR: Record<LiveKind, string> = {
   special: "bg-purple-500/15 text-purple-600 border-purple-500/30",
 };
 
-export function UpcomingSessionCard({ session }: { session: StudentSession }) {
+export async function UpcomingSessionCard({ session }: { session: StudentSession }) {
+  const t = await getTranslations("LiveSessions");
   const status = liveStatus(session.scheduled_at, session.duration_minutes);
   const isLiveNow = status === "live" || status === "soon";
 
@@ -31,7 +33,7 @@ export function UpcomingSessionCard({ session }: { session: StudentSession }) {
         {isLiveNow && (
           <Badge className="bg-red-500 text-white animate-pulse">
             <Radio className="size-3" strokeWidth={3} />
-            En vivo ahora
+            {t("liveNow")}
           </Badge>
         )}
       </div>
@@ -46,8 +48,10 @@ export function UpcomingSessionCard({ session }: { session: StudentSession }) {
           </Badge>
           {session.phase && (
             <Badge variant="secondary" className="font-normal">
-              Fase {String(session.phase.order_index).padStart(2, "0")}:{" "}
-              {session.phase.title}
+              {t("phaseBadge", {
+                number: String(session.phase.order_index).padStart(2, "0"),
+                title: session.phase.title,
+              })}
             </Badge>
           )}
         </div>
@@ -58,7 +62,7 @@ export function UpcomingSessionCard({ session }: { session: StudentSession }) {
 
         {session.host_name && (
           <p className="mt-2 text-sm text-muted-foreground">
-            Imparte: <span className="text-foreground">{session.host_name}</span>
+            {t("host")}<span className="text-foreground">{session.host_name}</span>
           </p>
         )}
 
@@ -81,7 +85,7 @@ export function UpcomingSessionCard({ session }: { session: StudentSession }) {
             }
           >
             <ExternalLink className="size-4" />
-            {isLiveNow ? "Unirme ahora" : "Abrir sala"}
+            {isLiveNow ? t("joinNow") : t("openRoom")}
           </Button>
         </div>
       </div>

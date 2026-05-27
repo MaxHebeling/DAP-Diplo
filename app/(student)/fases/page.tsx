@@ -1,13 +1,19 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations, getLocale } from "next-intl/server";
 import { ArrowRight, CheckCircle2, Lock } from "lucide-react";
 
 import { signOutAction } from "@/lib/auth/actions";
 import { createClient } from "@/lib/supabase/server";
+import { localized } from "@/lib/i18n/localized";
+import type { Locale } from "@/i18n/config";
 
 import { DapStudentShell } from "@/components/layouts/dap-student-shell";
 
-export const metadata = { title: "Mis Módulos — DAP" };
+export async function generateMetadata() {
+  const t = await getTranslations("Student");
+  return { title: t("phases.metaTitle") };
+}
 
 type ProfileRow = {
   full_name: string;
@@ -20,10 +26,18 @@ type PhaseRow = {
   order_index: number;
   slug: string;
   title: string;
+  title_en: string | null;
   brand_name: string | null;
+  brand_name_en: string | null;
   promise: string | null;
+  promise_en: string | null;
   subtitle: string | null;
-  dimension: { name: string; order_index: number } | null;
+  subtitle_en: string | null;
+  dimension: {
+    name: string;
+    name_en: string | null;
+    order_index: number;
+  } | null;
 };
 
 type BlockModulesRow = {
@@ -39,6 +53,8 @@ type ProgressRow = {
 
 export default async function MisModulosPage() {
   const supabase = await createClient();
+  const t = await getTranslations("Student");
+  const locale = (await getLocale()) as Locale;
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -63,7 +79,7 @@ export default async function MisModulosPage() {
     supabase
       .from("phases")
       .select(
-        "id, order_index, slug, title, brand_name, promise, subtitle, dimension:dimensions(name, order_index)",
+        "id, order_index, slug, title, title_en, brand_name, brand_name_en, promise, promise_en, subtitle, subtitle_en, dimension:dimensions(name, name_en, order_index)",
       )
       .order("order_index", { ascending: true })
       .returns<PhaseRow[]>(),
@@ -106,20 +122,20 @@ export default async function MisModulosPage() {
     <DapStudentShell
       userName={profile.full_name}
       userAvatar={profile.avatar_url}
-      title="Mis Módulos"
+      title={t("phases.topbarTitle")}
       onSignOut={signOutAction}
     >
       <div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-10">
         <div className="mx-auto max-w-6xl space-y-8">
             <header>
               <p className="font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-                Diplomado Apostólico Pastoral · 72 semanas
+                {t("phases.eyebrow")}
               </p>
               <h1 className="mt-2 font-grotesk text-h1 font-bold leading-tight text-text-primary">
-                Los 9 Bloques
+                {t("phases.title")}
               </h1>
               <p className="mt-3 font-inter text-base text-text-secondary">
-                Tu camino completo. Cada bloque entrega una dimensión nueva.
+                {t("phases.subtitle")}
               </p>
             </header>
 
@@ -144,8 +160,15 @@ export default async function MisModulosPage() {
                 const dimN = String(
                   phase.dimension?.order_index ?? phase.order_index,
                 ).padStart(2, "0");
-                const dimName = phase.dimension?.name ?? "—";
-                const heroTitle = phase.brand_name ?? phase.title;
+                const dimName =
+                  (phase.dimension
+                    ? localized(phase.dimension, "name", locale)
+                    : null) ?? t("phases.dimensionFallback");
+                const phaseTitle = localized(phase, "title", locale) ?? phase.title;
+                const heroTitle =
+                  localized(phase, "brand_name", locale) ?? phaseTitle;
+                const phaseSubtitle = localized(phase, "subtitle", locale);
+                const phasePromise = localized(phase, "promise", locale);
 
                 return (
                   <Link
@@ -155,7 +178,7 @@ export default async function MisModulosPage() {
                   >
                     <div className="mb-3 flex items-start justify-between">
                       <p className="font-inter text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-coral">
-                        Dimensión {dimN} · {dimName}
+                        {t("phases.dimension", { num: dimN, name: dimName })}
                       </p>
                       {isCompleted ? (
                         <CheckCircle2 className="size-5 text-emerald-400" />
@@ -167,21 +190,21 @@ export default async function MisModulosPage() {
                     <h3 className="font-grotesk text-h3 font-bold gradient-text leading-tight">
                       {heroTitle}
                     </h3>
-                    {phase.subtitle && (
+                    {phaseSubtitle && (
                       <p className="mt-1 font-inter text-sm text-text-secondary">
-                        {phase.subtitle}
+                        {phaseSubtitle}
                       </p>
                     )}
-                    {phase.promise && (
+                    {phasePromise && (
                       <p className="mt-3 font-inter text-sm italic leading-relaxed text-text-primary/85">
-                        {phase.promise}
+                        {phasePromise}
                       </p>
                     )}
 
                     <div className="mt-5 space-y-2">
                       <div className="flex items-center justify-between font-inter text-xs text-text-tertiary">
                         <span>
-                          {completed} / {total} módulos
+                          {t("phases.modulesCount", { completed, total })}
                         </span>
                         <span className="text-brand-coral">{pct}%</span>
                       </div>
@@ -192,12 +215,16 @@ export default async function MisModulosPage() {
                         />
                       </div>
                       <p className="font-inter text-xs text-text-tertiary">
-                        Bloque {String(phase.order_index).padStart(2, "0")} · Semanas {firstWeek}–{lastWeek}
+                        {t("phases.blockWeeks", {
+                          order: String(phase.order_index).padStart(2, "0"),
+                          first: firstWeek,
+                          last: lastWeek,
+                        })}
                       </p>
                     </div>
 
                     <div className="mt-5 inline-flex items-center gap-1.5 font-inter text-sm font-medium text-brand-coral transition-all group-hover:gap-2">
-                      Ver bloque
+                      {t("phases.viewBlock")}
                       <ArrowRight className="size-3.5" />
                     </div>
                   </Link>

@@ -1,11 +1,16 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { LiveSessionForm } from "@/components/admin/live-session-form";
 import { createClient } from "@/lib/supabase/server";
 
-export const metadata = { title: "Nueva sesión — Admin DAP" };
+export async function generateMetadata() {
+  const t = await getTranslations("Admin");
+  return { title: t("liveNew.metaTitle") };
+}
 
 export default async function NuevaSesionPage() {
+  const t = await getTranslations("Admin");
   const supabase = await createClient();
   const { data: phases } = await supabase
     .from("phases")
@@ -20,17 +25,16 @@ export default async function NuevaSesionPage() {
           className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-brand-coral"
         >
           <ArrowLeft className="size-4" />
-          Volver a sesiones
+          {t("liveNew.backToSessions")}
         </Link>
 
         <header className="mb-8">
           <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
-            Admin · En vivo
+            {t("liveNew.eyebrow")}
           </p>
-          <h1 className="font-serif text-3xl font-semibold">Nueva sesión</h1>
+          <h1 className="font-serif text-3xl font-semibold">{t("liveNew.title")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Agenda una MasterClass, activación, mentoría grupal o evento
-            especial. El recording se sube después.
+            {t("liveNew.description")}
           </p>
         </header>
 

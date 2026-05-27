@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { Bell, BellOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +18,7 @@ import {
  * "Notificaciones no configuradas" y no permite suscribirse.
  */
 export function PushSubscribeButton() {
+  const t = useTranslations("Pwa");
   // Feature detection y permission son síncronos desde el browser; los
   // resolvemos con useState lazy init (corre 1 vez en mount client-only).
   // `null` durante SSR/primer paint; cambia al primer render del cliente.
@@ -54,7 +56,7 @@ export function PushSubscribeButton() {
   if (supported === false) {
     return (
       <p className="font-inter text-xs text-text-tertiary">
-        Tu navegador no soporta notificaciones push.
+        {t("push.notSupported")}
       </p>
     );
   }
@@ -63,7 +65,7 @@ export function PushSubscribeButton() {
   if (!vapidKey) {
     return (
       <p className="font-inter text-xs text-text-tertiary">
-        Notificaciones push aún no configuradas en este sitio.
+        {t("push.notConfigured")}
       </p>
     );
   }
@@ -72,9 +74,7 @@ export function PushSubscribeButton() {
     startTransition(async () => {
       try {
         if (Notification.permission === "denied") {
-          toast.error(
-            "Permiso bloqueado. Habilitalo manualmente desde la configuración de tu browser.",
-          );
+          toast.error(t("push.permissionBlocked"));
           return;
         }
         const perm =
@@ -83,7 +83,7 @@ export function PushSubscribeButton() {
             : await Notification.requestPermission();
         setPermission(perm);
         if (perm !== "granted") {
-          toast.warning("Necesitamos tu permiso para enviarte avisos.");
+          toast.warning(t("push.permissionNeeded"));
           return;
         }
 
@@ -110,10 +110,10 @@ export function PushSubscribeButton() {
         if (!res.ok) throw new Error(res.error);
 
         setSubscribed(true);
-        toast.success("Listo — te avisaremos cuando abra tu módulo.");
+        toast.success(t("push.subscribeSuccess"));
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        toast.error(`No se pudo suscribir: ${msg}`);
+        toast.error(t("push.subscribeError", { message: msg }));
       }
     });
   }
@@ -128,10 +128,10 @@ export function PushSubscribeButton() {
           await unsubscribePushAction(sub.endpoint);
         }
         setSubscribed(false);
-        toast.success("Notificaciones desactivadas.");
+        toast.success(t("push.unsubscribeSuccess"));
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        toast.error(`No se pudo desactivar: ${msg}`);
+        toast.error(t("push.unsubscribeError", { message: msg }));
       }
     });
   }
@@ -149,7 +149,7 @@ export function PushSubscribeButton() {
         ) : (
           <BellOff className="size-4" />
         )}
-        Desactivar notificaciones
+        {t("push.deactivateButton")}
       </Button>
     );
   }
@@ -161,7 +161,7 @@ export function PushSubscribeButton() {
       ) : (
         <Bell className="size-4" />
       )}
-      Activar notificaciones
+      {t("push.activateButton")}
     </Button>
   );
 }

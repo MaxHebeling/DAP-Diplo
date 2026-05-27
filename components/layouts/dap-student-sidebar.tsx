@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Award,
   BookOpen,
@@ -38,42 +39,68 @@ type DapStudentSidebarProps = {
   onSignOut?: () => void | Promise<void>;
 };
 
-const DEFAULT_GROUPS: NavGroup[] = [
-  {
-    items: [
-      { href: "/dashboard", icon: Home, label: "Inicio" },
-      { href: "/fases", icon: BookOpen, label: "Mis Módulos" },
-      { href: "/progreso", icon: GraduationCap, label: "Mi Progreso" },
-    ],
-  },
-  {
-    title: "Comunidad",
-    items: [
-      { href: "/comunidad", icon: MessageCircle, label: "Comunidad" },
-      { href: "/en-vivo", icon: Radio, label: "En vivo" },
-      { href: "/tutor", icon: Sparkles, label: "Tutor IA" },
-    ],
-  },
-  {
-    title: "Tu cuenta",
-    items: [
-      { href: "/certificaciones", icon: Award, label: "Certificaciones" },
-      { href: "/agenda", icon: Calendar, label: "Agenda" },
-      { href: "/configuracion", icon: Settings, label: "Configuración" },
-    ],
-  },
-];
-
 export function DapStudentSidebar({
   userName,
   userEmail,
   userAvatar,
   rank,
-  groups = DEFAULT_GROUPS,
+  groups,
   className,
   onSignOut,
 }: DapStudentSidebarProps) {
+  const t = useTranslations("Shell");
   const pathname = usePathname();
+
+  const defaultGroups: NavGroup[] = [
+    {
+      items: [
+        { href: "/dashboard", icon: Home, label: t("studentSidebar.navHome") },
+        {
+          href: "/fases",
+          icon: BookOpen,
+          label: t("studentSidebar.navModules"),
+        },
+        {
+          href: "/progreso",
+          icon: GraduationCap,
+          label: t("studentSidebar.navProgress"),
+        },
+      ],
+    },
+    {
+      title: t("studentSidebar.groupCommunity"),
+      items: [
+        {
+          href: "/comunidad",
+          icon: MessageCircle,
+          label: t("studentSidebar.navCommunity"),
+        },
+        { href: "/en-vivo", icon: Radio, label: t("studentSidebar.navLive") },
+        { href: "/tutor", icon: Sparkles, label: t("studentSidebar.navTutor") },
+      ],
+    },
+    {
+      title: t("studentSidebar.groupAccount"),
+      items: [
+        {
+          href: "/certificaciones",
+          icon: Award,
+          label: t("studentSidebar.navCertifications"),
+        },
+        {
+          href: "/agenda",
+          icon: Calendar,
+          label: t("studentSidebar.navAgenda"),
+        },
+        {
+          href: "/configuracion",
+          icon: Settings,
+          label: t("studentSidebar.navSettings"),
+        },
+      ],
+    },
+  ];
+  const resolvedGroups = groups ?? defaultGroups;
 
   const isActive = (href: string) => {
     if (href === "/dashboard") return pathname === href;
@@ -87,14 +114,14 @@ export function DapStudentSidebar({
         "flex h-screen w-[260px] shrink-0 flex-col border-r border-white/[0.06] bg-surface-base text-text-primary",
         className,
       )}
-      aria-label="Navegación del estudiante"
+      aria-label={t("studentSidebar.studentNav")}
     >
       {/* Logo */}
       <div className="flex h-16 items-center gap-2 border-b border-white/[0.06] px-6">
         <Link
           href="/dashboard"
           className="inline-flex items-center gap-2"
-          aria-label="DAP — Inicio"
+          aria-label={t("studentSidebar.logoHomeAria")}
         >
           <Image
             src="/dap-logo-white.png"
@@ -112,7 +139,7 @@ export function DapStudentSidebar({
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-3 py-4">
-        {groups.map((group, idx) => (
+        {resolvedGroups.map((group, idx) => (
           <div key={idx} className={cn(idx > 0 && "mt-6")}>
             {group.title && (
               <p className="mb-2 px-4 font-grotesk text-xs font-semibold uppercase tracking-widest text-text-tertiary">
@@ -148,7 +175,7 @@ export function DapStudentSidebar({
               {userName}
             </p>
             <p className="truncate font-inter text-xs text-text-secondary">
-              {rank?.label ?? userEmail ?? "Alumno"}
+              {rank?.label ?? userEmail ?? t("studentSidebar.studentFallback")}
             </p>
           </div>
         </div>
@@ -158,17 +185,17 @@ export function DapStudentSidebar({
             className="flex items-center gap-2 rounded-md px-2 py-1.5 font-inter text-xs text-text-tertiary transition-colors hover:text-text-primary"
           >
             <Compass className="size-3.5" />
-            Mi recorrido
+            {t("studentSidebar.myJourney")}
           </Link>
           {onSignOut && (
             <form action={onSignOut}>
               <button
                 type="submit"
-                aria-label="Cerrar sesión"
+                aria-label={t("studentSidebar.signOut")}
                 className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 font-inter text-xs text-text-tertiary transition-colors hover:text-brand-coral"
               >
                 <LogOut className="size-3.5" />
-                Salir
+                {t("studentSidebar.exit")}
               </button>
             </form>
           )}

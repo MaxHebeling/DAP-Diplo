@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { CheckCircle2, XCircle, RotateCcw } from "lucide-react";
 
 type Question = {
@@ -10,52 +11,30 @@ type Question = {
   explanation: string;
 };
 
-// Preguntas sample del módulo 1 — Reino de Dios.
+// Datos no traducibles de las preguntas sample del módulo 1 — Reino de Dios.
+// El índice correcto y los keys i18n se resuelven a texto vía t() en el render.
 // Cuando Max produzca el quiz real, los reemplazamos por DB query.
-const QUESTIONS: Question[] = [
-  {
-    q: "Según la enseñanza, el Reino de Dios es principalmente:",
-    options: [
-      "Un lugar futuro al que vamos cuando morimos",
-      "Una metáfora de la iglesia local",
-      "El gobierno presente de Dios operando en el ahora",
-      "Una promesa que se cumplirá solo en el milenio",
-    ],
-    correct: 2,
-    explanation:
-      "Jesús predicó: «El reino de Dios se ha acercado» (Mt 4:17). No es un lugar futuro sino el gobierno presente del Rey, operando aquí y ahora donde se reconoce su autoridad.",
-  },
-  {
-    q: "¿Cuál de estas NO es una manifestación directa del Reino en la vida del pastor?",
-    options: [
-      "Autoridad sobre las áreas que el Padre te entregó",
-      "Acumulación de seguidores en redes sociales",
-      "Capacidad de discernir el orden del Reino en lo familiar y ministerial",
-      "Identidad de hijo que reemplaza la mentalidad de huérfano",
-    ],
-    correct: 1,
-    explanation:
-      "Las 3 opciones correctas (autoridad, discernimiento, identidad de hijo) son frutos del Reino operando. Acumular seguidores puede ocurrir sin que el Reino esté presente — y muchas veces lo bloquea cuando la motivación es la propia gloria.",
-  },
-  {
-    q: "El pasaje ancla del módulo es:",
-    options: [
-      "Juan 3:16",
-      "Mateo 6:33 — «Buscad primeramente el reino de Dios»",
-      "1 Corintios 13:13",
-      "Génesis 1:1",
-    ],
-    correct: 1,
-    explanation:
-      "Mateo 6:33 establece la prioridad apostólica: buscar el Reino primero. Todo lo demás (provisión, dirección, fruto ministerial) viene como añadidura, no como objetivo.",
-  },
-];
+const QUESTION_KEYS = [
+  { key: "q1", correct: 2 },
+  { key: "q2", correct: 1 },
+  { key: "q3", correct: 1 },
+] as const;
+
+const OPTION_KEYS = ["o1", "o2", "o3", "o4"] as const;
 
 const PASS_THRESHOLD = 70;
 
 export function DemoQuiz() {
+  const t = useTranslations("Demo.quiz");
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);
+
+  const QUESTIONS: Question[] = QUESTION_KEYS.map(({ key, correct }) => ({
+    q: t(`questions.${key}.q`),
+    options: OPTION_KEYS.map((o) => t(`questions.${key}.options.${o}`)),
+    correct,
+    explanation: t(`questions.${key}.explanation`),
+  }));
 
   const allAnswered = QUESTIONS.every((_, i) => answers[i] !== undefined);
   const correctCount = QUESTIONS.filter(
@@ -125,8 +104,8 @@ export function DemoQuiz() {
             ].join(" ")}
           >
             {allAnswered
-              ? "Ver mi resultado"
-              : `Respondé las ${QUESTIONS.length} preguntas para continuar`}
+              ? t("submitAllAnswered")
+              : t("submitIncomplete", { count: QUESTIONS.length })}
           </button>
         </>
       ) : (
@@ -141,7 +120,7 @@ export function DemoQuiz() {
             ].join(" ")}
           >
             <p className="font-inter text-xs font-medium uppercase tracking-widest text-text-secondary">
-              Tu resultado
+              {t("resultLabel")}
             </p>
             <p
               className={[
@@ -152,14 +131,17 @@ export function DemoQuiz() {
               {score}%
             </p>
             <p className="mt-3 font-inter text-sm text-text-secondary">
-              {correctCount} de {QUESTIONS.length} correctas ·{" "}
+              {t("resultSummary", {
+                correct: correctCount,
+                total: QUESTIONS.length,
+              })}
               {passed ? (
                 <span className="font-semibold text-emerald-300">
-                  ¡Aprobado! (≥ 70%)
+                  {t("passed")}
                 </span>
               ) : (
                 <span className="font-semibold text-brand-coral">
-                  No aprobado — necesitás 70% mínimo
+                  {t("notPassed")}
                 </span>
               )}
             </p>
@@ -186,7 +168,7 @@ export function DemoQuiz() {
                         {qIdx + 1}. {q.q}
                       </p>
                       <p className="mt-2 font-inter text-xs text-text-tertiary">
-                        Tu respuesta:{" "}
+                        {t("yourAnswer")}
                         <span
                           className={
                             correct ? "text-emerald-300" : "text-brand-coral"
@@ -197,7 +179,7 @@ export function DemoQuiz() {
                       </p>
                       {!correct && (
                         <p className="mt-1 font-inter text-xs text-text-tertiary">
-                          Correcta:{" "}
+                          {t("correctAnswer")}
                           <span className="text-emerald-300">
                             {q.options[q.correct]}
                           </span>
@@ -219,7 +201,7 @@ export function DemoQuiz() {
             className="mt-6 inline-flex items-center gap-1.5 font-inter text-xs font-medium text-brand-coral hover:underline"
           >
             <RotateCcw className="size-3.5" />
-            Volver a intentar
+            {t("retry")}
           </button>
         </div>
       )}

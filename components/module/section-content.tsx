@@ -1,3 +1,5 @@
+import { getTranslations } from "next-intl/server";
+
 import { AdvanceButton } from "@/components/module/advance-button";
 import { Markdown } from "@/components/module/markdown";
 import {
@@ -58,14 +60,14 @@ type SectionTeachingKind =
   | "impartation"
   | null;
 
-const NEXT_LABEL: Record<SectionKind, string> = {
-  intro: "Continuar a Enseñanza",
-  activation: "Marqué como hecho",
-  evaluation: "Saltar",
-  impartation: "Completar módulo",
-};
-
-export function SectionContent(props: SectionContentProps) {
+export async function SectionContent(props: SectionContentProps) {
+  const t = await getTranslations("Module");
+  const NEXT_LABEL: Record<SectionKind, string> = {
+    intro: t("sectionContent.nextIntro"),
+    activation: t("sectionContent.nextActivation"),
+    evaluation: t("sectionContent.nextEvaluation"),
+    impartation: t("sectionContent.nextImpartation"),
+  };
   const next = NEXT[props.kind];
   const isEvaluation = props.kind === "evaluation";
   const hasQuiz = isEvaluation && props.evaluation?.quiz;
@@ -130,10 +132,10 @@ export function SectionContent(props: SectionContentProps) {
         ) : (
           <div className="rounded-2xl border border-dashed border-brand-coral/40 bg-brand-coral/5 p-8 text-center">
             <p className="text-xs font-medium uppercase tracking-widest text-brand-coral">
-              Evaluación
+              {t("sectionContent.evaluationLabel")}
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
-              El equipo aún no ha publicado las preguntas de esta evaluación.
+              {t("sectionContent.evaluationEmpty")}
             </p>
           </div>
         ))}
@@ -160,7 +162,7 @@ export function SectionContent(props: SectionContentProps) {
 
 // --- subcomponents -----------------------------------------------------
 
-function IntroExtras({
+async function IntroExtras({
   objective,
   mainRevelation,
 }: {
@@ -168,12 +170,13 @@ function IntroExtras({
   mainRevelation: string | null;
 }) {
   if (!objective && !mainRevelation) return null;
+  const t = await getTranslations("Module");
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       {objective && (
         <div className="rounded-xl border bg-card p-5">
           <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
-            Objetivo
+            {t("sectionContent.objective")}
           </p>
           <p className="text-sm leading-relaxed text-foreground">{objective}</p>
         </div>
@@ -181,7 +184,7 @@ function IntroExtras({
       {mainRevelation && (
         <div className="rounded-xl border bg-card p-5">
           <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
-            Revelación principal
+            {t("sectionContent.mainRevelation")}
           </p>
           <p className="text-sm leading-relaxed text-foreground">
             {mainRevelation}
@@ -192,7 +195,8 @@ function IntroExtras({
   );
 }
 
-function ImpartationPhrase({ phrase }: { phrase: string }) {
+async function ImpartationPhrase({ phrase }: { phrase: string }) {
+  const t = await getTranslations("Module");
   return (
     <blockquote className="relative overflow-hidden rounded-2xl border border-brand-coral/30 bg-neutral-950 px-8 py-12 text-center text-neutral-50">
       <div
@@ -203,22 +207,19 @@ function ImpartationPhrase({ phrase }: { phrase: string }) {
         &ldquo;{phrase}&rdquo;
       </p>
       <p className="relative mt-5 text-xs font-medium uppercase tracking-[0.3em] text-brand-coral">
-        Frase de impartición
+        {t("sectionContent.impartationPhraseLabel")}
       </p>
     </blockquote>
   );
 }
 
-function EmptyBodyPlaceholder({ kind }: { kind: SectionKind }) {
+async function EmptyBodyPlaceholder({ kind }: { kind: SectionKind }) {
+  const t = await getTranslations("Module");
   const COPY: Record<SectionKind, string> = {
-    intro:
-      "Aún no se ha publicado la introducción de este módulo. El admin la edita desde el backoffice.",
-    activation:
-      "Aún no se ha publicado el ejercicio de activación.",
-    evaluation:
-      "La evaluación se habilita en Fase 5.",
-    impartation:
-      "Aún no se ha publicado la palabra de cierre.",
+    intro: t("sectionContent.emptyIntro"),
+    activation: t("sectionContent.emptyActivation"),
+    evaluation: t("sectionContent.emptyEvaluation"),
+    impartation: t("sectionContent.emptyImpartation"),
   };
   return (
     <div className="rounded-2xl border border-dashed bg-muted/20 p-8 text-center text-sm text-muted-foreground">

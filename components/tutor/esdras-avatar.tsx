@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
 
@@ -40,6 +41,7 @@ export function EsdrasAvatar({
   className?: string;
   showGlow?: boolean;
 }) {
+  const t = useTranslations("Tutor");
   const px = SIZE_PX[size];
 
   return (
@@ -67,7 +69,7 @@ export function EsdrasAvatar({
       >
         <Image
           src="/esdras-avatar.jpg"
-          alt="Esdras — Tutor del DAP"
+          alt={t("avatarAlt")}
           width={px}
           height={px}
           priority={size === "lg" || size === "xl"}

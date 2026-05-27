@@ -1,146 +1,113 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
 import { LegalPageLayout } from "@/components/legal/legal-page-layout";
 
-const UPDATED_AT = "19 de mayo de 2026";
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("PublicPages");
+  return {
+    title: t("refund.metaTitle"),
+    description: t("refund.metaDescription"),
+    alternates: { canonical: "/reembolso" },
+  };
+}
 
-export const metadata: Metadata = {
-  title: "Política de reembolso",
-  description:
-    "Garantía de devolución de 7 días en el Diplomado Apostólico Pastoral. Modelo de suscripción mensual con cancelación libre.",
-  alternates: { canonical: "/reembolso" },
-};
-
-export default function ReembolsoPage() {
+export default async function ReembolsoPage() {
+  const t = await getTranslations("PublicPages");
   return (
     <LegalPageLayout
-      eyebrow="Legal"
-      title="Política de reembolso"
-      updatedAt={UPDATED_AT}
+      eyebrow={t("refund.eyebrow")}
+      title={t("refund.title")}
+      updatedAt={t("refund.updatedAt")}
     >
       <p>
-        Queremos que entres al Diplomado Apostólico Pastoral{" "}
-        <strong>(&ldquo;DAP&rdquo;)</strong> con confianza y sin riesgo
-        económico. Esta política explica cuándo y cómo puedes solicitar la
-        devolución de tu dinero.
+        {t("refund.introPre")}
+        <strong>{t("refund.introDap")}</strong>
+        {t("refund.introPost")}
       </p>
 
-      <h2>1. Garantía de 7 días</h2>
+      <h2>{t("refund.s1Heading")}</h2>
       <p>
-        <strong>
-          Tienes 7 días corridos desde tu primer cobro para pedir un
-          reembolso íntegro
-        </strong>
-        , sin necesidad de justificar el motivo. Si dentro de ese plazo
-        sientes que el DAP no es para ti, te devolvemos el 100% de los{" "}
-        <strong>USD $25</strong> pagados.
+        <strong>{t("refund.s1Strong")}</strong>
+        {t("refund.s1BodyMid")}
+        <strong>{t("refund.s1Amount")}</strong>
+        {t("refund.s1BodyPost")}
       </p>
 
-      <h2>2. Cómo solicitar el reembolso</h2>
+      <h2>{t("refund.s2Heading")}</h2>
       <ol>
         <li>
-          Envía un email a{" "}
-          <Link href="mailto:office@rkchurch.com">office@rkchurch.com</Link>{" "}
-          desde la misma dirección con la que creaste tu cuenta.
+          {t("refund.s2Item1Pre")}
+          <Link href="mailto:office@rkchurch.com">office@rkchurch.com</Link>
+          {t("refund.s2Item1Post")}
         </li>
         <li>
-          Asunto: <em>&ldquo;Solicitud de reembolso DAP&rdquo;</em>.
+          {t("refund.s2Item2Pre")}
+          <em>{t("refund.s2Item2Em")}</em>
+          {t("refund.s2Item2Post")}
         </li>
-        <li>
-          Incluí: nombre completo y fecha del cobro (o el último 4 de la
-          tarjeta).
-        </li>
+        <li>{t("refund.s2Item3")}</li>
       </ol>
       <p>
-        Procesamos el reembolso en un máximo de{" "}
-        <strong>5 días hábiles</strong> desde la recepción del pedido. El
-        crédito aparece en tu tarjeta o medio de pago entre 5 y 10 días
-        hábiles adicionales, según los tiempos de tu banco emisor.
+        {t("refund.s2OutroPre")}
+        <strong>{t("refund.s2OutroStrong")}</strong>
+        {t("refund.s2OutroPost")}
       </p>
 
-      <h2>3. Después de los 7 días</h2>
+      <h2>{t("refund.s3Heading")}</h2>
       <p>
-        Pasada la ventana de garantía,{" "}
-        <strong>
-          no otorgamos reembolsos parciales ni totales por los meses ya
-          cobrados
-        </strong>
-        . Esto incluye:
+        {t("refund.s3Pre")}
+        <strong>{t("refund.s3Strong")}</strong>
+        {t("refund.s3Post")}
       </p>
       <ul>
-        <li>Suscripciones canceladas a la mitad del mes (mantenés acceso hasta el fin del período pagado).</li>
-        <li>Olvidos de cancelar antes del cobro recurrente.</li>
-        <li>Falta de tiempo o motivación personal para completar el contenido del mes.</li>
+        <li>{t("refund.s3Item1")}</li>
+        <li>{t("refund.s3Item2")}</li>
+        <li>{t("refund.s3Item3")}</li>
       </ul>
+      <p>{t("refund.s3Outro")}</p>
+
+      <h2>{t("refund.s4Heading")}</h2>
+      <p>{t("refund.s4Body1")}</p>
       <p>
-        El modelo del DAP es de tipo Netflix: cancelas cuando quieres, dejas
-        de pagar el próximo mes, pero el mes ya cobrado se cumple.
+        {t("refund.s4Body2Pre")}
+        <strong>{t("refund.s4Body2Strong")}</strong>
+        {t("refund.s4Body2Post")}
       </p>
 
-      <h2>4. Modelo Netflix — sin penalidades por no avanzar</h2>
+      <h2>{t("refund.s5Heading")}</h2>
+      <h3>{t("refund.s51Heading")}</h3>
+      <p>{t("refund.s51Body")}</p>
+      <h3>{t("refund.s52Heading")}</h3>
+      <p>{t("refund.s52Body")}</p>
+      <h3>{t("refund.s53Heading")}</h3>
       <p>
-        La suscripción opera bajo modelo Netflix: el cobro mensual continúa
-        mientras la suscripción esté activa, independientemente del avance
-        académico. Si una semana no completaste la tarea, no hay penalidad
-        — simplemente queda como pendiente y el contenido sigue accesible.
-        Para certificarte del bloque vas a necesitar aprobar los 8 módulos
-        en algún momento, pero puedes hacerlo a tu ritmo.
-      </p>
-      <p>
-        Si en algún momento decides no continuar, simplemente cancelas la
-        suscripción desde tu dashboard y dejas de pagar a partir del mes
-        siguiente. <strong>No hay penalidades de cancelación.</strong> Tu
-        progreso queda guardado: si reactivas, retomas desde la semana en
-        que dejaste.
+        {t("refund.s53Pre")}
+        <Link href="/terminos">{t("refund.s53Link")}</Link>
+        {t("refund.s53Post")}
       </p>
 
-      <h2>5. Casos especiales</h2>
-      <h3>5.1 Cobro duplicado o error técnico</h3>
-      <p>
-        Si recibes un cobro que no corresponde, escríbenos de inmediato y lo
-        revertimos sin costo. El plazo de 7 días no aplica en estos casos.
-      </p>
-      <h3>5.2 Fraude o uso no autorizado</h3>
-      <p>
-        Si alguien usó tu tarjeta sin autorización para suscribirse al DAP,
-        avísanos en cuanto lo detectes para investigar y reembolsar el cargo.
-      </p>
-      <h3>5.3 Suspensión por incumplimiento de términos</h3>
-      <p>
-        Si suspendemos o cancelamos tu cuenta por violación de los{" "}
-        <Link href="/terminos">Términos y condiciones</Link>, no se otorgan
-        reembolsos por períodos ya cobrados.
-      </p>
+      <h2>{t("refund.s6Heading")}</h2>
+      <p>{t("refund.s6Body")}</p>
 
-      <h2>6. Procesamiento del reembolso</h2>
+      <h2>{t("refund.s7Heading")}</h2>
+      <p>{t("refund.s7Intro")}</p>
       <p>
-        Los reembolsos se procesan a través de Stripe, Inc. al mismo medio de
-        pago original. No emitimos reembolsos en efectivo, transferencias
-        bancarias alternativas, criptomonedas ni a tarjetas distintas a la
-        original.
-      </p>
-
-      <h2>7. Contacto</h2>
-      <p>
-        Para solicitudes o consultas sobre reembolsos:
-      </p>
-      <p>
-        <strong>Revival &amp; Kingdom Ministries, INC</strong>
+        <strong>{t("refund.s7Company")}</strong>
         <br />
-        Email:{" "}
+        {t("refund.s7EmailLabel")}{" "}
         <Link href="mailto:office@rkchurch.com">office@rkchurch.com</Link>
       </p>
 
       <p className="mt-12 text-sm text-text-tertiary">
-        Esta política forma parte de nuestros{" "}
-        <Link href="/terminos">Términos y condiciones</Link>. En caso de
-        discrepancia entre este documento y los Términos, prevalecen los
-        Términos.
+        {t("refund.footerPre")}
+        <Link href="/terminos">{t("refund.footerLink")}</Link>
+        {t("refund.footerPost")}
       </p>
 
       <p className="mt-2 text-sm text-text-tertiary">
-        © {new Date().getFullYear()} Revival &amp; Kingdom Ministries, INC.
+        {t("refund.copyright", { year: new Date().getFullYear() })}
       </p>
     </LegalPageLayout>
   );

@@ -1,35 +1,38 @@
+import { getTranslations } from "next-intl/server";
 import { CalendarClock, CreditCard, Trophy } from "lucide-react";
 import { Reveal } from "@/components/landing/reveal";
 import { PerspectivePath } from "./perspective-path";
 
-const STEPS = [
-  {
-    icon: CreditCard,
-    title: "Postulas y te suscribes",
-    body: "Completas el formulario de admisión y, una vez aprobada, activas tu suscripción de $25 USD/mes. Tu calendario personal arranca el primer martes después de la aprobación.",
-    accent: "violet",
-  },
-  {
-    icon: CalendarClock,
-    title: "1 módulo cada semana",
-    body: "Cada martes 00:01 am se abre un módulo nuevo (de 72 en total). La activación práctica la corrige el Ap. Max Hebeling con feedback personal en 48h. MasterClass en vivo por evento — mínimo 1 al mes.",
-    accent: "coral",
-  },
-  {
-    icon: Trophy,
-    title: "Completas un bloque, recibes tu dimensión",
-    body: "Al aprobar los 8 módulos de un bloque, recibes certificado, insignia y una dimensión ministerial — de Discípulo hasta Enviado, las 9 dimensiones del Reino.",
-    accent: "amber",
-  },
-] as const;
-
-const ACCENT_BG: Record<(typeof STEPS)[number]["accent"], string> = {
+const ACCENT_BG: Record<"violet" | "coral" | "amber", string> = {
   violet: "bg-brand-violet/10 text-brand-violet",
   coral: "bg-brand-coral/10 text-brand-coral",
   amber: "bg-brand-amber/10 text-brand-amber",
 };
 
-export function HowItWorks() {
+export async function HowItWorks() {
+  const t = await getTranslations("Landing");
+
+  const STEPS = [
+    {
+      icon: CreditCard,
+      title: t("howItWorks.step1Title"),
+      body: t("howItWorks.step1Body"),
+      accent: "violet",
+    },
+    {
+      icon: CalendarClock,
+      title: t("howItWorks.step2Title"),
+      body: t("howItWorks.step2Body"),
+      accent: "coral",
+    },
+    {
+      icon: Trophy,
+      title: t("howItWorks.step3Title"),
+      body: t("howItWorks.step3Body"),
+      accent: "amber",
+    },
+  ] as const;
+
   return (
     <section
       id="modelo"
@@ -41,11 +44,11 @@ export function HowItWorks() {
         <Reveal>
           <div className="mb-16 max-w-2xl">
             <p className="mb-4 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-              ¿Cómo funciona?
+              {t("howItWorks.eyebrow")}
             </p>
             <h2 className="font-grotesk text-h1 font-bold leading-tight text-text-primary">
-              72 semanas, 9 bloques, una sola{" "}
-              <span className="gradient-text">cadencia</span>.
+              {t("howItWorks.titleLead")}{" "}
+              <span className="gradient-text">{t("howItWorks.titleHighlight")}</span>.
             </h2>
           </div>
         </Reveal>
@@ -62,7 +65,7 @@ export function HowItWorks() {
                     <Icon className="size-6" strokeWidth={1.8} />
                   </div>
                   <div className="mb-2 font-inter text-xs font-medium uppercase tracking-widest text-text-tertiary">
-                    Paso {String(i + 1).padStart(2, "0")}
+                    {t("howItWorks.stepLabel")} {String(i + 1).padStart(2, "0")}
                   </div>
                   <h3 className="mb-3 font-grotesk text-h4 font-semibold text-text-primary">
                     {step.title}

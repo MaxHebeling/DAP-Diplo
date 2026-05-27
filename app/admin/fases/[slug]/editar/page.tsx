@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { PhaseEditForm } from "@/components/admin/phase-edit-form";
 import { createClient } from "@/lib/supabase/server";
 
@@ -8,6 +9,7 @@ type PageProps = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: PageProps) {
   const { slug: id } = await params;
+  const t = await getTranslations("Admin");
   const supabase = await createClient();
   const { data } = await supabase
     .from("phases")
@@ -15,12 +17,15 @@ export async function generateMetadata({ params }: PageProps) {
     .eq("id", id)
     .maybeSingle();
   return {
-    title: data?.title ? `Editar: ${data.title} — Admin DAP` : "Editar fase",
+    title: data?.title
+      ? t("phaseEdit.metaTitleWithName", { title: data.title })
+      : t("phaseEdit.metaTitleFallback"),
   };
 }
 
 export default async function EditBlockPage({ params }: PageProps) {
   const { slug: id } = await params;
+  const t = await getTranslations("Admin");
   const supabase = await createClient();
 
   // Layout admin ya gated, RLS de phases admin-full vía is_admin().
@@ -32,7 +37,7 @@ export default async function EditBlockPage({ params }: PageProps) {
     .eq("id", id)
     .maybeSingle();
   if (error) {
-    throw new Error(`No se pudo cargar la fase: ${error.message}`);
+    throw new Error(t("phaseEdit.loadError", { message: error.message }));
   }
   if (!phase) notFound();
 
@@ -49,19 +54,20 @@ export default async function EditBlockPage({ params }: PageProps) {
           className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-brand-coral"
         >
           <ArrowLeft className="size-4" />
-          Volver a fases
+          {t("phaseEdit.backToPhases")}
         </Link>
 
         <header className="mb-10">
           <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
-            Fase {String(phase.order_index).padStart(2, "0")}
+            {t("phaseEdit.eyebrow", {
+              index: String(phase.order_index).padStart(2, "0"),
+            })}
           </p>
           <h1 className="font-serif text-3xl font-semibold leading-tight">
             {phase.title}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Edita los metadatos. Cuando guardes, se revalidan la landing y la
-            página pública de la fase.
+            {t("phaseEdit.description")}
           </p>
         </header>
 

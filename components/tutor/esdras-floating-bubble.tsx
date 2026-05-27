@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowUpRight, Loader2, MessageCirclePlus, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { ChatWindow } from "@/components/tutor/chat-window";
 import { EsdrasAvatar } from "@/components/tutor/esdras-avatar";
@@ -32,6 +33,7 @@ type SessionPayload = {
  * El sheet es full-screen en mobile, panel de 440px en desktop.
  */
 export function EsdrasFloatingBubble() {
+  const t = useTranslations("Tutor");
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [session, setSession] = useState<SessionPayload | null>(null);
@@ -105,7 +107,7 @@ export function EsdrasFloatingBubble() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.96 }}
         className="group fixed bottom-20 right-4 z-40 flex items-center gap-2.5 rounded-full border border-brand-violet/35 bg-[#04081A]/95 py-2 pl-2 pr-4 shadow-[0_10px_40px_-10px_rgba(123,97,255,0.55)] backdrop-blur-xl transition-all hover:border-brand-violet/60 hover:shadow-[0_15px_50px_-12px_rgba(123,97,255,0.75)] lg:bottom-6 lg:right-6"
-        aria-label="Abrir chat con Esdras"
+        aria-label={t("bubble.openChat")}
       >
         <EsdrasAvatar size="md" showGlow />
         <span className="hidden font-grotesk text-sm font-semibold text-text-primary sm:inline">
@@ -136,7 +138,7 @@ export function EsdrasFloatingBubble() {
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               className="fixed right-0 top-0 z-50 flex h-[100dvh] w-full flex-col bg-[#04081A] shadow-2xl sm:w-[440px]"
               role="dialog"
-              aria-label="Chat con Esdras"
+              aria-label={t("bubble.openChat")}
             >
               {/* Header del sheet */}
               <div className="flex items-center gap-3 border-b border-white/[0.06] bg-[#04081A]/90 px-4 py-3 backdrop-blur-xl">
@@ -148,11 +150,11 @@ export function EsdrasFloatingBubble() {
                     </p>
                     <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-1.5 py-0.5 font-inter text-[9px] font-medium text-emerald-400">
                       <span className="size-1 rounded-full bg-emerald-400" />
-                      En línea
+                      {t("bubble.online")}
                     </span>
                   </div>
                   <p className="truncate font-inter text-[10px] text-text-tertiary">
-                    Tutor del Diplomado Apostólico Pastoral
+                    {t("bubble.subtitle")}
                   </p>
                 </div>
                 <button
@@ -160,8 +162,8 @@ export function EsdrasFloatingBubble() {
                   onClick={startNewConversation}
                   disabled={creatingNew || loading}
                   className="rounded-lg p-2 text-text-tertiary transition-colors hover:bg-white/[0.05] hover:text-text-primary disabled:opacity-40"
-                  aria-label="Nueva conversación"
-                  title="Nueva conversación"
+                  aria-label={t("bubble.newConversation")}
+                  title={t("bubble.newConversation")}
                 >
                   {creatingNew ? (
                     <Loader2 className="size-4 animate-spin" />
@@ -173,7 +175,7 @@ export function EsdrasFloatingBubble() {
                   type="button"
                   onClick={() => setOpen(false)}
                   className="rounded-lg p-2 text-text-tertiary transition-colors hover:bg-white/[0.05] hover:text-text-primary"
-                  aria-label="Cerrar chat"
+                  aria-label={t("bubble.closeChat")}
                 >
                   <X className="size-4" strokeWidth={2} />
                 </button>
@@ -204,7 +206,7 @@ export function EsdrasFloatingBubble() {
                     onClick={() => setOpen(false)}
                     className="inline-flex items-center gap-1.5 font-inter text-[11px] text-text-tertiary transition-colors hover:text-text-primary"
                   >
-                    Abrir chat completo
+                    {t("bubble.openFullChat")}
                     <ArrowUpRight className="size-3" strokeWidth={1.8} />
                   </Link>
                 </div>

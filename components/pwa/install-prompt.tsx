@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Download, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -21,6 +22,7 @@ const DISMISS_DAYS = 14;
  * separado si se detecta iOS Safari (no agregado por ahora; opcional).
  */
 export function InstallPrompt() {
+  const t = useTranslations("Pwa");
   const [event, setEvent] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
 
@@ -83,13 +85,13 @@ export function InstallPrompt() {
   return (
     <div
       role="dialog"
-      aria-label="Instalar DAP"
+      aria-label={t("install.dialogLabel")}
       className="fixed inset-x-3 bottom-3 z-50 mx-auto max-w-md rounded-xl border border-brand-violet/30 bg-surface-elevated/95 p-4 shadow-2xl backdrop-blur-xl sm:bottom-6 lg:left-auto lg:right-6 lg:mx-0"
     >
       <button
         type="button"
         onClick={dismiss}
-        aria-label="Cerrar"
+        aria-label={t("install.closeLabel")}
         className="absolute right-2 top-2 inline-flex size-7 items-center justify-center rounded-md text-text-tertiary hover:bg-white/[0.04] hover:text-text-primary"
       >
         <X className="size-4" />
@@ -100,11 +102,10 @@ export function InstallPrompt() {
         </div>
         <div className="min-w-0 flex-1">
           <p className="font-grotesk text-sm font-semibold text-text-primary">
-            Instalá DAP en tu celular
+            {t("install.title")}
           </p>
           <p className="mt-0.5 font-inter text-xs leading-relaxed text-text-secondary">
-            Acceso directo al dashboard, recordatorios cuando abre tu módulo
-            semanal, sin pasar por el browser.
+            {t("install.description")}
           </p>
           <div className="mt-3 flex gap-2">
             <button
@@ -112,14 +113,14 @@ export function InstallPrompt() {
               onClick={install}
               className="inline-flex items-center gap-1.5 rounded-md bg-brand-coral px-3 py-1.5 font-inter text-xs font-semibold text-white hover:bg-brand-coral/90"
             >
-              Instalar
+              {t("install.installButton")}
             </button>
             <button
               type="button"
               onClick={dismiss}
               className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 font-inter text-xs text-text-tertiary hover:text-text-primary"
             >
-              Ahora no
+              {t("install.dismissButton")}
             </button>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Layers } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
 import {
   ModuleEditForm,
@@ -10,10 +11,14 @@ import { createClient } from "@/lib/supabase/server";
 
 type PageProps = { params: Promise<{ slug: string; moduleSlug: string }> };
 
-export const metadata = { title: "Editar módulo — Admin DAP" };
+export async function generateMetadata() {
+  const t = await getTranslations("Admin");
+  return { title: t("moduleEdit.metaTitle") };
+}
 
 export default async function AdminModuleEditPage({ params }: PageProps) {
   const { slug: id, moduleSlug: mid } = await params;
+  const t = await getTranslations("Admin");
   const supabase = await createClient();
 
   const { data: phase } = await supabase
@@ -53,19 +58,24 @@ export default async function AdminModuleEditPage({ params }: PageProps) {
           className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-brand-coral"
         >
           <ArrowLeft className="size-4" />
-          Volver a módulos
+          {t("moduleEdit.backToModules")}
         </Link>
 
         <header className="mb-8 flex items-end justify-between gap-4">
           <div>
             <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
-              Fase {String(phase.order_index).padStart(2, "0")} · {phase.title}
+              {t("moduleEdit.eyebrow", {
+                index: String(phase.order_index).padStart(2, "0"),
+                phaseTitle: phase.title,
+              })}
             </p>
             <h1 className="font-serif text-3xl font-semibold">
-              Módulo {String(mod.order_index).padStart(2, "0")}
+              {t("moduleEdit.title", {
+                index: String(mod.order_index).padStart(2, "0"),
+              })}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Edita la identidad y el contenido apostólico del módulo.
+              {t("moduleEdit.description")}
             </p>
           </div>
           <Button
@@ -75,7 +85,7 @@ export default async function AdminModuleEditPage({ params }: PageProps) {
             }
           >
             <Layers className="size-4" />
-            Editar secciones
+            {t("moduleEdit.editSections")}
           </Button>
         </header>
 

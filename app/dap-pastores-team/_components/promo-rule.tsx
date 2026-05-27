@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import { Check, GraduationCap, HeartHandshake, Users } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 /**
  * Regla de la promoción 12 + 12. Dos cards conectadas que muestran
@@ -9,6 +10,15 @@ import { Check, GraduationCap, HeartHandshake, Users } from "lucide-react";
  * + número grande tipo countdown visual.
  */
 export function PromoRule() {
+  const t = useTranslations("PastoresTeam");
+  const audienceKeys = [
+    "leaders",
+    "servers",
+    "volunteers",
+    "members",
+    "youth",
+    "entrepreneurs",
+  ] as const;
   return (
     <section className="relative px-6 py-24 sm:py-32">
       <div className="mx-auto max-w-6xl">
@@ -20,13 +30,13 @@ export function PromoRule() {
           className="text-center"
         >
           <p className="font-inter text-[10px] font-semibold uppercase tracking-[0.42em] text-brand-coral">
-            La mecánica
+            {t("rule.eyebrow")}
           </p>
           <h2 className="mt-4 font-grotesk text-4xl font-bold leading-tight tracking-tight text-text-primary sm:text-5xl">
-            Una regla simple.
+            {t("rule.headingTop")}
             <br />
             <span className="bg-gradient-to-r from-brand-violet via-[#A28BFF] to-brand-coral bg-clip-text text-transparent">
-              Un impacto multiplicado.
+              {t("rule.headingBottom")}
             </span>
           </h2>
         </motion.div>
@@ -41,8 +51,8 @@ export function PromoRule() {
           <RuleCard
             step={1}
             number={12}
-            title="Si inscribes a 12 personas…"
-            highlight="cursas el Diplomado SIN COSTO."
+            title={t("rule.card1Title")}
+            highlight={t("rule.card1Highlight")}
             icon={<GraduationCap className="size-6" strokeWidth={1.6} />}
             from="from-brand-violet"
             to="to-[#A28BFF]"
@@ -51,8 +61,8 @@ export function PromoRule() {
           <RuleCard
             step={2}
             number={24}
-            title="Si tu cónyuge logra otras 12…"
-            highlight="ambos cursan el Diplomado GRATIS."
+            title={t("rule.card2Title")}
+            highlight={t("rule.card2Highlight")}
             icon={<HeartHandshake className="size-6" strokeWidth={1.6} />}
             from="from-brand-coral"
             to="to-[#FF8AA0]"
@@ -74,33 +84,23 @@ export function PromoRule() {
             </div>
             <div className="flex-1">
               <h3 className="font-grotesk text-lg font-semibold text-text-primary">
-                Sin distinciones. Cualquier persona suma.
+                {t("rule.openTitle")}
               </h3>
               <p className="mt-2 font-inter text-sm leading-relaxed text-text-secondary">
-                Puedes invitar a quienes quieran crecer contigo:
-                líderes, servidores, voluntarios, miembros, jóvenes,
-                empresarios. Cualquier persona dispuesta a aprender
-                cuenta.
+                {t("rule.openBody")}
               </p>
 
               <ul className="mt-5 grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-3">
-                {[
-                  "Líderes",
-                  "Servidores",
-                  "Voluntarios",
-                  "Miembros",
-                  "Jóvenes",
-                  "Empresarios",
-                ].map((label) => (
+                {audienceKeys.map((key) => (
                   <li
-                    key={label}
+                    key={key}
                     className="flex items-center gap-2 font-inter text-sm text-text-secondary"
                   >
                     <Check
                       className="size-3.5 text-brand-violet"
                       strokeWidth={3}
                     />
-                    {label}
+                    {t(`rule.audience.${key}`)}
                   </li>
                 ))}
               </ul>
@@ -131,6 +131,7 @@ function RuleCard({
   to: string;
   delay: number;
 }) {
+  const t = useTranslations("PastoresTeam");
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -147,7 +148,7 @@ function RuleCard({
 
       <div className="flex items-center justify-between">
         <span className="font-inter text-[10px] font-semibold uppercase tracking-[0.42em] text-text-tertiary">
-          Paso {step}
+          {t("rule.step", { step })}
         </span>
         <div
           className={`flex size-11 items-center justify-center rounded-2xl bg-gradient-to-br ${from} ${to} text-white shadow-lg shadow-brand-violet/30`}
@@ -163,7 +164,7 @@ function RuleCard({
           {number}
         </span>
         <span className="font-inter text-sm uppercase tracking-[0.2em] text-text-tertiary">
-          personas
+          {t("rule.people")}
         </span>
       </div>
 

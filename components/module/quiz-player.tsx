@@ -12,6 +12,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 
 export type PlayerQuestion = {
@@ -106,6 +107,7 @@ export function QuizPlayer({
   moduleSlug: string;
   latestAttempt: LatestAttemptSummary | null;
 }) {
+  const t = useTranslations("Module");
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [revealing, setRevealing] = useState(false);
@@ -173,7 +175,7 @@ export function QuizPlayer({
       setReveal(r);
       setMode("revealed");
       if (r.was_first_reveal && r.passed) {
-        toast.success("¡Quiz aprobado!");
+        toast.success(t("quiz.passedToast"));
         router.refresh();
       }
     } finally {
@@ -193,7 +195,7 @@ export function QuizPlayer({
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!allAnswered) {
-      toast.error("Responde todas las preguntas antes de enviar.");
+      toast.error(t("quiz.answerAllToast"));
       return;
     }
     setSubmitting(true);
@@ -211,9 +213,7 @@ export function QuizPlayer({
       const r = data as SubmitResponse;
       setPendingReveal(r.reveal_at);
       setMode("pending");
-      toast.success(
-        "Recibido. Tu resultado estará disponible en 48h.",
-      );
+      toast.success(t("quiz.receivedToast"));
     } finally {
       setSubmitting(false);
     }
@@ -245,7 +245,7 @@ export function QuizPlayer({
       return (
         <div className="flex items-center justify-center py-16 text-sm text-muted-foreground">
           <Loader2 className="mr-2 size-4 animate-spin" />
-          Cargando tu resultado…
+          {t("quiz.loadingResult")}
         </div>
       );
     }
@@ -279,20 +279,22 @@ export function QuizPlayer({
         )}
         <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
           <span>
-            Umbral aprobatorio: <strong>{quiz.pass_threshold}%</strong>
+            {t("quiz.passThreshold")}<strong>{quiz.pass_threshold}%</strong>
           </span>
           {attemptsRemaining !== null && (
             <span>
-              Intentos restantes: <strong>{attemptsRemaining}</strong>
+              {t("quiz.attemptsRemaining")}<strong>{attemptsRemaining}</strong>
             </span>
           )}
           <span>
             {ordered.length}{" "}
-            {ordered.length === 1 ? "pregunta" : "preguntas"}
+            {ordered.length === 1
+              ? t("quiz.questionSingular")
+              : t("quiz.questionPlural")}
           </span>
           <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-amber-300">
             <Clock className="size-3" />
-            Resultado en 48h
+            {t("quiz.resultIn48h")}
           </span>
         </div>
       </div>
@@ -345,8 +347,8 @@ export function QuizPlayer({
             {q.kind === "true_false" && (
               <div className="flex gap-3 pl-9">
                 {[
-                  { label: "Verdadero", val: true },
-                  { label: "Falso", val: false },
+                  { label: t("quiz.true"), val: true },
+                  { label: t("quiz.false"), val: false },
                 ].map((opt) => {
                   const selected =
                     answers[q.id] &&
@@ -377,10 +379,13 @@ export function QuizPlayer({
 
       <div className="flex items-center justify-end gap-3 pt-2">
         <p className="mr-auto text-xs text-muted-foreground">
-          {Object.keys(answers).length} / {ordered.length} respondidas
+          {t("quiz.answeredCount", {
+            answered: Object.keys(answers).length,
+            total: ordered.length,
+          })}
         </p>
         <Button type="submit" disabled={submitting || !allAnswered}>
-          {submitting ? "Enviando…" : "Enviar respuestas"}
+          {submitting ? t("quiz.submitting") : t("quiz.submit")}
         </Button>
       </div>
     </form>
@@ -400,20 +405,24 @@ function PendingRevealView({
   onCheck: () => void;
   checking: boolean;
 }) {
+  const t = useTranslations("Module");
+  const quizNote = quiz.title.toLowerCase().includes("evaluación")
+    ? ""
+    : t("quiz.quizNote", { title: quiz.title });
   return (
     <div className="space-y-6">
       <div className="rounded-2xl border border-amber-500/30 bg-amber-500/[0.05] p-8 text-center">
         <Clock className="mx-auto size-9 text-amber-400" strokeWidth={1.7} />
         <h3 className="mt-4 font-serif text-xl font-semibold">
-          Recibido. Tu resultado está en revisión.
+          {t("quiz.pendingTitle")}
         </h3>
         <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
-          Las evaluaciones del DAP se entregan <strong>48 horas después</strong>
-          {" "}del envío. Esto te da espacio para asimilar lo aprendido sin la
-          ansiedad del resultado inmediato.
+          {t.rich("quiz.pendingBody", {
+            strong: (chunks) => <strong>{chunks}</strong>,
+          })}
         </p>
         <p className="mt-5 inline-flex items-center gap-2 rounded-lg bg-amber-500/10 px-3 py-2 text-sm">
-          <span className="text-muted-foreground">Disponible el</span>
+          <span className="text-muted-foreground">{t("quiz.availableOn")}</span>
           <span className="font-medium text-amber-200">
             {formatRevealDate(revealAt)}
           </span>
@@ -425,20 +434,19 @@ function PendingRevealView({
           {checking ? (
             <>
               <Loader2 className="size-4 animate-spin" />
-              Verificando…
+              {t("quiz.checking")}
             </>
           ) : (
             <>
               <RefreshCw className="size-4" />
-              Verificar si ya está disponible
+              {t("quiz.checkIfAvailable")}
             </>
           )}
         </Button>
       </div>
 
       <p className="text-center text-xs text-muted-foreground">
-        Mientras esperas, puedes repasar la enseñanza o avanzar con otros
-        contenidos del módulo {quiz.title.toLowerCase().includes("evaluación") ? "" : "(quiz: " + quiz.title + ")"}.
+        {t("quiz.whileWaiting", { quizNote })}
       </p>
     </div>
   );
@@ -463,6 +471,7 @@ function ResultView({
   phaseSlug: string;
   moduleSlug: string;
 }) {
+  const t = useTranslations("Module");
   const byId = new Map(reveal.graded.map((g) => [g.question_id, g]));
 
   const attemptsRemaining =
@@ -495,7 +504,7 @@ function ResultView({
           )}
           <div>
             <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-              Resultado
+              {t("quiz.result")}
             </p>
             <p className="font-serif text-3xl font-semibold leading-none">
               {reveal.score_percent}%
@@ -503,7 +512,7 @@ function ResultView({
           </div>
           <div className="ml-auto text-right">
             <p className="text-xs text-muted-foreground">
-              Umbral aprobatorio
+              {t("quiz.passThresholdLabel")}
             </p>
             <p className="text-lg font-medium tabular-nums">
               {quiz.pass_threshold}%
@@ -512,8 +521,8 @@ function ResultView({
         </div>
         <p className="mt-3 text-sm">
           {reveal.passed
-            ? "¡Felicidades! Aprobaste esta evaluación."
-            : "Aún no alcanzas el umbral. Revisá las explicaciones y volvé a intentarlo."}
+            ? t("quiz.passedMessage")
+            : t("quiz.failedMessage")}
         </p>
       </div>
 
@@ -548,14 +557,14 @@ function ResultView({
               <div className="space-y-1 pl-9 text-sm">
                 <AnswerSummary
                   kind={q.kind}
-                  label="Tu respuesta"
+                  label={t("quiz.yourAnswer")}
                   answer={g.student_answer}
                   options={q.options ?? g.options}
                 />
                 {!g.is_correct && (
                   <AnswerSummary
                     kind={q.kind}
-                    label="Correcta"
+                    label={t("quiz.correct")}
                     answer={g.correct_answer}
                     options={q.options ?? g.options}
                     highlight
@@ -564,7 +573,7 @@ function ResultView({
                 {g.explanation && (
                   <p className="mt-2 rounded-lg bg-card/60 p-3 text-xs text-muted-foreground">
                     <span className="font-medium text-foreground">
-                      Explicación:
+                      {t("quiz.explanation")}
                     </span>{" "}
                     {g.explanation}
                   </p>
@@ -584,20 +593,19 @@ function ResultView({
               />
             }
           >
-            Continuar a Impartición
+            {t("quiz.continueToImpartation")}
             <ArrowRight className="size-4" />
           </Button>
         )}
         {canRetry && (
           <Button variant="outline" onClick={onRetry} type="button">
             <RefreshCw className="size-4" />
-            Volver a intentar
+            {t("quiz.retry")}
           </Button>
         )}
         {outOfAttempts && (
           <div className="rounded-lg border border-red-500/30 bg-red-500/5 px-4 py-3 text-sm text-red-600">
-            Has agotado tus intentos. Contactá al equipo si creés que es un
-            error.
+            {t("quiz.outOfAttempts")}
           </div>
         )}
       </div>
@@ -618,12 +626,15 @@ function AnswerSummary({
   options?: string[];
   highlight?: boolean;
 }) {
+  const t = useTranslations("Module");
   let text = "—";
   if (answer) {
     if (kind === "multiple_choice" && "selected_index" in answer) {
-      text = options?.[answer.selected_index] ?? `Opción ${answer.selected_index + 1}`;
+      text =
+        options?.[answer.selected_index] ??
+        t("quiz.optionFallback", { number: answer.selected_index + 1 });
     } else if (kind === "true_false" && "selected" in answer) {
-      text = answer.selected ? "Verdadero" : "Falso";
+      text = answer.selected ? t("quiz.true") : t("quiz.false");
     }
   }
   return (
@@ -649,6 +660,7 @@ export function QuizAlreadyPassed({
   phaseSlug: string;
   moduleSlug: string;
 }) {
+  const t = useTranslations("Module");
   return (
     <div className="space-y-6">
       <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-6">
@@ -656,14 +668,14 @@ export function QuizAlreadyPassed({
           <CheckCircle2 className="size-7 text-emerald-500" />
           <div>
             <p className="text-xs font-medium uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
-              Evaluación aprobada
+              {t("quiz.quizApproved")}
             </p>
             <p className="font-serif text-2xl font-semibold leading-tight">
               {quiz.title}
             </p>
           </div>
           <div className="ml-auto text-right">
-            <p className="text-xs text-muted-foreground">Mejor puntaje</p>
+            <p className="text-xs text-muted-foreground">{t("quiz.bestScore")}</p>
             <p className="text-2xl font-medium tabular-nums">{bestScore}%</p>
           </div>
         </div>
@@ -676,7 +688,7 @@ export function QuizAlreadyPassed({
             />
           }
         >
-          Continuar a Impartición
+          {t("quiz.continueToImpartation")}
           <ArrowRight className="size-4" />
         </Button>
       </div>

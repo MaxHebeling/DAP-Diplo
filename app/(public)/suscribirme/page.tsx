@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { ArrowLeft, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/landing/reveal";
@@ -18,31 +19,33 @@ import { CalendarClock, GraduationCap } from "lucide-react";
 // servir la versión "coming soon" a usuarios admin recién logueados.
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Suscribirme",
-  description:
-    "$25 USD al mes. Acceso completo al Diplomado Apostólico Pastoral. Cancela cuando quieras.",
-  alternates: { canonical: "/suscribirme" },
-  openGraph: {
-    type: "website" as const,
-    url: "/suscribirme",
-    title: "Suscribirme · DAP",
-    description:
-      "Acceso completo al Diplomado Apostólico Pastoral por $25 USD/mes. 72 módulos en 18 meses · 1 módulo por semana · cancela cuando quieras.",
-  },
-};
-
-const INCLUDED = [
-  "Calendario semanal personal: 1 módulo por semana durante 72 semanas",
-  "MasterClass en vivo por evento (mínimo 1 garantizada al mes)",
-  "Mentoría grupal por convocatoria del apóstol",
-  "Corrección personalizada de tu activación con la voz del Dr. Max (48h)",
-  "Comunidad privada de pastores en formación",
-  "Material descargable por módulo (PDFs, plantillas, recursos extra)",
-  "Certificado, insignia y dimensión nueva al completar cada bloque",
-];
+export async function generateMetadata() {
+  const t = await getTranslations("Auth");
+  return {
+    title: t("subscribe.metaTitle"),
+    description: t("subscribe.metaDescription"),
+    alternates: { canonical: "/suscribirme" },
+    openGraph: {
+      type: "website" as const,
+      url: "/suscribirme",
+      title: t("subscribe.ogTitle"),
+      description: t("subscribe.ogDescription"),
+    },
+  };
+}
 
 export default async function SuscribirmePage() {
+  const t = await getTranslations("Auth");
+  const INCLUDED = [
+    t("subscribe.included.item1"),
+    t("subscribe.included.item2"),
+    t("subscribe.included.item3"),
+    t("subscribe.included.item4"),
+    t("subscribe.included.item5"),
+    t("subscribe.included.item6"),
+    t("subscribe.included.item7"),
+  ];
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -90,32 +93,31 @@ export default async function SuscribirmePage() {
               className="mb-10 inline-flex items-center gap-2 text-sm text-neutral-400 transition-colors hover:text-brand-coral"
             >
               <ArrowLeft className="size-4" />
-              Volver al inicio
+              {t("subscribe.backToHome")}
             </Link>
 
             <p className="mb-4 text-xs font-medium uppercase tracking-[0.32em] text-brand-coral">
-              Suscripción
+              {t("subscribe.eyebrow")}
             </p>
             <h1 className="mb-5 font-serif text-balance text-4xl font-semibold leading-tight sm:text-5xl">
-              Diplomado Apostólico Pastoral
+              {t("subscribe.title")}
             </h1>
             <p className="mb-10 max-w-xl text-justify text-base leading-relaxed text-neutral-300 hyphens-auto">
-              Una sola suscripción mensual te da acceso al diplomado completo
-              de 18 meses. Recibís un módulo nuevo cada semana (martes 00:01).
-              Cancela cuando quieras desde tu dashboard — tu progreso queda
-              guardado.
+              {t("subscribe.intro")}
             </p>
 
             <div className="mb-10 rounded-2xl border border-white/10 bg-neutral-900/40 p-8 sm:p-10">
               <div className="mb-7 flex items-end justify-between">
                 <div>
                   <p className="font-serif text-5xl font-semibold text-neutral-50 sm:text-6xl">
-                    $25
+                    {t("subscribe.price")}
                   </p>
-                  <p className="mt-1 text-sm text-neutral-400">USD por mes</p>
+                  <p className="mt-1 text-sm text-neutral-400">
+                    {t("subscribe.priceUnit")}
+                  </p>
                 </div>
                 <p className="text-xs font-medium uppercase tracking-widest text-brand-coral">
-                  Plan único
+                  {t("subscribe.planSingle")}
                 </p>
               </div>
               <ul className="space-y-3.5">
@@ -146,12 +148,11 @@ export default async function SuscribirmePage() {
                     size="lg"
                     className="h-12 w-full bg-brand-coral px-7 text-base font-medium text-brand-coral-foreground hover:bg-brand-coral/90"
                   >
-                    Continuar a pago
+                    {t("subscribe.continueToPayment")}
                   </Button>
                 </form>
                 <p className="mt-5 text-center text-xs text-neutral-500">
-                  Procesado por Stripe. Sin contrato. Cancela en un click cuando
-                  quieras.
+                  {t("subscribe.paymentNote")}
                 </p>
               </>
             ) : (
@@ -160,19 +161,21 @@ export default async function SuscribirmePage() {
                   <CalendarClock className="h-6 w-6" />
                 </div>
                 <p className="font-grotesk text-lg font-bold text-neutral-50">
-                  Inscripciones abren el {ENROLLMENT_OPENS_LABEL}
+                  {t("subscribe.enrollmentClosed.title", {
+                    date: ENROLLMENT_OPENS_LABEL,
+                  })}
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-neutral-300">
-                  La primera convocatoria del Diplomado Apostólico Pastoral
-                  abre inscripciones el <strong>01 de Junio de 2026</strong>.
-                  En esa fecha podrás activar tu suscripción y asegurar tu
-                  lugar.
+                  {t.rich("subscribe.enrollmentClosed.body", {
+                    launchDate: t("subscribe.enrollmentClosed.launchDate"),
+                    strong: (chunks) => <strong>{chunks}</strong>,
+                  })}
                 </p>
                 <div className="mt-4 flex items-start gap-3 rounded-lg border border-brand-violet/30 bg-brand-violet/[0.08] p-3 text-left">
                   <GraduationCap className="mt-0.5 h-5 w-5 shrink-0 text-brand-violet" />
                   <p className="text-sm leading-relaxed text-neutral-200">
                     <span className="font-semibold text-neutral-50">
-                      Inicio de clases:
+                      {t("subscribe.enrollmentClosed.classesStartLabel")}
                     </span>{" "}
                     <span className="capitalize text-neutral-400">
                       {CLASSES_START_LABEL}

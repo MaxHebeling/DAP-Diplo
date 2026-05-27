@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { CheckCircle2, Layers } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 import {
   Table,
@@ -13,7 +14,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/server";
 
-export const metadata = { title: "Bloques — Admin DAP" };
+export async function generateMetadata() {
+  const t = await getTranslations("Admin");
+  return { title: t("blocks.metaTitle") };
+}
 
 type Row = {
   id: string;
@@ -28,6 +32,7 @@ type Row = {
 };
 
 export default async function AdminBloquesPage() {
+  const t = await getTranslations("Admin");
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("blocks")
@@ -36,7 +41,7 @@ export default async function AdminBloquesPage() {
     )
     .order("order_index", { ascending: true })
     .returns<Row[]>();
-  if (error) throw new Error(`No se pudieron cargar bloques: ${error.message}`);
+  if (error) throw new Error(t("blocks.loadError", { message: error.message }));
   const rows = data ?? [];
 
   return (
@@ -48,10 +53,10 @@ export default async function AdminBloquesPage() {
           </div>
           <div>
             <p className="font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-              Contenido editorial
+              {t("blocks.eyebrow")}
             </p>
             <h1 className="font-grotesk text-3xl font-bold tracking-tight">
-              Bloques
+              {t("blocks.title")}
             </h1>
           </div>
         </header>
@@ -61,11 +66,11 @@ export default async function AdminBloquesPage() {
             <TableHeader>
               <TableRow className="border-white/[0.06]">
                 <TableHead className="w-16">#</TableHead>
-                <TableHead>Bloque</TableHead>
-                <TableHead className="hidden md:table-cell">Subtítulo</TableHead>
-                <TableHead className="hidden lg:table-cell">Promesa</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead className="text-right">Editar</TableHead>
+                <TableHead>{t("blocks.thBlock")}</TableHead>
+                <TableHead className="hidden md:table-cell">{t("blocks.thSubtitle")}</TableHead>
+                <TableHead className="hidden lg:table-cell">{t("blocks.thPromise")}</TableHead>
+                <TableHead>{t("blocks.thStatus")}</TableHead>
+                <TableHead className="text-right">{t("blocks.thEdit")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -96,19 +101,19 @@ export default async function AdminBloquesPage() {
                     </div>
                   </TableCell>
                   <TableCell className="hidden max-w-xs truncate text-sm text-muted-foreground md:table-cell">
-                    {r.subtitle ?? <em className="text-text-tertiary">(vacío)</em>}
+                    {r.subtitle ?? <em className="text-text-tertiary">{t("blocks.empty")}</em>}
                   </TableCell>
                   <TableCell className="hidden max-w-xs truncate text-sm text-muted-foreground lg:table-cell">
-                    {r.promise ?? <em className="text-text-tertiary">(vacío)</em>}
+                    {r.promise ?? <em className="text-text-tertiary">{t("blocks.empty")}</em>}
                   </TableCell>
                   <TableCell>
                     {r.published ? (
                       <Badge className="bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/15">
                         <CheckCircle2 className="mr-1 size-3" />
-                        Publicado
+                        {t("blocks.published")}
                       </Badge>
                     ) : (
-                      <Badge variant="outline">Borrador</Badge>
+                      <Badge variant="outline">{t("blocks.draft")}</Badge>
                     )}
                   </TableCell>
                   <TableCell className="text-right">
@@ -116,7 +121,7 @@ export default async function AdminBloquesPage() {
                       href={`/admin/bloques/${r.slug}`}
                       className="text-sm font-medium text-brand-coral hover:underline"
                     >
-                      Editar →
+                      {t("blocks.edit")}
                     </Link>
                   </TableCell>
                 </TableRow>
@@ -126,9 +131,7 @@ export default async function AdminBloquesPage() {
         </div>
 
         <p className="mt-4 text-xs text-text-tertiary">
-          Los cambios acá se reflejan en la landing pública (cards), en el
-          detalle del bloque, en /fases del alumno y en las metadata SEO/OG.
-          Tanto blocks como phases se actualizan en sincronía.
+          {t("blocks.footnote")}
         </p>
       </div>
     </main>

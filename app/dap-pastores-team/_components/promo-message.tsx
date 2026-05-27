@@ -1,8 +1,10 @@
 "use client";
 
 import { motion } from "motion/react";
+import { useTranslations } from "next-intl";
 
 export function PromoMessage() {
+  const t = useTranslations("PastoresTeam");
   return (
     <section className="relative px-6 py-24 sm:py-32">
       <div className="mx-auto max-w-3xl text-center">
@@ -13,9 +15,9 @@ export function PromoMessage() {
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           className="font-grotesk text-2xl font-medium leading-snug text-text-primary sm:text-3xl md:text-4xl"
         >
-          Creemos que los pastores y líderes deben tener acceso a{" "}
+          {t("message.leadStart")}{" "}
           <span className="bg-gradient-to-r from-brand-violet to-brand-coral bg-clip-text text-transparent">
-            formación integral, moderna y profunda
+            {t("message.leadEmphasis")}
           </span>
           .
         </motion.p>
@@ -26,8 +28,7 @@ export function PromoMessage() {
           transition={{ duration: 0.7, delay: 0.15 }}
           className="mt-7 font-inter text-base leading-relaxed text-text-secondary sm:text-lg"
         >
-          Por eso abrimos una oportunidad especial para quienes desean
-          impulsar el crecimiento de su gente.
+          {t("message.body")}
         </motion.p>
       </div>
     </section>

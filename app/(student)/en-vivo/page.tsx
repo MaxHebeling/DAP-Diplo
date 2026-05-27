@@ -1,16 +1,22 @@
 import Link from "next/link";
+import { getTranslations, getLocale } from "next-intl/server";
 import { CalendarClock, Film } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 import { UpcomingSessionCard } from "@/components/en-vivo/upcoming-session-card";
 import { RecordingCard } from "@/components/en-vivo/recording-card";
 import { createClient } from "@/lib/supabase/server";
+import { localized } from "@/lib/i18n/localized";
+import type { Locale } from "@/i18n/config";
 import { requireActiveSubscription } from "@/lib/subscription/gate";
 import type { StudentSession } from "@/lib/live-sessions/types";
 import { cn } from "@/lib/utils";
 import { MS_PER_HOUR } from "@/lib/constants/time";
 
-export const metadata = { title: "En vivo — DAP" };
+export async function generateMetadata() {
+  const t = await getTranslations("Student");
+  return { title: t("live.metaTitle") };
+}
 
 type PageProps = {
   searchParams: Promise<{ tab?: string }>;
@@ -18,6 +24,8 @@ type PageProps = {
 
 export default async function StudentEnVivoPage({ searchParams }: PageProps) {
   await requireActiveSubscription("/en-vivo");
+  const t = await getTranslations("Student");
+  const locale = (await getLocale()) as Locale;
   const { tab: tabParam } = await searchParams;
   const tab: "upcoming" | "recordings" =
     tabParam === "recordings" ? "recordings" : "upcoming";
@@ -37,7 +45,7 @@ export default async function StudentEnVivoPage({ searchParams }: PageProps) {
     .select(
       `id, kind, title, description, scheduled_at, duration_minutes,
        meeting_url, host_name, recording_url, recording_mux_playback_id,
-       phase:phases!live_sessions_phase_id_fkey(order_index, title)`,
+       phase:phases!live_sessions_phase_id_fkey(order_index, title, title_en)`,
     )
     .gte("scheduled_at", windowStartIso)
     .order("scheduled_at", { ascending: true })
@@ -49,7 +57,7 @@ export default async function StudentEnVivoPage({ searchParams }: PageProps) {
     .select(
       `id, kind, title, description, scheduled_at, duration_minutes,
        meeting_url, host_name, recording_url, recording_mux_playback_id,
-       phase:phases!live_sessions_phase_id_fkey(order_index, title)`,
+       phase:phases!live_sessions_phase_id_fkey(order_index, title, title_en)`,
     )
     .lt("scheduled_at", nowIso)
     .or("recording_url.not.is.null,recording_mux_playback_id.not.is.null")
@@ -64,15 +72,32 @@ export default async function StudentEnVivoPage({ searchParams }: PageProps) {
   if (uErr) throw new Error(`No se pudieron cargar próximas: ${uErr.message}`);
   if (rErr) throw new Error(`No se pudieron cargar grabaciones: ${rErr.message}`);
 
+  // Reemplaza phase.title por su versión localizada antes de pasar a los
+  // cards (client components). El resto del objeto queda igual.
+  type RawSession = Omit<StudentSession, "phase"> & {
+    phase: { order_index: number; title: string; title_en: string | null } | null;
+  };
+  const localizePhase = (s: RawSession): StudentSession => ({
+    ...s,
+    phase: s.phase
+      ? {
+          order_index: s.phase.order_index,
+          title: localized(s.phase, "title", locale) ?? s.phase.title,
+        }
+      : null,
+  });
+
   // Filtrar las que ya cerraron su ventana (scheduled_at + duration <= ahora)
-  const upcoming = ((upcomingRaw ?? []) as unknown as StudentSession[]).filter(
-    (s) => {
+  const upcoming = ((upcomingRaw ?? []) as unknown as RawSession[])
+    .map(localizePhase)
+    .filter((s) => {
       const end =
         new Date(s.scheduled_at).getTime() + s.duration_minutes * 60_000;
       return end > nowMs;
-    },
-  );
-  const recordingsList = (recordings ?? []) as unknown as StudentSession[];
+    });
+  const recordingsList = (
+    (recordings ?? []) as unknown as RawSession[]
+  ).map(localizePhase);
 
   const counts = {
     upcoming: upcoming.length,
@@ -84,14 +109,13 @@ export default async function StudentEnVivoPage({ searchParams }: PageProps) {
       <div className="mx-auto max-w-5xl">
         <header className="mb-8">
           <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
-            En vivo
+            {t("live.eyebrow")}
           </p>
           <h1 className="font-serif text-3xl font-semibold">
-            Sesiones del DAP
+            {t("live.title")}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            MasterClass, activaciones y mentorías grupales. Las grabaciones
-            quedan disponibles después de cada sesión.
+            {t("live.subtitle")}
           </p>
         </header>
 
@@ -101,14 +125,14 @@ export default async function StudentEnVivoPage({ searchParams }: PageProps) {
             href="/en-vivo"
             active={tab === "upcoming"}
             icon={<CalendarClock className="size-3.5" />}
-            label="Próximas"
+            label={t("live.tabUpcoming")}
             count={counts.upcoming}
           />
           <TabLink
             href="/en-vivo?tab=recordings"
             active={tab === "recordings"}
             icon={<Film className="size-3.5" />}
-            label="Grabaciones"
+            label={t("live.tabRecordings")}
             count={counts.recordings}
           />
         </div>
@@ -117,8 +141,8 @@ export default async function StudentEnVivoPage({ searchParams }: PageProps) {
           upcoming.length === 0 ? (
             <EmptyState
               icon={<CalendarClock className="size-8 text-muted-foreground/40" />}
-              title="No hay sesiones programadas"
-              description="El equipo aún no ha agendado próximas sesiones. Mientras tanto, explora las grabaciones disponibles."
+              title={t("live.emptyUpcoming.title")}
+              description={t("live.emptyUpcoming.description")}
             />
           ) : (
             <ul className="space-y-4">
@@ -132,8 +156,8 @@ export default async function StudentEnVivoPage({ searchParams }: PageProps) {
         ) : recordingsList.length === 0 ? (
           <EmptyState
             icon={<Film className="size-8 text-muted-foreground/40" />}
-            title="Aún no hay grabaciones"
-            description="Las grabaciones aparecen aquí después de cada sesión en vivo."
+            title={t("live.emptyRecordings.title")}
+            description={t("live.emptyRecordings.description")}
           />
         ) : (
           <ul className="grid gap-4 sm:grid-cols-2">

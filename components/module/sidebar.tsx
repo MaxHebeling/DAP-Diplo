@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Check } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { cn } from "@/lib/utils";
 
 export type SidebarModule = {
@@ -18,13 +19,14 @@ type ModuleSidebarProps = {
   currentModuleSlug: string;
 };
 
-export function ModuleSidebar({
+export async function ModuleSidebar({
   phaseTitle,
   phaseOrderIndex,
   phaseSlug,
   modules,
   currentModuleSlug,
 }: ModuleSidebarProps) {
+  const t = await getTranslations("Module");
   const completedCount = modules.filter((m) => m.completed).length;
   const pct = modules.length === 0 ? 0 : Math.round((completedCount / modules.length) * 100);
 
@@ -32,7 +34,7 @@ export function ModuleSidebar({
     <aside className="hidden border-r bg-card/40 lg:block">
       <div className="border-b p-5">
         <p className="mb-1 text-xs font-medium uppercase tracking-widest text-brand-coral">
-          Fase {String(phaseOrderIndex).padStart(2, "0")}
+          {t("sidebar.phase", { number: String(phaseOrderIndex).padStart(2, "0") })}
         </p>
         <Link
           href={`/fases/${phaseSlug}`}
@@ -43,7 +45,7 @@ export function ModuleSidebar({
         <div className="mt-4">
           <div className="mb-1.5 flex items-center justify-between text-xs text-muted-foreground">
             <span>
-              {completedCount} / {modules.length} módulos
+              {t("sidebar.modulesCount", { completed: completedCount, total: modules.length })}
             </span>
             <span className="tabular-nums">{pct}%</span>
           </div>
@@ -57,7 +59,7 @@ export function ModuleSidebar({
       </div>
 
       <nav
-        aria-label="Módulos de la fase"
+        aria-label={t("sidebar.navLabel")}
         className="max-h-[calc(100vh-200px)] overflow-y-auto p-2"
       >
         <ol className="space-y-0.5">

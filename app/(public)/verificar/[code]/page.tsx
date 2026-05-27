@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -24,38 +25,46 @@ type VerifyRow = {
   pdf_url: string | null;
 };
 
-const MONTHS_ES = [
-  "enero",
-  "febrero",
-  "marzo",
-  "abril",
-  "mayo",
-  "junio",
-  "julio",
-  "agosto",
-  "septiembre",
-  "octubre",
-  "noviembre",
-  "diciembre",
-];
+const MONTH_KEYS = [
+  "monthJanuary",
+  "monthFebruary",
+  "monthMarch",
+  "monthApril",
+  "monthMay",
+  "monthJune",
+  "monthJuly",
+  "monthAugust",
+  "monthSeptember",
+  "monthOctober",
+  "monthNovember",
+  "monthDecember",
+] as const;
 
-function formatIssuedAt(iso: string): string {
+function formatIssuedAt(
+  iso: string,
+  t: Awaited<ReturnType<typeof getTranslations>>,
+): string {
   const d = new Date(iso);
-  return `${d.getUTCDate()} de ${MONTHS_ES[d.getUTCMonth()]} de ${d.getUTCFullYear()}`;
+  return t("verify.issuedDate", {
+    day: d.getUTCDate(),
+    month: t(`verify.${MONTH_KEYS[d.getUTCMonth()]}`),
+    year: d.getUTCFullYear(),
+  });
 }
 
 export async function generateMetadata({ params }: PageProps) {
   const { code } = await params;
+  const t = await getTranslations("PublicPages");
   return {
-    title: `Verificación · ${code}`,
-    description:
-      "Verificación oficial de un certificado emitido por el Diplomado Apostólico Pastoral.",
+    title: t("verify.metaTitle", { code }),
+    description: t("verify.metaDescription"),
     robots: { index: false, follow: true },
   };
 }
 
 export default async function VerifyCertificatePage({ params }: PageProps) {
   const { code } = await params;
+  const t = await getTranslations("PublicPages");
   // Normaliza el code (los códigos son 8-hex upper). Tolerante a lower-case.
   const normalized = code.trim().toUpperCase();
 
@@ -98,7 +107,7 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
           className="mb-8 inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-brand-coral"
         >
           <ArrowLeft className="size-3.5" />
-          Inicio
+          {t("verify.home")}
         </Link>
 
         <div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
@@ -109,10 +118,10 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
             </div>
             <div>
               <p className="text-xs font-medium uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
-                Certificado verificado
+                {t("verify.verifiedLabel")}
               </p>
               <p className="font-serif text-2xl font-semibold leading-tight text-emerald-900 dark:text-emerald-100">
-                Auténtico
+                {t("verify.verifiedStatus")}
               </p>
             </div>
           </div>
@@ -120,31 +129,34 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
           <div className="px-8 py-8 space-y-6">
             <DataRow
               icon={<UserIcon className="size-4" />}
-              label="Otorgado a"
+              label={t("verify.rowGrantedTo")}
               value={cert.full_name}
               big
             />
             <DataRow
               icon={null}
-              label="Por completar"
-              value={`Fase ${phaseN}: ${cert.phase_title}`}
+              label={t("verify.rowForCompleting")}
+              value={t("verify.rowPhaseValue", {
+                number: phaseN,
+                title: cert.phase_title,
+              })}
             />
             {cert.dimension_name && (
               <DataRow
                 icon={null}
-                label="Dimensión alcanzada"
+                label={t("verify.rowDimensionReached")}
                 value={cert.dimension_name}
                 emphColor
               />
             )}
             <DataRow
               icon={<CalendarDays className="size-4" />}
-              label="Fecha de emisión"
-              value={formatIssuedAt(cert.issued_at)}
+              label={t("verify.rowIssuedDate")}
+              value={formatIssuedAt(cert.issued_at, t)}
             />
             <div className="border-t pt-6">
               <p className="mb-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                Código de verificación
+                {t("verify.verificationCodeLabel")}
               </p>
               <p className="font-mono text-lg font-bold tracking-[0.25em] text-foreground">
                 {normalized}
@@ -155,23 +167,22 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
               {signedUrl ? (
                 <Button render={<a href={signedUrl} target="_blank" rel="noopener noreferrer" />}>
                   <Download className="size-4" />
-                  Ver PDF del certificado
+                  {t("verify.viewPdf")}
                 </Button>
               ) : (
                 <p className="text-xs text-muted-foreground">
-                  El PDF aún no está disponible para este certificado.
+                  {t("verify.pdfNotAvailable")}
                 </p>
               )}
               <Button variant="outline" render={<Link href="/" />}>
-                Ir al Diplomado
+                {t("verify.goToDiplomado")}
               </Button>
             </div>
           </div>
         </div>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
-          Este certificado fue emitido por el Diplomado Apostólico Pastoral.
-          Para reportar una sospecha de falsificación contacta al equipo.
+          {t("verify.footerNote")}
         </p>
       </div>
       <DapPublicFooter />
@@ -210,7 +221,8 @@ function DataRow({
   );
 }
 
-function VerificationError({ code }: { code: string }) {
+async function VerificationError({ code }: { code: string }) {
+  const t = await getTranslations("PublicPages");
   return (
     <main className="min-h-screen bg-gradient-to-b from-background to-muted/30 px-6 py-16 sm:py-24">
       <div className="mx-auto max-w-2xl">
@@ -219,7 +231,7 @@ function VerificationError({ code }: { code: string }) {
           className="mb-8 inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-brand-coral"
         >
           <ArrowLeft className="size-3.5" />
-          Inicio
+          {t("verify.home")}
         </Link>
 
         <div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
@@ -229,26 +241,25 @@ function VerificationError({ code }: { code: string }) {
             </div>
             <div>
               <p className="text-xs font-medium uppercase tracking-widest text-red-700 dark:text-red-400">
-                Verificación fallida
+                {t("verify.errorLabel")}
               </p>
               <p className="font-serif text-2xl font-semibold leading-tight text-red-900 dark:text-red-100">
-                Certificado no encontrado
+                {t("verify.errorStatus")}
               </p>
             </div>
           </div>
 
           <div className="px-8 py-8 space-y-4">
             <p className="text-sm leading-relaxed text-muted-foreground">
-              No encontramos ningún certificado con el código{" "}
+              {t("verify.errorBodyPre")}
               <span className="font-mono font-bold text-foreground">
                 {code}
               </span>
-              . Verifica que el código esté escrito correctamente. Los códigos
-              tienen 8 caracteres hexadecimales en mayúsculas.
+              {t("verify.errorBodyPost")}
             </p>
             <div className="pt-2">
               <Button variant="outline" render={<Link href="/" />}>
-                Volver al inicio
+                {t("verify.backToHome")}
               </Button>
             </div>
           </div>

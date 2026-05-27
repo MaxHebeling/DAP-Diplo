@@ -15,6 +15,10 @@ import {
   Users,
 } from "lucide-react";
 
+import { getTranslations, getLocale } from "next-intl/server";
+
+import { localized } from "@/lib/i18n/localized";
+import type { Locale } from "@/i18n/config";
 import { signOutAction } from "@/lib/auth/actions";
 import { createClient } from "@/lib/supabase/server";
 import { rankSlug, rankThemeFromDescription } from "@/lib/ranks/slug";
@@ -36,19 +40,20 @@ import {
   SITE_URL,
 } from "@/lib/seo/structured-data";
 
-export const metadata: Metadata = {
-  title: "Las 9 Dimensiones del Reino",
-  description:
-    "Discípulo, Hijo, Líder, Ministro, Administrador, Mayordomo, Reformador, Arquitecto, Enviado. Cada bloque del DAP entrega una dimensión nueva verificable.",
-  alternates: { canonical: "/rangos" },
-  openGraph: {
-    type: "website",
-    url: "/rangos",
-    title: "Las 9 Dimensiones del Reino · DAP",
-    description:
-      "Discípulo, Hijo, Líder, Ministro, Administrador, Mayordomo, Reformador, Arquitecto, Enviado — la jornada apostólica completa.",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("PublicPages");
+  return {
+    title: t("ranks.metaTitle"),
+    description: t("ranks.metaDescription"),
+    alternates: { canonical: "/rangos" },
+    openGraph: {
+      type: "website",
+      url: "/rangos",
+      title: t("ranks.ogTitle"),
+      description: t("ranks.ogDescription"),
+    },
+  };
+}
 
 const ICON_BY_RANK: Record<RankOrder, LucideIcon> = {
   1: GraduationCap,
@@ -79,10 +84,14 @@ const IMAGE_BY_RANK: Record<RankOrder, string> = {
 type DimensionRow = {
   order_index: number;
   name: string;
+  name_en: string | null;
   description: string | null;
+  description_en: string | null;
 };
 
 export default async function RangosHubPage() {
+  const t = await getTranslations("PublicPages");
+  const locale = (await getLocale()) as Locale;
   const supabase = await createClient();
 
   const {
@@ -107,12 +116,12 @@ export default async function RangosHubPage() {
 
   const { data: dimensions, error } = await supabase
     .from("dimensions")
-    .select("order_index, name, description")
+    .select("order_index, name, name_en, description, description_en")
     .order("order_index", { ascending: true })
     .returns<DimensionRow[]>();
 
   if (error) {
-    throw new Error(`No se pudieron cargar las dimensiones: ${error.message}`);
+    throw new Error(t("ranks.loadError", { message: error.message }));
   }
 
   const ranks = dimensions ?? [];
@@ -120,13 +129,13 @@ export default async function RangosHubPage() {
   const itemListLd = ranksItemListSchema(
     ranks.map((r) => ({
       order_index: r.order_index,
-      name: r.name,
+      name: localized(r, "name", locale) ?? r.name,
       slug: rankSlug(r.name),
     })),
   );
   const breadcrumbsLd = breadcrumbListSchema([
-    { name: "Inicio", url: SITE_URL },
-    { name: "Las 9 Dimensiones del Reino", url: `${SITE_URL}/rangos` },
+    { name: t("ranks.breadcrumbHome"), url: SITE_URL },
+    { name: t("ranks.breadcrumbRanks"), url: `${SITE_URL}/rangos` },
   ]);
 
   return (
@@ -160,15 +169,15 @@ export default async function RangosHubPage() {
 
           <div className="mx-auto max-w-4xl text-center">
             <p className="mb-4 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-              El recorrido del DAP
+              {t("ranks.heroEyebrow")}
             </p>
             <h1 className="font-grotesk text-display font-bold leading-[1.05] text-text-primary">
-              Las <span className="gradient-text">9 Dimensiones</span> del Reino
+              {t("ranks.heroTitlePre")}
+              <span className="gradient-text">{t("ranks.heroTitleAccent")}</span>
+              {t("ranks.heroTitlePost")}
             </h1>
             <p className="mx-auto mt-6 max-w-2xl font-inter text-base leading-relaxed text-text-secondary md:text-lg">
-              Cada bloque completado entrega una dimensión ministerial
-              verificable. No son títulos honoríficos: son etapas de proceso
-              reconocidas dentro del gobierno apostólico del DAP.
+              {t("ranks.heroBody")}
             </p>
           </div>
         </section>
@@ -182,7 +191,10 @@ export default async function RangosHubPage() {
                 const Icon = ICON_BY_RANK[order];
                 const cover = IMAGE_BY_RANK[order];
                 const slug = rankSlug(r.name);
-                const theme = rankThemeFromDescription(r.description);
+                const rankName = localized(r, "name", locale) ?? r.name;
+                const theme = rankThemeFromDescription(
+                  localized(r, "description", locale),
+                );
                 return (
                   <Reveal key={r.order_index} delay={i * 0.04}>
                     <Link
@@ -193,7 +205,7 @@ export default async function RangosHubPage() {
                       <div className="relative aspect-[4/3] overflow-hidden">
                         <Image
                           src={cover}
-                          alt={`Dimensión ${r.name}`}
+                          alt={t("ranks.cardImageAlt", { name: rankName })}
                           fill
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                           className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -207,14 +219,14 @@ export default async function RangosHubPage() {
                             rankOrder={order}
                             size="md"
                             icon={Icon}
-                            label={r.name}
+                            label={rankName}
                           />
                         </div>
                       </div>
 
                       <div className="flex flex-1 flex-col p-6">
                         <h2 className="mb-2 font-grotesk text-h3 font-semibold text-text-primary">
-                          {r.name}
+                          {rankName}
                         </h2>
                         {theme && (
                           <p className="font-inter text-sm leading-relaxed text-text-secondary">
@@ -223,7 +235,9 @@ export default async function RangosHubPage() {
                         )}
                         <div className="mt-auto flex items-center justify-between border-t border-white/[0.05] pt-4 font-inter text-xs">
                           <span className="font-medium uppercase tracking-wider text-brand-coral">
-                            Bloque {String(order).padStart(2, "0")}
+                            {t("ranks.cardBlock", {
+                              number: String(order).padStart(2, "0"),
+                            })}
                           </span>
                           <ArrowRight className="size-4 text-text-tertiary transition-colors group-hover:text-brand-coral" />
                         </div>
@@ -242,15 +256,16 @@ export default async function RangosHubPage() {
           <div className="absolute inset-0 -z-10 opacity-70 [background:radial-gradient(50%_50%_at_50%_50%,rgba(123,97,255,0.35),transparent_55%)]" />
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="font-grotesk text-h1 font-bold leading-tight text-text-primary">
-              Empieza tu camino a la <span className="gradient-text">primera dimensión</span>.
+              {t("ranks.ctaTitlePre")}
+              <span className="gradient-text">{t("ranks.ctaTitleAccent")}</span>
+              {t("ranks.ctaTitlePost")}
             </h2>
             <p className="mt-6 font-inter text-base text-text-secondary md:text-lg">
-              La Semana 1 te ubica en el camino de la dimensión Discípulo.
-              Después de aprobar los 8 módulos del Bloque 1, la recibes.
+              {t("ranks.ctaBody")}
             </p>
             <div className="mt-10">
               <EnrollmentCTA href="/suscribirme" size="lg">
-                Comienza tu transformación
+                {t("ranks.ctaButton")}
                 <ArrowRight />
               </EnrollmentCTA>
             </div>

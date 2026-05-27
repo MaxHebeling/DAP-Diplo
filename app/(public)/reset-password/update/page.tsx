@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import {
   Card,
@@ -12,16 +13,21 @@ import { Logo } from "@/components/brand/logo";
 import { UpdatePasswordForm } from "@/components/auth/update-password-form";
 import { createClient } from "@/lib/supabase/server";
 
-export const metadata: Metadata = {
-  title: "Crear nueva contraseña",
-  robots: { index: false, follow: true },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Auth");
+  return {
+    title: t("updatePassword.metaTitle"),
+    robots: { index: false, follow: true },
+  };
+}
 
 export default async function ResetPasswordUpdatePage() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  const t = await getTranslations("Auth");
 
   // Si no hay sesión recovery activa, no podemos setear la contraseña.
   // Esto ocurre si el link del email expiró o ya se usó.
@@ -34,10 +40,9 @@ export default async function ResetPasswordUpdatePage() {
           </div>
           <Card>
             <CardHeader>
-              <CardTitle>Link expirado o inválido</CardTitle>
+              <CardTitle>{t("updatePassword.expiredTitle")}</CardTitle>
               <CardDescription>
-                El link de recuperación ya no es válido. Pedí uno nuevo para
-                continuar.
+                {t("updatePassword.expiredBody")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -45,7 +50,7 @@ export default async function ResetPasswordUpdatePage() {
                 href="/reset-password"
                 className="block w-full rounded-md bg-brand-coral px-4 py-2 text-center font-medium text-white hover:bg-brand-coral/90"
               >
-                Pedir nuevo link
+                {t("updatePassword.requestNewLink")}
               </Link>
             </CardContent>
           </Card>
@@ -62,10 +67,8 @@ export default async function ResetPasswordUpdatePage() {
         </div>
         <Card>
           <CardHeader>
-            <CardTitle>Creá tu nueva contraseña</CardTitle>
-            <CardDescription>
-              Tiene que tener al menos 8 caracteres.
-            </CardDescription>
+            <CardTitle>{t("updatePassword.title")}</CardTitle>
+            <CardDescription>{t("updatePassword.description")}</CardDescription>
           </CardHeader>
           <CardContent>
             <UpdatePasswordForm />

@@ -1,14 +1,20 @@
 import Link from "next/link";
+import { getTranslations, getLocale } from "next-intl/server";
 import { MessageCircle, MessagesSquare, Pin, Plus } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CommunityPhaseFilter } from "@/components/forum/community-phase-filter";
 import { createClient } from "@/lib/supabase/server";
+import { localized } from "@/lib/i18n/localized";
+import type { Locale } from "@/i18n/config";
 import { requireForumAccess } from "@/lib/forum/gate";
 import { snippet, timeAgo } from "@/lib/forum/format";
 
-export const metadata = { title: "Comunidad — DAP" };
+export async function generateMetadata() {
+  const t = await getTranslations("Student");
+  return { title: t("community.metaTitle") };
+}
 
 type ThreadRow = {
   id: string;
@@ -18,7 +24,12 @@ type ThreadRow = {
   closed: boolean;
   updated_at: string;
   author: { id: string; full_name: string; avatar_url: string | null } | null;
-  phase: { id: string; order_index: number; title: string } | null;
+  phase: {
+    id: string;
+    order_index: number;
+    title: string;
+    title_en: string | null;
+  } | null;
   posts_count: { count: number }[] | null;
 };
 
@@ -30,12 +41,14 @@ export default async function ComunidadPage({ searchParams }: PageProps) {
   await requireForumAccess("/comunidad");
   const { phase: blockFilter } = await searchParams;
 
+  const tr = await getTranslations("Student");
+  const locale = (await getLocale()) as Locale;
   const supabase = await createClient();
 
   // Catálogo de fases para el filtro
   const { data: phases } = await supabase
     .from("phases")
-    .select("id, order_index, title")
+    .select("id, order_index, title, title_en")
     .order("order_index", { ascending: true });
 
   let query = supabase
@@ -43,7 +56,7 @@ export default async function ComunidadPage({ searchParams }: PageProps) {
     .select(
       `id, title, body, pinned, closed, updated_at,
        author:profiles!forum_threads_author_id_fkey(id, full_name, avatar_url),
-       phase:phases!forum_threads_phase_id_fkey(id, order_index, title),
+       phase:phases!forum_threads_phase_id_fkey(id, order_index, title, title_en),
        posts_count:forum_posts(count)`,
     )
     .eq("hidden", false)
@@ -67,25 +80,35 @@ export default async function ComunidadPage({ searchParams }: PageProps) {
         <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
-              Comunidad
+              {tr("community.eyebrow")}
             </p>
             <h1 className="font-serif text-3xl font-semibold">
-              Foro de pastores
+              {tr("community.title")}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Conversa con otros pastores y líderes del DAP. Comparte
-              revelaciones, preguntas y testimonios.
+              {tr("community.subtitle")}
             </p>
           </div>
           <Button render={<Link href="/comunidad/nuevo" />}>
             <Plus className="size-4" />
-            Nuevo hilo
+            {tr("community.newThread")}
           </Button>
         </header>
 
         <div className="mb-6">
           <CommunityPhaseFilter
-            phases={(phases ?? []) as { id: string; order_index: number; title: string }[]}
+            phases={(
+              (phases ?? []) as {
+                id: string;
+                order_index: number;
+                title: string;
+                title_en: string | null;
+              }[]
+            ).map((p) => ({
+              id: p.id,
+              order_index: p.order_index,
+              title: localized(p, "title", locale) ?? p.title,
+            }))}
             current={blockFilter ?? "all"}
           />
         </div>
@@ -93,13 +116,13 @@ export default async function ComunidadPage({ searchParams }: PageProps) {
         {threads.length === 0 ? (
           <div className="rounded-2xl border border-dashed bg-muted/20 px-6 py-16 text-center">
             <MessagesSquare className="mx-auto mb-3 size-8 text-muted-foreground/60" />
-            <p className="font-medium">Todavía no hay hilos</p>
+            <p className="font-medium">{tr("community.empty.title")}</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Sé el primero en abrir una conversación.
+              {tr("community.empty.description")}
             </p>
             <Button className="mt-6" render={<Link href="/comunidad/nuevo" />}>
               <Plus className="size-4" />
-              Crear el primer hilo
+              {tr("community.empty.cta")}
             </Button>
           </div>
         ) : (
@@ -136,7 +159,7 @@ export default async function ComunidadPage({ searchParams }: PageProps) {
                               variant="secondary"
                               className="ml-auto shrink-0 font-normal"
                             >
-                              Cerrado
+                              {tr("community.closed")}
                             </Badge>
                           )}
                         </div>
@@ -146,22 +169,32 @@ export default async function ComunidadPage({ searchParams }: PageProps) {
                         </p>
 
                         <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                          <span>{t.author?.full_name ?? "—"}</span>
+                          <span>
+                            {t.author?.full_name ??
+                              tr("community.authorFallback")}
+                          </span>
                           <span className="text-border">·</span>
                           <span>{timeAgo(t.updated_at)}</span>
                           <span className="text-border">·</span>
                           <span className="inline-flex items-center gap-1">
                             <MessageCircle className="size-3" />
                             {postsCount}{" "}
-                            {postsCount === 1 ? "respuesta" : "respuestas"}
+                            {postsCount === 1
+                              ? tr("community.replyOne")
+                              : tr("community.replyOther")}
                           </span>
                           {t.phase && (
                             <>
                               <span className="text-border">·</span>
                               <Badge variant="outline" className="font-normal">
-                                Fase{" "}
-                                {String(t.phase.order_index).padStart(2, "0")}
-                                : {t.phase.title}
+                                {tr("community.phaseBadge", {
+                                  order: String(
+                                    t.phase.order_index,
+                                  ).padStart(2, "0"),
+                                  title:
+                                    localized(t.phase, "title", locale) ??
+                                    t.phase.title,
+                                })}
                               </Badge>
                             </>
                           )}

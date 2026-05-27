@@ -15,6 +15,8 @@ import {
   Users,
 } from "lucide-react";
 
+import { getTranslations } from "next-intl/server";
+
 import { signOutAction } from "@/lib/auth/actions";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -26,106 +28,108 @@ import { DapButton } from "@/components/ui-dap/button";
 import { EnrollmentCTA } from "@/components/launch/enrollment-cta";
 import { Reveal } from "@/components/landing/reveal";
 
-export const metadata: Metadata = {
-  title: "Cómo funciona el DAP",
-  description:
-    "Cómo funciona el Diplomado Apostólico Pastoral: admisión formal con carta del pastor, suscripción mensual de $25, 72 módulos en 18 meses, 1 módulo por semana, MasterClass por evento, corrección personalizada del Ap. Max Hebeling y comunidad.",
-  alternates: { canonical: "/como-funciona" },
-  openGraph: {
-    type: "website",
-    url: "/como-funciona",
-    title: "Cómo funciona el DAP · Diplomado Apostólico Pastoral",
-    description:
-      "Suscripción mensual de $25. 72 módulos en 18 meses (1 por semana). MasterClass por evento, corrección personalizada del Ap. Max Hebeling, comunidad.",
-  },
-};
-
-const STEPS = [
-  {
-    icon: ShieldCheck,
-    title: "Postulas y eres admitido",
-    body: "Completas el formulario de admisión y, si no perteneces a la Red Apostólica, adjuntas carta de consentimiento de tu pastor. El equipo revisa manualmente y emite tu admisión formal.",
-  },
-  {
-    icon: CreditCard,
-    title: "Activas tu suscripción",
-    body: "$25 USD/mes vía Stripe — sin compromiso de permanencia. Tu calendario personal arranca el primer martes después de la aprobación de tu admisión.",
-  },
-  {
-    icon: CalendarClock,
-    title: "Recibes 1 módulo cada semana",
-    body: "Cada martes (00:01 hora de San Diego, California) se abre un módulo nuevo. La tarea de activación cierra el lunes siguiente (23:59). El contenido pasado sigue accesible para repaso indefinidamente.",
-  },
-  {
-    icon: Award,
-    title: "Completas bloques, recibes dimensiones",
-    body: "Al aprobar los 8 módulos de un bloque (5 secciones completas + quiz aprobado), recibes certificado, insignia y una dimensión nueva. 9 bloques = 9 dimensiones, de Discípulo hasta Enviado.",
-  },
-] as const;
-
-const WEEK = [
-  {
-    day: "Martes 00:01",
-    icon: BookOpen,
-    title: "Abre tu módulo de la semana",
-    body: "El nuevo módulo aparece en tu dashboard con sus 5 partes: introducción, enseñanza en video, activación práctica, evaluación e impartición. Recibes email automático.",
-  },
-  {
-    day: "De martes a lunes",
-    icon: Sparkles,
-    title: "Estudias a tu ritmo",
-    body: "Mirás la enseñanza en video (40 min) — desde tu casa, oficina o donde quieras — hacés el quiz autocorregible y entregás tu activación escrita. Todo a tu ritmo, dentro de tu semana.",
-  },
-  {
-    day: "Lunes 23:59",
-    icon: CalendarClock,
-    title: "Cierra la ventana de entrega",
-    body: "Después de esa hora, la tarea queda como pendiente y el martes siguiente abre la próxima semana. El contenido visto sigue disponible para repaso.",
-  },
-  {
-    day: "48h después",
-    icon: Radio,
-    title: "Llega tu corrección personal",
-    body: "El Ap. Max Hebeling te devuelve feedback escrito en su voz pastoral: lo que viste, lo que necesitas afinar, próximo paso y una palabra de impartación. Resultado del quiz también revelado a las 48h.",
-  },
-  {
-    day: "Por evento",
-    icon: Users,
-    title: "MasterClass + mentoría en vivo",
-    body: "MasterClass en vivo del Ap. Max Hebeling (mínimo 1 al mes garantizada). Mentoría grupal por convocatoria especial. Te avisamos por email apenas se programa.",
-  },
-];
-
-const FIVE_PARTS = [
-  {
-    n: "01",
-    title: "Introducción",
-    body: "Objetivo, revelación principal y aplicación inmediata. Te alineás antes de la enseñanza.",
-  },
-  {
-    n: "02",
-    title: "Enseñanza",
-    body: "Video principal del módulo (40 min). Doctrina + práctica para ver con foco completo.",
-  },
-  {
-    n: "03",
-    title: "Activación",
-    body: "Ejercicio práctico para aplicar de inmediato. Sin activación, no hay impartición real.",
-  },
-  {
-    n: "04",
-    title: "Evaluación",
-    body: "Quiz que mide comprensión. Aprobarlo es requisito para completar el módulo.",
-  },
-  {
-    n: "05",
-    title: "Frase de impartición",
-    body: "Palabra apostólica de cierre. Declaración que queda sobre tu vida.",
-  },
-];
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("PublicPages");
+  return {
+    title: t("howItWorks.metaTitle"),
+    description: t("howItWorks.metaDescription"),
+    alternates: { canonical: "/como-funciona" },
+    openGraph: {
+      type: "website",
+      url: "/como-funciona",
+      title: t("howItWorks.ogTitle"),
+      description: t("howItWorks.ogDescription"),
+    },
+  };
+}
 
 export default async function ComoFuncionaPage() {
+  const t = await getTranslations("PublicPages");
   const supabase = await createClient();
+
+  const STEPS = [
+    {
+      icon: ShieldCheck,
+      title: t("howItWorks.steps.step1Title"),
+      body: t("howItWorks.steps.step1Body"),
+    },
+    {
+      icon: CreditCard,
+      title: t("howItWorks.steps.step2Title"),
+      body: t("howItWorks.steps.step2Body"),
+    },
+    {
+      icon: CalendarClock,
+      title: t("howItWorks.steps.step3Title"),
+      body: t("howItWorks.steps.step3Body"),
+    },
+    {
+      icon: Award,
+      title: t("howItWorks.steps.step4Title"),
+      body: t("howItWorks.steps.step4Body"),
+    },
+  ] as const;
+
+  const WEEK = [
+    {
+      day: t("howItWorks.week.day1"),
+      icon: BookOpen,
+      title: t("howItWorks.week.day1Title"),
+      body: t("howItWorks.week.day1Body"),
+    },
+    {
+      day: t("howItWorks.week.day2"),
+      icon: Sparkles,
+      title: t("howItWorks.week.day2Title"),
+      body: t("howItWorks.week.day2Body"),
+    },
+    {
+      day: t("howItWorks.week.day3"),
+      icon: CalendarClock,
+      title: t("howItWorks.week.day3Title"),
+      body: t("howItWorks.week.day3Body"),
+    },
+    {
+      day: t("howItWorks.week.day4"),
+      icon: Radio,
+      title: t("howItWorks.week.day4Title"),
+      body: t("howItWorks.week.day4Body"),
+    },
+    {
+      day: t("howItWorks.week.day5"),
+      icon: Users,
+      title: t("howItWorks.week.day5Title"),
+      body: t("howItWorks.week.day5Body"),
+    },
+  ];
+
+  const FIVE_PARTS = [
+    {
+      n: "01",
+      title: t("howItWorks.fiveParts.part1Title"),
+      body: t("howItWorks.fiveParts.part1Body"),
+    },
+    {
+      n: "02",
+      title: t("howItWorks.fiveParts.part2Title"),
+      body: t("howItWorks.fiveParts.part2Body"),
+    },
+    {
+      n: "03",
+      title: t("howItWorks.fiveParts.part3Title"),
+      body: t("howItWorks.fiveParts.part3Body"),
+    },
+    {
+      n: "04",
+      title: t("howItWorks.fiveParts.part4Title"),
+      body: t("howItWorks.fiveParts.part4Body"),
+    },
+    {
+      n: "05",
+      title: t("howItWorks.fiveParts.part5Title"),
+      body: t("howItWorks.fiveParts.part5Body"),
+    },
+  ];
 
   const {
     data: { user },
@@ -169,16 +173,17 @@ export default async function ComoFuncionaPage() {
 
           <div className="mx-auto max-w-4xl text-center">
             <p className="mb-4 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-              Calendario semanal personal
+              {t("howItWorks.heroEyebrow")}
             </p>
             <h1 className="font-grotesk text-display font-bold leading-[1.05] text-text-primary">
-              ¿Cómo funciona <span className="gradient-text">el DAP</span>?
+              {t("howItWorks.heroTitlePre")}
+              <span className="gradient-text">
+                {t("howItWorks.heroTitleAccent")}
+              </span>
+              {t("howItWorks.heroTitlePost")}
             </h1>
             <p className="mx-auto mt-6 max-w-2xl font-inter text-base text-text-secondary md:text-lg">
-              Admisión formal, suscripción mensual, 1 módulo por semana
-              durante 72 semanas. Corrección personalizada del Ap. Max
-              Hebeling y MasterClass en vivo por evento. El tiempo fluye
-              — no te quedás atrás.
+              {t("howItWorks.heroBody")}
             </p>
           </div>
         </section>
@@ -188,10 +193,14 @@ export default async function ComoFuncionaPage() {
           <div className="mx-auto max-w-6xl">
             <Reveal>
               <p className="mb-4 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-                El recorrido
+                {t("howItWorks.stepsEyebrow")}
               </p>
               <h2 className="mb-12 max-w-2xl font-grotesk text-h1 font-bold leading-tight text-text-primary">
-                Cuatro pasos, <span className="gradient-text">del aspirante al liderazgo</span>.
+                {t("howItWorks.stepsHeadingPre")}
+                <span className="gradient-text">
+                  {t("howItWorks.stepsHeadingAccent")}
+                </span>
+                {t("howItWorks.stepsHeadingPost")}
               </h2>
             </Reveal>
 
@@ -205,7 +214,9 @@ export default async function ComoFuncionaPage() {
                         <Icon className="size-6" strokeWidth={1.8} />
                       </div>
                       <p className="mb-2 font-inter text-xs font-medium uppercase tracking-widest text-text-tertiary">
-                        Paso {String(i + 1).padStart(2, "0")}
+                        {t("howItWorks.stepLabel", {
+                          number: String(i + 1).padStart(2, "0"),
+                        })}
                       </p>
                       <h3 className="mb-3 font-grotesk text-h4 font-semibold text-text-primary">
                         {step.title}
@@ -226,10 +237,14 @@ export default async function ComoFuncionaPage() {
           <div className="mx-auto max-w-6xl">
             <Reveal>
               <p className="mb-4 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-                Tu semana en el DAP
+                {t("howItWorks.weekEyebrow")}
               </p>
               <h2 className="mb-12 max-w-2xl font-grotesk text-h1 font-bold leading-tight text-text-primary">
-                Cronograma <span className="gradient-text">semanal</span>.
+                {t("howItWorks.weekHeadingPre")}
+                <span className="gradient-text">
+                  {t("howItWorks.weekHeadingAccent")}
+                </span>
+                {t("howItWorks.weekHeadingPost")}
               </h2>
             </Reveal>
 
@@ -265,10 +280,14 @@ export default async function ComoFuncionaPage() {
           <div className="mx-auto max-w-6xl">
             <Reveal>
               <p className="mb-4 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-                Estructura de cada módulo
+                {t("howItWorks.partsEyebrow")}
               </p>
               <h2 className="mb-12 max-w-2xl font-grotesk text-h1 font-bold leading-tight text-text-primary">
-                Cinco partes <span className="gradient-text">en cada clase</span>.
+                {t("howItWorks.partsHeadingPre")}
+                <span className="gradient-text">
+                  {t("howItWorks.partsHeadingAccent")}
+                </span>
+                {t("howItWorks.partsHeadingPost")}
               </h2>
             </Reveal>
 
@@ -302,20 +321,17 @@ export default async function ComoFuncionaPage() {
                   strokeWidth={2}
                 />
                 <h3 className="mb-3 font-grotesk text-h2 font-bold text-text-primary">
-                  ¿Y si no llego a completar una semana?
+                  {t("howItWorks.missedWeekTitle")}
                 </h3>
                 <p className="font-inter text-base leading-relaxed text-text-secondary">
-                  No pasa nada con tu avance. El{" "}
-                  <strong className="text-text-primary">calendario manda</strong>
-                  {" "}— el módulo siguiente se abre el próximo martes. La
-                  tarea de la semana que no entregaste queda como pendiente,
-                  pero el contenido sigue accesible para repaso indefinidamente.
-                  Para certificarte del bloque vas a necesitar aprobar los
-                  8 módulos en algún momento.
+                  {t("howItWorks.missedWeekBodyPre")}
+                  <strong className="text-text-primary">
+                    {t("howItWorks.missedWeekBodyStrong")}
+                  </strong>
+                  {t("howItWorks.missedWeekBodyPost")}
                 </p>
                 <p className="mt-4 font-inter text-sm text-text-tertiary">
-                  Quita la ansiedad de &ldquo;perder el mes&rdquo;. El llamado se desarrolla
-                  con constancia, no con presión.
+                  {t("howItWorks.missedWeekNote")}
                 </p>
               </div>
             </Reveal>
@@ -330,28 +346,28 @@ export default async function ComoFuncionaPage() {
                 <Layers className="mx-auto mb-3 size-6 text-brand-violet" />
                 <p className="font-grotesk text-h2 font-bold gradient-text">9</p>
                 <p className="font-inter text-xs uppercase tracking-widest text-text-tertiary">
-                  Bloques
+                  {t("howItWorks.statBlocks")}
                 </p>
               </div>
               <div className="text-center">
                 <BookOpen className="mx-auto mb-3 size-6 text-brand-coral" />
                 <p className="font-grotesk text-h2 font-bold gradient-text">72</p>
                 <p className="font-inter text-xs uppercase tracking-widest text-text-tertiary">
-                  Módulos
+                  {t("howItWorks.statModules")}
                 </p>
               </div>
               <div className="text-center">
                 <CalendarClock className="mx-auto mb-3 size-6 text-brand-amber" />
                 <p className="font-grotesk text-h2 font-bold gradient-text">18</p>
                 <p className="font-inter text-xs uppercase tracking-widest text-text-tertiary">
-                  Meses
+                  {t("howItWorks.statMonths")}
                 </p>
               </div>
               <div className="text-center">
                 <ShieldCheck className="mx-auto mb-3 size-6 text-brand-violet" />
                 <p className="font-grotesk text-h2 font-bold gradient-text">9</p>
                 <p className="font-inter text-xs uppercase tracking-widest text-text-tertiary">
-                  Dimensiones
+                  {t("howItWorks.statDimensions")}
                 </p>
               </div>
             </div>
@@ -364,15 +380,18 @@ export default async function ComoFuncionaPage() {
           <div className="absolute inset-0 -z-10 opacity-70 [background:radial-gradient(50%_50%_at_50%_50%,rgba(123,97,255,0.35),transparent_55%)]" />
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="font-grotesk text-h1 font-bold leading-tight text-text-primary">
-              Listo para <span className="gradient-text">empezar</span>.
+              {t("howItWorks.ctaTitlePre")}
+              <span className="gradient-text">
+                {t("howItWorks.ctaTitleAccent")}
+              </span>
+              {t("howItWorks.ctaTitlePost")}
             </h2>
             <p className="mx-auto mt-6 max-w-xl font-inter text-base text-text-secondary md:text-lg">
-              $25 USD/mes. Cancela cuando quieras. Acceso inmediato al
-              Mes 1.
+              {t("howItWorks.ctaBody")}
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
               <EnrollmentCTA href="/suscribirme" size="lg">
-                Suscribirme ahora
+                {t("howItWorks.ctaSubscribe")}
                 <ArrowRight />
               </EnrollmentCTA>
               <DapButton
@@ -380,7 +399,7 @@ export default async function ComoFuncionaPage() {
                 variant="secondary"
                 size="lg"
               >
-                Ver precios
+                {t("howItWorks.ctaSeePricing")}
               </DapButton>
             </div>
           </div>

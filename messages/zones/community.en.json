@@ -1,0 +1,101 @@
+{
+  "Forum": {
+    "replyForm": {
+      "validation": {
+        "minBody": "At least 2 characters"
+      },
+      "label": "Your reply",
+      "placeholder": "Markdown supported. Be constructive: this forum is a pastoral space.",
+      "publishing": "Publishing…",
+      "submit": "Post reply"
+    },
+    "authorActions": {
+      "closeConfirm": "Close this thread? No more replies will be accepted. The conversation stays visible.",
+      "edit": "Edit",
+      "closed": "Closed",
+      "closing": "Closing…",
+      "close": "Close"
+    },
+    "reportPost": {
+      "minReason": "Write at least 4 characters describing the reason.",
+      "success": "Report sent. We'll review it soon.",
+      "trigger": "Report",
+      "triggerTitle": "Report this post",
+      "heading": "Report this post",
+      "reasonPlaceholder": "Why are you reporting this post? (min. 4 characters)",
+      "cancel": "Cancel",
+      "sending": "Sending…",
+      "sendReport": "Send report"
+    },
+    "editThread": {
+      "validation": {
+        "minTitle": "At least 4 characters",
+        "minBody": "Tell us a bit more"
+      },
+      "titleLabel": "Title",
+      "phaseLabel": "Related phase (optional)",
+      "phasePlaceholder": "None",
+      "noPhase": "No specific phase",
+      "phaseOption": "Phase {number} · {title}",
+      "bodyLabel": "Body (Markdown)",
+      "cancel": "Cancel",
+      "saving": "Saving…",
+      "save": "Save changes"
+    },
+    "newThread": {
+      "validation": {
+        "minTitle": "At least 4 characters",
+        "minBody": "Tell us a bit more"
+      },
+      "titleLabel": "Title",
+      "titlePlaceholder": "What would you like to talk about?",
+      "phaseLabel": "Related phase (optional)",
+      "phasePlaceholder": "None",
+      "noPhase": "No specific phase",
+      "phaseOption": "Phase {number} · {title}",
+      "bodyLabel": "Body (Markdown)",
+      "bodyPlaceholder": "Write in Markdown. Headings, lists, **bold**, _italic_, [links](url)...",
+      "cancel": "Cancel",
+      "publishing": "Publishing…",
+      "publish": "Post thread"
+    },
+    "phaseFilter": {
+      "label": "Filter by phase",
+      "placeholder": "All phases",
+      "all": "All phases",
+      "phaseOption": "Phase {number} · {title}"
+    }
+  },
+  "Admission": {
+    "fileDropzone": {
+      "errorType": "PDF, JPG or PNG only.",
+      "errorSize": "The file must be smaller than 10 MB.",
+      "fileMeta": "{size} MB · {type}",
+      "fileMetaFallback": "file",
+      "remove": "Remove",
+      "errorRetry": "Try again. PDF, JPG or PNG · max 10 MB.",
+      "emptyTitle": "Drag the letter or click",
+      "emptyHint": "PDF, JPG or PNG · max 10 MB"
+    }
+  },
+  "Certificate": {
+    "document": {
+      "docTitle": "DAP Certificate — {fullName}",
+      "author": "Diplomado Apostólico Pastoral",
+      "subject": "Block {phaseNumber}: {phaseTitle}",
+      "eyebrow": "Diplomado Apostólico Pastoral",
+      "title": "Block Certificate",
+      "subtitle": "Block {phaseNumber} · {phaseTitle}",
+      "awardedTo": "Awarded to",
+      "bodyBefore": "In recognition of having successfully completed the ",
+      "bodyModules": "eight modules",
+      "bodyMiddle": " of Block {phaseNumber} — ",
+      "bodyAfter": " — of the Diplomado Apostólico Pastoral, bearing witness to the comprehensive formation received.",
+      "dimensionLabel": "Ministerial dimension awarded",
+      "signatureName": "Dr. Max Hebeling",
+      "signatureTitle": "Apostle & CEO\nRed Apostólica Reino y Avivamiento\nRevival & Kingdom Ministries, INC",
+      "verifyLabel": "Verification code",
+      "issuedOn": "Issued on {date}"
+    }
+  }
+}

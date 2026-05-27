@@ -1,0 +1,48 @@
+{
+  "Footer": {
+    "home": "DAP — Inicio",
+    "tagline": "Diplomado Apostólico Pastoral. Formación integral de 18 meses para pastores y líderes hispanohablantes.",
+    "values": {
+      "biblical": "Bíblico",
+      "practical": "Práctico",
+      "strategic": "Estratégico",
+      "technological": "Tecnológico",
+      "apostolic": "Apostólico"
+    },
+    "cols": {
+      "support": {
+        "title": "Soporte",
+        "faq": "Preguntas frecuentes",
+        "login": "Iniciar sesión",
+        "contact": "Contacto"
+      },
+      "legal": {
+        "title": "Legal",
+        "terms": "Términos",
+        "privacy": "Privacidad",
+        "refunds": "Reembolsos"
+      }
+    },
+    "backing": {
+      "title": "Respaldo oficial",
+      "description": "DAP es un departamento de educación de <org>Revival & Kingdom Ministries, INC</org>."
+    },
+    "legalBar": {
+      "copyright": "© {year} DAP. Todos los derechos reservados.",
+      "developedBy": "Desarrollado por",
+      "builtWithPurpose": "Construido con propósito",
+      "apostolicTech": "Apostólico + Tech"
+    },
+    "marquee": "Ecosistema integral de educación, gobierno y liderazgo de Reino"
+  },
+  "Launch": {
+    "gate": {
+      "title": "Inscripciones abren el {date}",
+      "description": "La primera convocatoria del Diplomado Apostólico Pastoral abre inscripciones el <strong>{date}</strong>. Vuelve en esa fecha para postular tu admisión y asegurar tu lugar.",
+      "classesStart": "Inicio de clases:"
+    }
+  },
+  "Legal": {
+    "lastUpdated": "Última actualización: {date}"
+  }
+}

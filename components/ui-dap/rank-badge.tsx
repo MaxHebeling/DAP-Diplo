@@ -1,5 +1,6 @@
 import * as React from "react";
 import type { LucideIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
 
@@ -46,6 +47,7 @@ function DapRankBadge({
   className,
   label,
 }: DapRankBadgeProps) {
+  const t = useTranslations("UiDap");
   const tint = RANK_TINT[rankOrder];
   const px = SIZE_PX[size];
   const id = React.useId();
@@ -59,7 +61,7 @@ function DapRankBadge({
     <span
       data-slot="dap-rank-badge"
       role="img"
-      aria-label={label ?? `Rango ${rankOrder}`}
+      aria-label={label ?? t("rankBadge.ariaLabel", { order: rankOrder })}
       className={cn(
         "relative inline-flex items-center justify-center",
         className,

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Check, Pencil, X } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,18 +25,22 @@ type SectionRow = {
   mux_playback_id: string | null;
 };
 
-const KIND_LABEL: Record<SectionRow["kind"], string> = {
-  intro: "Introducción",
-  teaching: "Enseñanza",
-  activation: "Activación",
-  evaluation: "Evaluación",
-  impartation: "Frase de impartición",
+const KIND_LABEL_KEY: Record<SectionRow["kind"], string> = {
+  intro: "moduleSections.kindIntro",
+  teaching: "moduleSections.kindTeaching",
+  activation: "moduleSections.kindActivation",
+  evaluation: "moduleSections.kindEvaluation",
+  impartation: "moduleSections.kindImpartation",
 };
 
-export const metadata = { title: "Secciones del módulo — Admin DAP" };
+export async function generateMetadata() {
+  const t = await getTranslations("Admin");
+  return { title: t("moduleSections.metaTitle") };
+}
 
 export default async function AdminModuleSectionsPage({ params }: PageProps) {
   const { slug: id, moduleSlug: mid } = await params;
+  const t = await getTranslations("Admin");
   const supabase = await createClient();
 
   const { data: phase } = await supabase
@@ -59,7 +64,7 @@ export default async function AdminModuleSectionsPage({ params }: PageProps) {
     .order("order_index", { ascending: true })
     .returns<SectionRow[]>();
   if (error) {
-    throw new Error(`No se pudieron cargar las secciones: ${error.message}`);
+    throw new Error(t("moduleSections.loadError", { message: error.message }));
   }
   const sections = data ?? [];
 
@@ -71,19 +76,21 @@ export default async function AdminModuleSectionsPage({ params }: PageProps) {
           className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-brand-coral"
         >
           <ArrowLeft className="size-4" />
-          Volver a módulos
+          {t("moduleSections.backToModules")}
         </Link>
 
         <header className="mb-8 flex items-end justify-between gap-4">
           <div>
             <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
-              Fase {String(phase.order_index).padStart(2, "0")} · Módulo{" "}
-              {String(mod.order_index).padStart(2, "0")} · {mod.title}
+              {t("moduleSections.eyebrow", {
+                phaseIndex: String(phase.order_index).padStart(2, "0"),
+                moduleIndex: String(mod.order_index).padStart(2, "0"),
+                moduleTitle: mod.title,
+              })}
             </p>
-            <h1 className="font-serif text-3xl font-semibold">Secciones</h1>
+            <h1 className="font-serif text-3xl font-semibold">{t("moduleSections.title")}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Las 5 secciones fijas del módulo. La sección de enseñanza incluye
-              video Mux.
+              {t("moduleSections.description")}
             </p>
           </div>
           <Button
@@ -91,7 +98,7 @@ export default async function AdminModuleSectionsPage({ params }: PageProps) {
             render={<Link href={`/admin/fases/${id}/modulos/${mid}/editar`} />}
           >
             <Pencil className="size-4" />
-            Editar módulo
+            {t("moduleSections.editModule")}
           </Button>
         </header>
 
@@ -100,10 +107,10 @@ export default async function AdminModuleSectionsPage({ params }: PageProps) {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-14">#</TableHead>
-                <TableHead className="w-40">Tipo</TableHead>
-                <TableHead>Título</TableHead>
-                <TableHead className="w-32 text-center">Cuerpo</TableHead>
-                <TableHead className="w-32 text-center">Video</TableHead>
+                <TableHead className="w-40">{t("moduleSections.thType")}</TableHead>
+                <TableHead>{t("moduleSections.thTitle")}</TableHead>
+                <TableHead className="w-32 text-center">{t("moduleSections.thBody")}</TableHead>
+                <TableHead className="w-32 text-center">{t("moduleSections.thVideo")}</TableHead>
                 <TableHead className="w-28 text-right" />
               </TableRow>
             </TableHeader>
@@ -121,7 +128,7 @@ export default async function AdminModuleSectionsPage({ params }: PageProps) {
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary" className="font-normal">
-                        {KIND_LABEL[s.kind]}
+                        {t(KIND_LABEL_KEY[s.kind])}
                       </Badge>
                     </TableCell>
                     <TableCell className="font-medium">{s.title}</TableCell>
@@ -154,7 +161,7 @@ export default async function AdminModuleSectionsPage({ params }: PageProps) {
                         }
                       >
                         <Pencil className="size-3.5" />
-                        Editar
+                        {t("moduleSections.edit")}
                       </Button>
                     </TableCell>
                   </TableRow>
