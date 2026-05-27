@@ -5,9 +5,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { LayoutDashboard, LogOut, Menu, ShieldCheck, X } from "lucide-react";
 import { motion, useScroll, useSpring } from "motion/react";
+import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
 import { DapAvatar } from "@/components/ui-dap/avatar";
+import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { EnrollmentCTA } from "@/components/launch/enrollment-cta";
 import {
   DropdownMenu,
@@ -37,28 +39,32 @@ type DapPublicHeaderProps = {
   onSignOut?: () => void | Promise<void>;
 };
 
-// Default cross-página: rutas absolutas + anchor a la sección de
-// preguntas del landing. Si una página quiere su propio menú (ej. el
-// landing usa anchors a #bloques), pasa `links={[...]}` explícito.
-const DEFAULT_LINKS: NavLink[] = [
-  { href: "/como-funciona", label: "Cómo funciona" },
-  { href: "/rangos", label: "Dimensiones" },
-  { href: "/precios", label: "Precios" },
-  { href: "/demo", label: "Demo gratis" },
-  { href: "/#faq", label: "Preguntas" },
-];
-
 export function DapPublicHeader({
-  links = DEFAULT_LINKS,
-  ctaLabel = "Empezar ahora",
+  links,
+  ctaLabel,
   ctaHref = "/suscribirme",
-  loginLabel = "Iniciar sesión",
+  loginLabel,
   loginHref = "/login",
   user,
   onSignOut,
 }: DapPublicHeaderProps) {
+  const t = useTranslations("Header");
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+
+  // Default cross-página: rutas absolutas + anchor a preguntas. Si una
+  // página pasa `links={[...]}` explícito, usa ese menú. Etiquetas e
+  // íconos textuales salen de next-intl (cambian con el idioma).
+  const navLinks: NavLink[] =
+    links ?? [
+      { href: "/como-funciona", label: t("comoFunciona") },
+      { href: "/rangos", label: t("dimensiones") },
+      { href: "/precios", label: t("precios") },
+      { href: "/demo", label: t("demoGratis") },
+      { href: "/#faq", label: t("preguntas") },
+    ];
+  const ctaText = ctaLabel ?? t("cta");
+  const loginText = loginLabel ?? t("login");
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16);
@@ -95,7 +101,7 @@ export function DapPublicHeader({
         <Link
           href="/"
           className="flex items-center text-text-primary"
-          aria-label="DAP — Inicio"
+          aria-label={t("home")}
         >
           <Image
             src="/dap-logo-white.png"
@@ -108,7 +114,7 @@ export function DapPublicHeader({
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex" aria-label="Principal">
-          {links.map((link) => (
+          {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -120,13 +126,17 @@ export function DapPublicHeader({
         </nav>
 
         <div className="flex items-center gap-2">
+          {/* Selector de idioma: visible en desktop; en móvil va dentro
+              del menú desplegable de abajo. */}
+          <LanguageSwitcher className="hidden md:inline-flex" />
+
           {user ? (
             <>
               {/* Mobile: avatar es un link directo (evita bugs Radix
                   DropdownMenu en Safari iOS standalone PWA) */}
               <Link
                 href="/dashboard"
-                aria-label="Ir a mi dashboard"
+                aria-label={t("goToDashboard")}
                 className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-brand-violet focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base sm:hidden"
               >
                 <DapAvatar
@@ -140,7 +150,7 @@ export function DapPublicHeader({
               <div className="hidden sm:inline-flex">
                 <DropdownMenu>
                   <DropdownMenuTrigger
-                    aria-label="Abrir menú de cuenta"
+                    aria-label={t("accountMenu")}
                     className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-brand-violet focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base"
                   >
                     <DapAvatar
@@ -151,18 +161,18 @@ export function DapPublicHeader({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuLabel className="truncate">
-                      {user.fullName ?? "Mi cuenta"}
+                      {user.fullName ?? t("account")}
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
                       <DropdownMenuItem render={<Link href="/dashboard" />}>
                         <LayoutDashboard className="size-4" />
-                        Dashboard
+                        {t("dashboard")}
                       </DropdownMenuItem>
                       {user.role === "admin" && (
                         <DropdownMenuItem render={<Link href="/admin" />}>
                           <ShieldCheck className="size-4" />
-                          Admin
+                          {t("admin")}
                         </DropdownMenuItem>
                       )}
                     </DropdownMenuGroup>
@@ -174,7 +184,7 @@ export function DapPublicHeader({
                             render={<button type="submit" className="w-full" />}
                           >
                             <LogOut className="size-4" />
-                            Cerrar sesión
+                            {t("signOut")}
                           </DropdownMenuItem>
                         </form>
                       </>
@@ -189,11 +199,11 @@ export function DapPublicHeader({
                 href={loginHref}
                 className="hidden font-inter text-sm font-medium text-text-secondary transition-colors hover:text-text-primary sm:inline-flex"
               >
-                {loginLabel}
+                {loginText}
               </Link>
               <span className="hidden sm:inline-flex">
                 <EnrollmentCTA href={ctaHref} size="sm">
-                  {ctaLabel}
+                  {ctaText}
                 </EnrollmentCTA>
               </span>
             </>
@@ -201,7 +211,7 @@ export function DapPublicHeader({
 
           <button
             type="button"
-            aria-label={open ? "Cerrar menú" : "Abrir menú"}
+            aria-label={open ? t("closeMenu") : t("openMenu")}
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
             className="inline-flex size-9 items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-white/[0.04] hover:text-text-primary md:hidden"
@@ -217,7 +227,7 @@ export function DapPublicHeader({
             className="mx-auto flex max-w-6xl flex-col gap-1 px-6 py-4"
             aria-label="Móvil"
           >
-            {links.map((link) => (
+            {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -227,16 +237,25 @@ export function DapPublicHeader({
                 {link.label}
               </Link>
             ))}
+
+            {/* Selector de idioma (versión móvil) */}
+            <div className="mt-2 flex items-center justify-between border-t border-white/[0.06] px-3 pt-3">
+              <span className="font-inter text-sm text-text-secondary">
+                {t("language")}
+              </span>
+              <LanguageSwitcher />
+            </div>
+
             {!user && (
               <div className="mt-2 flex flex-col gap-2 border-t border-white/[0.06] pt-3 sm:hidden">
                 <Link
                   href={loginHref}
                   className="rounded-md px-3 py-2 font-inter text-base text-text-secondary"
                 >
-                  {loginLabel}
+                  {loginText}
                 </Link>
                 <EnrollmentCTA href={ctaHref} size="md">
-                  {ctaLabel}
+                  {ctaText}
                 </EnrollmentCTA>
               </div>
             )}

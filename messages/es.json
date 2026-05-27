@@ -1,0 +1,33 @@
+{
+  "Header": {
+    "home": "DAP — Inicio",
+    "comoFunciona": "Cómo funciona",
+    "dimensiones": "Dimensiones",
+    "precios": "Precios",
+    "demoGratis": "Demo gratis",
+    "preguntas": "Preguntas",
+    "login": "Iniciar sesión",
+    "cta": "Empezar ahora",
+    "account": "Mi cuenta",
+    "dashboard": "Dashboard",
+    "admin": "Admin",
+    "signOut": "Cerrar sesión",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "accountMenu": "Abrir menú de cuenta",
+    "goToDashboard": "Ir a mi dashboard",
+    "language": "Idioma"
+  },
+  "LanguageSwitcher": {
+    "label": "Cambiar idioma",
+    "spanish": "Español",
+    "english": "English"
+  },
+  "Common": {
+    "loading": "Cargando…",
+    "back": "Volver",
+    "next": "Siguiente",
+    "save": "Guardar",
+    "cancel": "Cancelar"
+  }
+}

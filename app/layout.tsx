@@ -7,6 +7,8 @@ import {
   Space_Grotesk,
 } from "next/font/google";
 import { Suspense } from "react";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale } from "next-intl/server";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "@/components/ui/sonner";
@@ -111,14 +113,17 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Locale resuelto por next-intl (i18n/request.ts → cookie NEXT_LOCALE).
+  const locale = await getLocale();
+
   return (
     <html
-      lang="es"
+      lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} ${spaceGrotesk.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
@@ -132,13 +137,17 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: jsonLd(websiteSchema()) }}
         />
 
-        {children}
-        <RegisterServiceWorker />
-        <InstallPrompt />
-        <Toaster richColors position="top-center" />
-        <Suspense fallback={null}>
-          <ToastFromQuery />
-        </Suspense>
+        {/* NextIntlClientProvider hereda locale + mensajes del request
+            config y los expone a los Client Components (useTranslations). */}
+        <NextIntlClientProvider>
+          {children}
+          <RegisterServiceWorker />
+          <InstallPrompt />
+          <Toaster richColors position="top-center" />
+          <Suspense fallback={null}>
+            <ToastFromQuery />
+          </Suspense>
+        </NextIntlClientProvider>
         {/* Vercel observability: pageviews + Core Web Vitals reales
             (LCP, INP, CLS). Gratis hasta 2.5k events/mes en Hobby. */}
         <Analytics />

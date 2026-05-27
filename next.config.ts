@@ -1,5 +1,9 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
+import createNextIntlPlugin from "next-intl/plugin";
+
+// next-intl: apunta al archivo que resuelve locale + mensajes por request.
+const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
 const securityHeaders = [
   {
@@ -50,7 +54,8 @@ const nextConfig: NextConfig = {
 // legibles) + tunnel para bypassear ad-blockers en cliente.
 // Si las env vars SENTRY_ORG/PROJECT no están seteadas (dev local sin
 // auth token), el wrapper no rompe — solo skipea el upload.
-export default withSentryConfig(nextConfig, {
+// Orden: next-intl envuelve la config base, Sentry envuelve el resultado.
+export default withSentryConfig(withNextIntl(nextConfig), {
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
   authToken: process.env.SENTRY_AUTH_TOKEN,
