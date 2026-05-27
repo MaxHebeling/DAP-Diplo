@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+
 import { CacheClearClient } from "./cache-clear-client";
 
-export const metadata: Metadata = {
-  title: "Limpiar caché — DAP",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("PublicPages");
+  return {
+    title: t("cacheClear.metaTitle"),
+    robots: { index: false, follow: false },
+  };
+}
 
 export default function CacheClearPage() {
   return (

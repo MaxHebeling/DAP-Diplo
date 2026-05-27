@@ -13,10 +13,14 @@ import {
 } from "@/components/ui/table";
 import { DocumentUpload } from "@/components/admin/document-upload";
 import { DeleteDocumentSourceButton } from "@/components/admin/delete-document-source-button";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { timeAgo } from "@/lib/forum/format";
 
-export const metadata = { title: "Tutor · Documentos — Admin DAP" };
+export async function generateMetadata() {
+  const t = await getTranslations("Admin");
+  return { title: t("tutorDocs.metaTitle") };
+}
 
 type SourceRow = {
   id: string;
@@ -29,6 +33,7 @@ type SourceRow = {
 };
 
 export default async function AdminTutorDocumentosPage() {
+  const t = await getTranslations("Admin");
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("ai_document_sources")
@@ -54,32 +59,30 @@ export default async function AdminTutorDocumentosPage() {
       <div className="mx-auto max-w-5xl space-y-8">
         <header>
           <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
-            Admin · Tutor IA
+            {t("tutorDocs.eyebrow")}
           </p>
           <h1 className="font-serif text-3xl font-semibold">
-            Documentos (RAG)
+            {t("tutorDocs.title")}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Sube PDFs apostólicos para que el tutor IA tenga contexto. Cada
-            documento se trocea (~500 tokens/chunk) y se embebe con Voyage
-            voyage-3-large (1024-dim).
+            {t("tutorDocs.description")}
           </p>
         </header>
 
         {/* Métricas */}
         <div className="grid gap-4 sm:grid-cols-3">
           <Metric
-            label="Documentos"
+            label={t("tutorDocs.metricDocuments")}
             value={String(sources.length)}
             icon={<FileText className="size-4" />}
           />
           <Metric
-            label="Chunks totales"
+            label={t("tutorDocs.metricTotalChunks")}
             value={totalChunks.toLocaleString()}
             icon={<Hash className="size-4" />}
           />
           <Metric
-            label="Tokens embedidos"
+            label={t("tutorDocs.metricEmbeddedTokens")}
             value={totalTokens.toLocaleString()}
             icon={<Hash className="size-4" />}
             hint={`≈ $${((totalTokens / 1_000_000) * 0.18).toFixed(3)}`}
@@ -89,11 +92,10 @@ export default async function AdminTutorDocumentosPage() {
         {/* Upload */}
         <section className="rounded-xl border bg-card p-6">
           <h2 className="mb-1 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-            Subir nuevo PDF
+            {t("tutorDocs.uploadHeading")}
           </h2>
           <p className="mb-4 text-xs text-muted-foreground">
-            Max 20 MB. El ingest puede tardar 10-30 segundos según
-            extensión.
+            {t("tutorDocs.uploadHint")}
           </p>
           <DocumentUpload />
         </section>
@@ -101,22 +103,24 @@ export default async function AdminTutorDocumentosPage() {
         {/* Tabla */}
         <section>
           <h2 className="mb-3 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-            Documentos ingestados
+            {t("tutorDocs.tableHeading")}
           </h2>
           <div className="overflow-hidden rounded-xl border bg-card">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Título</TableHead>
+                  <TableHead>{t("tutorDocs.colTitle")}</TableHead>
                   <TableHead className="hidden sm:table-cell w-24 text-center">
-                    Tipo
+                    {t("tutorDocs.colType")}
                   </TableHead>
-                  <TableHead className="w-20 text-center">Chunks</TableHead>
+                  <TableHead className="w-20 text-center">
+                    {t("tutorDocs.colChunks")}
+                  </TableHead>
                   <TableHead className="hidden md:table-cell w-24 text-center">
-                    Tokens
+                    {t("tutorDocs.colTokens")}
                   </TableHead>
                   <TableHead className="hidden lg:table-cell w-32">
-                    Subido
+                    {t("tutorDocs.colUploaded")}
                   </TableHead>
                   <TableHead className="w-24 text-right" />
                 </TableRow>
@@ -129,7 +133,7 @@ export default async function AdminTutorDocumentosPage() {
                       className="text-center text-sm text-muted-foreground py-12"
                     >
                       <FileText className="mx-auto mb-3 size-8 text-muted-foreground/40" />
-                      Todavía no hay documentos ingestados.
+                      {t("tutorDocs.empty")}
                     </TableCell>
                   </TableRow>
                 ) : (

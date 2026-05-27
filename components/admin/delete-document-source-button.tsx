@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -14,23 +15,19 @@ export function DeleteDocumentSourceButton({
   id: string;
   title: string;
 }) {
+  const t = useTranslations("AdminUI");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   function onClick() {
-    if (
-      !confirm(
-        `¿Eliminar "${title}"? Se borran sus chunks de la base RAG y el PDF original del storage. No reversible.`,
-      )
-    )
-      return;
+    if (!confirm(t("deleteDocument.confirm", { title }))) return;
     const fd = new FormData();
     fd.set("id", id);
     startTransition(async () => {
       const res = await deleteDocumentSourceAction(undefined, fd);
       if (!res.ok) toast.error(res.error);
       else {
-        toast.success("Documento eliminado.");
+        toast.success(t("deleteDocument.deleted"));
         router.refresh();
       }
     });
@@ -45,7 +42,7 @@ export function DeleteDocumentSourceButton({
       className="text-red-500 hover:bg-red-500/10 hover:text-red-600"
     >
       <Trash2 className="size-3.5" />
-      {pending ? "Eliminando…" : "Eliminar"}
+      {pending ? t("deleteDocument.deleting") : t("deleteDocument.delete")}
     </Button>
   );
 }

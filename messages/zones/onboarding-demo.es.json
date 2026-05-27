@@ -1,0 +1,163 @@
+{
+  "Onboarding": {
+    "modal": {
+      "close": "Cerrar",
+      "comingSoonEyebrow": "Próximamente",
+      "comingSoonTitle": "Inscripciones abren el {date}",
+      "comingSoonBodyBefore": "La primera convocatoria del Diplomado Apostólico Pastoral abre inscripciones el ",
+      "comingSoonBodyAfter": ". Volvé en esa fecha para asegurar tu lugar.",
+      "classesStartLabel": "Inicio de clases:",
+      "closeButton": "Cerrar",
+      "redirectingTitle": "Llevándote al pago seguro",
+      "redirectingBody": "Conectando con Stripe. Tu suscripción se activa inmediatamente después del pago."
+    },
+    "countrySelector": {
+      "step": "Paso 1 de 2",
+      "title": "¿Desde dónde te conectas?",
+      "subtitle": "Tu país nos ayuda a personalizar tu experiencia y prepararte el camino correcto dentro del Diplomado.",
+      "searchPlaceholder": "Buscá tu país...",
+      "featuredLabel": "Destacados · Hispanohablantes",
+      "restLabel": "Resto del mundo",
+      "noResults": "No encontramos ese país. Probá con otro nombre."
+    },
+    "signupForm": {
+      "changeCountry": "Cambiar país",
+      "step": "Paso 2 de 2",
+      "titleMarriage": "Crearemos sus cuentas",
+      "titleSingle": "Creá tu cuenta",
+      "subtitleMarriage": "Capturamos los datos de los dos cónyuges. Después pasás directo al pago seguro de USD $35/mes para ambos.",
+      "subtitleSingle": "Después de esto pasás directo al pago seguro para activar tu suscripción mensual.",
+      "googleLabel": "Continuar con Google",
+      "orWithEmail": "o con tu correo",
+      "geoMismatchTitle": "Beneficio matrimonio Argentina no disponible",
+      "geoMismatchBodyBefore": "Detectamos que estás conectándote desde ",
+      "geoMismatchBodyAfter": ". La inscripción especial de matrimonio es exclusiva para residentes en Argentina. Podés seguir adelante con tu inscripción individual normal.",
+      "geoMismatchChange": "Cambiar a {country}",
+      "geoMismatchChangeFallback": "otro país",
+      "fullNameMarriage": "Nombre completo (cónyuge 1)",
+      "fullNameSingle": "Nombre completo",
+      "emailMarriage": "Correo (cónyuge 1)",
+      "emailSingle": "Correo electrónico",
+      "passwordLabel": "Contraseña",
+      "passwordHint": "Mínimo 8 caracteres",
+      "ministryLabel": "Ministerio / iglesia",
+      "ministryHint": "Opcional — completá después si querés",
+      "spouse2Divider": "Cónyuge 2",
+      "residenceDeclaration": "Confirmamos que residimos actualmente en Argentina y que esta inscripción corresponde a un matrimonio. Aceptamos verificación posterior si fuera necesario.",
+      "submitCreatingMarriage": "Creando cuentas...",
+      "submitCreatingSingle": "Creando cuenta...",
+      "submitMarriage": "Continuar al pago — USD $35/mes",
+      "submitSingle": "Continuar al pago",
+      "trustNoCommitment": "Sin compromiso",
+      "trustCancel": "Cancelás cuando quieras",
+      "trustStripe": "Stripe seguro",
+      "errorFullName": "Mínimo 3 caracteres.",
+      "errorEmail": "Email inválido.",
+      "errorPassword": "Mínimo 8 caracteres.",
+      "errorPhonePrefix": "Debe empezar con {code}",
+      "errorProvince": "Seleccioná tu provincia.",
+      "errorSpouseFullName": "Mínimo 3 caracteres.",
+      "errorSpouseEmail": "Email inválido.",
+      "errorSpouseEmailDistinct": "Debe ser distinto al del cónyuge 1.",
+      "errorSpouseProvince": "Seleccioná la provincia.",
+      "errorResidence": "Necesitamos tu confirmación para aplicar el beneficio.",
+      "toastError": "No se pudo completar el registro.",
+      "toastNetworkError": "Error de red",
+      "toastSuccess": "Cuenta creada. Redirigiendo al pago seguro..."
+    },
+    "marriageToggle": {
+      "title": "Registrarnos como matrimonio",
+      "descriptionBefore": "Inscripción especial para esposos argentinos. ",
+      "descriptionHighlight": "Una sola cuota cubre a los dos."
+    },
+    "discountBanner": {
+      "eyebrow": "Beneficio matrimonial",
+      "title": "Descuento especial para matrimonios de Argentina",
+      "priceSuffix": "/mes",
+      "bodyAfter": " por los dos cónyuges. Un solo cobro mensual cubre acceso completo para ambos.",
+      "featureSingle": "Una sola suscripción",
+      "featureNoDuplicate": "Sin duplicar cargo",
+      "featureCancelable": "Cancelable cuando quieran"
+    },
+    "spouseFields": {
+      "legend": "Cónyuge {number}",
+      "fullNameLabel": "Nombre completo",
+      "emailLabel": "Correo electrónico",
+      "phoneLabel": "WhatsApp / Teléfono",
+      "phoneHint": "Formato: {code} 11 1234 5678",
+      "provinceLabel": "Provincia",
+      "provincePlaceholder": "Seleccioná tu provincia...",
+      "ministryLabel": "Ministerio / iglesia",
+      "ministryHint": "Opcional"
+    },
+    "tour": {
+      "step": "Paso {current} de {total}",
+      "skip": "Saltar",
+      "next": "Siguiente",
+      "done": "Listo",
+      "close": "Cerrar tour"
+    },
+    "dashboardTour": {
+      "welcomeTitle": "Bienvenido al DAP",
+      "welcomeBody": "Te llevamos en un tour rápido para que veas todo lo que tienes disponible. Lleva 30 segundos.",
+      "currentModuleTitle": "Tu módulo de la semana",
+      "currentModuleBody": "Aquí ves el módulo que se abrió este martes. Tienes hasta el lunes 23:59 para entregar la activación.",
+      "progressTitle": "Tu progreso",
+      "progressBody": "Vas a llenar esta barra durante 72 semanas. Al completar los 8 módulos de un bloque, recibes una dimensión.",
+      "upcomingTitle": "Lo que viene",
+      "upcomingBody": "Los próximos módulos quedan bloqueados hasta su martes. El contenido pasado queda accesible para repaso.",
+      "resourcesTitle": "Recursos extra",
+      "resourcesBody": "Comunidad, sesiones en vivo y tutor IA. Disponibles 24/7."
+    }
+  },
+  "Demo": {
+    "avatarHost": {
+      "iframeTitle": "Avatar IA — Guía del demo",
+      "placeholderTitle": "Tu guía digital se está preparando",
+      "placeholderBody": "En breve un avatar virtual te va a recibir y te va a llevar paso a paso por el módulo. Mientras tanto, podés bajar y explorar todo el contenido del módulo directamente."
+    },
+    "quiz": {
+      "questions": {
+        "q1": {
+          "q": "Según la enseñanza, el Reino de Dios es principalmente:",
+          "options": {
+            "o1": "Un lugar futuro al que vamos cuando morimos",
+            "o2": "Una metáfora de la iglesia local",
+            "o3": "El gobierno presente de Dios operando en el ahora",
+            "o4": "Una promesa que se cumplirá solo en el milenio"
+          },
+          "explanation": "Jesús predicó: «El reino de Dios se ha acercado» (Mt 4:17). No es un lugar futuro sino el gobierno presente del Rey, operando aquí y ahora donde se reconoce su autoridad."
+        },
+        "q2": {
+          "q": "¿Cuál de estas NO es una manifestación directa del Reino en la vida del pastor?",
+          "options": {
+            "o1": "Autoridad sobre las áreas que el Padre te entregó",
+            "o2": "Acumulación de seguidores en redes sociales",
+            "o3": "Capacidad de discernir el orden del Reino en lo familiar y ministerial",
+            "o4": "Identidad de hijo que reemplaza la mentalidad de huérfano"
+          },
+          "explanation": "Las 3 opciones correctas (autoridad, discernimiento, identidad de hijo) son frutos del Reino operando. Acumular seguidores puede ocurrir sin que el Reino esté presente — y muchas veces lo bloquea cuando la motivación es la propia gloria."
+        },
+        "q3": {
+          "q": "El pasaje ancla del módulo es:",
+          "options": {
+            "o1": "Juan 3:16",
+            "o2": "Mateo 6:33 — «Buscad primeramente el reino de Dios»",
+            "o3": "1 Corintios 13:13",
+            "o4": "Génesis 1:1"
+          },
+          "explanation": "Mateo 6:33 establece la prioridad apostólica: buscar el Reino primero. Todo lo demás (provisión, dirección, fruto ministerial) viene como añadidura, no como objetivo."
+        }
+      },
+      "submitAllAnswered": "Ver mi resultado",
+      "submitIncomplete": "Respondé las {count} preguntas para continuar",
+      "resultLabel": "Tu resultado",
+      "resultSummary": "{correct} de {total} correctas · ",
+      "passed": "¡Aprobado! (≥ 70%)",
+      "notPassed": "No aprobado — necesitás 70% mínimo",
+      "yourAnswer": "Tu respuesta: ",
+      "correctAnswer": "Correcta: ",
+      "retry": "Volver a intentar"
+    }
+  }
+}

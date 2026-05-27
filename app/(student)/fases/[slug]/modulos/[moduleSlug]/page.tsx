@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { getTranslations, getLocale } from "next-intl/server";
 import { ArrowLeft } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { SignOutButton } from "@/components/auth/sign-out-button";
@@ -16,6 +17,8 @@ import type {
   PlayerQuiz,
 } from "@/components/module/quiz-player";
 import { createClient } from "@/lib/supabase/server";
+import { localized } from "@/lib/i18n/localized";
+import type { Locale } from "@/i18n/config";
 import { ensureWeekAssignment } from "@/lib/calendar/ensure-assignment";
 import { signMuxPlayerTokens } from "@/lib/mux/playback";
 
@@ -27,12 +30,12 @@ const SECTION_KINDS: SectionKind[] = [
   "impartation",
 ];
 
-const SECTION_TITLE: Record<SectionKind, string> = {
-  intro: "Introducción",
-  teaching: "Enseñanza",
-  activation: "Activación",
-  evaluation: "Evaluación",
-  impartation: "Frase de impartición",
+const SECTION_TITLE_KEY: Record<SectionKind, string> = {
+  intro: "module.sectionIntro",
+  teaching: "module.sectionTeaching",
+  activation: "module.sectionActivation",
+  evaluation: "module.sectionEvaluation",
+  impartation: "module.sectionImpartation",
 };
 
 type PageProps = {
@@ -46,7 +49,9 @@ type DbSection = {
   kind: SectionKind;
   order_index: number;
   title: string;
+  title_en: string | null;
   body_md: string | null;
+  body_md_en: string | null;
   mux_playback_id: string | null;
   duration_seconds: number | null;
   progress: DbSectionProgress[] | null;
@@ -62,11 +67,17 @@ type DbModule = {
   id: string;
   slug: string;
   title: string;
+  title_en: string | null;
   subtitle: string | null;
+  subtitle_en: string | null;
   description: string | null;
+  description_en: string | null;
   objective: string | null;
+  objective_en: string | null;
   main_revelation: string | null;
+  main_revelation_en: string | null;
   impartation_phrase: string | null;
+  impartation_phrase_en: string | null;
   duration_minutes: number | null;
   course_week: number | null;
   phase: {
@@ -74,6 +85,7 @@ type DbModule = {
     slug: string;
     order_index: number;
     title: string;
+    title_en: string | null;
     published: boolean;
   } | null;
   sections: DbSection[] | null;
@@ -82,8 +94,9 @@ type DbModule = {
 
 export async function generateMetadata({ params }: PageProps) {
   const { moduleSlug } = await params;
+  const t = await getTranslations("Student");
   return {
-    title: `${moduleSlug} — DAP`,
+    title: t("module.metaTitle", { slug: moduleSlug }),
   };
 }
 
@@ -99,6 +112,8 @@ export default async function ModulePlayerPage({
     ? (sectionParam as SectionKind)
     : "intro";
 
+  const t = await getTranslations("Student");
+  const locale = (await getLocale()) as Locale;
   const supabase = await createClient();
 
   // 1) Auth (esta ruta no está en proxy.ts PROTECTED_PREFIXES → check manual)
@@ -123,12 +138,13 @@ export default async function ModulePlayerPage({
   const { data: mod, error: modErr } = await supabase
     .from("modules")
     .select(
-      `id, slug, title, subtitle, description, objective, main_revelation,
-       impartation_phrase, duration_minutes, course_week,
-       phase:phases(id, slug, order_index, title, published),
+      `id, slug, title, title_en, subtitle, subtitle_en, description, description_en,
+       objective, objective_en, main_revelation, main_revelation_en,
+       impartation_phrase, impartation_phrase_en, duration_minutes, course_week,
+       phase:phases(id, slug, order_index, title, title_en, published),
        sections:module_sections(
-         id, kind, order_index, title, body_md, mux_playback_id,
-         duration_seconds,
+         id, kind, order_index, title, title_en, body_md, body_md_en,
+         mux_playback_id, duration_seconds,
          progress:section_progress(completed, last_position_seconds)
        ),
        resources:module_resources(id, title, kind, url, order_index)`,
@@ -158,7 +174,7 @@ export default async function ModulePlayerPage({
   const { data: siblings } = await supabase
     .from("modules")
     .select(
-      "id, slug, order_index, title, module_progress(completed)",
+      "id, slug, order_index, title, title_en, module_progress(completed)",
     )
     .eq("phase_id", mod.phase.id)
     .order("order_index", { ascending: true });
@@ -169,12 +185,13 @@ export default async function ModulePlayerPage({
       slug: string;
       order_index: number;
       title: string;
+      title_en: string | null;
       module_progress: { completed: boolean | null }[] | null;
     }) => ({
       id: s.id,
       slug: s.slug,
       order_index: s.order_index,
-      title: s.title,
+      title: localized(s, "title", locale) ?? s.title,
       completed: !!s.module_progress?.[0]?.completed,
     }),
   );
@@ -188,7 +205,7 @@ export default async function ModulePlayerPage({
     const completed = !!s?.progress?.[0]?.completed;
     return {
       kind,
-      title: SECTION_TITLE[kind],
+      title: t(SECTION_TITLE_KEY[kind]),
       completed,
     };
   });
@@ -349,10 +366,16 @@ export default async function ModulePlayerPage({
     }
   }
 
+  // Valores localizados para el render (slug/kind/IDs quedan en base).
+  const moduleTitle = localized(mod, "title", locale) ?? mod.title;
+  const moduleSubtitle = localized(mod, "subtitle", locale);
+  const phaseTitle = localized(mod.phase, "title", locale) ?? mod.phase.title;
+  const activeBodyMd = localized(activeSection, "body_md", locale);
+
   return (
     <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[300px_1fr]">
       <ModuleSidebar
-        phaseTitle={mod.phase.title}
+        phaseTitle={phaseTitle}
         phaseOrderIndex={mod.phase.order_index}
         phaseSlug={mod.phase.slug}
         modules={sidebarModules}
@@ -372,21 +395,27 @@ export default async function ModulePlayerPage({
               className="inline-flex shrink-0 items-center gap-1 hover:text-foreground sm:hidden"
             >
               <ArrowLeft className="size-3.5" />
-              <span className="font-medium">Bloque {String(mod.phase.order_index).padStart(2, "0")}</span>
+              <span className="font-medium">
+                {t("module.breadcrumbBlock", {
+                  order: String(mod.phase.order_index).padStart(2, "0"),
+                })}
+              </span>
             </Link>
             <Link href="/dashboard" className="hidden hover:text-foreground sm:inline">
-              Diplomado
+              {t("module.breadcrumbDiploma")}
             </Link>
             <span className="hidden text-border sm:inline">/</span>
             <Link
               href={`/fases/${mod.phase.slug}`}
               className="hidden hover:text-foreground sm:inline"
             >
-              Bloque {String(mod.phase.order_index).padStart(2, "0")}
+              {t("module.breadcrumbBlock", {
+                order: String(mod.phase.order_index).padStart(2, "0"),
+              })}
             </Link>
             <span className="hidden text-border sm:inline">/</span>
             <span className="hidden truncate text-foreground sm:inline">
-              {mod.title}
+              {moduleTitle}
             </span>
           </nav>
           <div className="flex items-center gap-2 sm:gap-3">
@@ -402,20 +431,20 @@ export default async function ModulePlayerPage({
               className="mb-6 hidden items-center gap-2 text-xs text-muted-foreground hover:text-brand-coral sm:inline-flex"
             >
               <ArrowLeft className="size-3.5" />
-              Volver al bloque
+              {t("module.backToBlock")}
             </Link>
 
             <header className="mb-8">
-              {mod.subtitle && (
+              {moduleSubtitle && (
                 <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
-                  {mod.subtitle}
+                  {moduleSubtitle}
                 </p>
               )}
               <h1 className="font-serif text-3xl font-semibold leading-tight sm:text-4xl">
-                {mod.title}
+                {moduleTitle}
               </h1>
               <p className="mt-2 text-sm text-muted-foreground">
-                ≈ {mod.duration_minutes ?? 50} minutos · 5 partes
+                {t("module.duration", { minutes: mod.duration_minutes ?? 50 })}
               </p>
             </header>
 
@@ -433,7 +462,7 @@ export default async function ModulePlayerPage({
                 id="section-heading"
                 className="mb-6 font-serif text-2xl font-semibold"
               >
-                {SECTION_TITLE[currentSection]}
+                {t(SECTION_TITLE_KEY[currentSection])}
               </h2>
 
               {currentSection === "teaching" ? (
@@ -444,7 +473,7 @@ export default async function ModulePlayerPage({
                   moduleSlug={mod.slug}
                   muxPlaybackId={activeSection.mux_playback_id}
                   muxTokens={muxTokens}
-                  bodyMd={activeSection.body_md}
+                  bodyMd={activeBodyMd}
                   durationSeconds={activeSection.duration_seconds}
                   startPositionSeconds={startPosition}
                   alreadyCompleted={teachingAlreadyCompleted}
@@ -465,11 +494,15 @@ export default async function ModulePlayerPage({
                   moduleId={mod.id}
                   phaseSlug={mod.phase.slug}
                   moduleSlug={mod.slug}
-                  bodyMd={activeSection.body_md}
+                  bodyMd={activeBodyMd}
                   module={{
-                    objective: mod.objective,
-                    main_revelation: mod.main_revelation,
-                    impartation_phrase: mod.impartation_phrase,
+                    objective: localized(mod, "objective", locale),
+                    main_revelation: localized(mod, "main_revelation", locale),
+                    impartation_phrase: localized(
+                      mod,
+                      "impartation_phrase",
+                      locale,
+                    ),
                   }}
                   activation={
                     currentSection === "activation"

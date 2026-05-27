@@ -1,0 +1,278 @@
+{
+  "Student": {
+    "common": {
+      "studentFallback": "Student",
+      "backToHome": "Back to home",
+      "back": "Back",
+      "continue": "Continue",
+      "review": "Review",
+      "diplomaEyebrow": "Apostolic Pastoral Diploma"
+    },
+    "dashboard": {
+      "metaTitle": "My dashboard — DAP",
+      "topbarTitle": "Home",
+      "greeting": "Hello, {firstName}.",
+      "welcome": "Welcome, {firstName}.",
+      "admin": "Admin",
+      "noSub": {
+        "canceled": "Your subscription is canceled. Reactivate whenever you like and pick up right where you left off.",
+        "inactive": "Your subscription is not active yet. Start your training whenever you're ready.",
+        "cardTitle": "Activate your access",
+        "cardDescription": "$25 USD/month · cancel anytime · all modules unlock week by week.",
+        "cta": "Continue"
+      },
+      "week": {
+        "status": "You're in <strong>Week {currentWeek} of 72</strong> of the program.",
+        "noModule": "We couldn't find this week's module. If this persists, let us know at admisiones@dapglobal.org."
+      },
+      "notStarted": {
+        "cardTitle": "Your program starts soon",
+        "startsOn": "It starts on <strong>{startsAt}</strong>. That day Week 1 opens and you'll receive an email notice.",
+        "noDate": "You don't have a start date assigned yet. You'll get an email once admissions approves your application and issues your enrollment number.",
+        "matricula": "Enrollment · {matricula}",
+        "explore": "In the meantime you can explore the <community>community</community> or the <tutor>AI tutor</tutor>."
+      },
+      "currentCard": {
+        "eyebrow": "Your module this week · Week {week}",
+        "block": "Block {order} · {title}",
+        "taskCloses": "The assignment closes on {date}",
+        "completed": "Module completed"
+      },
+      "progress": {
+        "label": "Your progress",
+        "count": "{count} <muted>of 72 modules</muted>"
+      },
+      "past": {
+        "title": "Review",
+        "emptyDescription": "Your program is just beginning — there are no modules to review yet.",
+        "titleFull": "Review · previous weeks",
+        "description": "The content is always available. The assignments have already closed."
+      },
+      "upcoming": {
+        "title": "Upcoming",
+        "emptyDescription": "You've reached the end of the program. Congratulations.",
+        "titleFull": "Upcoming · waiting for you",
+        "description": "Each module opens on the Tuesday of its week.",
+        "opensAt": "Opens {date}"
+      },
+      "listItem": {
+        "weekTitle": "Week {week} · {title}",
+        "review": "Review"
+      },
+      "resources": {
+        "title": "Resources",
+        "description": "Beyond this week's module.",
+        "community": "Community of pastors in training",
+        "live": "Upcoming live MasterClasses and mentorships",
+        "tutor": "AI Tutor — ask about any DAP doctrine",
+        "admin": "Administration panel"
+      },
+      "subscription": {
+        "label": "Your subscription",
+        "active": "Active",
+        "cancelsOn": "Cancels on {date}.",
+        "nextBill": "Next charge: {date}.",
+        "manage": "Manage"
+      },
+      "tutorPromo": {
+        "title": "AI Tutor available",
+        "description": "Resolve doctrinal questions 24/7.",
+        "open": "Open tutor"
+      }
+    },
+    "admission": {
+      "metaTitle": "Admission — DAP",
+      "metaDescription": "Complete your admission form for the Apostolic Pastoral Diploma.",
+      "logoAlt": "DAP",
+      "title": "Your admission form",
+      "intro": "Complete these details so the admissions team can review your application. We'll email you as soon as it's ready.",
+      "doubts": "Questions? Write to us at"
+    },
+    "admissionStatus": {
+      "metaTitle": "Your admission status — DAP",
+      "logoAlt": "DAP",
+      "eyebrow": "Your admission status",
+      "greeting": "Hello, {firstName}",
+      "pending": {
+        "title": "Application received",
+        "description": "Your form reached the admissions team. We'll review it shortly and notify you by email."
+      },
+      "underReview": {
+        "title": "Under review",
+        "description": "The admissions team is reviewing your application. If we need more information, we'll reach out."
+      },
+      "rejected": {
+        "title": "Not approved",
+        "description": "Your application was not approved in this round. We invite you to write to us to understand the next steps."
+      },
+      "approved": {
+        "title": "Approved",
+        "description": "Your application is approved. Enter the dashboard to begin."
+      },
+      "submittedAt": "Submitted on {date}",
+      "reviewedAt": "Reviewed on {date}",
+      "contact": "Contact admissions",
+      "spamNote": "Check your spam folder in case our reply lands there. We'll email you as soon as we have news."
+    },
+    "agenda": {
+      "metaTitle": "Schedule — DAP",
+      "topbarTitle": "Schedule",
+      "eyebrow": "Coming soon",
+      "title": "Your schedule at DAP",
+      "description": "Here you'll see the weekly calendar with your modules, live MasterClasses and mentorships. In the meantime, scheduled live sessions are under Live and your module for the week is on Home.",
+      "primaryAction": "View live sessions",
+      "secondaryAction": "Back to home"
+    },
+    "certifications": {
+      "metaTitle": "Certifications — DAP",
+      "topbarTitle": "Certifications",
+      "eyebrow": "Coming soon",
+      "title": "Your certificates",
+      "description": "Here you'll be able to download all your certificates and share the dimensions you've earned. For now you can see your progress and the dimensions earned from My Progress.",
+      "primaryAction": "View my progress",
+      "secondaryAction": "Back to home"
+    },
+    "settings": {
+      "metaTitle": "Settings — DAP",
+      "topbarTitle": "Settings",
+      "eyebrow": "Your account",
+      "title": "Settings",
+      "subtitle": "Your account and notification preferences.",
+      "notifications": {
+        "title": "Notifications",
+        "description": "Enable browser notifications to get an alert every Tuesday when your new module opens, and when your weekly feedback from Ap. Max arrives."
+      },
+      "password": {
+        "title": "Password",
+        "description": "If you want to change it, we'll send a link to your email.",
+        "cta": "Change password"
+      },
+      "support": {
+        "title": "More settings soon",
+        "description": "Coming soon: edit profile, manage subscription, language and time zone, privacy options."
+      }
+    },
+    "community": {
+      "metaTitle": "Community — DAP",
+      "topbarTitle": "Community",
+      "eyebrow": "Community",
+      "title": "Pastors' forum",
+      "subtitle": "Connect with other pastors and leaders of the DAP. Share revelations, questions and testimonies.",
+      "newThread": "New thread",
+      "empty": {
+        "title": "No threads yet",
+        "description": "Be the first to start a conversation.",
+        "cta": "Create the first thread"
+      },
+      "closed": "Closed",
+      "replyOne": "reply",
+      "replyOther": "replies",
+      "phaseBadge": "Phase {order}: {title}",
+      "authorFallback": "—"
+    },
+    "communityNew": {
+      "metaTitle": "New thread — DAP Community",
+      "back": "Back to the community",
+      "eyebrow": "Community",
+      "title": "New thread",
+      "subtitle": "Share a question, a revelation or invite others to a conversation. Markdown supported."
+    },
+    "thread": {
+      "metaTitle": "Thread — DAP Community",
+      "back": "Back to the community",
+      "pinned": "Pinned",
+      "closed": "Closed",
+      "phaseBadge": "Phase {order}: {title}",
+      "authorFallback": "—",
+      "replyOne": "reply",
+      "replyOther": "replies",
+      "emptyReplies": "No replies yet. Be the first to take part.",
+      "threadClosed": "This thread is closed. No more replies are accepted."
+    },
+    "threadEdit": {
+      "metaTitle": "Edit thread — DAP Community",
+      "back": "Back to the thread",
+      "eyebrow": "Community",
+      "title": "Edit thread"
+    },
+    "live": {
+      "metaTitle": "Live — DAP",
+      "eyebrow": "Live",
+      "title": "DAP sessions",
+      "subtitle": "MasterClasses, activations and group mentorships. Recordings remain available after each session.",
+      "tabUpcoming": "Upcoming",
+      "tabRecordings": "Recordings",
+      "emptyUpcoming": {
+        "title": "No scheduled sessions",
+        "description": "The team hasn't scheduled any upcoming sessions yet. In the meantime, explore the available recordings."
+      },
+      "emptyRecordings": {
+        "title": "No recordings yet",
+        "description": "Recordings appear here after each live session."
+      }
+    },
+    "phases": {
+      "metaTitle": "My Modules — DAP",
+      "topbarTitle": "My Modules",
+      "eyebrow": "Apostolic Pastoral Diploma · 72 weeks",
+      "title": "The 9 Blocks",
+      "subtitle": "Your complete journey. Each block delivers a new dimension.",
+      "dimension": "Dimension {num} · {name}",
+      "dimensionFallback": "—",
+      "modulesCount": "{completed} / {total} modules",
+      "blockWeeks": "Block {order} · Weeks {first}–{last}",
+      "viewBlock": "View block"
+    },
+    "module": {
+      "metaTitle": "{slug} — DAP",
+      "sectionIntro": "Introduction",
+      "sectionTeaching": "Teaching",
+      "sectionActivation": "Activation",
+      "sectionEvaluation": "Evaluation",
+      "sectionImpartation": "Impartation phrase",
+      "breadcrumbBlock": "Block {order}",
+      "breadcrumbDiploma": "Diploma",
+      "backToBlock": "Back to the block",
+      "duration": "≈ {minutes} minutes · 5 parts"
+    },
+    "progress": {
+      "metaTitle": "My Progress — DAP",
+      "topbarTitle": "My Progress",
+      "eyebrow": "Your journey at DAP",
+      "title": "My Progress",
+      "matricula": "Enrollment · {matricula}",
+      "programProgress": "Program progress",
+      "modulesCount": "{count} <muted>of 72 modules</muted>",
+      "currentWeekLabel": "Current week: {value}",
+      "currentWeekValue": "{week} of 72",
+      "notStartedValue": "Your program hasn't started yet",
+      "dimensions": {
+        "title": "Dimensions earned",
+        "fallback": "—",
+        "awardedOn": "Awarded on {date}",
+        "empty": "You haven't reached any dimension yet. Complete the 8 modules of a block to earn the first one (Disciple)."
+      },
+      "certificates": {
+        "title": "Certificates issued",
+        "blockTitle": "Block {order}: {title}",
+        "blockFallback": "—",
+        "issuedOn": "Issued on {date} · Code: {code}",
+        "view": "View",
+        "empty": "You don't have any certificates issued yet. They're generated automatically when you complete each block."
+      },
+      "completed": {
+        "title": "Latest completed modules",
+        "item": "Module completed",
+        "empty": "You haven't completed any module yet. Start with your current week's module from <home>Home</home>."
+      }
+    },
+    "tutor": {
+      "metaTitle": "AI Tutor — DAP",
+      "eyebrow": "DAP Tutor",
+      "title": "Ask whatever you need",
+      "subtitle": "I answer only based on the DAP's apostolic materials. If the answer isn't in the documents, I'll tell you.",
+      "newConversation": "New conversation",
+      "selectPrevious": "Or select a previous conversation from the sidebar."
+    }
+  }
+}

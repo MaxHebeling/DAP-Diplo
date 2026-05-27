@@ -5,6 +5,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { ArrowUp, FileText, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,12 +38,6 @@ type TutorUIMessage = {
   >;
 };
 
-const SUGGESTED_PROMPTS = [
-  "¿Qué se enseña en el Bloque 1 sobre los fundamentos espirituales?",
-  "Explícame qué significa autoridad apostólica según el DAP",
-  "¿Cuál es la diferencia entre un pastor y un apóstol en este programa?",
-];
-
 function hydrateInitialMessages(rows: DbMessage[]): TutorUIMessage[] {
   return rows.map((r) => {
     const citations = Array.isArray(r.citations)
@@ -73,6 +68,7 @@ export function ChatWindow({
    */
   embedded?: boolean;
 }) {
+  const t = useTranslations("Tutor");
   const [input, setInput] = useState("");
   const initial = hydrateInitialMessages(initialMessages);
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -150,11 +146,11 @@ export function ChatWindow({
                 </p>
                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 font-inter text-[10px] font-medium text-emerald-400">
                   <span className="size-1.5 rounded-full bg-emerald-400" />
-                  En línea
+                  {t("chat.online")}
                 </span>
               </div>
               <p className="truncate font-inter text-[11px] text-text-tertiary">
-                {conversationTitle ?? "Tutor del Diplomado Apostólico Pastoral"}
+                {conversationTitle ?? t("chat.defaultSubtitle")}
               </p>
             </div>
           </header>
@@ -197,7 +193,7 @@ export function ChatWindow({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={onKeyDown}
-              placeholder="Pregúntale a Esdras…  (⌘ + Enter para enviar)"
+              placeholder={t("chat.placeholder")}
               rows={2}
               className="flex-1 resize-none border-0 bg-transparent px-3 py-2 font-inter text-sm text-text-primary placeholder:text-text-tertiary shadow-none focus-visible:ring-0"
               disabled={isStreaming}
@@ -216,8 +212,7 @@ export function ChatWindow({
             </Button>
           </div>
           <p className="mt-2 px-1 font-inter text-[11px] text-text-tertiary">
-            Esdras responde solo con base en el material del DAP. Las
-            respuestas pueden contener errores — verificá con tu pastor.
+            {t("chat.disclaimer")}
           </p>
         </div>
       </form>
@@ -230,29 +225,39 @@ export function ChatWindow({
 // ============================================================
 
 function EmptyState({ onSuggested }: { onSuggested: (text: string) => void }) {
+  const t = useTranslations("Tutor");
+  const suggestedPrompts = [
+    t("chat.suggested1"),
+    t("chat.suggested2"),
+    t("chat.suggested3"),
+  ];
   return (
     <div className="flex flex-col items-center pt-12 text-center sm:pt-20">
       <EsdrasAvatar size="xl" showGlow />
 
       <p className="mt-8 font-inter text-[10px] font-semibold uppercase tracking-[0.42em] text-brand-coral">
-        Tutor IA · DAP
+        {t("chat.tagline")}
       </p>
       <h2 className="mt-3 font-grotesk text-3xl font-bold leading-tight text-text-primary sm:text-4xl">
-        Soy <span className="bg-gradient-to-r from-brand-violet via-[#A28BFF] to-brand-coral bg-clip-text text-transparent">Esdras</span>.
+        {t.rich("chat.welcomeHeading", {
+          highlight: (chunks) => (
+            <span className="bg-gradient-to-r from-brand-violet via-[#A28BFF] to-brand-coral bg-clip-text text-transparent">
+              {chunks}
+            </span>
+          ),
+        })}
       </h2>
       <p className="mt-4 max-w-md font-inter text-sm leading-relaxed text-text-secondary">
-        Estoy aquí para acompañarte en tu formación. Te respondo
-        únicamente con base en el material oficial del Diplomado, con
-        reverencia y precisión.
+        {t("chat.welcomeBody")}
       </p>
 
       <div className="mt-10 w-full max-w-lg">
         <p className="mb-3 font-inter text-[10px] font-semibold uppercase tracking-[0.32em] text-text-tertiary">
           <Sparkles className="mr-1 inline size-3 text-brand-violet" />
-          Para empezar
+          {t("chat.toStart")}
         </p>
         <div className="space-y-2">
-          {SUGGESTED_PROMPTS.map((p, i) => (
+          {suggestedPrompts.map((p, i) => (
             <button
               key={i}
               type="button"
@@ -297,6 +302,7 @@ function hasTextInParts(m: TutorUIMessage): boolean {
 }
 
 function MessageRow({ message }: { message: TutorUIMessage }) {
+  const t = useTranslations("Tutor");
   const isUser = message.role === "user";
   const textParts = (message.parts ?? []).filter(
     (p): p is { type: "text"; text: string } =>
@@ -336,7 +342,7 @@ function MessageRow({ message }: { message: TutorUIMessage }) {
           <div className="rounded-xl border border-brand-violet/15 bg-brand-violet/[0.04] px-4 py-2.5">
             <p className="mb-2 flex items-center gap-1.5 font-inter text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-violet">
               <FileText className="size-3" strokeWidth={2} />
-              Fuentes citadas
+              {t("chat.citedSources")}
             </p>
             <ul className="space-y-1">
               {uniqueSources.map(([sourceId, title]) => (

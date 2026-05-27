@@ -1,19 +1,24 @@
 import { Calendar } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { ComingSoonPage } from "@/components/student/coming-soon-page";
 
-export const metadata = { title: "Agenda — DAP" };
+export async function generateMetadata() {
+  const t = await getTranslations("Student");
+  return { title: t("agenda.metaTitle") };
+}
 
 export default async function AgendaPage() {
+  const t = await getTranslations("Student");
   return (
     <ComingSoonPage
-      topbarTitle="Agenda"
-      eyebrow="Próximamente"
-      title="Tu agenda en el DAP"
-      description="Aquí verás el calendario semanal con tus módulos, MasterClass en vivo y mentorías. Mientras tanto, las sesiones en vivo programadas están en En Vivo y tu módulo de la semana en Inicio."
+      topbarTitle={t("agenda.topbarTitle")}
+      eyebrow={t("agenda.eyebrow")}
+      title={t("agenda.title")}
+      description={t("agenda.description")}
       icon={Calendar}
-      primaryAction={{ href: "/en-vivo", label: "Ver sesiones en vivo" }}
+      primaryAction={{ href: "/en-vivo", label: t("agenda.primaryAction") }}
       secondaryActions={[
-        { href: "/dashboard", label: "Volver al inicio" },
+        { href: "/dashboard", label: t("agenda.secondaryAction") },
       ]}
     />
   );

@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { AR_PROVINCES, AR_DIAL_CODE } from "@/lib/data/argentina";
 import { Field, fieldCx } from "@/components/onboarding/field";
 
@@ -40,6 +42,7 @@ export function SpouseFields({
   hideName,
   hideMinistry,
 }: Props) {
+  const t = useTranslations("Onboarding.spouseFields");
   function set<K extends keyof SpouseData>(key: K, val: SpouseData[K]) {
     onChange({ ...data, [key]: val });
   }
@@ -51,14 +54,14 @@ export function SpouseFields({
           {legendNumber}
         </span>
         <p className="font-grotesk text-sm font-semibold text-text-primary">
-          Cónyuge {legendNumber}
+          {t("legend", { number: legendNumber })}
         </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         {!hideName && (
           <Field
-            label="Nombre completo"
+            label={t("fullNameLabel")}
             error={errors.fullName}
             className="sm:col-span-2"
             input={
@@ -75,7 +78,7 @@ export function SpouseFields({
         )}
 
         <Field
-          label="Correo electrónico"
+          label={t("emailLabel")}
           error={errors.email}
           input={
             <input
@@ -90,8 +93,8 @@ export function SpouseFields({
         />
 
         <Field
-          label="WhatsApp / Teléfono"
-          hint={`Formato: ${AR_DIAL_CODE} 11 1234 5678`}
+          label={t("phoneLabel")}
+          hint={t("phoneHint", { code: AR_DIAL_CODE })}
           error={errors.phone}
           input={
             <input
@@ -107,7 +110,7 @@ export function SpouseFields({
         />
 
         <Field
-          label="Provincia"
+          label={t("provinceLabel")}
           error={errors.province}
           className="sm:col-span-2"
           input={
@@ -117,7 +120,7 @@ export function SpouseFields({
               disabled={disabled}
               className={fieldCx(!!errors.province)}
             >
-              <option value="">Seleccioná tu provincia...</option>
+              <option value="">{t("provincePlaceholder")}</option>
               {AR_PROVINCES.map((p) => (
                 <option key={p} value={p}>
                   {p}
@@ -129,8 +132,8 @@ export function SpouseFields({
 
         {!hideMinistry && (
           <Field
-            label="Ministerio / iglesia"
-            hint="Opcional"
+            label={t("ministryLabel")}
+            hint={t("ministryHint")}
             className="sm:col-span-2"
             input={
               <input

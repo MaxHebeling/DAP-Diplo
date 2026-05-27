@@ -1,0 +1,117 @@
+{
+  "PastoresTeam": {
+    "metadata": {
+      "title": "DAP · Let's raise up leaders together",
+      "description": "A special opportunity for pastors and leaders: enroll 12 people and take the Diploma at no cost."
+    },
+    "footer": {
+      "tagline": "DAP · Exclusive opportunity for leaders",
+      "privacy": "Private page. Do not share publicly."
+    },
+    "hero": {
+      "eyebrow": "Exclusive opportunity · Pastors & Leaders",
+      "headlineTop": "LET'S RAISE UP",
+      "headlineBottom": "LEADERS TOGETHER",
+      "subheadlineLead": "Your leadership can open doors for many…",
+      "subheadlineEmphasis": "and for you as well.",
+      "scrollCue": "Discover the offer"
+    },
+    "message": {
+      "leadStart": "We believe pastors and leaders should have access to",
+      "leadEmphasis": "integral, modern, and deep training",
+      "body": "That's why we're opening a special opportunity for those who want to drive the growth of their people."
+    },
+    "rule": {
+      "eyebrow": "How it works",
+      "headingTop": "One simple rule.",
+      "headingBottom": "A multiplied impact.",
+      "card1Title": "If you enroll 12 people…",
+      "card1Highlight": "you take the Diploma AT NO COST.",
+      "card2Title": "If your spouse brings another 12…",
+      "card2Highlight": "you both take the Diploma FREE.",
+      "step": "Step {step}",
+      "people": "people",
+      "openTitle": "No distinctions. Anyone counts.",
+      "openBody": "You can invite whoever wants to grow with you: leaders, servers, volunteers, members, youth, entrepreneurs. Anyone willing to learn counts.",
+      "audience": {
+        "leaders": "Leaders",
+        "servers": "Servers",
+        "volunteers": "Volunteers",
+        "members": "Members",
+        "youth": "Youth",
+        "entrepreneurs": "Entrepreneurs"
+      }
+    },
+    "network": {
+      "eyebrow": "Multiplication and expansion",
+      "headingTop": "The more people you train,",
+      "headingBottom": "the more access you generate.",
+      "body": "Every person trained alongside you opens doors for more. The network grows, territories are transformed.",
+      "centerLabel": "You",
+      "statLeadership": "Your leadership",
+      "statTrained": "People trained",
+      "statGenerations": "Generations impacted"
+    },
+    "benefits": {
+      "eyebrow": "What's included",
+      "headingLead": "An",
+      "headingEmphasis": "integral training.",
+      "body": "8 dimensions, 72 weeks. DAP forms the complete leader: pastor, administrator, reformer, communicator, mentor, entrepreneur, strategist, and spiritual governor.",
+      "items": {
+        "biblical": {
+          "title": "Biblical training",
+          "desc": "Solid foundations, apostolic doctrine with a modern vision of the Kingdom."
+        },
+        "leadership": {
+          "title": "Leadership",
+          "desc": "Character, governance, mentoring. You form leaders who form leaders."
+        },
+        "finances": {
+          "title": "Finances",
+          "desc": "Stewardship, Kingdom economy, multiplication with wisdom."
+        },
+        "administration": {
+          "title": "Administration",
+          "desc": "Structure, order, systems that sustain ministry growth."
+        },
+        "business": {
+          "title": "Business",
+          "desc": "Plant Kingdom businesses. Influence from the marketplace and culture."
+        },
+        "technology": {
+          "title": "Technology & AI",
+          "desc": "Master the tools that rule the 21st century. Without losing your soul."
+        },
+        "communication": {
+          "title": "Modern communication",
+          "desc": "Storytelling, media, personal brand. Your message reaches further."
+        },
+        "government": {
+          "title": "Kingdom government",
+          "desc": "Reform territories. Apostolic authority that goes beyond the pulpit."
+        }
+      }
+    },
+    "finalCta": {
+      "waMessage": "Hi, I saw the opportunity for pastors at DAP and I want to activate it.",
+      "headingTop": "It's not just",
+      "headingBottom": "about studying…",
+      "bodyLead": "It's about",
+      "bodyGenerations": "raising up generations",
+      "bodyMiddle": ", forming leaders, and",
+      "bodyEmphasis": "transforming territories.",
+      "button": "I want to activate this opportunity",
+      "note": "We'll respond to you personally on WhatsApp."
+    }
+  },
+  "ErrorPages": {
+    "error": {
+      "eyebrow": "Something went wrong",
+      "title": "We had a problem loading this page.",
+      "body": "The error has been logged and we'll look into it. In the meantime, you can try again or go back to home.",
+      "retry": "Try again",
+      "backHome": "Back to home",
+      "ref": "Ref: {digest}"
+    }
+  }
+}

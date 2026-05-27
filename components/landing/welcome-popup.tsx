@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { X } from "lucide-react";
 
 import {
@@ -21,6 +22,7 @@ const STORAGE_KEY = "dap-welcome-popup-dismissed";
 const DELAY_MS = 4000;
 
 export function WelcomePopup() {
+  const t = useTranslations("Landing");
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -58,13 +60,13 @@ export function WelcomePopup() {
           type="button"
           onClick={() => handleOpenChange(false)}
           className="absolute right-3 top-3 z-10 flex size-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-sm transition-all hover:scale-105 hover:bg-black/80"
-          aria-label="Cerrar"
+          aria-label={t("welcomePopup.closeAria")}
         >
           <X className="size-5" strokeWidth={2.5} />
         </button>
         <Image
           src="/welcome-popup.jpg"
-          alt="DAP — Bienvenidos · Inicio de clases martes 23 de junio de 2026 · Coming soon"
+          alt={t("welcomePopup.imageAlt")}
           width={1280}
           height={720}
           priority

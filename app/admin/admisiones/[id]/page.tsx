@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ExternalLink, FileText } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/server";
@@ -10,9 +11,14 @@ import {
 } from "@/lib/admission/storage";
 import { AdmissionActions } from "./admission-actions";
 
-export const metadata = {
-  title: "Detalle de admisión — Admin DAP",
-};
+export async function generateMetadata() {
+  const t = await getTranslations("Admin");
+  return {
+    title: t("admissionDetail.metaTitle"),
+  };
+}
+
+type T = Awaited<ReturnType<typeof getTranslations>>;
 
 type AdmissionDetail = {
   id: string;
@@ -46,16 +52,16 @@ type ProfileMini = {
   admission_status: string;
 };
 
-function statusBadge(s: AdmissionDetail["status"]) {
+function statusBadge(s: AdmissionDetail["status"], t: T) {
   switch (s) {
     case "pending":
-      return <Badge variant="outline">Pendiente</Badge>;
+      return <Badge variant="outline">{t("admissionDetail.badgePending")}</Badge>;
     case "under_review":
-      return <Badge className="bg-amber-500/15 text-amber-300 hover:bg-amber-500/15">En revisión</Badge>;
+      return <Badge className="bg-amber-500/15 text-amber-300 hover:bg-amber-500/15">{t("admissionDetail.badgeUnderReview")}</Badge>;
     case "approved":
-      return <Badge className="bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/15">Aprobada</Badge>;
+      return <Badge className="bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/15">{t("admissionDetail.badgeApproved")}</Badge>;
     case "rejected":
-      return <Badge className="bg-brand-coral/15 text-brand-coral hover:bg-brand-coral/15">Rechazada</Badge>;
+      return <Badge className="bg-brand-coral/15 text-brand-coral hover:bg-brand-coral/15">{t("admissionDetail.badgeRejected")}</Badge>;
   }
 }
 
@@ -76,13 +82,13 @@ function formatDateShort(iso: string | null): string {
   });
 }
 
-function networkLabel(d: AdmissionDetail): string {
-  if (!d.belongs_to_network) return "No pertenece — requiere carta del pastor";
+function networkLabel(d: AdmissionDetail, t: T): string {
+  if (!d.belongs_to_network) return t("admissionDetail.networkNoLetter");
   if (d.network_name === "reino_y_avivamiento")
-    return "Red Apostólica Reino y Avivamiento";
+    return t("admissionDetail.networkReino");
   if (d.network_name === "revival_kingdom")
-    return "Revival & Kingdom Ministries, INC";
-  return "Sí (sin especificar)";
+    return t("admissionDetail.networkRevival");
+  return t("admissionDetail.networkYesUnspecified");
 }
 
 export default async function AdmissionDetailPage({
@@ -91,6 +97,7 @@ export default async function AdmissionDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const t = await getTranslations("Admin");
   const supabase = await createClient();
 
   const { data: admission, error } = await supabase
@@ -102,7 +109,7 @@ export default async function AdmissionDetailPage({
     .maybeSingle<AdmissionDetail>();
 
   if (error) {
-    throw new Error(`No se pudo cargar admisión: ${error.message}`);
+    throw new Error(t("admissionDetail.loadError", { message: error.message }));
   }
   if (!admission) notFound();
 
@@ -129,24 +136,26 @@ export default async function AdmissionDetailPage({
           className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-3.5" />
-          Volver a admisiones
+          {t("admissionDetail.backToAdmissions")}
         </Link>
 
         {/* Header */}
         <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-              Admisión
+              {t("admissionDetail.eyebrow")}
             </p>
             <h1 className="mt-1 font-grotesk text-3xl font-bold tracking-tight">
               {admission.full_name}
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Enviada el {formatDate(admission.submitted_at)}
+              {t("admissionDetail.submittedOn", {
+                date: formatDate(admission.submitted_at),
+              })}
             </p>
           </div>
           <div className="flex flex-col items-end gap-2">
-            {statusBadge(admission.status)}
+            {statusBadge(admission.status, t)}
             {profile?.matricula && (
               <p className="font-mono text-xs text-muted-foreground">
                 {profile.matricula}
@@ -157,36 +166,36 @@ export default async function AdmissionDetailPage({
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* Datos personales */}
-          <DetailCard title="Datos personales">
-            <DetailRow label="Email" value={admission.email} />
-            <DetailRow label="Teléfono" value={admission.phone} />
-            <DetailRow label="País" value={admission.country} />
-            <DetailRow label="Ciudad" value={admission.city ?? "—"} />
+          <DetailCard title={t("admissionDetail.personalDataTitle")}>
+            <DetailRow label={t("admissionDetail.rowEmail")} value={admission.email} />
+            <DetailRow label={t("admissionDetail.rowPhone")} value={admission.phone} />
+            <DetailRow label={t("admissionDetail.rowCountry")} value={admission.country} />
+            <DetailRow label={t("admissionDetail.rowCity")} value={admission.city ?? "—"} />
             <DetailRow
-              label="Nacimiento"
+              label={t("admissionDetail.rowBirth")}
               value={formatDateShort(admission.birth_date)}
             />
           </DetailCard>
 
           {/* Pertenencia */}
-          <DetailCard title="Pertenencia">
-            <DetailRow label="Iglesia" value={admission.church_name ?? "—"} />
-            <DetailRow label="Ministerio" value={admission.ministry_name ?? "—"} />
-            <DetailRow label="Profesión" value={admission.profession ?? "—"} />
+          <DetailCard title={t("admissionDetail.membershipTitle")}>
+            <DetailRow label={t("admissionDetail.rowChurch")} value={admission.church_name ?? "—"} />
+            <DetailRow label={t("admissionDetail.rowMinistry")} value={admission.ministry_name ?? "—"} />
+            <DetailRow label={t("admissionDetail.rowProfession")} value={admission.profession ?? "—"} />
             <DetailRow
-              label="Empresa / sector"
+              label={t("admissionDetail.rowCompanySector")}
               value={admission.company_or_sector ?? "—"}
             />
           </DetailCard>
 
           {/* Red Apostólica */}
-          <DetailCard title="Red apostólica" className="md:col-span-2">
-            <p className="text-sm text-foreground">{networkLabel(admission)}</p>
+          <DetailCard title={t("admissionDetail.networkTitle")} className="md:col-span-2">
+            <p className="text-sm text-foreground">{networkLabel(admission, t)}</p>
 
             {admission.consent_letter_url && (
               <div className="mt-4 rounded-lg border border-brand-violet/25 bg-brand-violet/[0.06] p-4">
                 <p className="mb-2 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                  Carta de consentimiento
+                  {t("admissionDetail.consentLetterLabel")}
                 </p>
                 {consentUrl ? (
                   <Link
@@ -196,16 +205,16 @@ export default async function AdmissionDetailPage({
                     className="inline-flex items-center gap-2 text-sm font-medium text-brand-coral hover:underline"
                   >
                     <FileText className="size-4" />
-                    Ver carta firmada por el pastor
+                    {t("admissionDetail.viewSignedLetter")}
                     <ExternalLink className="size-3" />
                   </Link>
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    No se pudo generar el link (¿bucket configurado?).
+                    {t("admissionDetail.consentLinkError")}
                   </p>
                 )}
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Link signed válido por 24 horas.
+                  {t("admissionDetail.signedLinkNote")}
                 </p>
               </div>
             )}
@@ -213,22 +222,22 @@ export default async function AdmissionDetailPage({
 
           {/* Estado post-aprobación */}
           {admission.status === "approved" && (
-            <DetailCard title="Datos académicos" className="md:col-span-2">
-              <DetailRow label="Matrícula" value={profile?.matricula ?? "—"} />
+            <DetailCard title={t("admissionDetail.academicDataTitle")} className="md:col-span-2">
+              <DetailRow label={t("admissionDetail.rowMatricula")} value={profile?.matricula ?? "—"} />
               <DetailRow
-                label="Inicio del programa"
+                label={t("admissionDetail.rowProgramStart")}
                 value={formatDateShort(profile?.program_start_date ?? null)}
               />
               <DetailRow
-                label="Aprobada"
+                label={t("admissionDetail.rowApproved")}
                 value={formatDate(admission.approved_at)}
               />
               <DetailRow
-                label="Carta PDF enviada"
+                label={t("admissionDetail.rowLetterSent")}
                 value={
                   admission.admission_letter_sent_at
                     ? formatDate(admission.admission_letter_sent_at)
-                    : "Pendiente — se envía 24h después de la aprobación"
+                    : t("admissionDetail.letterPending")
                 }
               />
               {letterUrl && (
@@ -240,7 +249,7 @@ export default async function AdmissionDetailPage({
                     className="inline-flex items-center gap-2 text-sm font-medium text-brand-coral hover:underline"
                   >
                     <FileText className="size-4" />
-                    Descargar carta PDF
+                    {t("admissionDetail.downloadLetter")}
                     <ExternalLink className="size-3" />
                   </Link>
                 </div>
@@ -250,12 +259,14 @@ export default async function AdmissionDetailPage({
 
           {/* Rechazo */}
           {admission.status === "rejected" && (
-            <DetailCard title="Motivo del rechazo" className="md:col-span-2">
+            <DetailCard title={t("admissionDetail.rejectionTitle")} className="md:col-span-2">
               <p className="text-sm text-foreground">
                 {admission.rejection_reason ?? "—"}
               </p>
               <p className="mt-3 text-xs text-muted-foreground">
-                Rechazada el {formatDate(admission.reviewed_at)}
+                {t("admissionDetail.rejectedOn", {
+                  date: formatDate(admission.reviewed_at),
+                })}
               </p>
             </DetailCard>
           )}

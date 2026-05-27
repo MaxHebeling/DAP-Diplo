@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Check, Loader2, Mail, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -36,19 +37,20 @@ type ApprovedProps = Props & {
 };
 
 export function AdmissionActions({ admissionId, status, letterSentAt }: ApprovedProps) {
+  const t = useTranslations("AdmissionActions");
   const isApproved = status === "approved";
   return (
     <div className="flex flex-col items-stretch gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between">
       <div>
         <p className="font-grotesk text-sm font-semibold text-foreground">
-          Decisión
+          {t("decision")}
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
           {isApproved
             ? letterSentAt
-              ? "Admisión aprobada y carta enviada. Puedes reenviar la carta si el alumno reporta que no la recibió."
-              : "Admisión aprobada. La carta se enviará automáticamente en 24h por el cron. Puedes reenviarla ahora si lo necesitas."
-            : "Aprobar asigna matrícula + fecha de inicio + envía la carta PDF en 24h. Rechazar envía email al aspirante con el motivo."}
+              ? t("approvedAndSent")
+              : t("approvedPending")
+            : t("decisionHelp")}
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
@@ -66,6 +68,7 @@ export function AdmissionActions({ admissionId, status, letterSentAt }: Approved
 }
 
 function ResendLetterButton({ admissionId }: Props) {
+  const t = useTranslations("AdmissionActions");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
@@ -79,7 +82,7 @@ function ResendLetterButton({ admissionId }: Props) {
         toast.error(res.error);
         return;
       }
-      toast.success(res.message ?? "Carta reenviada.");
+      toast.success(res.message ?? t("letterResent"));
       setOpen(false);
       router.refresh();
     });
@@ -89,31 +92,29 @@ function ResendLetterButton({ admissionId }: Props) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button variant="outline" size="sm" />}>
         <Mail className="size-4" />
-        Reenviar carta
+        {t("resendLetter")}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Reenviar carta de admisión</DialogTitle>
+          <DialogTitle>{t("resendLetterTitle")}</DialogTitle>
           <DialogDescription>
-            Se va a generar el PDF de la carta con la fecha de hoy y se envía
-            al email del aspirante. Bypasea el cron diario (no esperas 24h).
-            Idempotente — no duplica el envío automático del cron.
+            {t("resendLetterDescription")}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)} disabled={pending}>
-            Cancelar
+            {t("cancel")}
           </Button>
           <Button onClick={handle} disabled={pending}>
             {pending ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
-                Enviando…
+                {t("sending")}
               </>
             ) : (
               <>
                 <Mail className="size-4" />
-                Reenviar ahora
+                {t("resendNow")}
               </>
             )}
           </Button>
@@ -124,6 +125,7 @@ function ResendLetterButton({ admissionId }: Props) {
 }
 
 function ApproveButton({ admissionId }: Props) {
+  const t = useTranslations("AdmissionActions");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
@@ -137,7 +139,7 @@ function ApproveButton({ admissionId }: Props) {
         toast.error(res.error);
         return;
       }
-      toast.success(res.message ?? "Aprobada.");
+      toast.success(res.message ?? t("approved"));
       setOpen(false);
       router.refresh();
     });
@@ -147,21 +149,18 @@ function ApproveButton({ admissionId }: Props) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button size="sm" className="bg-emerald-600 hover:bg-emerald-500" />}>
         <Check className="size-4" />
-        Aprobar
+        {t("approve")}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Aprobar admisión</DialogTitle>
+          <DialogTitle>{t("approveTitle")}</DialogTitle>
           <DialogDescription>
-            Se le asignará una matrícula única y la fecha de inicio (el primer
-            martes después de hoy). El alumno verá su estado actualizado de
-            inmediato; la carta PDF firmada se enviará al alumno automáticamente
-            24 horas después.
+            {t("approveDescription")}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)} disabled={pending}>
-            Cancelar
+            {t("cancel")}
           </Button>
           <Button
             className="bg-emerald-600 hover:bg-emerald-500"
@@ -171,12 +170,12 @@ function ApproveButton({ admissionId }: Props) {
             {pending ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
-                Aprobando…
+                {t("approving")}
               </>
             ) : (
               <>
                 <Check className="size-4" />
-                Confirmar aprobación
+                {t("confirmApprove")}
               </>
             )}
           </Button>
@@ -187,6 +186,7 @@ function ApproveButton({ admissionId }: Props) {
 }
 
 function RejectButton({ admissionId }: Props) {
+  const t = useTranslations("AdmissionActions");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
@@ -205,7 +205,7 @@ function RejectButton({ admissionId }: Props) {
         toast.error(res.error);
         return;
       }
-      toast.success(res.message ?? "Rechazada.");
+      toast.success(res.message ?? t("rejected"));
       setOpen(false);
       router.refresh();
     });
@@ -215,14 +215,13 @@ function RejectButton({ admissionId }: Props) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button variant="outline" size="sm" />}>
         <X className="size-4" />
-        Rechazar
+        {t("reject")}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Rechazar admisión</DialogTitle>
+          <DialogTitle>{t("rejectTitle")}</DialogTitle>
           <DialogDescription>
-            El aspirante recibirá un email con el motivo seleccionado. Puede
-            re-postular más adelante.
+            {t("rejectDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -252,7 +251,7 @@ function RejectButton({ admissionId }: Props) {
           {reasonValue === "other" && (
             <div>
               <Label htmlFor="customReason" className="text-xs text-muted-foreground">
-                Escribí el motivo (mínimo 5 caracteres)
+                {t("customReasonLabel")}
               </Label>
               <textarea
                 id="customReason"
@@ -260,7 +259,7 @@ function RejectButton({ admissionId }: Props) {
                 onChange={(e) => setCustomReason(e.target.value)}
                 rows={4}
                 className="mt-1 w-full rounded-md border border-white/[0.08] bg-white/[0.04] p-3 text-sm outline-none focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20"
-                placeholder="Explicale al aspirante en qué se basó el rechazo."
+                placeholder={t("customReasonPlaceholder")}
               />
             </div>
           )}
@@ -268,7 +267,7 @@ function RejectButton({ admissionId }: Props) {
 
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)} disabled={pending}>
-            Cancelar
+            {t("cancel")}
           </Button>
           <Button
             variant="destructive"
@@ -281,12 +280,12 @@ function RejectButton({ admissionId }: Props) {
             {pending ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
-                Rechazando…
+                {t("rejecting")}
               </>
             ) : (
               <>
                 <X className="size-4" />
-                Confirmar rechazo
+                {t("confirmReject")}
               </>
             )}
           </Button>

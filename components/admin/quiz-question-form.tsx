@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { z } from "zod";
@@ -42,7 +43,7 @@ type Ctx = { phaseId: string; moduleId: string; sectionId: string };
 
 const formSchema = z
   .object({
-    prompt: z.string().trim().min(2, "Mínimo 2 caracteres").max(2000),
+    prompt: z.string().trim().min(2, "promptMin").max(2000),
     kind: z.enum(["multiple_choice", "true_false"]),
     explanation: z.string().trim().max(2000),
     order_index: z.coerce.number().int().min(0).max(999),
@@ -61,21 +62,21 @@ const formSchema = z
         ctx.addIssue({
           code: "custom",
           path: ["options"],
-          message: "Necesitas al menos 2 opciones no vacías",
+          message: "needTwoOptions",
         });
       }
       if (cleaned.length > 6) {
         ctx.addIssue({
           code: "custom",
           path: ["options"],
-          message: "Máximo 6 opciones",
+          message: "maxSixOptions",
         });
       }
       if (d.correct_index >= cleaned.length) {
         ctx.addIssue({
           code: "custom",
           path: ["correct_index"],
-          message: "El índice correcto debe apuntar a una opción válida",
+          message: "correctIndexInvalid",
         });
       }
     }
@@ -117,8 +118,19 @@ export function QuizQuestionForm({
   onSaved: () => void;
   onCancel?: () => void;
 }) {
+  const t = useTranslations("AdminUI");
   const [pending, startTransition] = useTransition();
   const [deleting, startDelete] = useTransition();
+
+  // Resuelve los mensajes de validación que vienen como key del schema Zod.
+  const questionErrorKeys = new Set([
+    "promptMin",
+    "needTwoOptions",
+    "maxSixOptions",
+    "correctIndexInvalid",
+  ]);
+  const fieldError = (msg: string | undefined): string | undefined =>
+    msg && questionErrorKeys.has(msg) ? t(`quizQuestion.${msg}`) : msg;
 
   const parsed = question
     ? parsePayload(question.kind, question.payload)
@@ -196,7 +208,7 @@ export function QuizQuestionForm({
       );
       if (res.ok) {
         toast.success(
-          question ? "Pregunta actualizada." : "Pregunta agregada.",
+          question ? t("quizQuestion.questionUpdated") : t("quizQuestion.questionAdded"),
         );
         onSaved();
       } else {
@@ -214,19 +226,14 @@ export function QuizQuestionForm({
 
   function onDelete() {
     if (!question) return;
-    if (
-      !confirm(
-        "¿Eliminar esta pregunta? Las respuestas previas de alumnos se conservan en histórico.",
-      )
-    )
-      return;
+    if (!confirm(t("quizQuestion.deleteConfirm"))) return;
     startDelete(async () => {
       const res = await deleteQuestionAction(
         { id: question.id, quiz_id: quizId },
         ctx,
       );
       if (res.ok) {
-        toast.success("Pregunta eliminada.");
+        toast.success(t("quizQuestion.questionDeleted"));
         onSaved();
       } else {
         toast.error(res.error);
@@ -242,19 +249,19 @@ export function QuizQuestionForm({
     >
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor="prompt">Enunciado</FieldLabel>
+          <FieldLabel htmlFor="prompt">{t("quizQuestion.promptLabel")}</FieldLabel>
           <Textarea
             id="prompt"
             rows={2}
             {...register("prompt")}
-            placeholder="Escribe la pregunta tal como la verá el alumno."
+            placeholder={t("quizQuestion.promptPlaceholder")}
           />
-          {errors.prompt && <FieldError>{errors.prompt.message}</FieldError>}
+          {errors.prompt && <FieldError>{fieldError(errors.prompt.message)}</FieldError>}
         </Field>
 
         <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
           <Field>
-            <FieldLabel htmlFor="kind">Tipo</FieldLabel>
+            <FieldLabel htmlFor="kind">{t("quizQuestion.kindLabel")}</FieldLabel>
             <Controller
               control={control}
               name="kind"
@@ -265,10 +272,10 @@ export function QuizQuestionForm({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="multiple_choice">
-                      Opción múltiple
+                      {t("quizQuestion.multipleChoice")}
                     </SelectItem>
                     <SelectItem value="true_false">
-                      Verdadero / Falso
+                      {t("quizQuestion.trueFalse")}
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -276,7 +283,7 @@ export function QuizQuestionForm({
             />
           </Field>
           <Field>
-            <FieldLabel htmlFor="order_index">Orden</FieldLabel>
+            <FieldLabel htmlFor="order_index">{t("quizQuestion.orderLabel")}</FieldLabel>
             <Input
               id="order_index"
               type="number"
@@ -289,9 +296,9 @@ export function QuizQuestionForm({
 
         {kind === "multiple_choice" && (
           <Field>
-            <FieldLabel>Opciones</FieldLabel>
+            <FieldLabel>{t("quizQuestion.optionsLabel")}</FieldLabel>
             <p className="text-xs text-muted-foreground">
-              Marca el círculo de la opción correcta.
+              {t("quizQuestion.optionsHint")}
             </p>
             <div className="space-y-2">
               {options.map((_, idx) => (
@@ -305,13 +312,13 @@ export function QuizQuestionForm({
                         checked={Number(field.value) === idx}
                         onChange={() => field.onChange(idx)}
                         className="size-4 accent-brand-coral"
-                        aria-label={`Marcar opción ${idx + 1} como correcta`}
+                        aria-label={t("quizQuestion.markCorrectAria", { index: idx + 1 })}
                       />
                     )}
                   />
                   <Input
                     {...register(`options.${idx}` as const)}
-                    placeholder={`Opción ${idx + 1}`}
+                    placeholder={t("quizQuestion.optionPlaceholder", { index: idx + 1 })}
                   />
                   <Button
                     type="button"
@@ -319,7 +326,7 @@ export function QuizQuestionForm({
                     size="icon"
                     disabled={options.length <= 2}
                     onClick={() => removeOption(idx)}
-                    aria-label="Quitar opción"
+                    aria-label={t("quizQuestion.removeOptionAria")}
                   >
                     <X className="size-4" />
                   </Button>
@@ -327,11 +334,11 @@ export function QuizQuestionForm({
               ))}
               {errors.options && (
                 <FieldError>
-                  {(errors.options as { message?: string }).message}
+                  {fieldError((errors.options as { message?: string }).message)}
                 </FieldError>
               )}
               {errors.correct_index && (
-                <FieldError>{errors.correct_index.message}</FieldError>
+                <FieldError>{fieldError(errors.correct_index.message)}</FieldError>
               )}
               <Button
                 type="button"
@@ -341,7 +348,7 @@ export function QuizQuestionForm({
                 disabled={options.length >= 6}
               >
                 <Plus className="size-3.5" />
-                Agregar opción
+                {t("quizQuestion.addOption")}
               </Button>
             </div>
           </Field>
@@ -352,10 +359,10 @@ export function QuizQuestionForm({
             <div className="flex items-center justify-between rounded-lg border bg-card px-4 py-3">
               <div>
                 <FieldLabel htmlFor="tf_correct">
-                  Respuesta correcta
+                  {t("quizQuestion.correctAnswerLabel")}
                 </FieldLabel>
                 <p className="text-xs text-muted-foreground">
-                  Activado = Verdadero. Apagado = Falso.
+                  {t("quizQuestion.trueFalseHint")}
                 </p>
               </div>
               <Controller
@@ -375,13 +382,13 @@ export function QuizQuestionForm({
 
         <Field>
           <FieldLabel htmlFor="explanation">
-            Explicación (visible al alumno tras responder)
+            {t("quizQuestion.explanationLabel")}
           </FieldLabel>
           <Textarea
             id="explanation"
             rows={2}
             {...register("explanation")}
-            placeholder="Opcional. Refuerza el aprendizaje explicando por qué es la respuesta correcta."
+            placeholder={t("quizQuestion.explanationPlaceholder")}
           />
         </Field>
       </FieldGroup>
@@ -398,7 +405,7 @@ export function QuizQuestionForm({
               className="text-red-500 hover:bg-red-500/10 hover:text-red-600"
             >
               <Trash2 className="size-3.5" />
-              {deleting ? "Eliminando…" : "Eliminar"}
+              {deleting ? t("quizQuestion.deleting") : t("quizQuestion.delete")}
             </Button>
           )}
         </div>
@@ -411,16 +418,16 @@ export function QuizQuestionForm({
               onClick={onCancel}
               disabled={pending}
             >
-              Cancelar
+              {t("quizQuestion.cancel")}
             </Button>
           )}
           <Button type="submit" size="sm" disabled={pending}>
             <Save className="size-3.5" />
             {pending
-              ? "Guardando…"
+              ? t("quizQuestion.saving")
               : question
-                ? "Guardar cambios"
-                : "Agregar pregunta"}
+                ? t("quizQuestion.saveChanges")
+                : t("quizQuestion.addQuestion")}
           </Button>
         </div>
       </div>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,22 +19,21 @@ const initialState: AuthFormState = { ok: false };
 
 function SubmitButton() {
   const { pending } = useFormStatus();
+  const t = useTranslations("Auth");
   return (
     <Button type="submit" disabled={pending} className="w-full">
-      {pending ? "Creando cuenta..." : "Crear cuenta"}
+      {pending ? t("signup.submitting") : t("signup.submit")}
     </Button>
   );
 }
 
 export function SignUpForm({ redirectTo }: { redirectTo?: string }) {
   const [state, formAction] = useActionState(signUpAction, initialState);
+  const t = useTranslations("Auth");
 
   return (
     <div className="flex flex-col gap-6">
-      <SignInWithGoogle
-        redirectTo={redirectTo}
-        label="Continuar con Google"
-      />
+      <SignInWithGoogle redirectTo={redirectTo} />
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center" aria-hidden>
@@ -41,7 +41,7 @@ export function SignUpForm({ redirectTo }: { redirectTo?: string }) {
         </div>
         <div className="relative flex justify-center text-xs uppercase">
           <span className="bg-card px-2 text-muted-foreground">
-            o con tu correo
+            {t("divider.orWithEmail")}
           </span>
         </div>
       </div>
@@ -51,7 +51,7 @@ export function SignUpForm({ redirectTo }: { redirectTo?: string }) {
 
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor="email">Correo</FieldLabel>
+          <FieldLabel htmlFor="email">{t("signup.emailLabel")}</FieldLabel>
           <Input
             id="email"
             name="email"
@@ -65,7 +65,7 @@ export function SignUpForm({ redirectTo }: { redirectTo?: string }) {
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="password">Contraseña</FieldLabel>
+          <FieldLabel htmlFor="password">{t("signup.passwordLabel")}</FieldLabel>
           <Input
             id="password"
             name="password"
@@ -80,7 +80,7 @@ export function SignUpForm({ redirectTo }: { redirectTo?: string }) {
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="fullName">Nombre completo</FieldLabel>
+          <FieldLabel htmlFor="fullName">{t("signup.fullNameLabel")}</FieldLabel>
           <Input
             id="fullName"
             name="fullName"
@@ -95,7 +95,10 @@ export function SignUpForm({ redirectTo }: { redirectTo?: string }) {
 
         <Field>
           <FieldLabel htmlFor="ministryName">
-            Ministerio <span className="text-muted-foreground">(opcional)</span>
+            {t("signup.ministryLabel")}{" "}
+            <span className="text-muted-foreground">
+              {t("signup.ministryOptional")}
+            </span>
           </FieldLabel>
           <Input id="ministryName" name="ministryName" type="text" />
           {state.fieldErrors?.ministryName && (
@@ -104,7 +107,7 @@ export function SignUpForm({ redirectTo }: { redirectTo?: string }) {
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="country">País</FieldLabel>
+          <FieldLabel htmlFor="country">{t("signup.countryLabel")}</FieldLabel>
           <Input
             id="country"
             name="country"
@@ -127,9 +130,9 @@ export function SignUpForm({ redirectTo }: { redirectTo?: string }) {
       <SubmitButton />
 
       <p className="text-center text-sm text-muted-foreground">
-        ¿Ya tienes cuenta?{" "}
+        {t("signup.haveAccount")}{" "}
         <Link href="/login" className="underline underline-offset-4">
-          Inicia sesión
+          {t("signup.logIn")}
         </Link>
       </p>
     </form>

@@ -7,6 +7,13 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { locales, LOCALE_COOKIE, type Locale } from "@/i18n/config";
 
+// La escritura de cookie vive a nivel de módulo (no dentro del componente)
+// para no disparar la regla react-hooks/immutability del React Compiler.
+function persistLocaleCookie(locale: Locale) {
+  // 1 año de persistencia. samesite=lax para que sobreviva navegaciones.
+  document.cookie = `${LOCALE_COOKIE}=${locale}; path=/; max-age=31536000; samesite=lax`;
+}
+
 /**
  * Selector de idioma ES / EN.
  *
@@ -22,8 +29,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
 
   function switchTo(next: Locale) {
     if (next === active) return;
-    // 1 año de persistencia. samesite=lax para que sobreviva navegaciones.
-    document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=31536000; samesite=lax`;
+    persistLocaleCookie(next);
     startTransition(() => router.refresh());
   }
 

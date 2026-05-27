@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useForm, Controller } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { z } from "zod";
@@ -46,6 +47,7 @@ export type ModuleFormModule = {
 };
 
 export function ModuleEditForm({ mod }: { mod: ModuleFormModule }) {
+  const t = useTranslations("AdminUI");
   const [pending, startTransition] = useTransition();
   const form = useForm<FormValues>({
     resolver: standardSchemaResolver(formSchema),
@@ -102,17 +104,17 @@ export function ModuleEditForm({ mod }: { mod: ModuleFormModule }) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-10" noValidate>
       <section className="rounded-xl border bg-card p-6">
         <h2 className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-          Identidad
+          {t("moduleEdit.identityHeading")}
         </h2>
         <FieldGroup>
           <Field>
-            <FieldLabel htmlFor="title">Título</FieldLabel>
+            <FieldLabel htmlFor="title">{t("moduleEdit.titleLabel")}</FieldLabel>
             <Input id="title" {...register("title")} />
             {errors.title && <FieldError>{errors.title.message}</FieldError>}
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="subtitle">Subtítulo (opcional)</FieldLabel>
+            <FieldLabel htmlFor="subtitle">{t("moduleEdit.subtitleLabel")}</FieldLabel>
             <Input id="subtitle" {...register("subtitle")} />
             {errors.subtitle && (
               <FieldError>{errors.subtitle.message}</FieldError>
@@ -121,7 +123,7 @@ export function ModuleEditForm({ mod }: { mod: ModuleFormModule }) {
 
           <Field>
             <FieldLabel htmlFor="description">
-              Descripción larga (Markdown, opcional)
+              {t("moduleEdit.descriptionLabel")}
             </FieldLabel>
             <Textarea
               id="description"
@@ -137,7 +139,7 @@ export function ModuleEditForm({ mod }: { mod: ModuleFormModule }) {
           <div className="grid gap-4 sm:grid-cols-2">
             <Field>
               <FieldLabel htmlFor="duration_minutes">
-                Duración (minutos)
+                {t("moduleEdit.durationLabel")}
               </FieldLabel>
               <Input
                 id="duration_minutes"
@@ -159,10 +161,10 @@ export function ModuleEditForm({ mod }: { mod: ModuleFormModule }) {
               <div className="flex h-full items-center justify-between rounded-lg border bg-muted/20 px-4 py-3">
                 <div>
                   <FieldLabel htmlFor="is_free_preview">
-                    Vista previa gratuita
+                    {t("moduleEdit.freePreviewLabel")}
                   </FieldLabel>
                   <p className="text-xs text-muted-foreground">
-                    Cualquier visitante puede ver este módulo sin estar suscrito.
+                    {t("moduleEdit.freePreviewHint")}
                   </p>
                 </div>
                 <Controller
@@ -184,16 +186,16 @@ export function ModuleEditForm({ mod }: { mod: ModuleFormModule }) {
 
       <section className="rounded-xl border bg-card p-6">
         <h2 className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-          Contenido apostólico
+          {t("moduleEdit.apostolicHeading")}
         </h2>
         <FieldGroup>
           <Field>
-            <FieldLabel htmlFor="objective">Objetivo del módulo</FieldLabel>
+            <FieldLabel htmlFor="objective">{t("moduleEdit.objectiveLabel")}</FieldLabel>
             <Textarea
               id="objective"
               rows={2}
               {...register("objective")}
-              placeholder="Qué entenderá o experimentará el alumno al terminar este módulo."
+              placeholder={t("moduleEdit.objectivePlaceholder")}
             />
             {errors.objective && (
               <FieldError>{errors.objective.message}</FieldError>
@@ -202,13 +204,13 @@ export function ModuleEditForm({ mod }: { mod: ModuleFormModule }) {
 
           <Field>
             <FieldLabel htmlFor="main_revelation">
-              Revelación principal
+              {t("moduleEdit.revelationLabel")}
             </FieldLabel>
             <Textarea
               id="main_revelation"
               rows={2}
               {...register("main_revelation")}
-              placeholder="La idea bíblica/apostólica central que se imparte."
+              placeholder={t("moduleEdit.revelationPlaceholder")}
             />
             {errors.main_revelation && (
               <FieldError>{errors.main_revelation.message}</FieldError>
@@ -217,13 +219,13 @@ export function ModuleEditForm({ mod }: { mod: ModuleFormModule }) {
 
           <Field>
             <FieldLabel htmlFor="impartation_phrase">
-              Frase de impartición (cierre del módulo)
+              {t("moduleEdit.impartationLabel")}
             </FieldLabel>
             <Textarea
               id="impartation_phrase"
               rows={3}
               {...register("impartation_phrase")}
-              placeholder="La palabra apostólica que sella el módulo. Aparece destacada en la sección 5."
+              placeholder={t("moduleEdit.impartationPlaceholder")}
             />
             {errors.impartation_phrase && (
               <FieldError>{errors.impartation_phrase.message}</FieldError>
@@ -239,11 +241,11 @@ export function ModuleEditForm({ mod }: { mod: ModuleFormModule }) {
             <Link href={`/admin/fases/${mod.phase_id}/modulos`} />
           }
         >
-          Cancelar
+          {t("moduleEdit.cancel")}
         </Button>
         <Button type="submit" disabled={pending || !isDirty}>
           <Save className="size-4" />
-          {pending ? "Guardando…" : "Guardar cambios"}
+          {pending ? t("moduleEdit.saving") : t("moduleEdit.saveChanges")}
         </Button>
       </div>
     </form>

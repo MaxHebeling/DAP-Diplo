@@ -1,3 +1,5 @@
+import { getTranslations } from "next-intl/server";
+
 import { signOutAction } from "@/lib/auth/actions";
 import { createClient } from "@/lib/supabase/server";
 
@@ -16,16 +18,17 @@ import {
 } from "@/components/layouts/dap-public-header";
 import { DapPublicFooter } from "@/components/layouts/dap-public-footer";
 
-const HEADER_LINKS = [
-  { href: "/como-funciona", label: "Cómo funciona" },
-  { href: "#bloques", label: "Bloques" },
-  { href: "/rangos", label: "Dimensiones" },
-  { href: "/precios", label: "Precios" },
-  { href: "#faq", label: "Preguntas" },
-];
-
 export default async function LandingPage() {
+  const t = await getTranslations("PublicPages");
   const supabase = await createClient();
+
+  const HEADER_LINKS = [
+    { href: "/como-funciona", label: t("nav.comoFunciona") },
+    { href: "#bloques", label: t("nav.bloques") },
+    { href: "/rangos", label: t("nav.dimensiones") },
+    { href: "/precios", label: t("nav.precios") },
+    { href: "#faq", label: t("nav.preguntas") },
+  ];
 
   const {
     data: { user },

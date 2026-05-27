@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Bell,
   Brain,
@@ -20,19 +21,20 @@ import { cn } from "@/lib/utils";
 import { signOutAction } from "@/lib/auth/actions";
 
 const NAV = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/admin/admisiones", label: "Admisiones", icon: GraduationCap, exact: false },
-  { href: "/admin/bloques", label: "Bloques (copy)", icon: Layers, exact: false },
-  { href: "/admin/fases", label: "Fases (módulos)", icon: Layers, exact: false },
-  { href: "/admin/comunidad", label: "Comunidad", icon: MessagesSquare, exact: false },
-  { href: "/admin/en-vivo", label: "En vivo", icon: Radio, exact: false },
-  { href: "/admin/tutor/documentos", label: "Tutor IA", icon: Brain, exact: false },
-  { href: "/admin/excorrector", label: "Excorrector", icon: Sparkles, exact: false },
-  { href: "/admin/brief-pastores", label: "Brief pastores", icon: FileText, exact: false },
-  { href: "/admin/push-test", label: "Test push", icon: Bell, exact: false },
-];
+  { href: "/admin", labelKey: "dashboard", icon: LayoutDashboard, exact: true },
+  { href: "/admin/admisiones", labelKey: "admissions", icon: GraduationCap, exact: false },
+  { href: "/admin/bloques", labelKey: "blocksCopy", icon: Layers, exact: false },
+  { href: "/admin/fases", labelKey: "phasesModules", icon: Layers, exact: false },
+  { href: "/admin/comunidad", labelKey: "community", icon: MessagesSquare, exact: false },
+  { href: "/admin/en-vivo", labelKey: "live", icon: Radio, exact: false },
+  { href: "/admin/tutor/documentos", labelKey: "tutorAi", icon: Brain, exact: false },
+  { href: "/admin/excorrector", labelKey: "excorrector", icon: Sparkles, exact: false },
+  { href: "/admin/brief-pastores", labelKey: "pastorsBrief", icon: FileText, exact: false },
+  { href: "/admin/push-test", labelKey: "pushTest", icon: Bell, exact: false },
+] as const;
 
 export function AdminSidebar({ fullName }: { fullName: string | null }) {
+  const t = useTranslations("AdminUI");
   const pathname = usePathname() ?? "/admin";
 
   return (
@@ -40,13 +42,13 @@ export function AdminSidebar({ fullName }: { fullName: string | null }) {
       <div className="flex h-16 items-center gap-3 border-b px-5">
         <Logo size="sm" />
         <span className="text-xs font-medium uppercase tracking-widest text-brand-coral">
-          Admin
+          {t("sidebar.adminBadge")}
         </span>
       </div>
 
       <nav className="flex-1 p-3">
         <ul className="space-y-1">
-          {NAV.map(({ href, label, icon: Icon, exact }) => {
+          {NAV.map(({ href, labelKey, icon: Icon, exact }) => {
             const active = exact ? pathname === href : pathname.startsWith(href);
             return (
               <li key={href}>
@@ -61,7 +63,7 @@ export function AdminSidebar({ fullName }: { fullName: string | null }) {
                   aria-current={active ? "page" : undefined}
                 >
                   <Icon className="size-4" strokeWidth={1.7} />
-                  {label}
+                  {t(`sidebar.${labelKey}`)}
                 </Link>
               </li>
             );
@@ -71,7 +73,7 @@ export function AdminSidebar({ fullName }: { fullName: string | null }) {
 
       <div className="border-t p-4">
         <p className="mb-2 truncate text-xs text-muted-foreground">
-          {fullName ?? "Admin"}
+          {fullName ?? t("sidebar.adminFallback")}
         </p>
         <div className="flex flex-col gap-1.5">
           <Button
@@ -79,7 +81,7 @@ export function AdminSidebar({ fullName }: { fullName: string | null }) {
             size="sm"
             render={<Link href="/dashboard" />}
           >
-            Ir a mi dashboard
+            {t("sidebar.goToDashboard")}
           </Button>
           <form action={signOutAction}>
             <Button
@@ -89,7 +91,7 @@ export function AdminSidebar({ fullName }: { fullName: string | null }) {
               className="w-full justify-start text-muted-foreground hover:text-foreground"
             >
               <LogOut className="size-3.5" />
-              Cerrar sesión
+              {t("sidebar.signOut")}
             </Button>
           </form>
         </div>

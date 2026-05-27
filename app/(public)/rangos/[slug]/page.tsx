@@ -18,6 +18,10 @@ import {
   Users,
 } from "lucide-react";
 
+import { getTranslations, getLocale } from "next-intl/server";
+
+import { localized } from "@/lib/i18n/localized";
+import type { Locale } from "@/i18n/config";
 import { signOutAction } from "@/lib/auth/actions";
 import { createClient } from "@/lib/supabase/server";
 import { rankSlug, rankThemeFromDescription } from "@/lib/ranks/slug";
@@ -70,7 +74,9 @@ const IMAGE_BY_RANK: Record<RankOrder, string> = {
 type DimensionRow = {
   order_index: number;
   name: string;
+  name_en: string | null;
   description: string | null;
+  description_en: string | null;
 };
 
 type PhaseRow = {
@@ -78,8 +84,11 @@ type PhaseRow = {
   slug: string;
   order_index: number;
   title: string;
+  title_en: string | null;
   subtitle: string | null;
+  subtitle_en: string | null;
   description: string | null;
+  description_en: string | null;
   months_duration: number;
   modules: { count: number }[] | null;
 };
@@ -88,7 +97,7 @@ async function findRankBySlug(slug: string): Promise<DimensionRow | null> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("dimensions")
-    .select("order_index, name, description")
+    .select("order_index, name, name_en, description, description_en")
     .returns<DimensionRow[]>();
   return (data ?? []).find((r) => rankSlug(r.name) === slug) ?? null;
 }
@@ -108,31 +117,37 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
+  const t = await getTranslations("PublicPages");
   const rank = await findRankBySlug(slug);
   if (!rank) {
     return {
-      title: "Dimensión no encontrada",
+      title: t("rankDetail.notFoundTitle"),
       robots: { index: false, follow: true },
     };
   }
   const theme = rankThemeFromDescription(rank.description);
   const description = theme
-    ? `Dimensión ${rank.name} — otorgada al completar el Bloque ${rank.order_index} (${theme}) del Diplomado Apostólico Pastoral.`
-    : `Dimensión ${rank.name} del Diplomado Apostólico Pastoral.`;
+    ? t("rankDetail.metaDescriptionWithTheme", {
+        name: rank.name,
+        order: rank.order_index,
+        theme,
+      })
+    : t("rankDetail.metaDescription", { name: rank.name });
   const url = `/rangos/${slug}`;
+  const ogTitle = t("rankDetail.ogTitle", { name: rank.name });
   return {
-    title: `Dimensión ${rank.name}`,
+    title: t("rankDetail.metaTitle", { name: rank.name }),
     description,
     alternates: { canonical: url },
     openGraph: {
       type: "article" as const,
       url,
-      title: `Dimensión ${rank.name} · DAP`,
+      title: ogTitle,
       description,
     },
     twitter: {
       card: "summary_large_image" as const,
-      title: `Dimensión ${rank.name} · DAP`,
+      title: ogTitle,
       description,
     },
   };
@@ -140,12 +155,13 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function RankDetailPage({ params }: PageProps) {
   const { slug } = await params;
+  const t = await getTranslations("PublicPages");
 
   const supabase = await createClient();
 
   const { data: allRanks } = await supabase
     .from("dimensions")
-    .select("order_index, name, description")
+    .select("order_index, name, name_en, description, description_en")
     .order("order_index", { ascending: true })
     .returns<DimensionRow[]>();
 
@@ -160,7 +176,7 @@ export default async function RankDetailPage({ params }: PageProps) {
   const { data: phaseData } = await supabase
     .from("phases")
     .select(
-      "id, slug, order_index, title, subtitle, description, months_duration, modules(count)",
+      "id, slug, order_index, title, title_en, subtitle, subtitle_en, description, description_en, months_duration, modules(count)",
     )
     .eq("order_index", rank.order_index)
     .eq("published", true)
@@ -192,7 +208,22 @@ export default async function RankDetailPage({ params }: PageProps) {
     }
   }
 
-  const theme = rankThemeFromDescription(rank.description);
+  const locale = (await getLocale()) as Locale;
+  const rankName = localized(rank, "name", locale) ?? rank.name;
+  const rankDescription =
+    localized(rank, "description", locale) ?? rank.description;
+  const theme = rankThemeFromDescription(rankDescription);
+  const phaseTitle = phaseData
+    ? localized(phaseData, "title", locale) ?? phaseData.title
+    : null;
+  const phaseSubtitle = phaseData
+    ? localized(phaseData, "subtitle", locale)
+    : null;
+  const phaseDescription = phaseData
+    ? localized(phaseData, "description", locale)
+    : null;
+  const prevName = prev ? localized(prev, "name", locale) ?? prev.name : null;
+  const nextName = next ? localized(next, "name", locale) ?? next.name : null;
   const modulesCount = phaseData?.modules?.[0]?.count ?? 0;
 
   return (
@@ -206,7 +237,10 @@ export default async function RankDetailPage({ params }: PageProps) {
               courseSchema({
                 slug: phaseData.slug,
                 order_index: phaseData.order_index,
-                title: `Dimensión ${rank.name} — ${phaseData.title}`,
+                title: t("rankDetail.courseTitle", {
+                  name: rank.name,
+                  phaseTitle: phaseData.title,
+                }),
                 subtitle: phaseData.subtitle,
                 description: phaseData.description,
                 months_duration: phaseData.months_duration,
@@ -221,9 +255,9 @@ export default async function RankDetailPage({ params }: PageProps) {
         dangerouslySetInnerHTML={{
           __html: jsonLd(
             breadcrumbListSchema([
-              { name: "Inicio", url: SITE_URL },
+              { name: t("rankDetail.breadcrumbHome"), url: SITE_URL },
               {
-                name: "Las 9 Dimensiones del Reino",
+                name: t("rankDetail.breadcrumbRanks"),
                 url: `${SITE_URL}/rangos`,
               },
               {
@@ -258,29 +292,31 @@ export default async function RankDetailPage({ params }: PageProps) {
               className="mb-8 inline-flex items-center gap-2 font-inter text-sm text-text-secondary hover:text-text-primary"
             >
               <ArrowLeft className="size-3.5" />
-              Ver las 9 dimensiones
+              {t("rankDetail.backToRanks")}
             </Link>
 
             <DapRankBadge
               rankOrder={order}
               size="xl"
               icon={Icon}
-              label={rank.name}
+              label={rankName}
             />
 
             <p className="mt-8 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-              Dimensión {String(order).padStart(2, "0")} de 9
+              {t("rankDetail.eyebrow", {
+                order: String(order).padStart(2, "0"),
+              })}
             </p>
             <h1 className="mt-2 font-grotesk text-display font-bold leading-[1.05] text-text-primary">
-              {rank.name}
+              {rankName}
             </h1>
             {theme && (
               <p className="mt-6 max-w-2xl font-inter text-base leading-relaxed text-text-secondary md:text-lg">
-                Se otorga al completar el{" "}
+                {t("rankDetail.awardedPre")}
                 <strong className="text-text-primary">
-                  Bloque {order} — {theme}
+                  {t("rankDetail.awardedStrong", { order, theme })}
                 </strong>
-                .
+                {t("rankDetail.awardedPost")}
               </p>
             )}
           </div>
@@ -292,19 +328,19 @@ export default async function RankDetailPage({ params }: PageProps) {
             <div className="mx-auto max-w-4xl">
               <Reveal>
                 <p className="mb-4 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-                  Bloque correspondiente
+                  {t("rankDetail.blockEyebrow")}
                 </p>
                 <h2 className="font-grotesk text-h1 font-bold leading-tight text-text-primary">
-                  {phaseData.title}
+                  {phaseTitle}
                 </h2>
-                {phaseData.subtitle && (
+                {phaseSubtitle && (
                   <p className="mt-4 font-inter text-base text-text-secondary md:text-lg">
-                    {phaseData.subtitle}
+                    {phaseSubtitle}
                   </p>
                 )}
-                {phaseData.description && (
+                {phaseDescription && (
                   <p className="mt-6 text-justify font-inter text-base leading-relaxed text-text-secondary">
-                    {phaseData.description}
+                    {phaseDescription}
                   </p>
                 )}
 
@@ -315,25 +351,27 @@ export default async function RankDetailPage({ params }: PageProps) {
                       {modulesCount}
                     </p>
                     <p className="font-inter text-xs uppercase tracking-widest text-text-tertiary">
-                      Módulos
+                      {t("rankDetail.statModules")}
                     </p>
                   </div>
                   <div className="rounded-lg border border-white/[0.06] bg-surface-elevated p-5">
                     <ShieldCheck className="mb-3 size-5 text-brand-coral" />
                     <p className="font-grotesk text-h3 font-bold text-text-primary">
-                      {phaseData.months_duration} meses
+                      {t("rankDetail.statMonths", {
+                        count: phaseData.months_duration,
+                      })}
                     </p>
                     <p className="font-inter text-xs uppercase tracking-widest text-text-tertiary">
-                      Duración
+                      {t("rankDetail.statDuration")}
                     </p>
                   </div>
                   <div className="rounded-lg border border-white/[0.06] bg-surface-elevated p-5">
                     <Icon className="mb-3 size-5 text-brand-amber" />
                     <p className="font-grotesk text-h3 font-bold text-text-primary">
-                      {rank.name}
+                      {rankName}
                     </p>
                     <p className="font-inter text-xs uppercase tracking-widest text-text-tertiary">
-                      Dimensión al completar
+                      {t("rankDetail.statDimensionAtCompletion")}
                     </p>
                   </div>
                 </div>
@@ -342,11 +380,11 @@ export default async function RankDetailPage({ params }: PageProps) {
                   <DapButton
                     render={<Link href={`/fases/${phaseData.slug}`} />}
                   >
-                    Ver el bloque completo
+                    {t("rankDetail.viewFullBlock")}
                     <ArrowRight />
                   </DapButton>
                   <EnrollmentCTA href="/suscribirme" variant="secondary">
-                    Empezar el camino
+                    {t("rankDetail.startJourney")}
                   </EnrollmentCTA>
                 </div>
               </Reveal>
@@ -365,10 +403,10 @@ export default async function RankDetailPage({ params }: PageProps) {
                 <ArrowLeft className="size-4 text-text-tertiary transition-colors group-hover:text-brand-coral" />
                 <div>
                   <p className="font-inter text-xs uppercase tracking-widest text-text-tertiary">
-                    Dimensión anterior
+                    {t("rankDetail.prevLabel")}
                   </p>
                   <p className="font-grotesk text-base font-semibold text-text-primary">
-                    {prev.name}
+                    {prevName}
                   </p>
                 </div>
               </Link>
@@ -382,10 +420,10 @@ export default async function RankDetailPage({ params }: PageProps) {
               >
                 <div>
                   <p className="font-inter text-xs uppercase tracking-widest text-text-tertiary">
-                    Dimensión siguiente
+                    {t("rankDetail.nextLabel")}
                   </p>
                   <p className="font-grotesk text-base font-semibold text-text-primary">
-                    {next.name}
+                    {nextName}
                   </p>
                 </div>
                 <ArrowRight className="size-4 text-text-tertiary transition-colors group-hover:text-brand-coral" />

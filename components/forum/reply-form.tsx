@@ -6,6 +6,7 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { z } from "zod";
 import { Send } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -17,12 +18,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { createPostAction } from "@/lib/forum/actions";
 
 const formSchema = z.object({
-  body: z.string().trim().min(2, "Mínimo 2 caracteres").max(10000),
+  body: z.string().trim().min(2, "").max(10000),
 });
 
 type FormValues = z.input<typeof formSchema>;
 
 export function ReplyForm({ threadId }: { threadId: string }) {
+  const t = useTranslations("Forum");
   const [pending, startTransition] = useTransition();
   const form = useForm<FormValues>({
     resolver: standardSchemaResolver(formSchema),
@@ -67,20 +69,24 @@ export function ReplyForm({ threadId }: { threadId: string }) {
     >
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor="reply_body">Tu respuesta</FieldLabel>
+          <FieldLabel htmlFor="reply_body">{t("replyForm.label")}</FieldLabel>
           <Textarea
             id="reply_body"
             rows={5}
-            placeholder="Markdown soportado. Sé constructivo: este foro es un espacio pastoral."
+            placeholder={t("replyForm.placeholder")}
             {...register("body")}
           />
-          {errors.body && <FieldError>{errors.body.message}</FieldError>}
+          {errors.body && (
+            <FieldError>
+              {errors.body.message || t("replyForm.validation.minBody")}
+            </FieldError>
+          )}
         </Field>
       </FieldGroup>
       <div className="mt-4 flex justify-end">
         <Button type="submit" disabled={pending}>
           <Send className="size-4" />
-          {pending ? "Publicando…" : "Publicar respuesta"}
+          {pending ? t("replyForm.publishing") : t("replyForm.submit")}
         </Button>
       </div>
     </form>

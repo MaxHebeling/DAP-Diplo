@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations, getLocale } from "next-intl/server";
 import { ArrowLeft, Pin } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,8 @@ import { ReplyForm } from "@/components/forum/reply-form";
 import { ReportPostButton } from "@/components/forum/report-post-button";
 import { ThreadAuthorActions } from "@/components/forum/thread-author-actions";
 import { createClient } from "@/lib/supabase/server";
+import { localized } from "@/lib/i18n/localized";
+import type { Locale } from "@/i18n/config";
 import { requireForumAccess } from "@/lib/forum/gate";
 import { timeAgo } from "@/lib/forum/format";
 
@@ -24,7 +27,12 @@ type ThreadRow = {
   created_at: string;
   updated_at: string;
   author: { id: string; full_name: string; avatar_url: string | null } | null;
-  phase: { id: string; order_index: number; title: string } | null;
+  phase: {
+    id: string;
+    order_index: number;
+    title: string;
+    title_en: string | null;
+  } | null;
 };
 
 type PostRow = {
@@ -37,20 +45,26 @@ type PostRow = {
 
 export async function generateMetadata({ params }: PageProps) {
   const { id } = await params;
-  return { title: `Hilo — Comunidad DAP`, alternates: { canonical: `/comunidad/${id}` } };
+  const t = await getTranslations("Student");
+  return {
+    title: t("thread.metaTitle"),
+    alternates: { canonical: `/comunidad/${id}` },
+  };
 }
 
 export default async function ThreadPage({ params }: PageProps) {
   const { id } = await params;
   const { userId, isAdmin } = await requireForumAccess(`/comunidad/${id}`);
 
+  const t = await getTranslations("Student");
+  const locale = (await getLocale()) as Locale;
   const supabase = await createClient();
   const { data: thread, error: tErr } = await supabase
     .from("forum_threads")
     .select(
       `id, title, body, pinned, closed, hidden, author_id, created_at, updated_at,
        author:profiles!forum_threads_author_id_fkey(id, full_name, avatar_url),
-       phase:phases!forum_threads_phase_id_fkey(id, order_index, title)`,
+       phase:phases!forum_threads_phase_id_fkey(id, order_index, title, title_en)`,
     )
     .eq("id", id)
     .maybeSingle<ThreadRow>();
@@ -81,7 +95,7 @@ export default async function ThreadPage({ params }: PageProps) {
           className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-brand-coral"
         >
           <ArrowLeft className="size-4" />
-          Volver a la comunidad
+          {t("thread.back")}
         </Link>
 
         {/* Header del hilo */}
@@ -90,16 +104,20 @@ export default async function ThreadPage({ params }: PageProps) {
             {thread.pinned && (
               <Badge className="bg-brand-coral text-brand-coral-foreground">
                 <Pin className="size-3" strokeWidth={3} />
-                Anclado
+                {t("thread.pinned")}
               </Badge>
             )}
             {thread.closed && (
-              <Badge variant="secondary">Cerrado</Badge>
+              <Badge variant="secondary">{t("thread.closed")}</Badge>
             )}
             {thread.phase && (
               <Badge variant="outline" className="font-normal">
-                Fase {String(thread.phase.order_index).padStart(2, "0")}:{" "}
-                {thread.phase.title}
+                {t("thread.phaseBadge", {
+                  order: String(thread.phase.order_index).padStart(2, "0"),
+                  title:
+                    localized(thread.phase, "title", locale) ??
+                    thread.phase.title,
+                })}
               </Badge>
             )}
           </div>
@@ -116,7 +134,7 @@ export default async function ThreadPage({ params }: PageProps) {
               </Avatar>
               <div>
                 <p className="text-sm font-medium">
-                  {thread.author?.full_name ?? "—"}
+                  {thread.author?.full_name ?? t("thread.authorFallback")}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {timeAgo(thread.created_at)}
@@ -141,12 +159,14 @@ export default async function ThreadPage({ params }: PageProps) {
         <section className="border-t pt-8">
           <h2 className="mb-6 text-xs font-medium uppercase tracking-widest text-muted-foreground">
             {replies.length}{" "}
-            {replies.length === 1 ? "respuesta" : "respuestas"}
+            {replies.length === 1
+              ? t("thread.replyOne")
+              : t("thread.replyOther")}
           </h2>
 
           {replies.length === 0 ? (
             <p className="rounded-xl border border-dashed bg-muted/10 px-6 py-8 text-center text-sm text-muted-foreground">
-              Aún no hay respuestas. Sé la primera persona en participar.
+              {t("thread.emptyReplies")}
             </p>
           ) : (
             <ul className="space-y-6">
@@ -168,7 +188,7 @@ export default async function ThreadPage({ params }: PageProps) {
                         </Avatar>
                         <div className="text-sm">
                           <span className="font-medium">
-                            {p.author?.full_name ?? "—"}
+                            {p.author?.full_name ?? t("thread.authorFallback")}
                           </span>
                           <span className="ml-2 text-xs text-muted-foreground">
                             {timeAgo(p.created_at)}
@@ -190,7 +210,7 @@ export default async function ThreadPage({ params }: PageProps) {
           <div className="mt-10">
             {thread.closed ? (
               <p className="rounded-xl border border-dashed bg-muted/10 px-6 py-8 text-center text-sm text-muted-foreground">
-                Este hilo está cerrado. No se aceptan más respuestas.
+                {t("thread.threadClosed")}
               </p>
             ) : (
               <ReplyForm threadId={thread.id} />

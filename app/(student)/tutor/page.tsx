@@ -1,4 +1,5 @@
 
+import { getTranslations } from "next-intl/server";
 import { Brain, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TutorSidebar } from "@/components/tutor/tutor-sidebar";
@@ -6,10 +7,14 @@ import { createClient } from "@/lib/supabase/server";
 import { requireActiveSubscription } from "@/lib/subscription/gate";
 import { newConversationRedirectAction } from "@/lib/tutor/conversation-actions";
 
-export const metadata = { title: "Tutor IA — DAP" };
+export async function generateMetadata() {
+  const t = await getTranslations("Student");
+  return { title: t("tutor.metaTitle") };
+}
 
 export default async function TutorIndexPage() {
   await requireActiveSubscription("/tutor");
+  const t = await getTranslations("Student");
   const supabase = await createClient();
   const { data: conversations } = await supabase
     .from("ai_conversations")
@@ -49,24 +54,23 @@ export default async function TutorIndexPage() {
           </div>
           <div>
             <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
-              Tutor del DAP
+              {t("tutor.eyebrow")}
             </p>
             <h1 className="font-serif text-3xl font-semibold">
-              Pregunta lo que necesites
+              {t("tutor.title")}
             </h1>
             <p className="mt-3 text-sm text-muted-foreground">
-              Respondo solo con base en los materiales apostólicos del DAP.
-              Si la respuesta no está en los documentos, te lo diré.
+              {t("tutor.subtitle")}
             </p>
           </div>
           <form action={newConversationRedirectAction}>
             <Button type="submit" size="default">
               <Sparkles className="size-4" />
-              Nueva conversación
+              {t("tutor.newConversation")}
             </Button>
           </form>
           <p className="text-xs text-muted-foreground">
-            O selecciona una conversación previa de la barra lateral.
+            {t("tutor.selectPrevious")}
           </p>
         </div>
       </main>

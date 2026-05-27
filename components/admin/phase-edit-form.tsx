@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useForm, useWatch, Controller } from "react-hook-form";
 // zodResolver (de "@hookform/resolvers/zod") espera Zod v3; usamos
 // standardSchemaResolver porque Zod v4 implementa la spec Standard Schema.
@@ -37,8 +38,8 @@ const formSchema = z.object({
     .trim()
     .min(2)
     .max(80)
-    .regex(/^[a-z0-9-]+$/, "Solo minúsculas, números y guiones."),
-  title: z.string().trim().min(2, "Mínimo 2 caracteres.").max(120),
+    .regex(/^[a-z0-9-]+$/, "slugInvalid"),
+  title: z.string().trim().min(2, "titleMin").max(120),
   subtitle: z.string().trim().max(200).nullable(),
   description: z.string().trim().max(4000).nullable(),
   cover_image_url: z.string().trim().nullable(),
@@ -71,6 +72,7 @@ export function PhaseEditForm({
   phase: BlockFormBlock;
   dimensions: Dimension[];
 }) {
+  const t = useTranslations("AdminUI");
   const [pending, startTransition] = useTransition();
 
   const form = useForm<FormValues>({
@@ -99,6 +101,11 @@ export function PhaseEditForm({
   // useWatch en vez de form.watch — compatible con React Compiler.
   const cover = useWatch({ control, name: "cover_image_url" });
   const slug = useWatch({ control, name: "slug" });
+
+  // Resuelve los mensajes de validación que vienen como key del schema Zod.
+  const phaseErrorKeys = new Set(["slugInvalid", "titleMin"]);
+  const fieldError = (msg: string | undefined): string | undefined =>
+    msg && phaseErrorKeys.has(msg) ? t(`phaseEdit.${msg}`) : msg;
 
   function onSubmit(values: FormValues) {
     const fd = new FormData();
@@ -140,7 +147,7 @@ export function PhaseEditForm({
       {/* COVER */}
       <section className="rounded-xl border bg-card p-6">
         <h2 className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-          Portada
+          {t("phaseEdit.coverHeading")}
         </h2>
         <CoverUpload
           value={cover}
@@ -154,12 +161,12 @@ export function PhaseEditForm({
       {/* IDENTIDAD */}
       <section className="rounded-xl border bg-card p-6">
         <h2 className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-          Identidad
+          {t("phaseEdit.identityHeading")}
         </h2>
         <FieldGroup>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field>
-              <FieldLabel htmlFor="order_index">Posición (1-9)</FieldLabel>
+              <FieldLabel htmlFor="order_index">{t("phaseEdit.positionLabel")}</FieldLabel>
               <Input
                 id="order_index"
                 type="number"
@@ -173,7 +180,7 @@ export function PhaseEditForm({
             </Field>
             <Field>
               <FieldLabel htmlFor="months_duration">
-                Duración (meses)
+                {t("phaseEdit.monthsLabel")}
               </FieldLabel>
               <Input
                 id="months_duration"
@@ -189,22 +196,22 @@ export function PhaseEditForm({
           </div>
 
           <Field>
-            <FieldLabel htmlFor="slug">Slug</FieldLabel>
+            <FieldLabel htmlFor="slug">{t("phaseEdit.slugLabel")}</FieldLabel>
             <Input id="slug" {...register("slug")} />
             <p className="text-xs text-muted-foreground">
-              URL final: <code>/fases/{slug}</code>
+              {t("phaseEdit.slugHint")} <code>/fases/{slug}</code>
             </p>
-            {errors.slug && <FieldError>{errors.slug.message}</FieldError>}
+            {errors.slug && <FieldError>{fieldError(errors.slug.message)}</FieldError>}
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="title">Título</FieldLabel>
+            <FieldLabel htmlFor="title">{t("phaseEdit.titleLabel")}</FieldLabel>
             <Input id="title" {...register("title")} />
-            {errors.title && <FieldError>{errors.title.message}</FieldError>}
+            {errors.title && <FieldError>{fieldError(errors.title.message)}</FieldError>}
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="subtitle">Subtítulo (opcional)</FieldLabel>
+            <FieldLabel htmlFor="subtitle">{t("phaseEdit.subtitleLabel")}</FieldLabel>
             <Input id="subtitle" {...register("subtitle")} />
             {errors.subtitle && (
               <FieldError>{errors.subtitle.message}</FieldError>
@@ -213,7 +220,7 @@ export function PhaseEditForm({
 
           <Field>
             <FieldLabel htmlFor="description">
-              Descripción (Markdown, opcional)
+              {t("phaseEdit.descriptionLabel")}
             </FieldLabel>
             <Textarea
               id="description"
@@ -231,12 +238,12 @@ export function PhaseEditForm({
       {/* RANGO + PUBLICACIÓN */}
       <section className="rounded-xl border bg-card p-6">
         <h2 className="mb-4 text-sm font-medium uppercase tracking-widest text-muted-foreground">
-          Dimensión y publicación
+          {t("phaseEdit.dimensionPublishHeading")}
         </h2>
         <FieldGroup>
           <Field>
             <FieldLabel htmlFor="dimension_id">
-              Dimensión que se desbloquea al completar
+              {t("phaseEdit.dimensionLabel")}
             </FieldLabel>
             <Controller
               control={control}
@@ -249,10 +256,10 @@ export function PhaseEditForm({
                   }
                 >
                   <SelectTrigger id="dimension_id">
-                    <SelectValue placeholder="Selecciona una dimensión" />
+                    <SelectValue placeholder={t("phaseEdit.dimensionPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Sin dimensión</SelectItem>
+                    <SelectItem value="none">{t("phaseEdit.noDimension")}</SelectItem>
                     {dimensions.map((r) => (
                       <SelectItem key={r.id} value={r.id}>
                         {String(r.order_index).padStart(2, "0")} · {r.name}
@@ -267,9 +274,9 @@ export function PhaseEditForm({
           <Field>
             <div className="flex items-center justify-between gap-4 rounded-lg border bg-muted/20 px-4 py-3">
               <div className="space-y-0.5">
-                <FieldLabel htmlFor="published">Publicado</FieldLabel>
+                <FieldLabel htmlFor="published">{t("phaseEdit.publishedLabel")}</FieldLabel>
                 <p className="text-xs text-muted-foreground">
-                  Si está apagado, la fase solo es visible para admins.
+                  {t("phaseEdit.publishedHint")}
                 </p>
               </div>
               <Controller
@@ -291,11 +298,11 @@ export function PhaseEditForm({
       {/* SUBMIT */}
       <div className="flex items-center justify-end gap-3">
         <Button variant="outline" render={<Link href="/admin/fases" />}>
-          Cancelar
+          {t("phaseEdit.cancel")}
         </Button>
         <Button type="submit" disabled={pending || !isDirty}>
           <Save className="size-4" />
-          {pending ? "Guardando…" : "Guardar cambios"}
+          {pending ? t("phaseEdit.saving") : t("phaseEdit.saveChanges")}
         </Button>
       </div>
     </form>

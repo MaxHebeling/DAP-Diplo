@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "motion/react";
 import { CalendarClock, GraduationCap, Loader2, X } from "lucide-react";
 
@@ -35,6 +36,7 @@ type Props = {
  * framer-motion para entradas/salidas suaves.
  */
 export function OnboardingModal({ open, onOpenChange }: Props) {
+  const t = useTranslations("Onboarding");
   const [step, setStep] = useState<Step>("country");
   const [country, setCountry] = useState<Country | null>(null);
 
@@ -87,7 +89,7 @@ export function OnboardingModal({ open, onOpenChange }: Props) {
           type="button"
           onClick={() => handleOpenChange(false)}
           className="absolute right-4 top-4 z-20 flex size-9 items-center justify-center rounded-full border border-white/[0.06] bg-white/[0.04] text-text-secondary backdrop-blur-sm transition-all hover:bg-white/[0.08] hover:text-text-primary"
-          aria-label="Cerrar"
+          aria-label={t("modal.close")}
         >
           <X className="size-4" strokeWidth={2} />
         </button>
@@ -107,25 +109,24 @@ export function OnboardingModal({ open, onOpenChange }: Props) {
                   <CalendarClock className="size-8" strokeWidth={1.6} />
                 </div>
                 <p className="font-inter text-[10px] font-semibold uppercase tracking-[0.32em] text-brand-coral">
-                  Próximamente
+                  {t("modal.comingSoonEyebrow")}
                 </p>
                 <h2 className="mt-3 font-grotesk text-3xl font-bold leading-tight text-text-primary sm:text-4xl">
-                  Inscripciones abren el {ENROLLMENT_OPENS_LABEL}
+                  {t("modal.comingSoonTitle", { date: ENROLLMENT_OPENS_LABEL })}
                 </h2>
                 <p className="mt-4 max-w-md font-inter text-sm leading-relaxed text-text-secondary">
-                  La primera convocatoria del Diplomado Apostólico Pastoral
-                  abre inscripciones el{" "}
+                  {t("modal.comingSoonBodyBefore")}
                   <span className="font-semibold text-text-primary">
                     {ENROLLMENT_OPENS_LABEL}
                   </span>
-                  . Volvé en esa fecha para asegurar tu lugar.
+                  {t("modal.comingSoonBodyAfter")}
                 </p>
 
                 <div className="mt-6 flex max-w-md items-start gap-3 rounded-2xl border border-brand-violet/25 bg-brand-violet/[0.08] p-4 text-left">
                   <GraduationCap className="mt-0.5 size-5 shrink-0 text-brand-violet" />
                   <p className="font-inter text-sm leading-relaxed text-text-secondary">
                     <span className="font-semibold text-text-primary">
-                      Inicio de clases:
+                      {t("modal.classesStartLabel")}
                     </span>{" "}
                     <span className="capitalize">{CLASSES_START_LABEL}</span>
                   </p>
@@ -136,7 +137,7 @@ export function OnboardingModal({ open, onOpenChange }: Props) {
                   onClick={() => handleOpenChange(false)}
                   className="mt-7 inline-flex items-center gap-2 rounded-full border border-white/[0.10] bg-white/[0.04] px-5 py-2.5 font-inter text-xs font-medium text-text-secondary backdrop-blur-sm transition-all hover:bg-white/[0.07] hover:text-text-primary"
                 >
-                  Cerrar
+                  {t("modal.closeButton")}
                 </button>
               </motion.div>
             )}
@@ -183,11 +184,10 @@ export function OnboardingModal({ open, onOpenChange }: Props) {
                   <Loader2 className="size-8 animate-spin text-brand-coral" />
                 </div>
                 <h2 className="font-grotesk text-2xl font-bold text-text-primary">
-                  Llevándote al pago seguro
+                  {t("modal.redirectingTitle")}
                 </h2>
                 <p className="mt-3 max-w-sm font-inter text-sm leading-relaxed text-text-secondary">
-                  Conectando con Stripe. Tu suscripción se activa
-                  inmediatamente después del pago.
+                  {t("modal.redirectingBody")}
                 </p>
               </motion.div>
             )}

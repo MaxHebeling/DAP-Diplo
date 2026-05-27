@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 import {
@@ -37,6 +38,7 @@ type Errors = Record<string, string> & {
 };
 
 export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
+  const t = useTranslations("Onboarding.signupForm");
   const isArgentina = country.code === "AR";
 
   const [pending, startTransition] = useTransition();
@@ -107,13 +109,13 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
     const e: Errors = {};
 
     if (!fullName.trim() || fullName.trim().length < 3) {
-      e.fullName = "Mínimo 3 caracteres.";
+      e.fullName = t("errorFullName");
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      e.email = "Email inválido.";
+      e.email = t("errorEmail");
     }
     if (password.length < 8) {
-      e.password = "Mínimo 8 caracteres.";
+      e.password = t("errorPassword");
     }
 
     if (isArgentina && effectiveMarriage) {
@@ -121,34 +123,33 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
       // pero necesita phone y province propios.
       const s1: Partial<Record<keyof SpouseData, string>> = {};
       if (!isArgentinePhone(spouse1.phone)) {
-        s1.phone = `Debe empezar con ${AR_DIAL_CODE}`;
+        s1.phone = t("errorPhonePrefix", { code: AR_DIAL_CODE });
       }
       if (!spouse1.province) {
-        s1.province = "Seleccioná tu provincia.";
+        s1.province = t("errorProvince");
       }
       if (Object.keys(s1).length) e.spouse_1 = s1;
 
       const s2: Partial<Record<keyof SpouseData, string>> = {};
       if (!spouse2.fullName.trim() || spouse2.fullName.trim().length < 3) {
-        s2.fullName = "Mínimo 3 caracteres.";
+        s2.fullName = t("errorSpouseFullName");
       }
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(spouse2.email)) {
-        s2.email = "Email inválido.";
+        s2.email = t("errorSpouseEmail");
       }
       if (spouse2.email.trim().toLowerCase() === email.trim().toLowerCase()) {
-        s2.email = "Debe ser distinto al del cónyuge 1.";
+        s2.email = t("errorSpouseEmailDistinct");
       }
       if (!isArgentinePhone(spouse2.phone)) {
-        s2.phone = `Debe empezar con ${AR_DIAL_CODE}`;
+        s2.phone = t("errorPhonePrefix", { code: AR_DIAL_CODE });
       }
       if (!spouse2.province) {
-        s2.province = "Seleccioná la provincia.";
+        s2.province = t("errorSpouseProvince");
       }
       if (Object.keys(s2).length) e.spouse_2 = s2;
 
       if (!declaredResidence) {
-        e.declaredResidence =
-          "Necesitamos tu confirmación para aplicar el beneficio.";
+        e.declaredResidence = t("errorResidence");
       }
     }
 
@@ -201,13 +202,13 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
           error?: string;
         };
         if (!res.ok || !json.ok || !json.checkoutUrl) {
-          toast.error(json.error ?? "No se pudo completar el registro.");
+          toast.error(json.error ?? t("toastError"));
           return;
         }
-        toast.success("Cuenta creada. Redirigiendo al pago seguro...");
+        toast.success(t("toastSuccess"));
         onSuccess(json.checkoutUrl);
       } catch (err) {
-        const msg = err instanceof Error ? err.message : "Error de red";
+        const msg = err instanceof Error ? err.message : t("toastNetworkError");
         toast.error(msg);
       }
     });
@@ -225,10 +226,10 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
             className="inline-flex items-center gap-1.5 font-inter text-xs font-medium text-text-tertiary transition-colors hover:text-text-primary disabled:opacity-50"
           >
             <ArrowLeft className="size-3.5" />
-            Cambiar país
+            {t("changeCountry")}
           </button>
           <span className="font-inter text-xs font-medium uppercase tracking-[0.32em] text-brand-coral">
-            Paso 2 de 2
+            {t("step")}
           </span>
         </div>
 
@@ -241,12 +242,10 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
         </div>
 
         <h2 className="mt-5 font-grotesk text-3xl font-bold leading-tight text-text-primary sm:text-4xl">
-          {effectiveMarriage ? "Crearemos sus cuentas" : "Creá tu cuenta"}
+          {effectiveMarriage ? t("titleMarriage") : t("titleSingle")}
         </h2>
         <p className="mt-3 max-w-md font-inter text-sm leading-relaxed text-text-secondary">
-          {effectiveMarriage
-            ? "Capturamos los datos de los dos cónyuges. Después pasás directo al pago seguro de USD $35/mes para ambos."
-            : "Después de esto pasás directo al pago seguro para activar tu suscripción mensual."}
+          {effectiveMarriage ? t("subtitleMarriage") : t("subtitleSingle")}
         </p>
       </div>
 
@@ -258,7 +257,7 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
             <div className="space-y-3">
               <SignInWithGoogle
                 redirectTo="/suscribirme"
-                label="Continuar con Google"
+                label={t("googleLabel")}
                 country={country.name}
                 countryCode={country.code}
               />
@@ -270,7 +269,7 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
               </div>
               <div className="relative flex justify-center">
                 <span className="bg-surface-elevated px-3 font-inter text-xs uppercase tracking-widest text-text-tertiary">
-                  o con tu correo
+                  {t("orWithEmail")}
                 </span>
               </div>
             </div>
@@ -313,16 +312,14 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-grotesk text-sm font-semibold text-text-primary">
-                    Beneficio matrimonio Argentina no disponible
+                    {t("geoMismatchTitle")}
                   </p>
                   <p className="mt-1 font-inter text-xs leading-relaxed text-text-secondary">
-                    Detectamos que estás conectándote desde{" "}
+                    {t("geoMismatchBodyBefore")}
                     <span className="font-semibold text-text-primary">
                       {detectedCountryName}
                     </span>
-                    . La inscripción especial de matrimonio es exclusiva
-                    para residentes en Argentina. Podés seguir adelante
-                    con tu inscripción individual normal.
+                    {t("geoMismatchBodyAfter")}
                   </p>
                   <button
                     type="button"
@@ -330,7 +327,10 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
                     className="mt-3 inline-flex items-center gap-1.5 font-inter text-xs font-medium text-brand-coral transition-colors hover:text-text-primary"
                   >
                     <ArrowLeft className="size-3.5" />
-                    Cambiar a {detectedCountryName ?? "otro país"}
+                    {t("geoMismatchChange", {
+                      country:
+                        detectedCountryName ?? t("geoMismatchChangeFallback"),
+                    })}
                   </button>
                 </div>
               </div>
@@ -339,7 +339,7 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
 
           {/* Cuenta primaria */}
           <Field
-            label={effectiveMarriage ? "Nombre completo (cónyuge 1)" : "Nombre completo"}
+            label={effectiveMarriage ? t("fullNameMarriage") : t("fullNameSingle")}
             error={errors.fullName}
             input={
               <input
@@ -353,7 +353,7 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
             }
           />
           <Field
-            label={effectiveMarriage ? "Correo (cónyuge 1)" : "Correo electrónico"}
+            label={effectiveMarriage ? t("emailMarriage") : t("emailSingle")}
             error={errors.email}
             input={
               <input
@@ -367,8 +367,8 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
             }
           />
           <Field
-            label="Contraseña"
-            hint="Mínimo 8 caracteres"
+            label={t("passwordLabel")}
+            hint={t("passwordHint")}
             error={errors.password}
             input={
               <input
@@ -382,8 +382,8 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
             }
           />
           <Field
-            label="Ministerio / iglesia"
-            hint="Opcional — completá después si querés"
+            label={t("ministryLabel")}
+            hint={t("ministryHint")}
             input={
               <input
                 type="text"
@@ -428,7 +428,7 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
                   <div className="my-3 flex items-center gap-3">
                     <span className="h-px flex-1 bg-white/[0.06]" />
                     <span className="font-inter text-[10px] uppercase tracking-[0.32em] text-text-tertiary">
-                      Cónyuge 2
+                      {t("spouse2Divider")}
                     </span>
                     <span className="h-px flex-1 bg-white/[0.06]" />
                   </div>
@@ -454,9 +454,7 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
                       className="mt-0.5 size-4 shrink-0 cursor-pointer accent-brand-violet"
                     />
                     <span className="font-inter text-xs leading-relaxed text-text-secondary">
-                      Confirmamos que residimos actualmente en Argentina y que
-                      esta inscripción corresponde a un matrimonio. Aceptamos
-                      verificación posterior si fuera necesario.
+                      {t("residenceDeclaration")}
                     </span>
                   </label>
                   {errors.declaredResidence && (
@@ -477,13 +475,13 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
             {pending ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
-                {effectiveMarriage ? "Creando cuentas..." : "Creando cuenta..."}
+                {effectiveMarriage
+                  ? t("submitCreatingMarriage")
+                  : t("submitCreatingSingle")}
               </>
             ) : (
               <>
-                {effectiveMarriage
-                  ? "Continuar al pago — USD $35/mes"
-                  : "Continuar al pago"}
+                {effectiveMarriage ? t("submitMarriage") : t("submitSingle")}
                 <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
               </>
             )}
@@ -493,17 +491,17 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
           <div className="mt-4 flex flex-wrap items-center justify-center gap-3 font-inter text-xs text-text-tertiary">
             <span className="inline-flex items-center gap-1">
               <CheckCircle2 className="size-3 text-emerald-400" />
-              Sin compromiso
+              {t("trustNoCommitment")}
             </span>
             <span>·</span>
             <span className="inline-flex items-center gap-1">
               <CheckCircle2 className="size-3 text-emerald-400" />
-              Cancelás cuando quieras
+              {t("trustCancel")}
             </span>
             <span>·</span>
             <span className="inline-flex items-center gap-1">
               <Mail className="size-3 text-brand-coral" />
-              Stripe seguro
+              {t("trustStripe")}
             </span>
           </div>
         </form>

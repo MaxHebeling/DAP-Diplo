@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Check } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { cn } from "@/lib/utils";
 
 export type SectionKind =
@@ -30,25 +31,26 @@ const ORDERED: SectionKind[] = [
   "impartation",
 ];
 
-const LABEL: Record<SectionKind, string> = {
-  intro: "Intro",
-  teaching: "Enseñanza",
-  activation: "Activación",
-  evaluation: "Evaluación",
-  impartation: "Impartición",
-};
-
-export function ModuleStepper({
+export async function ModuleStepper({
   sections,
   current,
   phaseSlug,
   moduleSlug,
 }: ModuleStepperProps) {
+  const t = await getTranslations("Module");
+  const LABEL: Record<SectionKind, string> = {
+    intro: t("stepper.intro"),
+    teaching: t("stepper.teaching"),
+    activation: t("stepper.activation"),
+    evaluation: t("stepper.evaluation"),
+    impartation: t("stepper.impartation"),
+  };
+
   // Keep canonical order even if DB returns them in different order
   const byKind = new Map(sections.map((s) => [s.kind, s]));
 
   return (
-    <nav aria-label="Secciones del módulo" className="overflow-x-auto">
+    <nav aria-label={t("stepper.navLabel")} className="overflow-x-auto">
       <ol className="flex min-w-max items-center gap-1.5 sm:gap-3">
         {ORDERED.map((kind, idx) => {
           const s = byKind.get(kind);

@@ -1,193 +1,150 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
 import { LegalPageLayout } from "@/components/legal/legal-page-layout";
 
-const UPDATED_AT = "19 de mayo de 2026";
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("PublicPages");
+  return {
+    title: t("privacy.metaTitle"),
+    description: t("privacy.metaDescription"),
+    alternates: { canonical: "/privacidad" },
+  };
+}
 
-export const metadata: Metadata = {
-  title: "Política de privacidad",
-  description:
-    "Política de privacidad del Diplomado Apostólico Pastoral (DAP). Cómo recolectamos, usamos y protegemos tus datos personales.",
-  alternates: { canonical: "/privacidad" },
-};
-
-export default function PrivacidadPage() {
+export default async function PrivacidadPage() {
+  const t = await getTranslations("PublicPages");
   return (
     <LegalPageLayout
-      eyebrow="Legal"
-      title="Política de privacidad"
-      updatedAt={UPDATED_AT}
+      eyebrow={t("privacy.eyebrow")}
+      title={t("privacy.title")}
+      updatedAt={t("privacy.updatedAt")}
     >
       <p>
-        En el Diplomado Apostólico Pastoral (<strong>&ldquo;DAP&rdquo;</strong>),
-        operado por <strong>Revival &amp; Kingdom Ministries, INC</strong>{" "}
-        (en adelante, &ldquo;nosotros&rdquo;), respetamos tu privacidad y nos
-        comprometemos a proteger los datos personales que nos compartes.
-        Esta política explica qué datos recolectamos, cómo los usamos, con
-        quién los compartimos y qué derechos tienes sobre ellos.
+        {t("privacy.introPre")}
+        <strong>{t("privacy.introDap")}</strong>
+        {t("privacy.introMid")}
+        <strong>{t("privacy.introCompany")}</strong>
+        {t("privacy.introPost")}
       </p>
 
-      <h2>1. Responsable del tratamiento</h2>
+      <h2>{t("privacy.s1Heading")}</h2>
       <p>
-        Revival &amp; Kingdom Ministries, INC, entidad constituida en
-        California, Estados Unidos, es la responsable del tratamiento de los
-        datos personales recolectados a través de{" "}
-        <Link href="/">dapglobal.org</Link>.
+        {t("privacy.s1Body")}{" "}
+        <Link href="/">{t("privacy.s1Site")}</Link>.
       </p>
       <p>
-        Contacto:{" "}
+        {t("privacy.s1ContactLabel")}{" "}
         <Link href="mailto:office@rkchurch.com">office@rkchurch.com</Link>
       </p>
 
-      <h2>2. Datos que recolectamos</h2>
-      <h3>2.1 Datos que tú nos proporcionas</h3>
+      <h2>{t("privacy.s2Heading")}</h2>
+      <h3>{t("privacy.s2aHeading")}</h3>
       <ul>
-        <li>Nombre completo, email y contraseña (al crear la cuenta).</li>
-        <li>Información del ministerio o iglesia (opcional).</li>
-        <li>País y zona horaria.</li>
-        <li>Foto de perfil (si la subes).</li>
-        <li>Datos de pago: procesados directamente por Stripe; nosotros no almacenamos los números de tarjeta.</li>
-        <li>Contenido que generás dentro del Servicio (posts en comunidad, mensajes al tutor IA, respuestas a evaluaciones).</li>
+        <li>{t("privacy.s2aItem1")}</li>
+        <li>{t("privacy.s2aItem2")}</li>
+        <li>{t("privacy.s2aItem3")}</li>
+        <li>{t("privacy.s2aItem4")}</li>
+        <li>{t("privacy.s2aItem5")}</li>
+        <li>{t("privacy.s2aItem6")}</li>
       </ul>
 
-      <h3>2.2 Datos recolectados automáticamente</h3>
+      <h3>{t("privacy.s2bHeading")}</h3>
       <ul>
-        <li>Dirección IP, tipo de navegador, dispositivo y sistema operativo.</li>
-        <li>Páginas visitadas, tiempo de permanencia y módulos consumidos (analítica de uso).</li>
-        <li>Progreso académico (módulos completados, evaluaciones aprobadas, dimensiones obtenidas).</li>
-        <li>Cookies y tecnologías similares (ver sección 5).</li>
+        <li>{t("privacy.s2bItem1")}</li>
+        <li>{t("privacy.s2bItem2")}</li>
+        <li>{t("privacy.s2bItem3")}</li>
+        <li>{t("privacy.s2bItem4")}</li>
       </ul>
 
-      <h2>3. Finalidades del tratamiento</h2>
-      <p>Usamos tus datos para:</p>
+      <h2>{t("privacy.s3Heading")}</h2>
+      <p>{t("privacy.s3Intro")}</p>
       <ul>
-        <li><strong>Prestar el Servicio:</strong> gestionar tu cuenta, controlar tu progreso académico, otorgarte certificados y dimensiones.</li>
-        <li><strong>Procesar pagos:</strong> facturación recurrente y cancelaciones a través de Stripe.</li>
-        <li><strong>Comunicación operativa:</strong> envío de emails transaccionales (bienvenida, confirmaciones de pago, avisos de cancelación, apertura semanal, correcciones de tareas).</li>
-        <li><strong>Comunicación pedagógica:</strong> recordatorios de sesiones en vivo, novedades del programa.</li>
-        <li><strong>Soporte:</strong> responder a tus consultas y resolver problemas.</li>
-        <li><strong>Mejora del Servicio:</strong> analítica agregada para optimizar contenido y experiencia.</li>
-        <li><strong>Seguridad:</strong> prevenir fraude, abuso o uso no autorizado de cuentas.</li>
-        <li><strong>Cumplimiento legal:</strong> cuando una autoridad competente lo requiera.</li>
+        <li><strong>{t("privacy.s3Item1Label")}</strong>{t("privacy.s3Item1Body")}</li>
+        <li><strong>{t("privacy.s3Item2Label")}</strong>{t("privacy.s3Item2Body")}</li>
+        <li><strong>{t("privacy.s3Item3Label")}</strong>{t("privacy.s3Item3Body")}</li>
+        <li><strong>{t("privacy.s3Item4Label")}</strong>{t("privacy.s3Item4Body")}</li>
+        <li><strong>{t("privacy.s3Item5Label")}</strong>{t("privacy.s3Item5Body")}</li>
+        <li><strong>{t("privacy.s3Item6Label")}</strong>{t("privacy.s3Item6Body")}</li>
+        <li><strong>{t("privacy.s3Item7Label")}</strong>{t("privacy.s3Item7Body")}</li>
+        <li><strong>{t("privacy.s3Item8Label")}</strong>{t("privacy.s3Item8Body")}</li>
       </ul>
 
-      <h2>4. Compartición con terceros</h2>
-      <p>
-        No vendemos tus datos personales. Los compartimos únicamente con los
-        siguientes proveedores que nos ayudan a operar el Servicio bajo
-        contratos de confidencialidad y protección de datos:
-      </p>
+      <h2>{t("privacy.s4Heading")}</h2>
+      <p>{t("privacy.s4Intro")}</p>
       <ul>
-        <li><strong>Stripe, Inc.</strong> — procesamiento de pagos.</li>
-        <li><strong>Supabase Inc.</strong> — base de datos y autenticación.</li>
-        <li><strong>Vercel Inc.</strong> — hosting y entrega del sitio.</li>
-        <li><strong>Mux Inc.</strong> — alojamiento y reproducción de audio y video.</li>
-        <li><strong>Resend Inc.</strong> — envío de emails transaccionales.</li>
-        <li><strong>Anthropic PBC</strong> — modelo de inteligencia artificial del tutor (las consultas se procesan sin asociarse a tu identidad pública).</li>
+        <li><strong>{t("privacy.s4Item1Label")}</strong>{t("privacy.s4Item1Body")}</li>
+        <li><strong>{t("privacy.s4Item2Label")}</strong>{t("privacy.s4Item2Body")}</li>
+        <li><strong>{t("privacy.s4Item3Label")}</strong>{t("privacy.s4Item3Body")}</li>
+        <li><strong>{t("privacy.s4Item4Label")}</strong>{t("privacy.s4Item4Body")}</li>
+        <li><strong>{t("privacy.s4Item5Label")}</strong>{t("privacy.s4Item5Body")}</li>
+        <li><strong>{t("privacy.s4Item6Label")}</strong>{t("privacy.s4Item6Body")}</li>
       </ul>
-      <p>
-        Cada proveedor opera bajo sus propias políticas de privacidad y
-        cumple con estándares internacionales (GDPR, CCPA, SOC 2 cuando
-        aplique).
-      </p>
+      <p>{t("privacy.s4Outro")}</p>
 
-      <h2>5. Cookies y tecnologías similares</h2>
-      <p>Utilizamos cookies y tecnologías equivalentes para:</p>
+      <h2>{t("privacy.s5Heading")}</h2>
+      <p>{t("privacy.s5Intro")}</p>
       <ul>
-        <li><strong>Esenciales:</strong> mantener tu sesión iniciada y proteger contra CSRF.</li>
-        <li><strong>Funcionales:</strong> recordar preferencias (idioma, modo oscuro).</li>
-        <li><strong>Analíticas:</strong> medir uso del sitio en forma agregada.</li>
+        <li><strong>{t("privacy.s5Item1Label")}</strong>{t("privacy.s5Item1Body")}</li>
+        <li><strong>{t("privacy.s5Item2Label")}</strong>{t("privacy.s5Item2Body")}</li>
+        <li><strong>{t("privacy.s5Item3Label")}</strong>{t("privacy.s5Item3Body")}</li>
       </ul>
-      <p>
-        Puedes configurar tu navegador para rechazar cookies, aunque eso
-        puede afectar la funcionalidad del Servicio (especialmente el inicio
-        de sesión).
-      </p>
+      <p>{t("privacy.s5Outro")}</p>
 
-      <h2>6. Almacenamiento y seguridad</h2>
-      <p>
-        Tus datos se almacenan en infraestructura administrada por Supabase
-        (Postgres, AWS us-west-2). Aplicamos:
-      </p>
+      <h2>{t("privacy.s6Heading")}</h2>
+      <p>{t("privacy.s6Intro")}</p>
       <ul>
-        <li>Cifrado en tránsito (TLS 1.2+) y en reposo (AES-256).</li>
-        <li>Row Level Security (RLS) en la base de datos.</li>
-        <li>Contraseñas hasheadas (no almacenamos contraseñas en texto plano).</li>
-        <li>Acceso interno restringido a personal autorizado.</li>
+        <li>{t("privacy.s6Item1")}</li>
+        <li>{t("privacy.s6Item2")}</li>
+        <li>{t("privacy.s6Item3")}</li>
+        <li>{t("privacy.s6Item4")}</li>
       </ul>
-      <p>
-        A pesar de las medidas implementadas, ningún sistema es 100% seguro.
-        En caso de incidente que comprometa datos personales, te notificaremos
-        sin dilación injustificada por email.
-      </p>
+      <p>{t("privacy.s6Outro")}</p>
 
-      <h2>7. Retención de datos</h2>
+      <h2>{t("privacy.s7Heading")}</h2>
       <ul>
-        <li><strong>Cuenta activa:</strong> mientras tu cuenta esté abierta y por hasta 12 meses adicionales después del último acceso.</li>
-        <li><strong>Datos de facturación:</strong> conservados según obligaciones fiscales y contables aplicables (mínimo 7 años en EE. UU.).</li>
-        <li><strong>Tras solicitud de eliminación:</strong> borramos tus datos en un máximo de 30 días, salvo aquellos que debamos conservar por ley.</li>
+        <li><strong>{t("privacy.s7Item1Label")}</strong>{t("privacy.s7Item1Body")}</li>
+        <li><strong>{t("privacy.s7Item2Label")}</strong>{t("privacy.s7Item2Body")}</li>
+        <li><strong>{t("privacy.s7Item3Label")}</strong>{t("privacy.s7Item3Body")}</li>
       </ul>
 
-      <h2>8. Tus derechos</h2>
-      <p>
-        Puedes ejercer en cualquier momento los siguientes derechos sobre tus
-        datos personales:
-      </p>
+      <h2>{t("privacy.s8Heading")}</h2>
+      <p>{t("privacy.s8Intro")}</p>
       <ul>
-        <li><strong>Acceso:</strong> obtener copia de los datos que tenemos sobre ti.</li>
-        <li><strong>Rectificación:</strong> corregir datos inexactos o incompletos.</li>
-        <li><strong>Eliminación:</strong> solicitar el borrado de tus datos (&ldquo;derecho al olvido&rdquo;).</li>
-        <li><strong>Portabilidad:</strong> recibir tus datos en formato estructurado y legible.</li>
-        <li><strong>Oposición:</strong> oponerte al tratamiento de tus datos para fines de marketing.</li>
-        <li><strong>Limitación:</strong> restringir el tratamiento en ciertas circunstancias.</li>
+        <li><strong>{t("privacy.s8Item1Label")}</strong>{t("privacy.s8Item1Body")}</li>
+        <li><strong>{t("privacy.s8Item2Label")}</strong>{t("privacy.s8Item2Body")}</li>
+        <li><strong>{t("privacy.s8Item3Label")}</strong>{t("privacy.s8Item3Body")}</li>
+        <li><strong>{t("privacy.s8Item4Label")}</strong>{t("privacy.s8Item4Body")}</li>
+        <li><strong>{t("privacy.s8Item5Label")}</strong>{t("privacy.s8Item5Body")}</li>
+        <li><strong>{t("privacy.s8Item6Label")}</strong>{t("privacy.s8Item6Body")}</li>
       </ul>
       <p>
-        Para ejercer cualquiera de estos derechos, escríbenos a{" "}
-        <Link href="mailto:office@rkchurch.com">office@rkchurch.com</Link>{" "}
-        desde la dirección de email asociada a tu cuenta. Responderemos en
-        un plazo máximo de 30 días.
+        {t("privacy.s8OutroPre")}
+        <Link href="mailto:office@rkchurch.com">office@rkchurch.com</Link>
+        {t("privacy.s8OutroPost")}
       </p>
 
-      <h2>9. Transferencias internacionales</h2>
-      <p>
-        Dado que algunos de nuestros proveedores tienen infraestructura en
-        Estados Unidos y otras regiones, tus datos pueden transferirse fuera
-        de tu país de residencia. Aseguramos que dichas transferencias
-        cumplan con las salvaguardas apropiadas (cláusulas contractuales
-        estándar, certificaciones internacionales).
-      </p>
+      <h2>{t("privacy.s9Heading")}</h2>
+      <p>{t("privacy.s9Body")}</p>
 
-      <h2>10. Menores de edad</h2>
-      <p>
-        El Servicio está dirigido a personas mayores de 18 años. No
-        recolectamos conscientemente datos de menores de 13 años. Si tomamos
-        conocimiento de que hemos recolectado datos de un menor sin
-        consentimiento parental verificable, los eliminaremos de inmediato.
-      </p>
+      <h2>{t("privacy.s10Heading")}</h2>
+      <p>{t("privacy.s10Body")}</p>
 
-      <h2>11. Cambios a esta política</h2>
-      <p>
-        Podemos actualizar esta política. Te notificaremos cambios materiales
-        por email con al menos 15 días de antelación. La fecha de última
-        actualización aparece al inicio de este documento.
-      </p>
+      <h2>{t("privacy.s11Heading")}</h2>
+      <p>{t("privacy.s11Body")}</p>
 
-      <h2>12. Contacto</h2>
+      <h2>{t("privacy.s12Heading")}</h2>
+      <p>{t("privacy.s12Intro")}</p>
       <p>
-        Para consultas, ejercicio de derechos o quejas relacionadas con tus
-        datos personales:
-      </p>
-      <p>
-        <strong>Revival &amp; Kingdom Ministries, INC</strong>
+        <strong>{t("privacy.s12Company")}</strong>
         <br />
-        Email:{" "}
+        {t("privacy.s12EmailLabel")}{" "}
         <Link href="mailto:office@rkchurch.com">office@rkchurch.com</Link>
       </p>
 
       <p className="mt-12 text-sm text-text-tertiary">
-        © {new Date().getFullYear()} Revival &amp; Kingdom Ministries, INC.
-        Todos los derechos reservados.
+        {t("privacy.copyright", { year: new Date().getFullYear() })}
       </p>
     </LegalPageLayout>
   );

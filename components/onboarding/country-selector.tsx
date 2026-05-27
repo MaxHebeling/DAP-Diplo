@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { motion } from "motion/react";
 import { Globe, Search, Sparkles } from "lucide-react";
 
@@ -11,6 +12,7 @@ type Props = {
 };
 
 export function CountrySelector({ onSelect }: Props) {
+  const t = useTranslations("Onboarding");
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -37,15 +39,14 @@ export function CountrySelector({ onSelect }: Props) {
             <Globe className="size-5" strokeWidth={1.8} />
           </div>
           <span className="font-inter text-xs font-medium uppercase tracking-[0.32em] text-brand-coral">
-            Paso 1 de 2
+            {t("countrySelector.step")}
           </span>
         </div>
         <h2 className="mt-5 font-grotesk text-3xl font-bold leading-tight text-text-primary sm:text-4xl">
-          ¿Desde dónde te conectas?
+          {t("countrySelector.title")}
         </h2>
         <p className="mt-3 max-w-md font-inter text-sm leading-relaxed text-text-secondary">
-          Tu país nos ayuda a personalizar tu experiencia y prepararte
-          el camino correcto dentro del Diplomado.
+          {t("countrySelector.subtitle")}
         </p>
 
         {/* Search */}
@@ -55,7 +56,7 @@ export function CountrySelector({ onSelect }: Props) {
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscá tu país..."
+            placeholder={t("countrySelector.searchPlaceholder")}
             autoComplete="off"
             className="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] py-3.5 pl-11 pr-4 font-inter text-sm text-text-primary outline-none transition-all placeholder:text-text-tertiary focus:border-brand-violet/40 focus:bg-white/[0.05] focus:ring-4 focus:ring-brand-violet/15"
           />
@@ -70,12 +71,12 @@ export function CountrySelector({ onSelect }: Props) {
           <>
             <p className="mb-3 flex items-center gap-1.5 font-inter text-xs font-medium uppercase tracking-widest text-text-tertiary">
               <Sparkles className="size-3 text-brand-coral" />
-              Destacados · Hispanohablantes
+              {t("countrySelector.featuredLabel")}
             </p>
             <CountryGrid countries={featured} onSelect={onSelect} />
 
             <p className="mb-3 mt-8 font-inter text-xs font-medium uppercase tracking-widest text-text-tertiary">
-              Resto del mundo
+              {t("countrySelector.restLabel")}
             </p>
             <CountryGrid countries={rest} onSelect={onSelect} />
           </>
@@ -92,10 +93,11 @@ function CountryGrid({
   countries: Country[];
   onSelect: (c: Country) => void;
 }) {
+  const t = useTranslations("Onboarding");
   if (countries.length === 0) {
     return (
       <p className="py-10 text-center font-inter text-sm text-text-tertiary">
-        No encontramos ese país. Probá con otro nombre.
+        {t("countrySelector.noResults")}
       </p>
     );
   }

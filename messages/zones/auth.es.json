@@ -1,0 +1,115 @@
+{
+  "Auth": {
+    "signOut": {
+      "signingOut": "Saliendo...",
+      "label": "Cerrar sesión"
+    },
+    "google": {
+      "connecting": "Conectando...",
+      "continueWithGoogle": "Continuar con Google"
+    },
+    "divider": {
+      "orWithEmail": "o con tu correo"
+    },
+    "login": {
+      "metaTitle": "Inicia sesión",
+      "metaDescription": "Accede a tu cuenta del Diplomado Apostólico Pastoral.",
+      "title": "Inicia sesión",
+      "description": "Accede a tus módulos y continúa donde lo dejaste.",
+      "submit": "Entrar",
+      "submitting": "Entrando...",
+      "emailLabel": "Correo",
+      "passwordLabel": "Contraseña",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "noAccount": "¿No tienes cuenta?",
+      "createOne": "Crea una"
+    },
+    "signup": {
+      "metaTitle": "Crea tu cuenta",
+      "metaDescription": "Únete al Diplomado Apostólico Pastoral. $25 USD/mes.",
+      "title": "Crea tu cuenta",
+      "description": "Acceso permanente a los módulos que compres. Avanza a tu ritmo.",
+      "submit": "Crear cuenta",
+      "submitting": "Creando cuenta...",
+      "emailLabel": "Correo",
+      "passwordLabel": "Contraseña",
+      "fullNameLabel": "Nombre completo",
+      "ministryLabel": "Ministerio",
+      "ministryOptional": "(opcional)",
+      "countryLabel": "País",
+      "haveAccount": "¿Ya tienes cuenta?",
+      "logIn": "Inicia sesión",
+      "enrollmentClosed": {
+        "title": "Inscripciones abren el {date}",
+        "body": "La primera convocatoria del Diplomado Apostólico Pastoral abre inscripciones el <strong>{launchDate}</strong>. Vuelve en esa fecha para postular tu admisión y asegurar tu lugar.",
+        "launchDate": "01 de Junio de 2026",
+        "classesStartLabel": "Inicio de clases:",
+        "backToHome": "Volver al inicio"
+      }
+    },
+    "resetRequest": {
+      "metaTitle": "Recuperar contraseña",
+      "metaDescription": "Pedí un link para recuperar tu contraseña del Diplomado Apostólico Pastoral.",
+      "title": "Recuperar tu contraseña",
+      "description": "Te mandamos un link a tu email para que puedas crear una nueva.",
+      "submit": "Enviar link de recuperación",
+      "submitting": "Enviando…",
+      "emailLabel": "Tu email",
+      "emailPlaceholder": "tu@email.com",
+      "successTitle": "Revisá tu email",
+      "successBody": "Si el correo existe en nuestra base, te llegará un link para crear una contraseña nueva. Puede tardar 1–2 minutos.",
+      "rememberedQuestion": "¿Te acordaste?",
+      "backToLogin": "Volver a iniciar sesión"
+    },
+    "updatePassword": {
+      "metaTitle": "Crear nueva contraseña",
+      "title": "Creá tu nueva contraseña",
+      "description": "Tiene que tener al menos 8 caracteres.",
+      "submit": "Guardar nueva contraseña",
+      "submitting": "Guardando…",
+      "passwordLabel": "Nueva contraseña",
+      "confirmLabel": "Repetí la contraseña",
+      "expiredTitle": "Link expirado o inválido",
+      "expiredBody": "El link de recuperación ya no es válido. Pedí uno nuevo para continuar.",
+      "requestNewLink": "Pedir nuevo link"
+    },
+    "subscribe": {
+      "metaTitle": "Suscribirme",
+      "metaDescription": "$25 USD al mes. Acceso completo al Diplomado Apostólico Pastoral. Cancela cuando quieras.",
+      "ogTitle": "Suscribirme · DAP",
+      "ogDescription": "Acceso completo al Diplomado Apostólico Pastoral por $25 USD/mes. 72 módulos en 18 meses · 1 módulo por semana · cancela cuando quieras.",
+      "backToHome": "Volver al inicio",
+      "eyebrow": "Suscripción",
+      "title": "Diplomado Apostólico Pastoral",
+      "intro": "Una sola suscripción mensual te da acceso al diplomado completo de 18 meses. Recibís un módulo nuevo cada semana (martes 00:01). Cancela cuando quieras desde tu dashboard — tu progreso queda guardado.",
+      "price": "$25",
+      "priceUnit": "USD por mes",
+      "planSingle": "Plan único",
+      "included": {
+        "item1": "Calendario semanal personal: 1 módulo por semana durante 72 semanas",
+        "item2": "MasterClass en vivo por evento (mínimo 1 garantizada al mes)",
+        "item3": "Mentoría grupal por convocatoria del apóstol",
+        "item4": "Corrección personalizada de tu activación con la voz del Dr. Max (48h)",
+        "item5": "Comunidad privada de pastores en formación",
+        "item6": "Material descargable por módulo (PDFs, plantillas, recursos extra)",
+        "item7": "Certificado, insignia y dimensión nueva al completar cada bloque"
+      },
+      "continueToPayment": "Continuar a pago",
+      "paymentNote": "Procesado por Stripe. Sin contrato. Cancela en un click cuando quieras.",
+      "enrollmentClosed": {
+        "title": "Inscripciones abren el {date}",
+        "body": "La primera convocatoria del Diplomado Apostólico Pastoral abre inscripciones el <strong>{launchDate}</strong>. En esa fecha podrás activar tu suscripción y asegurar tu lugar.",
+        "launchDate": "01 de Junio de 2026",
+        "classesStartLabel": "Inicio de clases:"
+      }
+    },
+    "subscribeSuccess": {
+      "metaTitle": "¡Bienvenido al diplomado!",
+      "eyebrow": "Suscripción confirmada",
+      "title": "¡Bienvenido al diplomado!",
+      "body": "Tu suscripción se está activando. En unos segundos recibirás un correo de Stripe con la confirmación de tu pago. Desde tu dashboard podrás comenzar con la Fase 1.",
+      "goToDashboard": "Ir a mi dashboard",
+      "accessNote": "¿No ves tu acceso aún? Recarga el dashboard en 10 segundos."
+    }
+  }
+}

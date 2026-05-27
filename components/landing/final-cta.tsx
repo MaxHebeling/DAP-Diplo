@@ -1,9 +1,11 @@
+import { getTranslations } from "next-intl/server";
 import { ArrowRight, Sparkles } from "lucide-react";
 
 import { EnrollmentCTA } from "@/components/launch/enrollment-cta";
 import { Reveal } from "@/components/landing/reveal";
 
-export function FinalCta() {
+export async function FinalCta() {
+  const t = await getTranslations("Landing");
   return (
     <section className="relative isolate overflow-hidden border-t border-white/[0.06] bg-surface-base px-6 py-28 sm:py-36">
       {/* Cosmic background */}
@@ -20,22 +22,20 @@ export function FinalCta() {
         <Reveal>
           <p className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/[0.1] bg-white/[0.05] px-4 py-1.5 font-inter text-xs font-medium uppercase tracking-widest text-text-secondary backdrop-blur">
             <Sparkles className="size-3.5 text-brand-coral" />
-            $25 USD/mes · cancela cuando quieras
+            {t("finalCta.badge")}
           </p>
           <h2 className="mb-6 font-grotesk text-display font-bold leading-[1.05] text-text-primary">
-            Empieza tu <span className="gradient-text">diplomado apostólico</span> hoy.
+            {t("finalCta.titleLead")} <span className="gradient-text">{t("finalCta.titleHighlight")}</span> {t("finalCta.titleTrail")}
           </h2>
           <p className="mb-10 mx-auto max-w-xl text-justify font-inter text-base leading-relaxed text-text-secondary md:text-lg">
-            Admisión formal + 1 módulo nuevo cada semana, durante 72 semanas.
-            Corrección personalizada del Ap. Max Hebeling y MasterClass en vivo
-            por evento. En español.
+            {t("finalCta.subtitle")}
           </p>
           <EnrollmentCTA href="/suscribirme" size="lg">
-            Suscribirme ahora
+            {t("finalCta.cta")}
             <ArrowRight />
           </EnrollmentCTA>
           <p className="mt-6 font-inter text-xs text-text-tertiary">
-            Procesado por Stripe. Tu suscripción comienza al confirmar el pago.
+            {t("finalCta.disclaimer")}
           </p>
         </Reveal>
       </div>

@@ -2,6 +2,7 @@
 
 import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import { FileCheck2, FileWarning, Upload, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
 import {
@@ -23,6 +24,7 @@ export function FileDropzone({
   errorMessage,
   disabled,
 }: FileDropzoneProps) {
+  const t = useTranslations("Admission");
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -34,12 +36,12 @@ export function FileDropzone({
       return;
     }
     if (!ACCEPTED_LETTER_TYPES.includes(file.type)) {
-      setLocalError("Solo PDF, JPG o PNG.");
+      setLocalError(t("fileDropzone.errorType"));
       onChange(null);
       return;
     }
     if (file.size > MAX_LETTER_BYTES) {
-      setLocalError("El archivo debe ser menor a 10 MB.");
+      setLocalError(t("fileDropzone.errorSize"));
       onChange(null);
       return;
     }
@@ -119,7 +121,10 @@ export function FileDropzone({
                 {value.name}
               </p>
               <p className="mt-1 font-inter text-xs text-text-tertiary">
-                {(value.size / 1024 / 1024).toFixed(2)} MB · {value.type || "archivo"}
+                {t("fileDropzone.fileMeta", {
+                  size: (value.size / 1024 / 1024).toFixed(2),
+                  type: value.type || t("fileDropzone.fileMetaFallback"),
+                })}
               </p>
             </div>
             <button
@@ -127,7 +132,7 @@ export function FileDropzone({
               onClick={clear}
               className="inline-flex items-center gap-1 rounded-md border border-white/[0.1] px-3 py-1.5 font-inter text-xs text-text-secondary hover:border-brand-coral/40 hover:text-brand-coral"
             >
-              <X className="size-3.5" /> Quitar
+              <X className="size-3.5" /> {t("fileDropzone.remove")}
             </button>
           </>
         ) : errorText ? (
@@ -141,7 +146,7 @@ export function FileDropzone({
                 {errorText}
               </p>
               <p className="mt-1 font-inter text-xs text-text-tertiary">
-                Prueba de nuevo. PDF, JPG o PNG · max 10 MB.
+                {t("fileDropzone.errorRetry")}
               </p>
             </div>
           </>
@@ -153,10 +158,10 @@ export function FileDropzone({
             />
             <div>
               <p className="font-grotesk text-sm font-semibold text-text-primary">
-                Arrastrá la carta o hacé clic
+                {t("fileDropzone.emptyTitle")}
               </p>
               <p className="mt-1 font-inter text-xs text-text-tertiary">
-                PDF, JPG o PNG · máximo 10 MB
+                {t("fileDropzone.emptyHint")}
               </p>
             </div>
           </>

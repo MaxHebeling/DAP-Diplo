@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { getTranslations, getLocale } from "next-intl/server";
 import {
   Briefcase,
   Building2,
@@ -15,11 +16,15 @@ import {
 import { Reveal } from "@/components/landing/reveal";
 import { RANK_TINT, type RankOrder } from "@/components/ui-dap/rank-badge";
 import { createClient } from "@/lib/supabase/server";
+import { localized } from "@/lib/i18n/localized";
+import type { Locale } from "@/i18n/config";
 
 type DimensionRow = {
   order_index: number;
   name: string;
+  name_en: string | null;
   description: string | null;
+  description_en: string | null;
 };
 
 const ICON_BY_RANK: Record<RankOrder, LucideIcon> = {
@@ -35,10 +40,12 @@ const ICON_BY_RANK: Record<RankOrder, LucideIcon> = {
 };
 
 export async function DimensionsTimeline() {
+  const t = await getTranslations("Landing");
+  const locale = (await getLocale()) as Locale;
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("dimensions")
-    .select("order_index, name, description")
+    .select("order_index, name, name_en, description, description_en")
     .order("order_index", { ascending: true })
     .returns<DimensionRow[]>();
 
@@ -73,16 +80,13 @@ export async function DimensionsTimeline() {
         <Reveal>
           <div className="mb-16 max-w-3xl">
             <p className="mb-4 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-              Las 9 dimensiones del Reino
+              {t("dimensions.eyebrow")}
             </p>
             <h2 className="font-grotesk text-h1 font-bold leading-tight text-text-primary">
-              Discípulo. <span className="gradient-text">Hijo</span>. Líder.
-              Enviado.
+              {t("dimensions.titleDiscipulo")} <span className="gradient-text">{t("dimensions.titleHijo")}</span> {t("dimensions.titleLiderEnviado")}
             </h2>
             <p className="mt-6 text-justify font-inter text-base leading-relaxed text-text-secondary">
-              Cada bloque completado entrega una dimensión ministerial
-              verificable. No son títulos honoríficos: son etapas de proceso
-              reconocidas dentro del gobierno apostólico del DAP.
+              {t("dimensions.intro")}
             </p>
           </div>
         </Reveal>
@@ -99,13 +103,15 @@ export async function DimensionsTimeline() {
               const tint = RANK_TINT[order];
               const breatheDelay = `${i * 0.35}s`;
               const glowDelay = `${i * 0.35 + 0.6}s`;
+              const dimName = localized(r, "name", locale) ?? r.name;
+              const dimDescription = localized(r, "description", locale);
               return (
                 <Reveal key={r.order_index} delay={i * 0.04}>
                   <li className="relative pl-20 lg:pl-0 lg:text-center">
                     <div className="absolute left-0 top-0 lg:static lg:mx-auto lg:mb-6">
                       <div
                         className="group relative inline-flex size-14 items-center justify-center transition-transform duration-300 hover:-translate-y-1"
-                        aria-label={r.name}
+                        aria-label={dimName}
                       >
                         {/* Glow blob detrás del icono */}
                         <span
@@ -131,11 +137,11 @@ export async function DimensionsTimeline() {
                       </div>
                     </div>
                     <h3 className="mb-1.5 font-grotesk text-h4 font-semibold text-text-primary lg:text-base">
-                      {r.name}
+                      {dimName}
                     </h3>
-                    {r.description && (
+                    {dimDescription && (
                       <p className="font-inter text-xs leading-relaxed text-text-tertiary">
-                        {r.description.replace(
+                        {dimDescription.replace(
                           /^Otorgado al completar (la|el) (Fase|Bloque) \d+ — /,
                           "",
                         )}

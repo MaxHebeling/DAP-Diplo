@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { ArrowRight, Settings, Sparkles } from "lucide-react";
 
 import { signOutAction } from "@/lib/auth/actions";
@@ -9,10 +10,14 @@ import { DapStudentShell } from "@/components/layouts/dap-student-shell";
 import { DapButton } from "@/components/ui-dap/button";
 import { PushSubscribeButton } from "@/components/pwa/push-subscribe-button";
 
-export const metadata = { title: "Configuración — DAP" };
+export async function generateMetadata() {
+  const t = await getTranslations("Student");
+  return { title: t("settings.metaTitle") };
+}
 
 export default async function ConfiguracionPage() {
   const supabase = await createClient();
+  const t = await getTranslations("Student");
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -26,9 +31,9 @@ export default async function ConfiguracionPage() {
 
   return (
     <DapStudentShell
-      userName={profile?.full_name ?? "Alumno"}
+      userName={profile?.full_name ?? t("common.studentFallback")}
       userAvatar={profile?.avatar_url ?? null}
-      title="Configuración"
+      title={t("settings.topbarTitle")}
       onSignOut={signOutAction}
     >
       <div className="px-4 py-8 sm:px-6 sm:py-10 lg:px-10">
@@ -36,25 +41,23 @@ export default async function ConfiguracionPage() {
           <header>
             <p className="inline-flex items-center gap-1.5 rounded-full border border-brand-coral/30 bg-brand-coral/[0.06] px-3 py-1 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
               <Sparkles className="size-3" />
-              Tu cuenta
+              {t("settings.eyebrow")}
             </p>
             <h1 className="mt-3 font-grotesk text-h1 font-bold leading-tight text-text-primary">
-              Configuración
+              {t("settings.title")}
             </h1>
             <p className="mt-2 font-inter text-base text-text-secondary">
-              Preferencias de tu cuenta y notificaciones.
+              {t("settings.subtitle")}
             </p>
           </header>
 
           {/* Notificaciones push */}
           <section className="rounded-2xl border border-white/[0.06] bg-surface-elevated/60 p-5 sm:p-6">
             <h2 className="font-grotesk text-lg font-semibold text-text-primary">
-              Notificaciones
+              {t("settings.notifications.title")}
             </h2>
             <p className="mt-1 font-inter text-sm text-text-secondary">
-              Activá las notificaciones del navegador para recibir un aviso
-              cada martes cuando abra tu nuevo módulo, y cuando llegue tu
-              corrección semanal del Ap. Max.
+              {t("settings.notifications.description")}
             </p>
             <div className="mt-4">
               <PushSubscribeButton />
@@ -64,10 +67,10 @@ export default async function ConfiguracionPage() {
           {/* Contraseña */}
           <section className="rounded-2xl border border-white/[0.06] bg-surface-elevated/60 p-5 sm:p-6">
             <h2 className="font-grotesk text-lg font-semibold text-text-primary">
-              Contraseña
+              {t("settings.password.title")}
             </h2>
             <p className="mt-1 font-inter text-sm text-text-secondary">
-              Si quieres cambiarla, te mandamos un link a tu email.
+              {t("settings.password.description")}
             </p>
             <div className="mt-4">
               <DapButton
@@ -75,7 +78,7 @@ export default async function ConfiguracionPage() {
                 size="sm"
                 render={<Link href="/reset-password" />}
               >
-                Cambiar contraseña
+                {t("settings.password.cta")}
                 <ArrowRight />
               </DapButton>
             </div>
@@ -89,11 +92,10 @@ export default async function ConfiguracionPage() {
               </div>
               <div>
                 <h2 className="font-grotesk text-lg font-semibold text-text-primary">
-                  Más configuración pronto
+                  {t("settings.support.title")}
                 </h2>
                 <p className="mt-1 font-inter text-sm text-text-secondary">
-                  Próximamente: editar perfil, gestionar suscripción, idioma
-                  y zona horaria, opciones de privacidad.
+                  {t("settings.support.description")}
                 </p>
               </div>
             </div>

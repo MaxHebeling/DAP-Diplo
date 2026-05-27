@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
+import { useTranslations } from "next-intl";
 import { CheckCircle2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -21,9 +22,10 @@ const initialState: AuthFormState = { ok: false };
 
 function SubmitButton() {
   const { pending } = useFormStatus();
+  const t = useTranslations("Auth");
   return (
     <Button type="submit" disabled={pending} className="w-full">
-      {pending ? "Enviando…" : "Enviar link de recuperación"}
+      {pending ? t("resetRequest.submitting") : t("resetRequest.submit")}
     </Button>
   );
 }
@@ -33,15 +35,17 @@ export function ResetPasswordRequestForm() {
     requestPasswordResetAction,
     initialState,
   );
+  const t = useTranslations("Auth");
 
   if (state.ok) {
     return (
       <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-5 text-center">
         <CheckCircle2 className="mx-auto mb-2 size-6 text-emerald-400" />
-        <p className="font-medium text-foreground">Revisá tu email</p>
+        <p className="font-medium text-foreground">
+          {t("resetRequest.successTitle")}
+        </p>
         <p className="mt-2 text-sm text-muted-foreground">
-          Si el correo existe en nuestra base, te llegará un link para crear
-          una contraseña nueva. Puede tardar 1–2 minutos.
+          {t("resetRequest.successBody")}
         </p>
       </div>
     );
@@ -51,14 +55,14 @@ export function ResetPasswordRequestForm() {
     <form action={formAction} className="flex flex-col gap-6">
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor="email">Tu email</FieldLabel>
+          <FieldLabel htmlFor="email">{t("resetRequest.emailLabel")}</FieldLabel>
           <Input
             id="email"
             name="email"
             type="email"
             autoComplete="email"
             required
-            placeholder="tu@email.com"
+            placeholder={t("resetRequest.emailPlaceholder")}
           />
           {state.fieldErrors?.email && (
             <FieldError>{state.fieldErrors.email[0]}</FieldError>

@@ -1,0 +1,278 @@
+{
+  "Student": {
+    "common": {
+      "studentFallback": "Alumno",
+      "backToHome": "Volver al inicio",
+      "back": "Volver",
+      "continue": "Continuar",
+      "review": "Repasar",
+      "diplomaEyebrow": "Diplomado Apostólico Pastoral"
+    },
+    "dashboard": {
+      "metaTitle": "Mi dashboard — DAP",
+      "topbarTitle": "Inicio",
+      "greeting": "Hola, {firstName}.",
+      "welcome": "Bienvenido, {firstName}.",
+      "admin": "Admin",
+      "noSub": {
+        "canceled": "Tu suscripción está cancelada. Reactiva cuando quieras y retomas desde donde dejaste.",
+        "inactive": "Tu suscripción aún no está activa. Empieza la formación cuando estés listo.",
+        "cardTitle": "Activa tu acceso",
+        "cardDescription": "$25 USD/mes · cancelas cuando quieras · todos los módulos se liberan semana a semana.",
+        "cta": "Continuar"
+      },
+      "week": {
+        "status": "Estás en la <strong>Semana {currentWeek} de 72</strong> del programa.",
+        "noModule": "No encontramos el módulo de esta semana. Si esto persiste, avísanos a admisiones@dapglobal.org."
+      },
+      "notStarted": {
+        "cardTitle": "Tu programa empieza pronto",
+        "startsOn": "Inicia el <strong>{startsAt}</strong>. Ese día abre la Semana 1 y vas a recibir un aviso por email.",
+        "noDate": "Todavía no tienes fecha de inicio asignada. Te llegará un email cuando admisiones apruebe tu solicitud y emita tu matrícula.",
+        "matricula": "Matrícula · {matricula}",
+        "explore": "Mientras tanto puedes explorar la <community>comunidad</community> o el <tutor>tutor IA</tutor>."
+      },
+      "currentCard": {
+        "eyebrow": "Tu módulo de esta semana · Semana {week}",
+        "block": "Bloque {order} · {title}",
+        "taskCloses": "La tarea cierra el {date}",
+        "completed": "Módulo completado"
+      },
+      "progress": {
+        "label": "Tu progreso",
+        "count": "{count} <muted>de 72 módulos</muted>"
+      },
+      "past": {
+        "title": "Repaso",
+        "emptyDescription": "Apenas comienza tu programa — todavía no hay módulos para repasar.",
+        "titleFull": "Repaso · semanas anteriores",
+        "description": "El contenido siempre está disponible. Las tareas ya cerraron."
+      },
+      "upcoming": {
+        "title": "Próximos",
+        "emptyDescription": "Has llegado al final del programa. Felicidades.",
+        "titleFull": "Próximos · te esperan",
+        "description": "Cada módulo se abre el martes de su semana.",
+        "opensAt": "Abre {date}"
+      },
+      "listItem": {
+        "weekTitle": "Semana {week} · {title}",
+        "review": "Repaso"
+      },
+      "resources": {
+        "title": "Recursos",
+        "description": "Más allá del módulo de la semana.",
+        "community": "Comunidad de pastores en formación",
+        "live": "Próximas MasterClass y mentorías en vivo",
+        "tutor": "Tutor IA — pregunta sobre cualquier doctrina del DAP",
+        "admin": "Panel de administración"
+      },
+      "subscription": {
+        "label": "Tu suscripción",
+        "active": "Activa",
+        "cancelsOn": "Se cancela el {date}.",
+        "nextBill": "Próximo cobro: {date}.",
+        "manage": "Gestionar"
+      },
+      "tutorPromo": {
+        "title": "Tutor IA disponible",
+        "description": "Resuelve dudas doctrinales 24/7.",
+        "open": "Abrir tutor"
+      }
+    },
+    "admission": {
+      "metaTitle": "Admisión — DAP",
+      "metaDescription": "Completá tu formulario de admisión al Diplomado Apostólico Pastoral.",
+      "logoAlt": "DAP",
+      "title": "Tu formulario de admisión",
+      "intro": "Completá estos datos para que el equipo de admisiones revise tu solicitud. Te avisaremos por email apenas esté lista.",
+      "doubts": "¿Dudas? Escribinos a"
+    },
+    "admissionStatus": {
+      "metaTitle": "Estado de tu admisión — DAP",
+      "logoAlt": "DAP",
+      "eyebrow": "Estado de tu admisión",
+      "greeting": "Hola, {firstName}",
+      "pending": {
+        "title": "Solicitud recibida",
+        "description": "Tu formulario llegó al equipo de admisiones. En breve lo revisamos y te avisamos por email."
+      },
+      "underReview": {
+        "title": "En revisión",
+        "description": "El equipo de admisiones está revisando tu solicitud. Si necesitamos más info, te escribimos."
+      },
+      "rejected": {
+        "title": "No fue aprobada",
+        "description": "Tu solicitud no fue aprobada en esta convocatoria. Te invitamos a escribirnos para entender los próximos pasos."
+      },
+      "approved": {
+        "title": "Aprobada",
+        "description": "Tu solicitud está aprobada. Entrá al dashboard para comenzar."
+      },
+      "submittedAt": "Enviada el {date}",
+      "reviewedAt": "Revisada el {date}",
+      "contact": "Contactar admisiones",
+      "spamNote": "Revisá tu bandeja de spam por si nuestra respuesta llega ahí. Te avisamos por email apenas tengamos novedades."
+    },
+    "agenda": {
+      "metaTitle": "Agenda — DAP",
+      "topbarTitle": "Agenda",
+      "eyebrow": "Próximamente",
+      "title": "Tu agenda en el DAP",
+      "description": "Aquí verás el calendario semanal con tus módulos, MasterClass en vivo y mentorías. Mientras tanto, las sesiones en vivo programadas están en En Vivo y tu módulo de la semana en Inicio.",
+      "primaryAction": "Ver sesiones en vivo",
+      "secondaryAction": "Volver al inicio"
+    },
+    "certifications": {
+      "metaTitle": "Certificaciones — DAP",
+      "topbarTitle": "Certificaciones",
+      "eyebrow": "Próximamente",
+      "title": "Tus certificados",
+      "description": "Aquí podrás descargar todos tus certificados y compartir tus dimensiones obtenidas. Por ahora puedes ver tu progreso y las dimensiones ganadas desde Mi Progreso.",
+      "primaryAction": "Ver mi progreso",
+      "secondaryAction": "Volver al inicio"
+    },
+    "settings": {
+      "metaTitle": "Configuración — DAP",
+      "topbarTitle": "Configuración",
+      "eyebrow": "Tu cuenta",
+      "title": "Configuración",
+      "subtitle": "Preferencias de tu cuenta y notificaciones.",
+      "notifications": {
+        "title": "Notificaciones",
+        "description": "Activá las notificaciones del navegador para recibir un aviso cada martes cuando abra tu nuevo módulo, y cuando llegue tu corrección semanal del Ap. Max."
+      },
+      "password": {
+        "title": "Contraseña",
+        "description": "Si quieres cambiarla, te mandamos un link a tu email.",
+        "cta": "Cambiar contraseña"
+      },
+      "support": {
+        "title": "Más configuración pronto",
+        "description": "Próximamente: editar perfil, gestionar suscripción, idioma y zona horaria, opciones de privacidad."
+      }
+    },
+    "community": {
+      "metaTitle": "Comunidad — DAP",
+      "topbarTitle": "Comunidad",
+      "eyebrow": "Comunidad",
+      "title": "Foro de pastores",
+      "subtitle": "Conversa con otros pastores y líderes del DAP. Comparte revelaciones, preguntas y testimonios.",
+      "newThread": "Nuevo hilo",
+      "empty": {
+        "title": "Todavía no hay hilos",
+        "description": "Sé el primero en abrir una conversación.",
+        "cta": "Crear el primer hilo"
+      },
+      "closed": "Cerrado",
+      "replyOne": "respuesta",
+      "replyOther": "respuestas",
+      "phaseBadge": "Fase {order}: {title}",
+      "authorFallback": "—"
+    },
+    "communityNew": {
+      "metaTitle": "Nuevo hilo — Comunidad DAP",
+      "back": "Volver a la comunidad",
+      "eyebrow": "Comunidad",
+      "title": "Nuevo hilo",
+      "subtitle": "Comparte una pregunta, una revelación o invita a una conversación. Markdown soportado."
+    },
+    "thread": {
+      "metaTitle": "Hilo — Comunidad DAP",
+      "back": "Volver a la comunidad",
+      "pinned": "Anclado",
+      "closed": "Cerrado",
+      "phaseBadge": "Fase {order}: {title}",
+      "authorFallback": "—",
+      "replyOne": "respuesta",
+      "replyOther": "respuestas",
+      "emptyReplies": "Aún no hay respuestas. Sé la primera persona en participar.",
+      "threadClosed": "Este hilo está cerrado. No se aceptan más respuestas."
+    },
+    "threadEdit": {
+      "metaTitle": "Editar hilo — Comunidad DAP",
+      "back": "Volver al hilo",
+      "eyebrow": "Comunidad",
+      "title": "Editar hilo"
+    },
+    "live": {
+      "metaTitle": "En vivo — DAP",
+      "eyebrow": "En vivo",
+      "title": "Sesiones del DAP",
+      "subtitle": "MasterClass, activaciones y mentorías grupales. Las grabaciones quedan disponibles después de cada sesión.",
+      "tabUpcoming": "Próximas",
+      "tabRecordings": "Grabaciones",
+      "emptyUpcoming": {
+        "title": "No hay sesiones programadas",
+        "description": "El equipo aún no ha agendado próximas sesiones. Mientras tanto, explora las grabaciones disponibles."
+      },
+      "emptyRecordings": {
+        "title": "Aún no hay grabaciones",
+        "description": "Las grabaciones aparecen aquí después de cada sesión en vivo."
+      }
+    },
+    "phases": {
+      "metaTitle": "Mis Módulos — DAP",
+      "topbarTitle": "Mis Módulos",
+      "eyebrow": "Diplomado Apostólico Pastoral · 72 semanas",
+      "title": "Los 9 Bloques",
+      "subtitle": "Tu camino completo. Cada bloque entrega una dimensión nueva.",
+      "dimension": "Dimensión {num} · {name}",
+      "dimensionFallback": "—",
+      "modulesCount": "{completed} / {total} módulos",
+      "blockWeeks": "Bloque {order} · Semanas {first}–{last}",
+      "viewBlock": "Ver bloque"
+    },
+    "module": {
+      "metaTitle": "{slug} — DAP",
+      "sectionIntro": "Introducción",
+      "sectionTeaching": "Enseñanza",
+      "sectionActivation": "Activación",
+      "sectionEvaluation": "Evaluación",
+      "sectionImpartation": "Frase de impartición",
+      "breadcrumbBlock": "Bloque {order}",
+      "breadcrumbDiploma": "Diplomado",
+      "backToBlock": "Volver al bloque",
+      "duration": "≈ {minutes} minutos · 5 partes"
+    },
+    "progress": {
+      "metaTitle": "Mi Progreso — DAP",
+      "topbarTitle": "Mi Progreso",
+      "eyebrow": "Tu camino en el DAP",
+      "title": "Mi Progreso",
+      "matricula": "Matrícula · {matricula}",
+      "programProgress": "Progreso del programa",
+      "modulesCount": "{count} <muted>de 72 módulos</muted>",
+      "currentWeekLabel": "Semana actual: {value}",
+      "currentWeekValue": "{week} de 72",
+      "notStartedValue": "Tu programa aún no inició",
+      "dimensions": {
+        "title": "Dimensiones obtenidas",
+        "fallback": "—",
+        "awardedOn": "Otorgada el {date}",
+        "empty": "Aún no has alcanzado ninguna dimensión. Completá los 8 módulos de un bloque para recibir la primera (Discípulo)."
+      },
+      "certificates": {
+        "title": "Certificados emitidos",
+        "blockTitle": "Bloque {order}: {title}",
+        "blockFallback": "—",
+        "issuedOn": "Emitido el {date} · Código: {code}",
+        "view": "Ver",
+        "empty": "Aún no tienes certificados emitidos. Se generan automáticamente al completar cada bloque."
+      },
+      "completed": {
+        "title": "Últimos módulos completados",
+        "item": "Módulo completado",
+        "empty": "Aún no completaste ningún módulo. Empieza por el módulo de tu semana actual desde <home>Inicio</home>."
+      }
+    },
+    "tutor": {
+      "metaTitle": "Tutor IA — DAP",
+      "eyebrow": "Tutor del DAP",
+      "title": "Pregunta lo que necesites",
+      "subtitle": "Respondo solo con base en los materiales apostólicos del DAP. Si la respuesta no está en los documentos, te lo diré.",
+      "newConversation": "Nueva conversación",
+      "selectPrevious": "O selecciona una conversación previa de la barra lateral."
+    }
+  }
+}

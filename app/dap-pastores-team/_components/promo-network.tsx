@@ -9,6 +9,7 @@ import {
   useSpring,
   useTransform,
 } from "motion/react";
+import { useTranslations } from "next-intl";
 
 /**
  * Sección "Multiplicación y expansión" — escenario interactivo:
@@ -25,6 +26,7 @@ import {
  *   • Stats con count-up animado al entrar en viewport.
  */
 export function PromoNetwork() {
+  const t = useTranslations("PastoresTeam");
   const center = { x: 50, y: 50 };
   const ring1 = ringPositions(center, 12, 18);
   const ring2 = ringPositions(center, 24, 36);
@@ -73,20 +75,19 @@ export function PromoNetwork() {
           className="text-center"
         >
           <p className="font-inter text-[10px] font-semibold uppercase tracking-[0.42em] text-brand-coral">
-            Multiplicación y expansión
+            {t("network.eyebrow")}
           </p>
           <h2 className="mt-4 font-grotesk text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
             <span className="bg-gradient-to-br from-white via-white to-white/70 bg-clip-text text-transparent">
-              Mientras más personas formes,
+              {t("network.headingTop")}
             </span>
             <br />
             <span className="bg-gradient-to-r from-brand-violet to-brand-coral bg-clip-text text-transparent">
-              más acceso generas.
+              {t("network.headingBottom")}
             </span>
           </h2>
           <p className="mx-auto mt-5 max-w-xl font-inter text-base leading-relaxed text-text-secondary">
-            Cada persona que se forma contigo abre puertas para más.
-            La red crece, los territorios se transforman.
+            {t("network.body")}
           </p>
         </motion.div>
 
@@ -420,7 +421,7 @@ export function PromoNetwork() {
           {/* Etiqueta */}
           <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 translate-y-[64px] text-center">
             <p className="font-inter text-[10px] font-semibold uppercase tracking-[0.32em] text-white/80">
-              Tú
+              {t("network.centerLabel")}
             </p>
           </div>
 
@@ -434,9 +435,9 @@ export function PromoNetwork() {
           transition={{ duration: 0.7, delay: 0.2 }}
           className="mt-10 grid grid-cols-3 gap-px overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02] sm:mt-14"
         >
-          <Stat to={1} label="Tu liderazgo" />
-          <Stat to={12} label="Personas formadas" />
-          <Stat to={"∞"} label="Generaciones impactadas" />
+          <Stat to={1} label={t("network.statLeadership")} />
+          <Stat to={12} label={t("network.statTrained")} />
+          <Stat to={"∞"} label={t("network.statGenerations")} />
         </motion.div>
       </div>
     </section>

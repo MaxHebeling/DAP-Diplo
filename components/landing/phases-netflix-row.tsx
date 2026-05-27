@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { ArrowRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -32,6 +33,7 @@ const ACCENT_GRADIENTS = [
 ];
 
 export function PhasesNetflixRow({ phases }: { phases: NetflixPhaseRow[] }) {
+  const t = useTranslations("Landing");
   return (
     <div
       className="dap-stagger mx-auto grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-3 lg:gap-4"
@@ -82,14 +84,14 @@ export function PhasesNetflixRow({ phases }: { phases: NetflixPhaseRow[] }) {
               {/* Badge bloque arriba-izq (sutil, no compite con el brand impreso) */}
               <div className="absolute left-2 top-2 z-10">
                 <span className="inline-flex items-center gap-1 rounded-full bg-black/70 px-2 py-0.5 font-inter text-[9px] font-semibold uppercase tracking-widest text-white backdrop-blur-sm">
-                  Bloque {String(p.order_index).padStart(2, "0")}
+                  {t("netflixRow.block", { n: String(p.order_index).padStart(2, "0") })}
                 </span>
               </div>
 
               {/* Eyebrow dimensión arriba-der (sutil) */}
               <div className="absolute right-2 top-2 z-10">
                 <span className="inline-flex items-center gap-1 rounded-full bg-brand-coral/85 px-2 py-0.5 font-inter text-[9px] font-semibold uppercase tracking-widest text-white shadow-sm">
-                  Dim {dimN}
+                  {t("netflixRow.dimShort", { n: dimN })}
                 </span>
               </div>
 
@@ -102,7 +104,7 @@ export function PhasesNetflixRow({ phases }: { phases: NetflixPhaseRow[] }) {
 
               <div className="absolute inset-x-0 bottom-0 z-10 flex translate-y-2 flex-col gap-1 p-3 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 sm:p-3.5">
                 <p className="font-inter text-[9px] font-semibold uppercase tracking-[0.18em] text-brand-coral">
-                  {p.dimension_name ?? `Dimensión ${dimN}`}
+                  {p.dimension_name ?? t("netflixRow.dimensionFallback", { n: dimN })}
                 </p>
                 <h3 className="sr-only">{heroTitle}</h3>
                 {p.subtitle && (
@@ -117,10 +119,10 @@ export function PhasesNetflixRow({ phases }: { phases: NetflixPhaseRow[] }) {
                 )}
                 <div className="mt-1.5 flex items-center justify-between">
                   <span className="font-inter text-[9px] uppercase tracking-widest text-white/60">
-                    {p.modules_count} módulos
+                    {t("netflixRow.modulesCount", { count: p.modules_count })}
                   </span>
                   <span className="inline-flex items-center gap-1 rounded-full bg-brand-coral px-2 py-0.5 font-inter text-[10px] font-semibold text-white">
-                    Ver
+                    {t("netflixRow.view")}
                     <ArrowRight className="size-2.5" />
                   </span>
                 </div>

@@ -7,6 +7,7 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { z } from "zod";
 import { Save } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -26,8 +27,8 @@ import { MarkdownEditor } from "@/components/admin/markdown-editor";
 import { updateThreadAction } from "@/lib/forum/actions";
 
 const formSchema = z.object({
-  title: z.string().trim().min(4, "Mínimo 4 caracteres").max(160),
-  body: z.string().trim().min(10, "Cuenta un poco más").max(10000),
+  title: z.string().trim().min(4, "").max(160),
+  body: z.string().trim().min(10, "").max(10000),
   phase_id: z.string().optional().nullable(),
 });
 
@@ -46,6 +47,7 @@ export function EditThreadForm({
   };
   phases: { id: string; order_index: number; title: string }[];
 }) {
+  const t = useTranslations("Forum");
   const [pending, startTransition] = useTransition();
   const form = useForm<FormValues>({
     resolver: standardSchemaResolver(formSchema),
@@ -95,14 +97,18 @@ export function EditThreadForm({
     >
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor="title">Título</FieldLabel>
+          <FieldLabel htmlFor="title">{t("editThread.titleLabel")}</FieldLabel>
           <Input id="title" {...register("title")} />
-          {errors.title && <FieldError>{errors.title.message}</FieldError>}
+          {errors.title && (
+            <FieldError>
+              {errors.title.message || t("editThread.validation.minTitle")}
+            </FieldError>
+          )}
         </Field>
 
         <Field>
           <FieldLabel htmlFor="phase_id">
-            Fase relacionado (opcional)
+            {t("editThread.phaseLabel")}
           </FieldLabel>
           <Controller
             control={control}
@@ -113,14 +119,16 @@ export function EditThreadForm({
                 onValueChange={field.onChange}
               >
                 <SelectTrigger id="phase_id">
-                  <SelectValue placeholder="Ninguno" />
+                  <SelectValue placeholder={t("editThread.phasePlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={NONE}>Sin fase específico</SelectItem>
+                  <SelectItem value={NONE}>{t("editThread.noPhase")}</SelectItem>
                   {phases.map((b) => (
                     <SelectItem key={b.id} value={b.id}>
-                      Fase {String(b.order_index).padStart(2, "0")} ·{" "}
-                      {b.title}
+                      {t("editThread.phaseOption", {
+                        number: String(b.order_index).padStart(2, "0"),
+                        title: b.title,
+                      })}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -130,7 +138,7 @@ export function EditThreadForm({
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="body">Cuerpo (Markdown)</FieldLabel>
+          <FieldLabel htmlFor="body">{t("editThread.bodyLabel")}</FieldLabel>
           <Controller
             control={control}
             name="body"
@@ -144,7 +152,11 @@ export function EditThreadForm({
               />
             )}
           />
-          {errors.body && <FieldError>{errors.body.message}</FieldError>}
+          {errors.body && (
+            <FieldError>
+              {errors.body.message || t("editThread.validation.minBody")}
+            </FieldError>
+          )}
         </Field>
       </FieldGroup>
 
@@ -153,11 +165,11 @@ export function EditThreadForm({
           variant="outline"
           render={<Link href={`/comunidad/${thread.id}`} />}
         >
-          Cancelar
+          {t("editThread.cancel")}
         </Button>
         <Button type="submit" disabled={pending || !isDirty}>
           <Save className="size-4" />
-          {pending ? "Guardando…" : "Guardar cambios"}
+          {pending ? t("editThread.saving") : t("editThread.save")}
         </Button>
       </div>
     </form>

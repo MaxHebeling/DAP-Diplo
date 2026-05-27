@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import {
   CheckCircle2,
   Clock,
@@ -13,9 +14,10 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { DapButton } from "@/components/ui-dap/button";
 
-export const metadata = {
-  title: "Estado de tu admisión — DAP",
-};
+export async function generateMetadata() {
+  const t = await getTranslations("Student");
+  return { title: t("admissionStatus.metaTitle") };
+}
 
 type ProfileRow = {
   full_name: string;
@@ -40,6 +42,7 @@ function formatDate(iso: string | null): string | null {
 
 export default async function AdmisionEstadoPage() {
   const supabase = await createClient();
+  const t = await getTranslations("Student");
 
   const {
     data: { user },
@@ -91,17 +94,19 @@ export default async function AdmisionEstadoPage() {
         <header className="mb-10 text-center">
           <Image
             src="/dap-logo-white.png"
-            alt="DAP"
+            alt={t("admissionStatus.logoAlt")}
             width={48}
             height={48}
             className="mx-auto size-12 rounded-lg"
             priority
           />
           <p className="mt-6 font-inter text-xs font-medium uppercase tracking-[0.3em] text-brand-coral">
-            Estado de tu admisión
+            {t("admissionStatus.eyebrow")}
           </p>
           <h1 className="mt-3 font-grotesk text-h2 font-bold leading-tight">
-            Hola, {profile.full_name.split(" ")[0]}
+            {t("admissionStatus.greeting", {
+              firstName: profile.full_name.split(" ")[0],
+            })}
           </h1>
         </header>
 
@@ -109,9 +114,13 @@ export default async function AdmisionEstadoPage() {
           <StateCard
             icon={<Clock className="size-7 text-amber-400" strokeWidth={1.7} />}
             ring="border-amber-400/30 bg-amber-500/[0.04]"
-            title="Solicitud recibida"
-            description="Tu formulario llegó al equipo de admisiones. En breve lo revisamos y te avisamos por email."
-            meta={submittedAt ? `Enviada el ${submittedAt}` : null}
+            title={t("admissionStatus.pending.title")}
+            description={t("admissionStatus.pending.description")}
+            meta={
+              submittedAt
+                ? t("admissionStatus.submittedAt", { date: submittedAt })
+                : null
+            }
           />
         )}
 
@@ -124,9 +133,13 @@ export default async function AdmisionEstadoPage() {
               />
             }
             ring="border-brand-violet/30 bg-brand-violet/[0.04]"
-            title="En revisión"
-            description="El equipo de admisiones está revisando tu solicitud. Si necesitamos más info, te escribimos."
-            meta={submittedAt ? `Enviada el ${submittedAt}` : null}
+            title={t("admissionStatus.underReview.title")}
+            description={t("admissionStatus.underReview.description")}
+            meta={
+              submittedAt
+                ? t("admissionStatus.submittedAt", { date: submittedAt })
+                : null
+            }
           />
         )}
 
@@ -136,14 +149,16 @@ export default async function AdmisionEstadoPage() {
               <XCircle className="size-7 text-brand-coral" strokeWidth={1.7} />
             }
             ring="border-brand-coral/30 bg-brand-coral/[0.04]"
-            title="No fue aprobada"
+            title={t("admissionStatus.rejected.title")}
             description={
               admission?.rejection_reason ??
-              "Tu solicitud no fue aprobada en esta convocatoria. Te invitamos a escribirnos para entender los próximos pasos."
+              t("admissionStatus.rejected.description")
             }
             meta={
               admission?.reviewed_at
-                ? `Revisada el ${formatDate(admission.reviewed_at)}`
+                ? t("admissionStatus.reviewedAt", {
+                    date: formatDate(admission.reviewed_at) ?? "",
+                  })
                 : null
             }
           />
@@ -161,8 +176,8 @@ export default async function AdmisionEstadoPage() {
                 />
               }
               ring="border-emerald-400/30 bg-emerald-500/[0.04]"
-              title="Aprobada"
-              description="Tu solicitud está aprobada. Entrá al dashboard para comenzar."
+              title={t("admissionStatus.approved.title")}
+              description={t("admissionStatus.approved.description")}
               meta={null}
             />
           )}
@@ -174,7 +189,7 @@ export default async function AdmisionEstadoPage() {
             render={<Link href="/" />}
           >
             <Home />
-            Volver al inicio
+            {t("common.backToHome")}
           </DapButton>
           <DapButton
             variant="secondary"
@@ -182,13 +197,12 @@ export default async function AdmisionEstadoPage() {
             render={<Link href="mailto:admisiones@dapglobal.org" />}
           >
             <Mail />
-            Contactar admisiones
+            {t("admissionStatus.contact")}
           </DapButton>
         </div>
 
         <p className="mt-6 text-center font-inter text-xs text-text-tertiary">
-          Revisá tu bandeja de spam por si nuestra respuesta llega ahí. Te
-          avisamos por email apenas tengamos novedades.
+          {t("admissionStatus.spamNote")}
         </p>
       </div>
     </main>

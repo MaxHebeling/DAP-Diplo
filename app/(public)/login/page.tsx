@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import {
   Card,
   CardContent,
@@ -11,11 +12,14 @@ import { LoginForm } from "@/components/auth/login-form";
 import { Logo } from "@/components/brand/logo";
 import { createClient } from "@/lib/supabase/server";
 
-export const metadata: Metadata = {
-  title: "Inicia sesión",
-  description: "Accede a tu cuenta del Diplomado Apostólico Pastoral.",
-  robots: { index: false, follow: true },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Auth");
+  return {
+    title: t("login.metaTitle"),
+    description: t("login.metaDescription"),
+    robots: { index: false, follow: true },
+  };
+}
 
 type SearchParams = Promise<{ redirectTo?: string }>;
 
@@ -35,15 +39,15 @@ export default async function LoginPage({
     redirect(redirectTo && redirectTo.startsWith("/") ? redirectTo : "/dashboard");
   }
 
+  const t = await getTranslations("Auth");
+
   return (
     <main className="flex flex-1 items-center justify-center px-6 py-16">
       <Card className="w-full max-w-md">
         <CardHeader className="items-center space-y-3 text-center">
           <Logo size="md" />
-          <CardTitle className="text-2xl">Inicia sesión</CardTitle>
-          <CardDescription>
-            Accede a tus módulos y continúa donde lo dejaste.
-          </CardDescription>
+          <CardTitle className="text-2xl">{t("login.title")}</CardTitle>
+          <CardDescription>{t("login.description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <LoginForm redirectTo={redirectTo} />

@@ -1,0 +1,163 @@
+{
+  "Onboarding": {
+    "modal": {
+      "close": "Close",
+      "comingSoonEyebrow": "Coming soon",
+      "comingSoonTitle": "Enrollment opens on {date}",
+      "comingSoonBodyBefore": "The first cohort of the Diplomado Apostólico Pastoral opens enrollment on ",
+      "comingSoonBodyAfter": ". Come back on that date to secure your place.",
+      "classesStartLabel": "Classes begin:",
+      "closeButton": "Close",
+      "redirectingTitle": "Taking you to secure checkout",
+      "redirectingBody": "Connecting with Stripe. Your subscription activates immediately after payment."
+    },
+    "countrySelector": {
+      "step": "Step 1 of 2",
+      "title": "Where are you connecting from?",
+      "subtitle": "Your country helps us personalize your experience and prepare the right path for you within the Diploma.",
+      "searchPlaceholder": "Search for your country...",
+      "featuredLabel": "Featured · Spanish-speaking",
+      "restLabel": "Rest of the world",
+      "noResults": "We couldn't find that country. Try another name."
+    },
+    "signupForm": {
+      "changeCountry": "Change country",
+      "step": "Step 2 of 2",
+      "titleMarriage": "We'll create your accounts",
+      "titleSingle": "Create your account",
+      "subtitleMarriage": "We'll capture both spouses' details. Then you go straight to secure checkout at USD $35/month for both.",
+      "subtitleSingle": "After this you go straight to secure checkout to activate your monthly subscription.",
+      "googleLabel": "Continue with Google",
+      "orWithEmail": "or with your email",
+      "geoMismatchTitle": "Argentina marriage benefit not available",
+      "geoMismatchBodyBefore": "We detected that you're connecting from ",
+      "geoMismatchBodyAfter": ". The special marriage enrollment is exclusive to residents of Argentina. You can continue with your normal individual enrollment.",
+      "geoMismatchChange": "Switch to {country}",
+      "geoMismatchChangeFallback": "another country",
+      "fullNameMarriage": "Full name (spouse 1)",
+      "fullNameSingle": "Full name",
+      "emailMarriage": "Email (spouse 1)",
+      "emailSingle": "Email address",
+      "passwordLabel": "Password",
+      "passwordHint": "At least 8 characters",
+      "ministryLabel": "Ministry / church",
+      "ministryHint": "Optional — fill it in later if you'd like",
+      "spouse2Divider": "Spouse 2",
+      "residenceDeclaration": "We confirm that we currently reside in Argentina and that this enrollment corresponds to a married couple. We accept later verification if needed.",
+      "submitCreatingMarriage": "Creating accounts...",
+      "submitCreatingSingle": "Creating account...",
+      "submitMarriage": "Continue to payment — USD $35/month",
+      "submitSingle": "Continue to payment",
+      "trustNoCommitment": "No commitment",
+      "trustCancel": "Cancel anytime",
+      "trustStripe": "Secure with Stripe",
+      "errorFullName": "At least 3 characters.",
+      "errorEmail": "Invalid email.",
+      "errorPassword": "At least 8 characters.",
+      "errorPhonePrefix": "Must start with {code}",
+      "errorProvince": "Select your province.",
+      "errorSpouseFullName": "At least 3 characters.",
+      "errorSpouseEmail": "Invalid email.",
+      "errorSpouseEmailDistinct": "Must be different from spouse 1's.",
+      "errorSpouseProvince": "Select the province.",
+      "errorResidence": "We need your confirmation to apply the benefit.",
+      "toastError": "We couldn't complete the registration.",
+      "toastNetworkError": "Network error",
+      "toastSuccess": "Account created. Redirecting to secure checkout..."
+    },
+    "marriageToggle": {
+      "title": "Register as a married couple",
+      "descriptionBefore": "Special enrollment for Argentine spouses. ",
+      "descriptionHighlight": "A single fee covers both of you."
+    },
+    "discountBanner": {
+      "eyebrow": "Marriage benefit",
+      "title": "Special discount for couples in Argentina",
+      "priceSuffix": "/month",
+      "bodyAfter": " for both spouses. A single monthly charge covers full access for both.",
+      "featureSingle": "A single subscription",
+      "featureNoDuplicate": "No duplicate charge",
+      "featureCancelable": "Cancel anytime"
+    },
+    "spouseFields": {
+      "legend": "Spouse {number}",
+      "fullNameLabel": "Full name",
+      "emailLabel": "Email address",
+      "phoneLabel": "WhatsApp / Phone",
+      "phoneHint": "Format: {code} 11 1234 5678",
+      "provinceLabel": "Province",
+      "provincePlaceholder": "Select your province...",
+      "ministryLabel": "Ministry / church",
+      "ministryHint": "Optional"
+    },
+    "tour": {
+      "step": "Step {current} of {total}",
+      "skip": "Skip",
+      "next": "Next",
+      "done": "Done",
+      "close": "Close tour"
+    },
+    "dashboardTour": {
+      "welcomeTitle": "Welcome to DAP",
+      "welcomeBody": "We'll take you on a quick tour so you can see everything available to you. It takes 30 seconds.",
+      "currentModuleTitle": "Your module of the week",
+      "currentModuleBody": "Here you see the module that opened this Tuesday. You have until Monday 11:59 PM to submit the activation.",
+      "progressTitle": "Your progress",
+      "progressBody": "You'll fill this bar over 72 weeks. When you complete the 8 modules of a block, you receive a dimension.",
+      "upcomingTitle": "What's coming",
+      "upcomingBody": "Upcoming modules stay locked until their Tuesday. Past content remains accessible for review.",
+      "resourcesTitle": "Extra resources",
+      "resourcesBody": "Community, live sessions and AI tutor. Available 24/7."
+    }
+  },
+  "Demo": {
+    "avatarHost": {
+      "iframeTitle": "AI Avatar — Demo guide",
+      "placeholderTitle": "Your digital guide is getting ready",
+      "placeholderBody": "Shortly a virtual avatar will welcome you and walk you step by step through the module. In the meantime, you can scroll down and explore all the module content directly."
+    },
+    "quiz": {
+      "questions": {
+        "q1": {
+          "q": "According to the teaching, the Kingdom of God is primarily:",
+          "options": {
+            "o1": "A future place we go to when we die",
+            "o2": "A metaphor for the local church",
+            "o3": "The present government of God operating in the now",
+            "o4": "A promise that will only be fulfilled in the millennium"
+          },
+          "explanation": "Jesus preached: «The kingdom of God is at hand» (Mt 4:17). It is not a future place but the present government of the King, operating here and now wherever His authority is acknowledged."
+        },
+        "q2": {
+          "q": "Which of these is NOT a direct manifestation of the Kingdom in a pastor's life?",
+          "options": {
+            "o1": "Authority over the areas the Father entrusted to you",
+            "o2": "Accumulating followers on social media",
+            "o3": "The ability to discern the order of the Kingdom in family and ministry",
+            "o4": "A son's identity that replaces the orphan mindset"
+          },
+          "explanation": "The 3 correct options (authority, discernment, son's identity) are fruits of the Kingdom at work. Accumulating followers can happen without the Kingdom being present — and often blocks it when the motivation is one's own glory."
+        },
+        "q3": {
+          "q": "The anchor passage of the module is:",
+          "options": {
+            "o1": "John 3:16",
+            "o2": "Matthew 6:33 — «Seek first the kingdom of God»",
+            "o3": "1 Corinthians 13:13",
+            "o4": "Genesis 1:1"
+          },
+          "explanation": "Matthew 6:33 establishes the apostolic priority: seek the Kingdom first. Everything else (provision, direction, ministry fruit) comes as an addition, not as the goal."
+        }
+      },
+      "submitAllAnswered": "See my result",
+      "submitIncomplete": "Answer all {count} questions to continue",
+      "resultLabel": "Your result",
+      "resultSummary": "{correct} of {total} correct · ",
+      "passed": "Passed! (≥ 70%)",
+      "notPassed": "Not passed — you need 70% minimum",
+      "yourAnswer": "Your answer: ",
+      "correctAnswer": "Correct: ",
+      "retry": "Try again"
+    }
+  }
+}

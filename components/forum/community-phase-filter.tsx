@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Select,
   SelectContent,
@@ -15,6 +16,7 @@ type Props = {
 };
 
 export function CommunityPhaseFilter({ phases, current }: Props) {
+  const t = useTranslations("Forum");
   const router = useRouter();
   const params = useSearchParams();
 
@@ -32,17 +34,20 @@ export function CommunityPhaseFilter({ phases, current }: Props) {
   return (
     <div className="flex items-center gap-3">
       <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-        Filtrar por fase
+        {t("phaseFilter.label")}
       </span>
       <Select value={current} onValueChange={onChange}>
         <SelectTrigger className="w-[280px]">
-          <SelectValue placeholder="Todos las fases" />
+          <SelectValue placeholder={t("phaseFilter.placeholder")} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">Todos las fases</SelectItem>
+          <SelectItem value="all">{t("phaseFilter.all")}</SelectItem>
           {phases.map((b) => (
             <SelectItem key={b.id} value={b.id}>
-              Fase {String(b.order_index).padStart(2, "0")} · {b.title}
+              {t("phaseFilter.phaseOption", {
+                number: String(b.order_index).padStart(2, "0"),
+                title: b.title,
+              })}
             </SelectItem>
           ))}
         </SelectContent>

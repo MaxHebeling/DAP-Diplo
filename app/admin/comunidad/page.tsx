@@ -11,12 +11,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { getTranslations } from "next-intl/server";
 import { ForumThreadActions } from "@/components/admin/forum-thread-actions";
 import { ResolveReportButton } from "@/components/admin/forum-report-actions";
 import { createClient } from "@/lib/supabase/server";
 import { snippet, timeAgo } from "@/lib/forum/format";
 
-export const metadata = { title: "Comunidad — Moderación · Admin DAP" };
+export async function generateMetadata() {
+  const t = await getTranslations("Admin");
+  return { title: t("community.metaTitle") };
+}
 
 type ThreadRow = {
   id: string;
@@ -45,6 +49,7 @@ type ReportRow = {
 };
 
 export default async function AdminComunidadPage() {
+  const t = await getTranslations("Admin");
   const supabase = await createClient();
 
   const { data: threadsData, error: tErr } = await supabase
@@ -60,7 +65,7 @@ export default async function AdminComunidadPage() {
     .limit(200)
     .returns<ThreadRow[]>();
   if (tErr) {
-    throw new Error(`No se pudieron cargar los hilos: ${tErr.message}`);
+    throw new Error(t("community.threadsLoadError", { message: tErr.message }));
   }
   const threads = threadsData ?? [];
 
@@ -79,7 +84,7 @@ export default async function AdminComunidadPage() {
     .order("created_at", { ascending: false })
     .returns<ReportRow[]>();
   if (rErr) {
-    throw new Error(`No se pudieron cargar reportes: ${rErr.message}`);
+    throw new Error(t("community.reportsLoadError", { message: rErr.message }));
   }
   const reports = reportsData ?? [];
 
@@ -88,12 +93,11 @@ export default async function AdminComunidadPage() {
       <div className="mx-auto max-w-6xl space-y-12">
         <header>
           <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
-            Admin · Moderación
+            {t("community.eyebrow")}
           </p>
-          <h1 className="font-serif text-3xl font-semibold">Comunidad</h1>
+          <h1 className="font-serif text-3xl font-semibold">{t("community.title")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Modera hilos y reportes del foro. Pinea anuncios oficiales, cierra
-            conversaciones agotadas y oculta contenido inapropiado.
+            {t("community.description")}
           </p>
         </header>
 
@@ -102,10 +106,13 @@ export default async function AdminComunidadPage() {
           <div className="mb-4 flex items-end justify-between">
             <div>
               <h2 className="font-serif text-2xl font-semibold">
-                Todos los hilos
+                {t("community.allThreads")}
               </h2>
               <p className="mt-1 text-xs text-muted-foreground">
-                {threads.length} en total · {threads.filter((t) => t.hidden).length} ocultos
+                {t("community.threadsSummary", {
+                  total: threads.length,
+                  hidden: threads.filter((thread) => thread.hidden).length,
+                })}
               </p>
             </div>
           </div>
@@ -114,17 +121,17 @@ export default async function AdminComunidadPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Hilo</TableHead>
+                  <TableHead>{t("community.thThread")}</TableHead>
                   <TableHead className="hidden md:table-cell w-24 text-center">
-                    Fase
+                    {t("community.thPhase")}
                   </TableHead>
                   <TableHead className="hidden sm:table-cell w-20 text-center">
-                    Posts
+                    {t("community.thPosts")}
                   </TableHead>
                   <TableHead className="hidden lg:table-cell w-28">
-                    Actividad
+                    {t("community.thActivity")}
                   </TableHead>
-                  <TableHead className="w-40 text-right">Estado</TableHead>
+                  <TableHead className="w-40 text-right">{t("community.thStatus")}</TableHead>
                   <TableHead className="w-32 text-right" />
                 </TableRow>
               </TableHeader>
@@ -132,78 +139,78 @@ export default async function AdminComunidadPage() {
                 {threads.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center text-sm text-muted-foreground py-12">
-                      No hay hilos todavía.
+                      {t("community.noThreads")}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  threads.map((t) => (
+                  threads.map((thread) => (
                     <TableRow
-                      key={t.id}
-                      className={t.hidden ? "opacity-50" : ""}
+                      key={thread.id}
+                      className={thread.hidden ? "opacity-50" : ""}
                     >
                       <TableCell>
                         <Link
-                          href={`/comunidad/${t.id}`}
+                          href={`/comunidad/${thread.id}`}
                           className="block hover:text-brand-coral"
                           target="_blank"
                         >
                           <div className="flex items-center gap-2">
-                            {t.pinned && (
+                            {thread.pinned && (
                               <Pin
                                 className="size-3.5 shrink-0 text-brand-coral"
                                 strokeWidth={2.5}
                               />
                             )}
                             <p className="font-medium leading-tight">
-                              {t.title}
+                              {thread.title}
                             </p>
                           </div>
                         </Link>
                         <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
                           <Avatar className="size-4">
-                            <AvatarImage src={t.author?.avatar_url ?? undefined} />
+                            <AvatarImage src={thread.author?.avatar_url ?? undefined} />
                             <AvatarFallback className="text-[8px]">
-                              {(t.author?.full_name ?? "?").slice(0, 1).toUpperCase()}
+                              {(thread.author?.full_name ?? "?").slice(0, 1).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
-                          <span>{t.author?.full_name ?? "—"}</span>
+                          <span>{thread.author?.full_name ?? "—"}</span>
                         </div>
                       </TableCell>
                       <TableCell className="hidden md:table-cell text-center text-xs tabular-nums">
-                        {t.phase
-                          ? String(t.phase.order_index).padStart(2, "0")
+                        {thread.phase
+                          ? String(thread.phase.order_index).padStart(2, "0")
                           : "—"}
                       </TableCell>
                       <TableCell className="hidden sm:table-cell text-center tabular-nums text-sm">
-                        {t.posts_count?.[0]?.count ?? 0}
+                        {thread.posts_count?.[0]?.count ?? 0}
                       </TableCell>
                       <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">
-                        {timeAgo(t.updated_at)}
+                        {timeAgo(thread.updated_at)}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="inline-flex flex-wrap items-center justify-end gap-1">
-                          {t.pinned && (
+                          {thread.pinned && (
                             <Badge className="bg-brand-coral text-brand-coral-foreground font-normal">
                               <Pin className="size-3" strokeWidth={3} />
-                              Pin
+                              {t("community.badgePin")}
                             </Badge>
                           )}
-                          {t.closed && (
+                          {thread.closed && (
                             <Badge variant="secondary" className="font-normal">
                               <Lock className="size-3" />
-                              Cerrado
+                              {t("community.badgeClosed")}
                             </Badge>
                           )}
-                          {t.hidden && (
+                          {thread.hidden && (
                             <Badge
                               variant="outline"
                               className="border-red-500/40 text-red-500 font-normal"
                             >
                               <EyeOff className="size-3" />
-                              Oculto
+                              {t("community.badgeHidden")}
                             </Badge>
                           )}
-                          {!t.pinned && !t.closed && !t.hidden && (
+                          {!thread.pinned && !thread.closed && !thread.hidden && (
                             <span className="text-xs text-muted-foreground">
                               —
                             </span>
@@ -212,10 +219,10 @@ export default async function AdminComunidadPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         <ForumThreadActions
-                          threadId={t.id}
-                          pinned={t.pinned}
-                          closed={t.closed}
-                          hidden={t.hidden}
+                          threadId={thread.id}
+                          pinned={thread.pinned}
+                          closed={thread.closed}
+                          hidden={thread.hidden}
                         />
                       </TableCell>
                     </TableRow>
@@ -232,30 +239,29 @@ export default async function AdminComunidadPage() {
             <div>
               <h2 className="font-serif text-2xl font-semibold flex items-center gap-2">
                 <Flag className="size-5 text-red-500" />
-                Posts reportados
+                {t("community.reportedPosts")}
               </h2>
               <p className="mt-1 text-xs text-muted-foreground">
-                {reports.length} pendiente
-                {reports.length === 1 ? "" : "s"} de revisar
+                {t("community.reportsSummary", { count: reports.length })}
               </p>
             </div>
           </div>
 
           {reports.length === 0 ? (
             <div className="rounded-xl border border-dashed bg-muted/10 px-6 py-12 text-center text-sm text-muted-foreground">
-              No hay reportes pendientes.
+              {t("community.noReports")}
             </div>
           ) : (
             <div className="overflow-hidden rounded-xl border bg-card">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Razón del reporte</TableHead>
+                    <TableHead>{t("community.thReportReason")}</TableHead>
                     <TableHead className="hidden md:table-cell">
-                      Post reportado
+                      {t("community.thReportedPost")}
                     </TableHead>
                     <TableHead className="hidden lg:table-cell w-32">
-                      Reportado
+                      {t("community.thReported")}
                     </TableHead>
                     <TableHead className="w-44 text-right" />
                   </TableRow>
@@ -266,8 +272,10 @@ export default async function AdminComunidadPage() {
                       <TableCell>
                         <p className="text-sm leading-snug">{r.reason}</p>
                         <p className="mt-1 text-xs text-muted-foreground">
-                          por {r.reporter?.full_name ?? "—"} ·{" "}
-                          {timeAgo(r.created_at)}
+                          {t("community.reportedBy", {
+                            name: r.reporter?.full_name ?? "—",
+                            time: timeAgo(r.created_at),
+                          })}
                         </p>
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
@@ -280,12 +288,14 @@ export default async function AdminComunidadPage() {
                               «{snippet(r.post.body, 120)}»
                             </p>
                             <p className="mt-0.5">
-                              autor: {r.post.author?.full_name ?? "—"}
+                              {t("community.postAuthor", {
+                                name: r.post.author?.full_name ?? "—",
+                              })}
                             </p>
                           </div>
                         ) : (
                           <span className="text-xs text-muted-foreground">
-                            Post borrado
+                            {t("community.postDeleted")}
                           </span>
                         )}
                       </TableCell>
@@ -306,7 +316,7 @@ export default async function AdminComunidadPage() {
                               }
                             >
                               <ExternalLink className="size-3.5" />
-                              Ver
+                              {t("community.view")}
                             </Button>
                           )}
                           <ResolveReportButton reportId={r.id} />

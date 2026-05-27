@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,9 +21,10 @@ const initialState: AuthFormState = { ok: false };
 
 function SubmitButton() {
   const { pending } = useFormStatus();
+  const t = useTranslations("Auth");
   return (
     <Button type="submit" disabled={pending} className="w-full">
-      {pending ? "Guardando…" : "Guardar nueva contraseña"}
+      {pending ? t("updatePassword.submitting") : t("updatePassword.submit")}
     </Button>
   );
 }
@@ -32,12 +34,15 @@ export function UpdatePasswordForm() {
     updatePasswordAction,
     initialState,
   );
+  const t = useTranslations("Auth");
 
   return (
     <form action={formAction} className="flex flex-col gap-6">
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor="password">Nueva contraseña</FieldLabel>
+          <FieldLabel htmlFor="password">
+            {t("updatePassword.passwordLabel")}
+          </FieldLabel>
           <Input
             id="password"
             name="password"
@@ -52,7 +57,9 @@ export function UpdatePasswordForm() {
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="confirm">Repetí la contraseña</FieldLabel>
+          <FieldLabel htmlFor="confirm">
+            {t("updatePassword.confirmLabel")}
+          </FieldLabel>
           <Input
             id="confirm"
             name="confirm"

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Loader2, Save } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ type Initial = {
 };
 
 export function BlockEditForm({ initial }: { initial: Initial }) {
+  const t = useTranslations("BlockEditForm");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [data, setData] = useState<Initial>(initial);
@@ -45,7 +47,7 @@ export function BlockEditForm({ initial }: { initial: Initial }) {
         toast.error(res.error);
         return;
       }
-      toast.success("Bloque actualizado.");
+      toast.success(t("updated"));
       router.refresh();
     });
   }
@@ -60,23 +62,22 @@ export function BlockEditForm({ initial }: { initial: Initial }) {
       className="space-y-6 rounded-2xl border border-white/[0.06] bg-surface-elevated/60 p-5 sm:p-6"
     >
       <div>
-        <Label htmlFor="brandName">Nombre comercial (brand_name)</Label>
+        <Label htmlFor="brandName">{t("brandName")}</Label>
         <Input
           id="brandName"
           value={data.brandName}
           onChange={(e) => field("brandName", e.target.value)}
-          placeholder="Raíces, Forja, Antorcha…"
+          placeholder={t("brandNamePlaceholder")}
           maxLength={80}
           className="mt-1"
         />
         <p className="mt-1 text-xs text-muted-foreground">
-          Título grande con gradiente que se muestra en las cards. Si lo
-          dejas vacío, se usa el título académico.
+          {t("brandNameHelp")}
         </p>
       </div>
 
       <div>
-        <Label htmlFor="title">Título académico</Label>
+        <Label htmlFor="title">{t("title")}</Label>
         <Input
           id="title"
           value={data.title}
@@ -86,12 +87,12 @@ export function BlockEditForm({ initial }: { initial: Initial }) {
           className="mt-1"
         />
         <p className="mt-1 text-xs text-muted-foreground">
-          Ej: &quot;Fundamentos Espirituales&quot;. Aparece debajo del brand_name.
+          {t("titleHelp")}
         </p>
       </div>
 
       <div>
-        <Label htmlFor="subtitle">Subtítulo (frase corta)</Label>
+        <Label htmlFor="subtitle">{t("subtitle")}</Label>
         <textarea
           id="subtitle"
           value={data.subtitle}
@@ -99,12 +100,12 @@ export function BlockEditForm({ initial }: { initial: Initial }) {
           rows={2}
           maxLength={400}
           className="mt-1 w-full rounded-md border border-white/[0.08] bg-white/[0.04] p-3 font-inter text-sm outline-none focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20"
-          placeholder="Una frase punzante que resume el bloque."
+          placeholder={t("subtitlePlaceholder")}
         />
       </div>
 
       <div>
-        <Label htmlFor="promise">Promesa (qué se llevará el alumno)</Label>
+        <Label htmlFor="promise">{t("promise")}</Label>
         <textarea
           id="promise"
           value={data.promise}
@@ -112,15 +113,15 @@ export function BlockEditForm({ initial }: { initial: Initial }) {
           rows={3}
           maxLength={600}
           className="mt-1 w-full rounded-md border border-white/[0.08] bg-white/[0.04] p-3 font-inter text-sm outline-none focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20"
-          placeholder='Empieza con "Vas a..." — el outcome concreto.'
+          placeholder={t("promisePlaceholder")}
         />
         <p className="mt-1 text-xs text-muted-foreground">
-          Aparece en italic en las cards al hover y en el hero del detalle.
+          {t("promiseHelp")}
         </p>
       </div>
 
       <div>
-        <Label htmlFor="description">Descripción larga (opcional)</Label>
+        <Label htmlFor="description">{t("description")}</Label>
         <textarea
           id="description"
           value={data.description}
@@ -128,22 +129,22 @@ export function BlockEditForm({ initial }: { initial: Initial }) {
           rows={6}
           maxLength={2000}
           className="mt-1 w-full rounded-md border border-white/[0.08] bg-white/[0.04] p-3 font-inter text-sm leading-relaxed outline-none focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20"
-          placeholder="Texto largo del hero del detalle del bloque. Opcional."
+          placeholder={t("descriptionPlaceholder")}
         />
       </div>
 
       <div>
-        <Label htmlFor="coverImageUrl">Cover image URL</Label>
+        <Label htmlFor="coverImageUrl">{t("coverImageUrl")}</Label>
         <Input
           id="coverImageUrl"
           value={data.coverImageUrl}
           onChange={(e) => field("coverImageUrl", e.target.value)}
-          placeholder="/blocks/01-raices.png"
+          placeholder={t("coverImageUrlPlaceholder")}
           maxLength={500}
           className="mt-1"
         />
         <p className="mt-1 text-xs text-muted-foreground">
-          Path relativo (ej. /blocks/01-raices.png) o URL completa.
+          {t("coverImageUrlHelp")}
         </p>
       </div>
 
@@ -153,10 +154,9 @@ export function BlockEditForm({ initial }: { initial: Initial }) {
           onCheckedChange={(checked) => field("published", checked)}
         />
         <div>
-          <p className="font-medium">Publicado</p>
+          <p className="font-medium">{t("published")}</p>
           <p className="text-xs text-muted-foreground">
-            Si está apagado, no se muestra en la landing pública (admin lo
-            sigue viendo igual).
+            {t("publishedHelp")}
           </p>
         </div>
       </div>
@@ -166,12 +166,12 @@ export function BlockEditForm({ initial }: { initial: Initial }) {
           {pending ? (
             <>
               <Loader2 className="size-4 animate-spin" />
-              Guardando…
+              {t("saving")}
             </>
           ) : (
             <>
               <Save className="size-4" />
-              Guardar cambios
+              {t("saveChanges")}
             </>
           )}
         </Button>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { ArrowRight, CheckCircle2, X } from "lucide-react";
 
 export type TourStep = {
@@ -23,6 +24,7 @@ const STORAGE_KEY = "dap-tour-completed-v1";
  * selector no encuentra nada, el tooltip se centra en pantalla.
  */
 export function Tour({ steps, autoStart = true }: { steps: TourStep[]; autoStart?: boolean }) {
+  const t = useTranslations("Onboarding.tour");
   const [active, setActive] = useState(false);
   const [index, setIndex] = useState(0);
 
@@ -56,7 +58,7 @@ export function Tour({ steps, autoStart = true }: { steps: TourStep[]; autoStart
     <TourOverlay step={step} onClose={finish}>
       <div className="flex items-center justify-between gap-3">
         <p className="font-inter text-[11px] text-text-tertiary">
-          Paso {index + 1} de {steps.length}
+          {t("step", { current: index + 1, total: steps.length })}
         </p>
         <div className="flex items-center gap-2">
           {!isLast ? (
@@ -66,14 +68,14 @@ export function Tour({ steps, autoStart = true }: { steps: TourStep[]; autoStart
                 onClick={finish}
                 className="rounded-md px-2 py-1 font-inter text-xs text-text-tertiary hover:text-text-secondary"
               >
-                Saltar
+                {t("skip")}
               </button>
               <button
                 type="button"
                 onClick={() => setIndex((i) => i + 1)}
                 className="inline-flex items-center gap-1 rounded-md bg-brand-coral px-3 py-1.5 font-inter text-xs font-semibold text-white hover:bg-brand-coral/90"
               >
-                Siguiente
+                {t("next")}
                 <ArrowRight className="size-3" />
               </button>
             </>
@@ -84,7 +86,7 @@ export function Tour({ steps, autoStart = true }: { steps: TourStep[]; autoStart
               className="inline-flex items-center gap-1 rounded-md bg-brand-coral px-3 py-1.5 font-inter text-xs font-semibold text-white hover:bg-brand-coral/90"
             >
               <CheckCircle2 className="size-3.5" />
-              Listo
+              {t("done")}
             </button>
           )}
         </div>
@@ -104,6 +106,7 @@ function TourOverlay({
   children: React.ReactNode;
   onClose: () => void;
 }) {
+  const t = useTranslations("Onboarding.tour");
   const [rect, setRect] = useState<DOMRect | null>(null);
 
   useLayoutEffect(() => {
@@ -177,7 +180,7 @@ function TourOverlay({
         <button
           type="button"
           onClick={onClose}
-          aria-label="Cerrar tour"
+          aria-label={t("close")}
           className="absolute right-2 top-2 inline-flex size-7 items-center justify-center rounded-md text-text-tertiary hover:bg-white/[0.04] hover:text-text-primary"
         >
           <X className="size-3.5" />

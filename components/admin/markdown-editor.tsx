@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Markdown } from "@/components/module/markdown";
@@ -16,14 +17,15 @@ export function MarkdownEditor({
   value,
   onChange,
   rows = 12,
-  placeholder = "Escribe en Markdown…",
+  placeholder,
   id,
 }: MarkdownEditorProps) {
+  const t = useTranslations("AdminUI");
   return (
     <Tabs defaultValue="editor" className="w-full">
       <TabsList className="mb-3">
-        <TabsTrigger value="editor">Editor</TabsTrigger>
-        <TabsTrigger value="preview">Preview</TabsTrigger>
+        <TabsTrigger value="editor">{t("markdownEditor.editorTab")}</TabsTrigger>
+        <TabsTrigger value="preview">{t("markdownEditor.previewTab")}</TabsTrigger>
       </TabsList>
 
       <TabsContent value="editor">
@@ -32,7 +34,7 @@ export function MarkdownEditor({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           rows={rows}
-          placeholder={placeholder}
+          placeholder={placeholder ?? t("markdownEditor.placeholder")}
           className="font-mono text-sm"
         />
       </TabsContent>
@@ -41,7 +43,7 @@ export function MarkdownEditor({
         <div className="min-h-[200px] rounded-md border bg-card/40 p-5">
           {value.trim().length === 0 ? (
             <p className="text-sm italic text-muted-foreground">
-              (vacío — escribe en la pestaña Editor para ver el preview)
+              {t("markdownEditor.emptyPreview")}
             </p>
           ) : (
             <Markdown>{value}</Markdown>

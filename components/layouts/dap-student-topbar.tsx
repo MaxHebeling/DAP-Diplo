@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Bell, HelpCircle, Search } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -16,6 +17,7 @@ export function DapStudentTopbar({
   notificationCount = 0,
   className,
 }: DapStudentTopbarProps) {
+  const t = useTranslations("Shell");
   const [query, setQuery] = useState("");
 
   return (
@@ -41,8 +43,8 @@ export function DapStudentTopbar({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           type="search"
-          placeholder="Buscar módulos, sesiones, recursos..."
-          aria-label="Buscar"
+          placeholder={t("studentTopbar.searchPlaceholder")}
+          aria-label={t("studentTopbar.searchAria")}
           className="w-full rounded-md border border-white/[0.08] bg-white/[0.04] py-2 pl-9 pr-3 font-inter text-sm text-text-primary placeholder:text-text-tertiary outline-none transition-colors focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20"
         />
       </div>
@@ -51,7 +53,13 @@ export function DapStudentTopbar({
         <button
           type="button"
           className="relative inline-flex size-9 items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-white/[0.04] hover:text-text-primary"
-          aria-label={`Notificaciones${notificationCount > 0 ? ` (${notificationCount})` : ""}`}
+          aria-label={
+            notificationCount > 0
+              ? t("studentTopbar.notificationsWithCount", {
+                  count: notificationCount,
+                })
+              : t("studentTopbar.notifications")
+          }
         >
           <Bell className="size-4" />
           {notificationCount > 0 && (
@@ -63,7 +71,7 @@ export function DapStudentTopbar({
         <button
           type="button"
           className="inline-flex size-9 items-center justify-center rounded-md text-text-secondary transition-colors hover:bg-white/[0.04] hover:text-text-primary"
-          aria-label="Ayuda"
+          aria-label={t("studentTopbar.help")}
         >
           <HelpCircle className="size-4" />
         </button>

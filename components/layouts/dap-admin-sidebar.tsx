@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   BarChart3,
   BookOpen,
@@ -29,23 +30,41 @@ type DapAdminSidebarProps = {
   className?: string;
 };
 
-const DEFAULT_ITEMS: AdminNavItem[] = [
-  { href: "/admin", icon: BarChart3, label: "Dashboard" },
-  { href: "/admin/fases", icon: Layers, label: "Bloques" },
-  { href: "/admin/modulos", icon: BookOpen, label: "Módulos" },
-  { href: "/admin/alumnos", icon: Users, label: "Alumnos" },
-  { href: "/admin/suscripciones", icon: ShieldCheck, label: "Suscripciones" },
-  { href: "/admin/en-vivo", icon: Calendar, label: "En vivo" },
-  { href: "/admin/comunidad", icon: MessageSquare, label: "Comunidad" },
-  { href: "/admin/tutor", icon: Brain, label: "Tutor IA" },
-  { href: "/admin/configuracion", icon: Settings, label: "Configuración" },
-];
-
 export function DapAdminSidebar({
-  items = DEFAULT_ITEMS,
+  items,
   className,
 }: DapAdminSidebarProps) {
+  const t = useTranslations("Shell");
   const pathname = usePathname();
+
+  const defaultItems: AdminNavItem[] = [
+    { href: "/admin", icon: BarChart3, label: t("adminSidebar.navDashboard") },
+    { href: "/admin/fases", icon: Layers, label: t("adminSidebar.navBlocks") },
+    {
+      href: "/admin/modulos",
+      icon: BookOpen,
+      label: t("adminSidebar.navModules"),
+    },
+    { href: "/admin/alumnos", icon: Users, label: t("adminSidebar.navStudents") },
+    {
+      href: "/admin/suscripciones",
+      icon: ShieldCheck,
+      label: t("adminSidebar.navSubscriptions"),
+    },
+    { href: "/admin/en-vivo", icon: Calendar, label: t("adminSidebar.navLive") },
+    {
+      href: "/admin/comunidad",
+      icon: MessageSquare,
+      label: t("adminSidebar.navCommunity"),
+    },
+    { href: "/admin/tutor", icon: Brain, label: t("adminSidebar.navTutor") },
+    {
+      href: "/admin/configuracion",
+      icon: Settings,
+      label: t("adminSidebar.navSettings"),
+    },
+  ];
+  const resolvedItems = items ?? defaultItems;
 
   const isActive = (href: string) => {
     if (href === "/admin") return pathname === href;
@@ -59,13 +78,13 @@ export function DapAdminSidebar({
         "flex h-screen w-[260px] shrink-0 flex-col border-r border-white/[0.06] bg-surface-elevated text-text-primary",
         className,
       )}
-      aria-label="Navegación de admin"
+      aria-label={t("adminSidebar.adminNav")}
     >
       <div className="flex h-16 items-center gap-2 border-b border-white/[0.06] px-6">
         <Link
           href="/admin"
           className="inline-flex items-center gap-2"
-          aria-label="DAP Admin"
+          aria-label={t("adminSidebar.logoAria")}
         >
           <Image
             src="/dap-logo-white.png"
@@ -80,7 +99,7 @@ export function DapAdminSidebar({
               DAP
             </span>
             <span className="font-inter text-[10px] uppercase tracking-widest text-text-tertiary">
-              Admin
+              {t("adminSidebar.admin")}
             </span>
           </div>
         </Link>
@@ -88,7 +107,7 @@ export function DapAdminSidebar({
 
       <nav className="flex-1 overflow-y-auto px-3 py-4">
         <div className="flex flex-col gap-0.5">
-          {items.map((item) => {
+          {resolvedItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href);
             return (
@@ -113,10 +132,10 @@ export function DapAdminSidebar({
 
       <div className="border-t border-white/[0.06] p-4">
         <p className="font-inter text-[10px] uppercase tracking-widest text-text-tertiary">
-          Backoffice
+          {t("adminSidebar.backoffice")}
         </p>
         <p className="mt-0.5 font-inter text-xs text-text-secondary">
-          Cambios en producción · cuidado.
+          {t("adminSidebar.backofficeWarning")}
         </p>
       </div>
     </aside>

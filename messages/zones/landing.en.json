@@ -1,0 +1,129 @@
+{
+  "Landing": {
+    "hero": {
+      "eyebrow": "Apostolic Pastoral Diploma",
+      "titleLead": "We form integral leaders who",
+      "titleHighlight": "transform their generation",
+      "subtitleLead": "72 weeks of formation · 9 Dimensions ·",
+      "subtitleHighlight": "A supernatural transformation.",
+      "ctaPrimary": "Begin your transformation",
+      "ctaDemo": "Try the free demo",
+      "disclaimer": "$25 USD/month · Instant access · Cancel anytime"
+    },
+    "stats": {
+      "blocks": "Thematic blocks",
+      "modules": "Premium modules · 1 per week",
+      "monthsSuffix": " months",
+      "duration": "Integral formation",
+      "perMonthSuffix": "/month",
+      "subscription": "Monthly subscription"
+    },
+    "globalReach": {
+      "eyebrow": "Why the DAP?",
+      "titleLead": "It's not another course. It's an",
+      "titleHighlight": "integral formation",
+      "p1a": "Most ministry schools in the Spanish-speaking world only train",
+      "p1Highlight": "preachers",
+      "p1b": ". The pastor leaves knowing how to expound a text, but arrives at their church and doesn't know how to organize a team, read a financial statement, raise a foundation, plant a Kingdom business, or govern a city.",
+      "p2a": "The DAP exists to form the",
+      "p2Highlight": "complete apostolic leader",
+      "p2b": ": pastor + administrator + reformer + entrepreneur + strategist + mentor + communicator + spiritual governor. The 9 dimensions of the apostolic anointing in a single program.",
+      "p3": "It's not a course to accumulate information. It's a formation process that imparts ministerial authority."
+    },
+    "howItWorks": {
+      "eyebrow": "How does it work?",
+      "titleLead": "72 weeks, 9 blocks, a single",
+      "titleHighlight": "cadence",
+      "stepLabel": "Step",
+      "step1Title": "You apply and subscribe",
+      "step1Body": "You complete the admission form and, once approved, you activate your $25 USD/month subscription. Your personal calendar starts the first Tuesday after approval.",
+      "step2Title": "1 module every week",
+      "step2Body": "Every Tuesday at 00:01 am a new module opens (out of 72 total). The practical activation is graded by Ap. Max Hebeling with personal feedback within 48h. Live MasterClass per event — at least 1 a month.",
+      "step3Title": "Complete a block, receive your dimension",
+      "step3Body": "Upon passing the 8 modules of a block, you receive a certificate, a badge, and a ministerial dimension — from Disciple to Sent One, the 9 dimensions of the Kingdom."
+    },
+    "moduleStructure": {
+      "eyebrow": "Each module, 5 parts",
+      "titleLead": "A",
+      "titleHighlight": "consistent",
+      "titleTrail": "experience in every class.",
+      "part1Title": "Introduction",
+      "part1Body": "Module objective, main revelation, and immediate application. You align with the word before entering the teaching.",
+      "part2Title": "Teaching",
+      "part2Body": "Biblical, practical, and modern content. Apostolic doctrine through the lens of today's world, not of 80 years ago.",
+      "part3Title": "Activation",
+      "part3Body": "A practical exercise to apply right away in your ministry, your family, or your leadership. Without activation, there is no real impartation.",
+      "part4Title": "Evaluation",
+      "part4Body": "A quiz that measures comprehension. Passing is required to complete the module and, at the end of the month, to unlock the next one.",
+      "part5Title": "Impartation statement",
+      "part5Body": "The apostolic closing word. A declaration that seals the module in your spirit and remains as a pronouncement over your life."
+    },
+    "phases": {
+      "bgAlt": "Pastors and leaders at a DAP apostolic conference",
+      "eyebrow": "The 9 blocks",
+      "titleLead": "Nine dimensions of the",
+      "titleHighlight": "apostolic anointing",
+      "intro": "8 modules per block, 1 module per week. Each block delivers a new dimension and prepares you for the next. In the end, all 9 form the sent leader.",
+      "hoverHint": "Hover over each block to see the details."
+    },
+    "netflixRow": {
+      "block": "Block {n}",
+      "dimShort": "Dim {n}",
+      "dimensionFallback": "Dimension {n}",
+      "modulesCount": "{count} modules",
+      "view": "View"
+    },
+    "dimensions": {
+      "eyebrow": "The 9 dimensions of the Kingdom",
+      "titleDiscipulo": "Disciple.",
+      "titleHijo": "Son",
+      "titleLiderEnviado": ". Leader. Sent One.",
+      "intro": "Each completed block delivers a verifiable ministerial dimension. They are not honorary titles: they are recognized stages of the process within the apostolic government of the DAP."
+    },
+    "faq": {
+      "eyebrow": "Frequently asked questions",
+      "titleLead": "What you need to know before you",
+      "titleHighlight": "subscribe",
+      "q1": "What does the $25/month subscription include?",
+      "a1": "Access to the premium classes of the month you have unlocked, to all live sessions (MasterClass and specials), to the monthly group mentorship, and to the diploma's community of pastors.",
+      "q2": "Can I cancel anytime?",
+      "a2": "Yes. You cancel with one click from your account. No penalties or forced periods. You pay month to month.",
+      "q3": "What happens if I cancel halfway through?",
+      "a3": "You lose access to the content while your subscription is inactive — but your progress is kept intact. If you subscribe again, you pick up exactly where you left off, with the months you had already unlocked.",
+      "q4": "How is each academic month unlocked?",
+      "a4": "Each month of active subscription releases a new academic month, as long as you have passed all the modules of the previous month. If you don't complete them, billing pauses automatically until you advance — you are not overcharged.",
+      "q5": "How much time do I have to finish each month?",
+      "a5": "It doesn't expire as long as you keep your subscription active. And if you need more time, you can request up to 1 extension per block (60 additional days).",
+      "q6": "Are the certificates institutionally valid?",
+      "a6": "DAP certificates are issued by the Red Apostólica Reino y Avivamiento. They are recognized within our ministry network; they are not university academic degrees. The value lies in the ministerial dimension they endorse, not in state validity. We are in the process of obtaining two accreditations —a curricular accreditation in Mexico and another from a United States university for the rest of the world, with official backing—. It will be announced publicly once confirmed.",
+      "q7": "Is there downloadable material?",
+      "a7": "Yes. Each module includes PDFs and downloadable resources related to the teaching. The student keeps them while subscribed."
+    },
+    "finalCta": {
+      "badge": "$25 USD/month · cancel anytime",
+      "titleLead": "Start your",
+      "titleHighlight": "apostolic diploma",
+      "titleTrail": "today.",
+      "subtitle": "Formal admission + 1 new module every week, for 72 weeks. Personalized grading from Ap. Max Hebeling and live MasterClass per event. In Spanish.",
+      "cta": "Subscribe now",
+      "disclaimer": "Processed by Stripe. Your subscription begins once payment is confirmed."
+    },
+    "header": {
+      "navDiplomado": "The Diploma",
+      "navFases": "Phases",
+      "navDimensiones": "Dimensions",
+      "navPreguntas": "FAQ",
+      "accountMenuAria": "Open account menu",
+      "myAccount": "My account",
+      "dashboard": "Dashboard",
+      "admin": "Admin",
+      "signOut": "Sign out",
+      "login": "Log in",
+      "enroll": "Enroll"
+    },
+    "welcomePopup": {
+      "closeAria": "Close",
+      "imageAlt": "DAP — Welcome · Classes begin Tuesday, June 23, 2026 · Coming soon"
+    }
+  }
+}

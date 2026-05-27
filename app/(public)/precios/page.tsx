@@ -13,6 +13,8 @@ import {
   X,
 } from "lucide-react";
 
+import { getTranslations } from "next-intl/server";
+
 import { signOutAction } from "@/lib/auth/actions";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -24,57 +26,59 @@ import { DapButton } from "@/components/ui-dap/button";
 import { EnrollmentCTA } from "@/components/launch/enrollment-cta";
 import { Reveal } from "@/components/landing/reveal";
 
-export const metadata: Metadata = {
-  title: "Precios y planes",
-  description:
-    "$25 USD/mes — acceso completo al Diplomado Apostólico Pastoral. 72 módulos en 18 meses, 1 módulo por semana, corrección personalizada del Dr. Max. Cancela cuando quieras.",
-  alternates: { canonical: "/precios" },
-  openGraph: {
-    type: "website",
-    url: "/precios",
-    title: "Precios y planes · DAP",
-    description:
-      "$25 USD/mes — todo incluido. 72 módulos en 18 meses, 1 por semana, MasterClass por evento, comunidad. Cancela cuando quieras.",
-  },
-};
-
-const INCLUDED = [
-  {
-    icon: BookOpen,
-    title: "1 módulo por semana durante 72 semanas",
-    body: "El módulo de tu semana abre cada martes (00:01) y la tarea cierra el lunes (23:59). Cada módulo con 5 partes: introducción, enseñanza, activación, evaluación e impartición.",
-  },
-  {
-    icon: Radio,
-    title: "Sesiones en vivo por evento",
-    body: "MasterClass en vivo (mínimo 1 al mes, garantizada). Mentoría grupal por convocatoria del apóstol. Todas se graban y quedan disponibles.",
-  },
-  {
-    icon: Users,
-    title: "Corrección personalizada del Dr. Max",
-    body: "Tu activación se corrige con feedback en la voz del Dr. Max Hebeling. Resultado en 48 horas — espacio para asimilar sin la ansiedad del feedback inmediato.",
-  },
-  {
-    icon: Sparkles,
-    title: "Comunidad privada + Tutor IA",
-    body: "Comunidad de pastores en formación y acceso al Tutor IA del DAP entrenado con todos los materiales del programa.",
-  },
-  {
-    icon: Pause,
-    title: "Modelo Netflix: cancelas cuando quieres",
-    body: "Sin compromiso de permanencia. Si pausas un mes, tu progreso queda guardado y retomas desde la semana donde dejaste cuando reactives.",
-  },
-];
-
-const NOT_INCLUDED = [
-  "Inscripción única ni cuota anual",
-  "Costos ocultos por certificado o insignia",
-  "Compromisos de permanencia",
-  "Cobros si la suscripción está cancelada",
-];
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("PublicPages");
+  return {
+    title: t("pricing.metaTitle"),
+    description: t("pricing.metaDescription"),
+    alternates: { canonical: "/precios" },
+    openGraph: {
+      type: "website",
+      url: "/precios",
+      title: t("pricing.ogTitle"),
+      description: t("pricing.ogDescription"),
+    },
+  };
+}
 
 export default async function PreciosPage() {
+  const t = await getTranslations("PublicPages");
   const supabase = await createClient();
+
+  const INCLUDED = [
+    {
+      icon: BookOpen,
+      title: t("pricing.included.item1Title"),
+      body: t("pricing.included.item1Body"),
+    },
+    {
+      icon: Radio,
+      title: t("pricing.included.item2Title"),
+      body: t("pricing.included.item2Body"),
+    },
+    {
+      icon: Users,
+      title: t("pricing.included.item3Title"),
+      body: t("pricing.included.item3Body"),
+    },
+    {
+      icon: Sparkles,
+      title: t("pricing.included.item4Title"),
+      body: t("pricing.included.item4Body"),
+    },
+    {
+      icon: Pause,
+      title: t("pricing.included.item5Title"),
+      body: t("pricing.included.item5Body"),
+    },
+  ];
+
+  const NOT_INCLUDED = [
+    t("pricing.notIncluded.item1"),
+    t("pricing.notIncluded.item2"),
+    t("pricing.notIncluded.item3"),
+    t("pricing.notIncluded.item4"),
+  ];
 
   const {
     data: { user },
@@ -117,19 +121,20 @@ export default async function PreciosPage() {
 
           <div className="mx-auto max-w-3xl text-center">
             <p className="mb-4 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-              Plan único · Todo incluido
+              {t("pricing.heroEyebrow")}
             </p>
             <h1 className="font-grotesk text-display font-bold leading-[1.05] text-text-primary">
-              <span className="gradient-text">$25 USD</span> al mes.
+              <span className="gradient-text">
+                {t("pricing.heroTitleAccent")}
+              </span>
+              {t("pricing.heroTitlePost")}
             </h1>
             <p className="mx-auto mt-6 max-w-2xl font-inter text-base text-text-secondary md:text-lg">
-              Acceso completo al Diplomado Apostólico Pastoral. 72 módulos
-              en 18 meses, 1 por semana, MasterClass por evento y comunidad
-              de pastores. Cancela cuando quieras, sin compromisos.
+              {t("pricing.heroBody")}
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
               <EnrollmentCTA href="/suscribirme" size="lg">
-                Empezar ahora
+                {t("pricing.heroStart")}
                 <ArrowRight />
               </EnrollmentCTA>
               <DapButton
@@ -137,11 +142,11 @@ export default async function PreciosPage() {
                 variant="secondary"
                 size="lg"
               >
-                ¿Cómo funciona?
+                {t("pricing.heroHowItWorks")}
               </DapButton>
             </div>
             <p className="mt-6 font-inter text-xs text-text-tertiary">
-              Procesado por Stripe · 18 meses · 9 bloques · 72 módulos
+              {t("pricing.heroNote")}
             </p>
           </div>
         </section>
@@ -151,10 +156,14 @@ export default async function PreciosPage() {
           <div className="mx-auto max-w-5xl">
             <Reveal>
               <p className="mb-4 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-                Qué incluye
+                {t("pricing.includedEyebrow")}
               </p>
               <h2 className="font-grotesk text-h1 font-bold leading-tight text-text-primary">
-                Todo lo que necesitas <span className="gradient-text">en un solo plan</span>.
+                {t("pricing.includedHeadingPre")}
+                <span className="gradient-text">
+                  {t("pricing.includedHeadingAccent")}
+                </span>
+                {t("pricing.includedHeadingPost")}
               </h2>
             </Reveal>
 
@@ -188,10 +197,10 @@ export default async function PreciosPage() {
           <div className="mx-auto max-w-3xl">
             <Reveal>
               <p className="mb-4 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-                Lo que no pagás
+                {t("pricing.notIncludedEyebrow")}
               </p>
               <h2 className="mb-8 font-grotesk text-h2 font-bold leading-tight text-text-primary">
-                Cero letra chica.
+                {t("pricing.notIncludedHeading")}
               </h2>
               <ul className="space-y-3">
                 {NOT_INCLUDED.map((item) => (
@@ -221,16 +230,13 @@ export default async function PreciosPage() {
                   strokeWidth={2}
                 />
                 <h3 className="mb-3 font-grotesk text-h3 font-bold text-text-primary">
-                  Modelo Netflix — sin compromiso
+                  {t("pricing.netflixTitle")}
                 </h3>
                 <p className="font-inter text-base leading-relaxed text-text-secondary">
-                  Cancelas desde tu dashboard cuando quieras. Mientras
-                  estés activo recibes 1 módulo nuevo cada semana. Si
-                  pausas, tu progreso queda guardado y cuando reactives
-                  retomas desde la semana donde dejaste.
+                  {t("pricing.netflixBody")}
                 </p>
                 <p className="mt-4 font-inter text-sm text-text-tertiary">
-                  Sin penalidades, sin renovaciones automáticas mañosas.
+                  {t("pricing.netflixNote")}
                 </p>
               </div>
             </Reveal>
@@ -243,28 +249,31 @@ export default async function PreciosPage() {
           <div className="absolute inset-0 -z-10 opacity-70 [background:radial-gradient(50%_50%_at_50%_50%,rgba(123,97,255,0.35),transparent_55%)]" />
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="font-grotesk text-h1 font-bold leading-tight text-text-primary">
-              Empieza hoy, <span className="gradient-text">cancela cuando quieras</span>.
+              {t("pricing.ctaTitlePre")}
+              <span className="gradient-text">
+                {t("pricing.ctaTitleAccent")}
+              </span>
+              {t("pricing.ctaTitlePost")}
             </h2>
             <p className="mx-auto mt-6 max-w-xl font-inter text-base text-text-secondary md:text-lg">
-              Tu suscripción se activa al confirmar el pago. Empiezas con la
-              Fase 1 desde el día uno.
+              {t("pricing.ctaBody")}
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
               <EnrollmentCTA href="/suscribirme" size="lg">
                 <CreditCard />
-                Suscribirme — $25/mes
+                {t("pricing.ctaSubscribe")}
               </EnrollmentCTA>
               <DapButton
                 render={<Link href="/#preguntas" />}
                 variant="secondary"
                 size="lg"
               >
-                Ver preguntas frecuentes
+                {t("pricing.ctaSeeFaq")}
               </DapButton>
             </div>
             <p className="mt-6 font-inter text-xs text-text-tertiary">
               <Check className="-mt-1 mr-1 inline size-3 text-emerald-400" />
-              Procesado por Stripe · sin compromiso
+              {t("pricing.ctaNote")}
             </p>
           </div>
         </section>

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useRef } from "react";
+import { useTranslations } from "next-intl";
 import { motion, useScroll, useTransform } from "motion/react";
 import { ArrowRight, PlayCircle } from "lucide-react";
 
@@ -10,6 +11,7 @@ import { EnrollmentCTA } from "@/components/launch/enrollment-cta";
 import { HeroParticles } from "./hero-particles";
 
 export function HeroSectionV2() {
+  const t = useTranslations("Landing");
   const sectionRef = useRef<HTMLElement>(null);
 
   // Scroll-out fade: como el usuario scrollea hacia abajo, el contenido del
@@ -78,7 +80,7 @@ export function HeroSectionV2() {
           transition={{ duration: 0.7, delay: 0.7 }}
           className="mb-8 font-grotesk text-xs font-medium uppercase tracking-[0.36em] text-text-secondary sm:text-sm"
         >
-          Diplomado Apostólico Pastoral
+          {t("hero.eyebrow")}
         </motion.p>
 
         <motion.h1
@@ -87,8 +89,8 @@ export function HeroSectionV2() {
           transition={{ duration: 0.8, delay: 0.85 }}
           className="mx-auto max-w-3xl font-grotesk text-h2 font-bold leading-[1.15] text-text-primary md:text-h1 md:leading-[1.1]"
         >
-          Formamos líderes integrales que{" "}
-          <span className="gradient-text">transforman su generación</span>.
+          {t("hero.titleLead")}{" "}
+          <span className="gradient-text">{t("hero.titleHighlight")}</span>.
         </motion.h1>
 
         <motion.p
@@ -97,9 +99,9 @@ export function HeroSectionV2() {
           transition={{ duration: 0.7, delay: 1.0 }}
           className="mx-auto mt-6 max-w-2xl font-inter text-base leading-relaxed text-text-secondary md:text-lg"
         >
-          72 semanas de formación · 9 Dimensiones ·{" "}
+          {t("hero.subtitleLead")}{" "}
           <span className="font-medium text-text-primary">
-            Una transformación sobrenatural.
+            {t("hero.subtitleHighlight")}
           </span>
         </motion.p>
 
@@ -110,7 +112,7 @@ export function HeroSectionV2() {
           className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4"
         >
           <EnrollmentCTA href="/suscribirme" size="lg">
-            Comienza tu transformación
+            {t("hero.ctaPrimary")}
             <ArrowRight />
           </EnrollmentCTA>
           <DapButton
@@ -119,7 +121,7 @@ export function HeroSectionV2() {
             size="lg"
           >
             <PlayCircle />
-            Probar demo gratis
+            {t("hero.ctaDemo")}
           </DapButton>
         </motion.div>
 
@@ -129,7 +131,7 @@ export function HeroSectionV2() {
           transition={{ duration: 0.6, delay: 1.4 }}
           className="mt-6 font-inter text-xs text-text-tertiary"
         >
-          $25 USD/mes · Acceso inmediato · Cancela cuando quieras
+          {t("hero.disclaimer")}
         </motion.p>
       </motion.div>
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Layers, Pencil } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,10 +29,14 @@ type ModuleRow = {
   }[];
 };
 
-export const metadata = { title: "Módulos de la fase — Admin DAP" };
+export async function generateMetadata() {
+  const t = await getTranslations("Admin");
+  return { title: t("phaseModules.metaTitle") };
+}
 
 export default async function AdminBlockModulesPage({ params }: PageProps) {
   const { slug: id } = await params;
+  const t = await getTranslations("Admin");
   const supabase = await createClient();
 
   const { data: phase } = await supabase
@@ -50,7 +55,7 @@ export default async function AdminBlockModulesPage({ params }: PageProps) {
     .order("order_index", { ascending: true })
     .returns<ModuleRow[]>();
   if (error) {
-    throw new Error(`No se pudieron cargar los módulos: ${error.message}`);
+    throw new Error(t("phaseModules.loadError", { message: error.message }));
   }
   const modules = data ?? [];
 
@@ -62,18 +67,20 @@ export default async function AdminBlockModulesPage({ params }: PageProps) {
           className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-brand-coral"
         >
           <ArrowLeft className="size-4" />
-          Volver a fases
+          {t("phaseModules.backToPhases")}
         </Link>
 
         <header className="mb-8 flex items-end justify-between gap-4">
           <div>
             <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
-              Fase {String(phase.order_index).padStart(2, "0")} · {phase.title}
+              {t("phaseModules.eyebrow", {
+                index: String(phase.order_index).padStart(2, "0"),
+                phaseTitle: phase.title,
+              })}
             </p>
-            <h1 className="font-serif text-3xl font-semibold">Módulos</h1>
+            <h1 className="font-serif text-3xl font-semibold">{t("phaseModules.title")}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {modules.length} módulos en esta fase. Edita metadatos o entra a
-              las 5 secciones para poblar contenido.
+              {t("phaseModules.description", { count: modules.length })}
             </p>
           </div>
         </header>
@@ -83,9 +90,9 @@ export default async function AdminBlockModulesPage({ params }: PageProps) {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-14">#</TableHead>
-                <TableHead>Título</TableHead>
-                <TableHead className="hidden md:table-cell">Slug</TableHead>
-                <TableHead className="w-32 text-center">Contenido</TableHead>
+                <TableHead>{t("phaseModules.thTitle")}</TableHead>
+                <TableHead className="hidden md:table-cell">{t("phaseModules.thSlug")}</TableHead>
+                <TableHead className="w-32 text-center">{t("phaseModules.thContent")}</TableHead>
                 <TableHead className="w-40 text-right" />
               </TableRow>
             </TableHeader>
@@ -113,7 +120,7 @@ export default async function AdminBlockModulesPage({ params }: PageProps) {
                         )}
                         {m.is_free_preview && (
                           <Badge className="bg-brand-coral text-brand-coral-foreground">
-                            Free preview
+                            {t("phaseModules.freePreview")}
                           </Badge>
                         )}
                       </div>
@@ -146,7 +153,7 @@ export default async function AdminBlockModulesPage({ params }: PageProps) {
                           }
                         >
                           <Layers className="size-3.5" />
-                          Secciones
+                          {t("phaseModules.sections")}
                         </Button>
                         <Button
                           size="sm"

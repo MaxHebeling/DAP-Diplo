@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations, getLocale } from "next-intl/server";
 import {
   ArrowRight,
   CalendarClock,
@@ -12,6 +13,8 @@ import {
 
 import { signOutAction } from "@/lib/auth/actions";
 import { createClient } from "@/lib/supabase/server";
+import { localized } from "@/lib/i18n/localized";
+import type { Locale } from "@/i18n/config";
 import {
   DAP_TZ,
   estimateWeekOpensAt,
@@ -37,7 +40,12 @@ import { DashboardTour } from "@/components/onboarding/dashboard-tour";
 // estado "sin suscripción" después de un pago recién procesado.
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Mi dashboard — DAP" };
+export async function generateMetadata() {
+  const t = await getTranslations("Student");
+  return { title: t("dashboard.metaTitle") };
+}
+
+type Translator = Awaited<ReturnType<typeof getTranslations>>;
 
 type ProfileRow = {
   full_name: string;
@@ -61,9 +69,16 @@ type ModuleRow = {
   id: string;
   slug: string;
   title: string;
+  title_en: string | null;
   subtitle: string | null;
+  subtitle_en: string | null;
   course_week: number;
-  block: { slug: string; title: string; order_index: number } | null;
+  block: {
+    slug: string;
+    title: string;
+    title_en: string | null;
+    order_index: number;
+  } | null;
 };
 
 type ModuleProgressRow = {
@@ -89,6 +104,7 @@ function formatBillingDate(iso: string | null): string | null {
 
 export default async function DashboardPage() {
   const supabase = await createClient();
+  const t = await getTranslations("Student");
 
   const {
     data: { user },
@@ -127,12 +143,13 @@ export default async function DashboardPage() {
     <DapStudentShell
       userName={profile.full_name}
       userAvatar={profile.avatar_url}
-      title="Inicio"
+      title={t("dashboard.topbarTitle")}
       onSignOut={signOutAction}
     >
       <div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-10">
         {!hasActive ? (
           <NoSubscriptionState
+            t={t}
             firstName={firstName}
             hadCanceledSub={!!sub && sub.status === "canceled"}
           />
@@ -160,9 +177,11 @@ export default async function DashboardPage() {
 // ESTADO: sin suscripción (mantenido del dashboard previo)
 // =====================================================================
 function NoSubscriptionState({
+  t,
   firstName,
   hadCanceledSub,
 }: {
+  t: Translator;
   firstName: string;
   hadCanceledSub: boolean;
 }) {
@@ -170,29 +189,28 @@ function NoSubscriptionState({
     <div className="mx-auto max-w-3xl space-y-8">
       <header>
         <p className="font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-          Diplomado Apostólico Pastoral
+          {t("common.diplomaEyebrow")}
         </p>
         <h1 className="mt-2 font-grotesk text-h1 font-bold leading-tight text-text-primary">
-          Hola, {firstName}.
+          {t("dashboard.greeting", { firstName })}
         </h1>
         <p className="mt-3 font-inter text-base leading-relaxed text-text-secondary">
           {hadCanceledSub
-            ? "Tu suscripción está cancelada. Reactiva cuando quieras y retomas desde donde dejaste."
-            : "Tu suscripción aún no está activa. Empieza la formación cuando estés listo."}
+            ? t("dashboard.noSub.canceled")
+            : t("dashboard.noSub.inactive")}
         </p>
       </header>
 
       <DapCard>
         <DapCardHeader>
-          <DapCardTitle>Activa tu acceso</DapCardTitle>
+          <DapCardTitle>{t("dashboard.noSub.cardTitle")}</DapCardTitle>
           <DapCardDescription>
-            $25 USD/mes · cancelas cuando quieras · todos los módulos se
-            liberan semana a semana.
+            {t("dashboard.noSub.cardDescription")}
           </DapCardDescription>
         </DapCardHeader>
         <div className="mt-4">
           <EnrollmentCTA href="/suscribirme" size="lg">
-            Continuar
+            {t("dashboard.noSub.cta")}
             <ArrowRight />
           </EnrollmentCTA>
         </div>
@@ -222,6 +240,8 @@ async function WeekDashboard({
   userId: string;
 }) {
   const supabase = await createClient();
+  const t = await getTranslations("Student");
+  const locale = (await getLocale()) as Locale;
 
   // 1) Semana actual + ventana
   const { data: weekWindowData } = await supabase
@@ -234,6 +254,7 @@ async function WeekDashboard({
   if (currentWeek === 0) {
     return (
       <NotStartedYet
+        t={t}
         firstName={firstName}
         programStartDate={programStartDate}
         matricula={matricula}
@@ -246,7 +267,7 @@ async function WeekDashboard({
   const { data: modules } = await supabase
     .from("modules")
     .select(
-      "id, slug, title, subtitle, course_week, block:blocks(slug, title, order_index)",
+      "id, slug, title, title_en, subtitle, subtitle_en, course_week, block:blocks(slug, title, title_en, order_index)",
     )
     .order("course_week", { ascending: true })
     .returns<ModuleRow[]>();
@@ -287,13 +308,18 @@ async function WeekDashboard({
       <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-            Diplomado Apostólico Pastoral
+            {t("common.diplomaEyebrow")}
           </p>
           <h1 className="mt-2 font-grotesk text-h1 font-bold leading-tight text-text-primary">
-            Hola, {firstName}.
+            {t("dashboard.greeting", { firstName })}
           </h1>
           <p className="mt-3 font-inter text-base text-text-secondary">
-            Estás en la <span className="font-semibold text-text-primary">Semana {currentWeek} de 72</span> del programa.
+            {t.rich("dashboard.week.status", {
+              currentWeek,
+              strong: (chunks) => (
+                <span className="font-semibold text-text-primary">{chunks}</span>
+              ),
+            })}
           </p>
         </div>
         {matricula && (
@@ -305,6 +331,8 @@ async function WeekDashboard({
       <div data-tour="current-module">
         {currentModule ? (
           <CurrentWeekCard
+            t={t}
+            locale={locale}
             module={currentModule}
             isCompleted={progressById.get(currentModule.id) === true}
             closesAt={closesAt}
@@ -312,8 +340,7 @@ async function WeekDashboard({
         ) : (
           <DapCard>
             <p className="text-sm text-text-secondary">
-              No encontramos el módulo de esta semana. Si esto persiste,
-              avísanos a admisiones@dapglobal.org.
+              {t("dashboard.week.noModule")}
             </p>
           </DapCard>
         )}
@@ -322,6 +349,7 @@ async function WeekDashboard({
       {/* Progreso global */}
       <div data-tour="progress">
         <ProgressBar
+          t={t}
           completedCount={completedCount}
           completionPct={completionPct}
         />
@@ -330,11 +358,15 @@ async function WeekDashboard({
       {/* Módulos pasados + próximos */}
       <div className="grid gap-6 lg:grid-cols-2">
         <PastModulesList
+          t={t}
+          locale={locale}
           modules={pastModules}
           progressById={progressById}
         />
         <div data-tour="upcoming">
           <UpcomingModulesList
+            t={t}
+            locale={locale}
             modules={upcomingModules}
             programStartDate={programStartDate}
           />
@@ -344,6 +376,7 @@ async function WeekDashboard({
       {/* Subscripción */}
       <div data-tour="resources">
         <SubscriptionPanel
+          t={t}
           cancelDate={cancelDate}
           nextBillDate={nextBillDate}
           isAdmin={isAdmin}
@@ -361,11 +394,13 @@ async function WeekDashboard({
 // =====================================================================
 
 function NotStartedYet({
+  t,
   firstName,
   programStartDate,
   matricula,
   isAdmin,
 }: {
+  t: Translator;
   firstName: string;
   programStartDate: string | null;
   matricula: string | null;
@@ -379,14 +414,14 @@ function NotStartedYet({
     <div className="mx-auto max-w-3xl space-y-6">
       <header>
         <p className="font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-          Diplomado Apostólico Pastoral
+          {t("common.diplomaEyebrow")}
         </p>
         <h1 className="mt-2 font-grotesk text-h1 font-bold leading-tight text-text-primary">
-          Bienvenido, {firstName}.
+          {t("dashboard.welcome", { firstName })}
         </h1>
         {isAdmin && (
           <p className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-brand-violet/30 bg-brand-violet/10 px-2.5 py-0.5 font-inter text-xs font-medium text-brand-violet">
-            Admin
+            {t("dashboard.admin")}
           </p>
         )}
       </header>
@@ -398,22 +433,27 @@ function NotStartedYet({
           </div>
           <div>
             <h2 className="font-grotesk text-h4 font-semibold text-text-primary">
-              Tu programa empieza pronto
+              {t("dashboard.notStarted.cardTitle")}
             </h2>
             {startsAt ? (
               <p className="mt-2 font-inter text-sm leading-relaxed text-text-secondary">
-                Inicia el <span className="font-semibold text-text-primary">{startsAt}</span>.
-                Ese día abre la Semana 1 y vas a recibir un aviso por email.
+                {t.rich("dashboard.notStarted.startsOn", {
+                  startsAt,
+                  strong: (chunks) => (
+                    <span className="font-semibold text-text-primary">
+                      {chunks}
+                    </span>
+                  ),
+                })}
               </p>
             ) : (
               <p className="mt-2 font-inter text-sm leading-relaxed text-text-secondary">
-                Todavía no tienes fecha de inicio asignada. Te llegará un email
-                cuando admisiones apruebe tu solicitud y emita tu matrícula.
+                {t("dashboard.notStarted.noDate")}
               </p>
             )}
             {matricula && (
               <p className="mt-3 font-mono text-xs text-text-tertiary">
-                Matrícula · {matricula}
+                {t("dashboard.notStarted.matricula", { matricula })}
               </p>
             )}
           </div>
@@ -421,21 +461,41 @@ function NotStartedYet({
       </DapCard>
 
       <p className="font-inter text-xs text-text-tertiary">
-        Mientras tanto puedes explorar la <Link href="/comunidad" className="text-brand-coral hover:underline">comunidad</Link> o el <Link href="/tutor" className="text-brand-coral hover:underline">tutor IA</Link>.
+        {t.rich("dashboard.notStarted.explore", {
+          community: (chunks) => (
+            <Link href="/comunidad" className="text-brand-coral hover:underline">
+              {chunks}
+            </Link>
+          ),
+          tutor: (chunks) => (
+            <Link href="/tutor" className="text-brand-coral hover:underline">
+              {chunks}
+            </Link>
+          ),
+        })}
       </p>
     </div>
   );
 }
 
 function CurrentWeekCard({
+  t,
+  locale,
   module,
   isCompleted,
   closesAt,
 }: {
+  t: Translator;
+  locale: Locale;
   module: ModuleRow;
   isCompleted: boolean;
   closesAt: Date | null;
 }) {
+  const moduleTitle = localized(module, "title", locale) ?? module.title;
+  const moduleSubtitle = localized(module, "subtitle", locale);
+  const blockTitle = module.block
+    ? localized(module.block, "title", locale) ?? module.block.title
+    : null;
   return (
     <div className="relative overflow-hidden rounded-2xl border border-brand-coral/25 bg-gradient-to-br from-brand-violet/[0.10] via-surface-elevated to-brand-coral/[0.06] p-6 sm:p-8">
       <div
@@ -445,31 +505,36 @@ function CurrentWeekCard({
       <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <p className="font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-            Tu módulo de esta semana · Semana {module.course_week}
+            {t("dashboard.currentCard.eyebrow", { week: module.course_week })}
           </p>
           <h2 className="mt-2 font-grotesk text-h2 font-bold leading-tight text-text-primary">
-            {module.title}
+            {moduleTitle}
           </h2>
-          {module.subtitle && (
+          {moduleSubtitle && (
             <p className="mt-1 font-inter text-sm text-text-secondary">
-              {module.subtitle}
+              {moduleSubtitle}
             </p>
           )}
           {module.block && (
             <p className="mt-3 font-inter text-xs text-text-tertiary">
-              Bloque {String(module.block.order_index).padStart(2, "0")} · {module.block.title}
+              {t("dashboard.currentCard.block", {
+                order: String(module.block.order_index).padStart(2, "0"),
+                title: blockTitle ?? module.block.title,
+              })}
             </p>
           )}
           {closesAt && !isCompleted && (
             <p className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-white/[0.04] px-2.5 py-1 font-inter text-xs text-text-secondary">
               <Clock className="size-3.5 text-brand-coral" />
-              La tarea cierra el {formatDapDateTime(closesAt)}
+              {t("dashboard.currentCard.taskCloses", {
+                date: formatDapDateTime(closesAt),
+              })}
             </p>
           )}
           {isCompleted && (
             <p className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-emerald-500/10 px-2.5 py-1 font-inter text-xs text-emerald-300">
               <CheckCircle2 className="size-3.5" />
-              Módulo completado
+              {t("dashboard.currentCard.completed")}
             </p>
           )}
         </div>
@@ -485,7 +550,7 @@ function CurrentWeekCard({
           }
           size="lg"
         >
-          {isCompleted ? "Repasar" : "Continuar"}
+          {isCompleted ? t("common.review") : t("common.continue")}
           <ArrowRight />
         </DapButton>
       </div>
@@ -494,9 +559,11 @@ function CurrentWeekCard({
 }
 
 function ProgressBar({
+  t,
   completedCount,
   completionPct,
 }: {
+  t: Translator;
   completedCount: number;
   completionPct: number;
 }) {
@@ -505,10 +572,15 @@ function ProgressBar({
       <div className="flex items-center justify-between">
         <div>
           <p className="font-inter text-xs font-medium uppercase tracking-widest text-text-tertiary">
-            Tu progreso
+            {t("dashboard.progress.label")}
           </p>
           <p className="mt-1 font-grotesk text-h3 font-semibold text-text-primary">
-            {completedCount} <span className="text-text-secondary">de 72 módulos</span>
+            {t.rich("dashboard.progress.count", {
+              count: completedCount,
+              muted: (chunks) => (
+                <span className="text-text-secondary">{chunks}</span>
+              ),
+            })}
           </p>
         </div>
         <p className="font-grotesk text-h2 font-bold text-brand-coral">
@@ -526,9 +598,13 @@ function ProgressBar({
 }
 
 function PastModulesList({
+  t,
+  locale,
   modules,
   progressById,
 }: {
+  t: Translator;
+  locale: Locale;
   modules: ModuleRow[];
   progressById: Map<string, boolean>;
 }) {
@@ -536,9 +612,9 @@ function PastModulesList({
     return (
       <DapCard>
         <DapCardHeader>
-          <DapCardTitle>Repaso</DapCardTitle>
+          <DapCardTitle>{t("dashboard.past.title")}</DapCardTitle>
           <DapCardDescription>
-            Apenas comienza tu programa — todavía no hay módulos para repasar.
+            {t("dashboard.past.emptyDescription")}
           </DapCardDescription>
         </DapCardHeader>
       </DapCard>
@@ -547,15 +623,17 @@ function PastModulesList({
   return (
     <DapCard>
       <DapCardHeader>
-        <DapCardTitle>Repaso · semanas anteriores</DapCardTitle>
+        <DapCardTitle>{t("dashboard.past.titleFull")}</DapCardTitle>
         <DapCardDescription>
-          El contenido siempre está disponible. Las tareas ya cerraron.
+          {t("dashboard.past.description")}
         </DapCardDescription>
       </DapCardHeader>
       <ul className="mt-4 space-y-2">
         {modules.map((m) => (
           <ModuleListItem
             key={m.id}
+            t={t}
+            locale={locale}
             module={m}
             status="review"
             isCompleted={progressById.get(m.id) === true}
@@ -567,9 +645,13 @@ function PastModulesList({
 }
 
 function UpcomingModulesList({
+  t,
+  locale,
   modules,
   programStartDate,
 }: {
+  t: Translator;
+  locale: Locale;
   modules: ModuleRow[];
   programStartDate: string | null;
 }) {
@@ -577,9 +659,9 @@ function UpcomingModulesList({
     return (
       <DapCard>
         <DapCardHeader>
-          <DapCardTitle>Próximos</DapCardTitle>
+          <DapCardTitle>{t("dashboard.upcoming.title")}</DapCardTitle>
           <DapCardDescription>
-            Has llegado al final del programa. Felicidades.
+            {t("dashboard.upcoming.emptyDescription")}
           </DapCardDescription>
         </DapCardHeader>
       </DapCard>
@@ -588,9 +670,9 @@ function UpcomingModulesList({
   return (
     <DapCard>
       <DapCardHeader>
-        <DapCardTitle>Próximos · te esperan</DapCardTitle>
+        <DapCardTitle>{t("dashboard.upcoming.titleFull")}</DapCardTitle>
         <DapCardDescription>
-          Cada módulo se abre el martes de su semana.
+          {t("dashboard.upcoming.description")}
         </DapCardDescription>
       </DapCardHeader>
       <ul className="mt-4 space-y-2">
@@ -603,11 +685,16 @@ function UpcomingModulesList({
             >
               <div className="min-w-0">
                 <p className="truncate font-grotesk text-sm font-medium text-text-primary">
-                  Semana {m.course_week} · {m.title}
+                  {t("dashboard.listItem.weekTitle", {
+                    week: m.course_week,
+                    title: localized(m, "title", locale) ?? m.title,
+                  })}
                 </p>
                 {opensAt && (
                   <p className="font-inter text-xs text-text-tertiary">
-                    Abre {formatDapLongDate(opensAt)}
+                    {t("dashboard.upcoming.opensAt", {
+                      date: formatDapLongDate(opensAt),
+                    })}
                   </p>
                 )}
               </div>
@@ -621,10 +708,14 @@ function UpcomingModulesList({
 }
 
 function ModuleListItem({
+  t,
+  locale,
   module,
   status,
   isCompleted,
 }: {
+  t: Translator;
+  locale: Locale;
   module: ModuleRow;
   status: WeekStatus;
   isCompleted: boolean;
@@ -632,6 +723,10 @@ function ModuleListItem({
   const href = module.block
     ? `/fases/${module.block.slug}/modulos/${module.slug}`
     : "/fases";
+  const moduleTitle = localized(module, "title", locale) ?? module.title;
+  const blockTitle = module.block
+    ? localized(module.block, "title", locale) ?? module.block.title
+    : null;
   return (
     <li>
       <Link
@@ -640,11 +735,14 @@ function ModuleListItem({
       >
         <div className="min-w-0">
           <p className="truncate font-grotesk text-sm font-medium text-text-primary">
-            Semana {module.course_week} · {module.title}
+            {t("dashboard.listItem.weekTitle", {
+              week: module.course_week,
+              title: moduleTitle,
+            })}
           </p>
           {module.block && (
             <p className="truncate font-inter text-xs text-text-tertiary">
-              {module.block.title}
+              {blockTitle}
             </p>
           )}
         </div>
@@ -652,7 +750,9 @@ function ModuleListItem({
           {isCompleted ? (
             <CheckCircle2 className="size-4 text-emerald-400" />
           ) : status === "review" ? (
-            <span className="font-inter text-xs text-text-tertiary">Repaso</span>
+            <span className="font-inter text-xs text-text-tertiary">
+              {t("dashboard.listItem.review")}
+            </span>
           ) : null}
           <ArrowRight className="size-3.5 text-text-tertiary group-hover:text-brand-coral" />
         </div>
@@ -662,10 +762,12 @@ function ModuleListItem({
 }
 
 function SubscriptionPanel({
+  t,
   cancelDate,
   nextBillDate,
   isAdmin,
 }: {
+  t: Translator;
   cancelDate: string | null;
   nextBillDate: string | null;
   isAdmin: boolean;
@@ -674,9 +776,9 @@ function SubscriptionPanel({
     <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
       <DapCard>
         <DapCardHeader>
-          <DapCardTitle>Recursos</DapCardTitle>
+          <DapCardTitle>{t("dashboard.resources.title")}</DapCardTitle>
           <DapCardDescription>
-            Más allá del módulo de la semana.
+            {t("dashboard.resources.description")}
           </DapCardDescription>
         </DapCardHeader>
         <ul className="mt-4 space-y-3 font-inter text-sm">
@@ -686,7 +788,7 @@ function SubscriptionPanel({
               href="/comunidad"
               className="text-text-primary hover:text-brand-coral"
             >
-              Comunidad de pastores en formación
+              {t("dashboard.resources.community")}
             </Link>
           </li>
           <li className="flex items-center gap-3">
@@ -695,7 +797,7 @@ function SubscriptionPanel({
               href="/en-vivo"
               className="text-text-primary hover:text-brand-coral"
             >
-              Próximas MasterClass y mentorías en vivo
+              {t("dashboard.resources.live")}
             </Link>
           </li>
           <li className="flex items-center gap-3">
@@ -704,7 +806,7 @@ function SubscriptionPanel({
               href="/tutor"
               className="text-text-primary hover:text-brand-coral"
             >
-              Tutor IA — pregunta sobre cualquier doctrina del DAP
+              {t("dashboard.resources.tutor")}
             </Link>
           </li>
           {isAdmin && (
@@ -714,7 +816,7 @@ function SubscriptionPanel({
                 href="/admin"
                 className="text-text-primary hover:text-brand-violet"
               >
-                Panel de administración
+                {t("dashboard.resources.admin")}
               </Link>
             </li>
           )}
@@ -724,16 +826,16 @@ function SubscriptionPanel({
       <aside className="space-y-4">
         <DapCard>
           <h3 className="font-inter text-xs font-medium uppercase tracking-widest text-text-tertiary">
-            Tu suscripción
+            {t("dashboard.subscription.label")}
           </h3>
           <p className="mt-2 font-grotesk text-h4 font-semibold text-text-primary">
-            Activa
+            {t("dashboard.subscription.active")}
           </p>
           <p className="mt-1 font-inter text-xs text-text-secondary">
             {cancelDate
-              ? `Se cancela el ${cancelDate}.`
+              ? t("dashboard.subscription.cancelsOn", { date: cancelDate })
               : nextBillDate
-                ? `Próximo cobro: ${nextBillDate}.`
+                ? t("dashboard.subscription.nextBill", { date: nextBillDate })
                 : "—"}
           </p>
           <form action="/api/billing/portal" method="POST" className="mt-4">
@@ -743,7 +845,7 @@ function SubscriptionPanel({
               size="sm"
               className="w-full"
             >
-              Gestionar
+              {t("dashboard.subscription.manage")}
             </DapButton>
           </form>
         </DapCard>
@@ -754,10 +856,10 @@ function SubscriptionPanel({
             strokeWidth={1.8}
           />
           <p className="font-grotesk text-sm font-semibold text-text-primary">
-            Tutor IA disponible
+            {t("dashboard.tutorPromo.title")}
           </p>
           <p className="mt-1 font-inter text-xs leading-relaxed text-text-secondary">
-            Resuelve dudas doctrinales 24/7.
+            {t("dashboard.tutorPromo.description")}
           </p>
           <DapButton
             variant="ghost"
@@ -765,7 +867,7 @@ function SubscriptionPanel({
             className="mt-3 w-full justify-start px-0"
             render={<Link href="/tutor" />}
           >
-            Abrir tutor
+            {t("dashboard.tutorPromo.open")}
             <ArrowRight />
           </DapButton>
         </div>

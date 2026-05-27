@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Filter } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -12,9 +13,14 @@ import {
 } from "@/components/ui/table";
 import { createClient } from "@/lib/supabase/server";
 
-export const metadata = {
-  title: "Admisiones — Admin DAP",
-};
+export async function generateMetadata() {
+  const t = await getTranslations("Admin");
+  return {
+    title: t("admissions.metaTitle"),
+  };
+}
+
+type T = Awaited<ReturnType<typeof getTranslations>>;
 
 type AdmissionRow = {
   id: string;
@@ -34,24 +40,24 @@ type AdmissionRow = {
 
 type Status = "all" | "pending" | "under_review" | "approved" | "rejected";
 
-const STATUS_TABS: Array<{ key: Status; label: string }> = [
-  { key: "pending", label: "Pendientes" },
-  { key: "under_review", label: "En revisión" },
-  { key: "approved", label: "Aprobadas" },
-  { key: "rejected", label: "Rechazadas" },
-  { key: "all", label: "Todas" },
+const STATUS_TABS: Array<{ key: Status; labelKey: string }> = [
+  { key: "pending", labelKey: "admissions.tabPending" },
+  { key: "under_review", labelKey: "admissions.tabUnderReview" },
+  { key: "approved", labelKey: "admissions.tabApproved" },
+  { key: "rejected", labelKey: "admissions.tabRejected" },
+  { key: "all", labelKey: "admissions.tabAll" },
 ];
 
-function statusBadge(s: AdmissionRow["status"]) {
+function statusBadge(s: AdmissionRow["status"], t: T) {
   switch (s) {
     case "pending":
-      return <Badge variant="outline">Pendiente</Badge>;
+      return <Badge variant="outline">{t("admissions.badgePending")}</Badge>;
     case "under_review":
-      return <Badge className="bg-amber-500/15 text-amber-300 hover:bg-amber-500/15">En revisión</Badge>;
+      return <Badge className="bg-amber-500/15 text-amber-300 hover:bg-amber-500/15">{t("admissions.badgeUnderReview")}</Badge>;
     case "approved":
-      return <Badge className="bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/15">Aprobada</Badge>;
+      return <Badge className="bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/15">{t("admissions.badgeApproved")}</Badge>;
     case "rejected":
-      return <Badge className="bg-brand-coral/15 text-brand-coral hover:bg-brand-coral/15">Rechazada</Badge>;
+      return <Badge className="bg-brand-coral/15 text-brand-coral hover:bg-brand-coral/15">{t("admissions.badgeRejected")}</Badge>;
   }
 }
 
@@ -63,11 +69,11 @@ function formatDate(iso: string | null): string {
   });
 }
 
-function networkLabel(row: AdmissionRow): string {
-  if (!row.belongs_to_network) return "No · requiere carta";
-  if (row.network_name === "reino_y_avivamiento") return "Red Apostólica R&A";
-  if (row.network_name === "revival_kingdom") return "Revival & Kingdom";
-  return "Sí";
+function networkLabel(row: AdmissionRow, t: T): string {
+  if (!row.belongs_to_network) return t("admissions.networkNoLetterShort");
+  if (row.network_name === "reino_y_avivamiento") return t("admissions.networkReinoShort");
+  if (row.network_name === "revival_kingdom") return t("admissions.networkRevivalShort");
+  return t("admissions.networkYes");
 }
 
 const PAGE_SIZE = 25;
@@ -96,6 +102,7 @@ export default async function AdminAdmisionesPage({
 }: {
   searchParams: Promise<{ status?: string; q?: string; page?: string }>;
 }) {
+  const t = await getTranslations("Admin");
   const params = await searchParams;
   const statusFilter = (
     ["all", "pending", "under_review", "approved", "rejected"].includes(
@@ -132,7 +139,7 @@ export default async function AdminAdmisionesPage({
 
   const { data, error, count } = await query.returns<AdmissionRow[]>();
   if (error) {
-    throw new Error(`No se pudieron cargar admisiones: ${error.message}`);
+    throw new Error(t("admissions.loadError", { message: error.message }));
   }
   const rows = data ?? [];
   const total = count ?? 0;
@@ -145,27 +152,26 @@ export default async function AdminAdmisionesPage({
       <div className="mx-auto max-w-6xl">
         <header className="mb-8">
           <p className="font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-            Admin · DAP
+            {t("admissions.eyebrow")}
           </p>
           <h1 className="mt-1 font-grotesk text-3xl font-bold tracking-tight">
-            Admisiones
+            {t("admissions.title")}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Revisa las solicitudes de admisión, aprueba o rechaza. La carta PDF
-            firmada se envía automáticamente 24h después de la aprobación.
+            {t("admissions.description")}
           </p>
         </header>
 
         {/* Filtros */}
         <div className="mb-6 flex flex-wrap items-center gap-3">
           <div className="flex flex-wrap gap-1.5">
-            {STATUS_TABS.map((t) => {
+            {STATUS_TABS.map((tab) => {
               // Cambio de tab → reset a página 1
-              const href = buildHref(t.key, q, 1);
-              const active = statusFilter === t.key;
+              const href = buildHref(tab.key, q, 1);
+              const active = statusFilter === tab.key;
               return (
                 <Link
-                  key={t.key}
+                  key={tab.key}
                   href={href}
                   className={
                     active
@@ -173,7 +179,7 @@ export default async function AdminAdmisionesPage({
                       : "rounded-full border border-white/[0.1] px-3 py-1.5 text-xs text-muted-foreground hover:border-white/[0.2] hover:text-foreground"
                   }
                 >
-                  {t.label}
+                  {t(tab.labelKey)}
                 </Link>
               );
             })}
@@ -188,7 +194,7 @@ export default async function AdminAdmisionesPage({
               <input
                 name="q"
                 defaultValue={q}
-                placeholder="Buscar por nombre, email o iglesia"
+                placeholder={t("admissions.searchPlaceholder")}
                 className="w-72 rounded-md border border-white/[0.1] bg-white/[0.04] py-1.5 pl-8 pr-3 text-sm outline-none placeholder:text-muted-foreground focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20"
               />
             </div>
@@ -200,20 +206,20 @@ export default async function AdminAdmisionesPage({
           <Table>
             <TableHeader>
               <TableRow className="border-white/[0.06]">
-                <TableHead>Aspirante</TableHead>
-                <TableHead className="hidden md:table-cell">Iglesia</TableHead>
-                <TableHead className="hidden lg:table-cell">País</TableHead>
-                <TableHead className="hidden md:table-cell">Red</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead className="hidden sm:table-cell">Enviada</TableHead>
-                <TableHead className="text-right">Detalle</TableHead>
+                <TableHead>{t("admissions.thApplicant")}</TableHead>
+                <TableHead className="hidden md:table-cell">{t("admissions.thChurch")}</TableHead>
+                <TableHead className="hidden lg:table-cell">{t("admissions.thCountry")}</TableHead>
+                <TableHead className="hidden md:table-cell">{t("admissions.thNetwork")}</TableHead>
+                <TableHead>{t("admissions.thStatus")}</TableHead>
+                <TableHead className="hidden sm:table-cell">{t("admissions.thSubmitted")}</TableHead>
+                <TableHead className="text-right">{t("admissions.thDetail")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {rows.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="py-16 text-center text-sm text-muted-foreground">
-                    No hay admisiones en este filtro.
+                    {t("admissions.emptyState")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -230,9 +236,9 @@ export default async function AdminAdmisionesPage({
                       {row.city ? `${row.city}, ` : ""}{row.country}
                     </TableCell>
                     <TableCell className="hidden text-xs text-muted-foreground md:table-cell">
-                      {networkLabel(row)}
+                      {networkLabel(row, t)}
                     </TableCell>
-                    <TableCell>{statusBadge(row.status)}</TableCell>
+                    <TableCell>{statusBadge(row.status, t)}</TableCell>
                     <TableCell className="hidden text-xs text-muted-foreground sm:table-cell">
                       {formatDate(row.submitted_at)}
                     </TableCell>
@@ -241,7 +247,7 @@ export default async function AdminAdmisionesPage({
                         href={`/admin/admisiones/${row.id}`}
                         className="text-sm font-medium text-brand-coral hover:underline"
                       >
-                        Ver →
+                        {t("admissions.view")}
                       </Link>
                     </TableCell>
                   </TableRow>
@@ -255,8 +261,10 @@ export default async function AdminAdmisionesPage({
         {total > 0 && (
           <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
             <p>
-              Mostrando <span className="font-medium text-foreground">{firstRow}</span>–
-              <span className="font-medium text-foreground">{lastRow}</span> de{" "}
+              {t("admissions.showing")}{" "}
+              <span className="font-medium text-foreground">{firstRow}</span>–
+              <span className="font-medium text-foreground">{lastRow}</span>{" "}
+              {t("admissions.of")}{" "}
               <span className="font-medium text-foreground">{total}</span>
             </p>
             <div className="flex items-center gap-2">
@@ -266,28 +274,28 @@ export default async function AdminAdmisionesPage({
                   className="inline-flex items-center gap-1 rounded-md border border-white/[0.1] px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:border-white/[0.2] hover:text-foreground"
                 >
                   <ChevronLeft className="size-3.5" />
-                  Anterior
+                  {t("admissions.previous")}
                 </Link>
               ) : (
                 <span className="inline-flex items-center gap-1 rounded-md border border-white/[0.04] px-2.5 py-1 text-xs text-muted-foreground/40">
                   <ChevronLeft className="size-3.5" />
-                  Anterior
+                  {t("admissions.previous")}
                 </span>
               )}
               <span className="px-2 text-xs text-muted-foreground">
-                Página {page} / {totalPages}
+                {t("admissions.pageOf", { page, totalPages })}
               </span>
               {page < totalPages ? (
                 <Link
                   href={buildHref(statusFilter, q, page + 1)}
                   className="inline-flex items-center gap-1 rounded-md border border-white/[0.1] px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:border-white/[0.2] hover:text-foreground"
                 >
-                  Siguiente
+                  {t("admissions.next")}
                   <ChevronRight className="size-3.5" />
                 </Link>
               ) : (
                 <span className="inline-flex items-center gap-1 rounded-md border border-white/[0.04] px-2.5 py-1 text-xs text-muted-foreground/40">
-                  Siguiente
+                  {t("admissions.next")}
                   <ChevronRight className="size-3.5" />
                 </span>
               )}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { motion } from "motion/react";
 import { CheckCircle2 } from "lucide-react";
 
@@ -11,6 +12,7 @@ import { AR_MARRIAGE_PRICE_USD_DISPLAY } from "@/lib/data/argentina";
  * elegante, sutil glow, sin gritar "cupón barato".
  */
 export function DiscountBanner() {
+  const t = useTranslations("Onboarding.discountBanner");
   return (
     <motion.div
       initial={{ opacity: 0, y: -8, scale: 0.98 }}
@@ -39,31 +41,31 @@ export function DiscountBanner() {
 
         <div className="min-w-0 flex-1">
           <p className="font-inter text-[10px] font-semibold uppercase tracking-[0.32em] text-brand-coral">
-            Beneficio matrimonial
+            {t("eyebrow")}
           </p>
           <h3 className="mt-1 font-grotesk text-base font-bold leading-snug text-text-primary sm:text-lg">
-            Descuento especial para matrimonios de Argentina
+            {t("title")}
           </h3>
           <p className="mt-1 font-inter text-xs leading-relaxed text-text-secondary">
             <span className="font-semibold text-text-primary">
-              {AR_MARRIAGE_PRICE_USD_DISPLAY}/mes
-            </span>{" "}
-            por los dos cónyuges. Un solo cobro mensual cubre acceso
-            completo para ambos.
+              {AR_MARRIAGE_PRICE_USD_DISPLAY}
+              {t("priceSuffix")}
+            </span>
+            {t("bodyAfter")}
           </p>
 
           <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 font-inter text-[11px] text-text-tertiary">
             <span className="inline-flex items-center gap-1">
               <CheckCircle2 className="size-3 text-emerald-400" />
-              Una sola suscripción
+              {t("featureSingle")}
             </span>
             <span className="inline-flex items-center gap-1">
               <CheckCircle2 className="size-3 text-emerald-400" />
-              Sin duplicar cargo
+              {t("featureNoDuplicate")}
             </span>
             <span className="inline-flex items-center gap-1">
               <CheckCircle2 className="size-3 text-emerald-400" />
-              Cancelable cuando quieran
+              {t("featureCancelable")}
             </span>
           </div>
         </div>

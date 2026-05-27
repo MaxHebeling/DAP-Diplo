@@ -1,6 +1,7 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { signInWithGoogleAction } from "@/lib/auth/actions";
@@ -34,8 +35,9 @@ function GoogleIcon() {
   );
 }
 
-function GoogleButton({ label }: { label: string }) {
+function GoogleButton({ label }: { label?: string }) {
   const { pending } = useFormStatus();
+  const t = useTranslations("Auth");
   return (
     <Button
       type="submit"
@@ -44,7 +46,7 @@ function GoogleButton({ label }: { label: string }) {
       className="w-full justify-center gap-3 border-white/15 bg-white text-neutral-800 hover:bg-neutral-100"
     >
       <GoogleIcon />
-      {pending ? "Conectando..." : label}
+      {pending ? t("google.connecting") : (label ?? t("google.continueWithGoogle"))}
     </Button>
   );
 }
@@ -65,7 +67,7 @@ type Props = {
 
 export function SignInWithGoogle({
   redirectTo,
-  label = "Continuar con Google",
+  label,
   country,
   countryCode,
 }: Props) {

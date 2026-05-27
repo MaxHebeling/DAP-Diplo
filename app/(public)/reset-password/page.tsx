@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import {
   Card,
@@ -11,14 +12,17 @@ import {
 import { Logo } from "@/components/brand/logo";
 import { ResetPasswordRequestForm } from "@/components/auth/reset-password-request-form";
 
-export const metadata: Metadata = {
-  title: "Recuperar contraseña",
-  description:
-    "Pedí un link para recuperar tu contraseña del Diplomado Apostólico Pastoral.",
-  robots: { index: false, follow: true },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Auth");
+  return {
+    title: t("resetRequest.metaTitle"),
+    description: t("resetRequest.metaDescription"),
+    robots: { index: false, follow: true },
+  };
+}
 
-export default function ResetPasswordRequestPage() {
+export default async function ResetPasswordRequestPage() {
+  const t = await getTranslations("Auth");
   return (
     <div className="flex flex-1 items-center justify-center px-6 py-20">
       <div className="w-full max-w-md">
@@ -27,17 +31,15 @@ export default function ResetPasswordRequestPage() {
         </div>
         <Card>
           <CardHeader>
-            <CardTitle>Recuperar tu contraseña</CardTitle>
-            <CardDescription>
-              Te mandamos un link a tu email para que puedas crear una nueva.
-            </CardDescription>
+            <CardTitle>{t("resetRequest.title")}</CardTitle>
+            <CardDescription>{t("resetRequest.description")}</CardDescription>
           </CardHeader>
           <CardContent>
             <ResetPasswordRequestForm />
             <p className="mt-6 text-center text-sm text-muted-foreground">
-              ¿Te acordaste?{" "}
+              {t("resetRequest.rememberedQuestion")}{" "}
               <Link href="/login" className="underline underline-offset-4">
-                Volver a iniciar sesión
+                {t("resetRequest.backToLogin")}
               </Link>
             </p>
           </CardContent>

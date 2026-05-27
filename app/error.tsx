@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { AlertTriangle, Home, RotateCw } from "lucide-react";
 import * as Sentry from "@sentry/nextjs";
+import { useTranslations } from "next-intl";
 
 /**
  * Error boundary global de App Router. Atrapa cualquier error no
@@ -18,6 +19,8 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations("ErrorPages");
+
   useEffect(() => {
     Sentry.captureException(error, {
       tags: { boundary: "app-root" },
@@ -36,14 +39,13 @@ export default function GlobalError({
       </div>
 
       <p className="mt-6 font-inter text-[10px] font-semibold uppercase tracking-[0.42em] text-brand-coral">
-        Algo salió mal
+        {t("error.eyebrow")}
       </p>
       <h1 className="mt-3 max-w-xl font-grotesk text-3xl font-bold leading-tight text-text-primary sm:text-4xl">
-        Tuvimos un problema cargando esta página.
+        {t("error.title")}
       </h1>
       <p className="mt-4 max-w-md font-inter text-sm leading-relaxed text-text-secondary">
-        El error ya quedó registrado y vamos a revisarlo. Mientras
-        tanto, podés intentar otra vez o volver al inicio.
+        {t("error.body")}
       </p>
 
       <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
@@ -53,20 +55,20 @@ export default function GlobalError({
           className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-violet to-brand-coral px-6 py-3 font-inter text-sm font-semibold text-white shadow-lg shadow-brand-coral/25 transition-all hover:shadow-xl hover:shadow-brand-coral/40"
         >
           <RotateCw className="size-4" strokeWidth={2} />
-          Reintentar
+          {t("error.retry")}
         </button>
         <Link
           href="/"
           className="inline-flex items-center gap-2 rounded-full border border-white/[0.10] bg-white/[0.04] px-6 py-3 font-inter text-sm font-medium text-text-secondary backdrop-blur-sm transition-all hover:bg-white/[0.08] hover:text-text-primary"
         >
           <Home className="size-4" strokeWidth={2} />
-          Volver al inicio
+          {t("error.backHome")}
         </Link>
       </div>
 
       {error.digest && (
         <p className="mt-10 font-inter text-[10px] uppercase tracking-[0.32em] text-text-tertiary">
-          Ref: {error.digest}
+          {t("error.ref", { digest: error.digest })}
         </p>
       )}
     </main>

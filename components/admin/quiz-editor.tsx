@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Controller, useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { z } from "zod";
@@ -37,7 +38,7 @@ export type QuizRow = {
 type Ctx = { phaseId: string; moduleId: string; sectionId: string };
 
 const quizFormSchema = z.object({
-  title: z.string().trim().min(1, "Requerido").max(160),
+  title: z.string().trim().min(1, "required").max(160),
   description: z.string().trim().max(2000),
   pass_threshold: z.coerce.number().int().min(0).max(100),
   max_attempts: z.coerce.number().int().min(1).max(50).nullable(),
@@ -45,15 +46,6 @@ const quizFormSchema = z.object({
 });
 
 type QuizFormValues = z.input<typeof quizFormSchema>;
-
-function questionSummary(q: QuestionRow): string {
-  if (q.kind === "true_false") {
-    const correct = (q.payload as { correct?: boolean })?.correct;
-    return `V/F · Correcta: ${correct ? "Verdadero" : "Falso"}`;
-  }
-  const opts = (q.payload as { options?: string[] })?.options ?? [];
-  return `Opción múltiple · ${opts.length} opciones`;
-}
 
 export function QuizEditor({
   quiz,
@@ -64,6 +56,19 @@ export function QuizEditor({
   questions: QuestionRow[];
   ctx: Ctx;
 }) {
+  const t = useTranslations("AdminUI");
+
+  function questionSummary(q: QuestionRow): string {
+    if (q.kind === "true_false") {
+      const correct = (q.payload as { correct?: boolean })?.correct;
+      return t("quizEditor.tfSummary", {
+        answer: correct ? t("quizEditor.true") : t("quizEditor.false"),
+      });
+    }
+    const opts = (q.payload as { options?: string[] })?.options ?? [];
+    return t("quizEditor.mcSummary", { count: opts.length });
+  }
+
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -105,7 +110,7 @@ export function QuizEditor({
         ctx,
       );
       if (res.ok) {
-        toast.success("Quiz guardado.");
+        toast.success(t("quizEditor.saved"));
         form.reset(values);
         router.refresh();
       } else {
@@ -135,34 +140,40 @@ export function QuizEditor({
       >
         <div>
           <p className="mb-1 text-xs font-medium uppercase tracking-widest text-brand-coral">
-            Quiz de evaluación
+            {t("quizEditor.eyebrow")}
           </p>
-          <h2 className="font-serif text-2xl font-semibold">Configuración</h2>
+          <h2 className="font-serif text-2xl font-semibold">{t("quizEditor.configHeading")}</h2>
         </div>
 
         <FieldGroup>
           <Field>
-            <FieldLabel htmlFor="quiz_title">Título del quiz</FieldLabel>
+            <FieldLabel htmlFor="quiz_title">{t("quizEditor.titleLabel")}</FieldLabel>
             <Input id="quiz_title" {...register("title")} />
-            {errors.title && <FieldError>{errors.title.message}</FieldError>}
+            {errors.title && (
+              <FieldError>
+                {errors.title.message === "required"
+                  ? t("quizEditor.required")
+                  : errors.title.message}
+              </FieldError>
+            )}
           </Field>
 
           <Field>
             <FieldLabel htmlFor="quiz_description">
-              Descripción (opcional)
+              {t("quizEditor.descriptionLabel")}
             </FieldLabel>
             <Textarea
               id="quiz_description"
               rows={2}
               {...register("description")}
-              placeholder="Instrucciones breves para el alumno."
+              placeholder={t("quizEditor.descriptionPlaceholder")}
             />
           </Field>
 
           <div className="grid gap-4 sm:grid-cols-3">
             <Field>
               <FieldLabel htmlFor="pass_threshold">
-                Umbral aprobatorio (%)
+                {t("quizEditor.passThresholdLabel")}
               </FieldLabel>
               <Input
                 id="pass_threshold"
@@ -174,7 +185,7 @@ export function QuizEditor({
             </Field>
             <Field>
               <FieldLabel htmlFor="max_attempts">
-                Intentos máx (vacío = ∞)
+                {t("quizEditor.maxAttemptsLabel")}
               </FieldLabel>
               <Input
                 id="max_attempts"
@@ -193,10 +204,10 @@ export function QuizEditor({
               <div className="flex h-full items-center justify-between rounded-lg border bg-muted/20 px-4 py-3">
                 <div>
                   <FieldLabel htmlFor="shuffle_questions">
-                    Mezclar preguntas
+                    {t("quizEditor.shuffleLabel")}
                   </FieldLabel>
                   <p className="text-xs text-muted-foreground">
-                    Orden aleatorio por alumno.
+                    {t("quizEditor.shuffleHint")}
                   </p>
                 </div>
                 <Controller
@@ -218,7 +229,7 @@ export function QuizEditor({
         <div className="flex justify-end">
           <Button type="submit" disabled={pending || !isDirty}>
             <Save className="size-4" />
-            {pending ? "Guardando…" : "Guardar configuración"}
+            {pending ? t("quizEditor.saving") : t("quizEditor.saveConfig")}
           </Button>
         </div>
       </form>
@@ -228,11 +239,10 @@ export function QuizEditor({
         <div className="flex items-end justify-between">
           <div>
             <p className="mb-1 text-xs font-medium uppercase tracking-widest text-brand-coral">
-              Banco de preguntas
+              {t("quizEditor.questionBankEyebrow")}
             </p>
             <h2 className="font-serif text-2xl font-semibold">
-              {questions.length}{" "}
-              {questions.length === 1 ? "pregunta" : "preguntas"}
+              {t("quizEditor.questionsCount", { count: questions.length })}
             </h2>
           </div>
           {!adding && (
@@ -244,14 +254,14 @@ export function QuizEditor({
               }}
             >
               <Plus className="size-4" />
-              Agregar pregunta
+              {t("quizEditor.addQuestion")}
             </Button>
           )}
         </div>
 
         {questions.length === 0 && !adding && (
           <p className="rounded-lg border border-dashed bg-muted/10 px-4 py-8 text-center text-sm text-muted-foreground">
-            Todavía no hay preguntas. Agrega la primera.
+            {t("quizEditor.emptyState")}
           </p>
         )}
 
@@ -283,7 +293,7 @@ export function QuizEditor({
                         </Badge>
                         {q.explanation && (
                           <span className="text-xs text-muted-foreground">
-                            · con explicación
+                            {t("quizEditor.withExplanation")}
                           </span>
                         )}
                       </div>
@@ -298,7 +308,7 @@ export function QuizEditor({
                     }}
                   >
                     <Pencil className="size-3.5" />
-                    Editar
+                    {t("quizEditor.edit")}
                   </Button>
                 </div>
               )}

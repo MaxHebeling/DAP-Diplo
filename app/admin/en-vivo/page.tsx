@@ -18,11 +18,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { getTranslations } from "next-intl/server";
 import { LiveSessionFilter } from "@/components/admin/live-session-filter";
 import { createClient } from "@/lib/supabase/server";
 import { LIVE_KIND_LABEL, type LiveKind } from "@/lib/live-sessions/schemas";
 
-export const metadata = { title: "En vivo — Admin DAP" };
+export async function generateMetadata() {
+  const t = await getTranslations("Admin");
+  return { title: t("live.metaTitle") };
+}
 
 type SessionRow = {
   id: string;
@@ -61,6 +65,7 @@ const KIND_BADGE_COLOR: Record<LiveKind, string> = {
 };
 
 export default async function AdminEnVivoPage({ searchParams }: PageProps) {
+  const t = await getTranslations("Admin");
   const { when, focus } = await searchParams;
   const filter = when === "past" || when === "all" ? when : "upcoming";
 
@@ -92,7 +97,7 @@ export default async function AdminEnVivoPage({ searchParams }: PageProps) {
 
   const { data, error } = await query.returns<SessionRow[]>();
   if (error) {
-    throw new Error(`No se pudieron cargar sesiones: ${error.message}`);
+    throw new Error(t("live.loadError", { message: error.message }));
   }
   const sessions = data ?? [];
 
@@ -102,19 +107,18 @@ export default async function AdminEnVivoPage({ searchParams }: PageProps) {
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
-              Admin
+              {t("live.eyebrow")}
             </p>
             <h1 className="font-serif text-3xl font-semibold">
-              Sesiones en vivo
+              {t("live.title")}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              MasterClass, activaciones, mentorías y eventos especiales.
-              Después de cada sesión, sube el recording.
+              {t("live.description")}
             </p>
           </div>
           <Button render={<Link href="/admin/en-vivo/nuevo" />}>
             <Plus className="size-4" />
-            Nueva sesión
+            {t("live.newSession")}
           </Button>
         </header>
 
@@ -124,13 +128,13 @@ export default async function AdminEnVivoPage({ searchParams }: PageProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-44">Cuándo</TableHead>
-                <TableHead>Sesión</TableHead>
+                <TableHead className="w-44">{t("live.thWhen")}</TableHead>
+                <TableHead>{t("live.thSession")}</TableHead>
                 <TableHead className="hidden md:table-cell w-32">
-                  Host
+                  {t("live.thHost")}
                 </TableHead>
                 <TableHead className="hidden lg:table-cell w-28 text-center">
-                  Grabación
+                  {t("live.thRecording")}
                 </TableHead>
                 <TableHead className="w-44 text-right" />
               </TableRow>
@@ -144,10 +148,10 @@ export default async function AdminEnVivoPage({ searchParams }: PageProps) {
                   >
                     <Calendar className="mx-auto mb-3 size-8 text-muted-foreground/40" />
                     {filter === "upcoming"
-                      ? "No hay sesiones programadas todavía."
+                      ? t("live.emptyUpcoming")
                       : filter === "past"
-                        ? "No hay sesiones pasadas registradas."
-                        : "Aún no hay sesiones."}
+                        ? t("live.emptyPast")
+                        : t("live.emptyAll")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -169,8 +173,8 @@ export default async function AdminEnVivoPage({ searchParams }: PageProps) {
                       <TableCell className="text-sm">
                         <p className="font-medium">{formatLocal(s.scheduled_at)}</p>
                         <p className="text-xs text-muted-foreground">
-                          {s.duration_minutes} min
-                          {isPast ? " · pasada" : ""}
+                          {t("live.minutes", { count: s.duration_minutes })}
+                          {isPast ? t("live.past") : ""}
                         </p>
                       </TableCell>
                       <TableCell>
@@ -192,8 +196,9 @@ export default async function AdminEnVivoPage({ searchParams }: PageProps) {
                               </Badge>
                               {s.phase && (
                                 <Badge variant="secondary" className="font-normal">
-                                  Fase{" "}
-                                  {String(s.phase.order_index).padStart(2, "0")}
+                                  {t("live.phase", {
+                                    index: String(s.phase.order_index).padStart(2, "0"),
+                                  })}
                                 </Badge>
                               )}
                             </div>
@@ -207,10 +212,10 @@ export default async function AdminEnVivoPage({ searchParams }: PageProps) {
                         {hasRecording ? (
                           <CheckCircle2
                             className="mx-auto size-4 text-emerald-500"
-                            aria-label="Con grabación"
+                            aria-label={t("live.withRecording")}
                           />
                         ) : isPast ? (
-                          <span className="text-xs text-red-500">Falta</span>
+                          <span className="text-xs text-red-500">{t("live.missing")}</span>
                         ) : (
                           <span className="text-xs text-muted-foreground">
                             —
@@ -227,7 +232,7 @@ export default async function AdminEnVivoPage({ searchParams }: PageProps) {
                                 href={s.meeting_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                title="Abrir sala de reunión"
+                                title={t("live.openMeetingRoom")}
                               />
                             }
                           >
@@ -245,7 +250,7 @@ export default async function AdminEnVivoPage({ searchParams }: PageProps) {
                                   }
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  title="Abrir grabación"
+                                  title={t("live.openRecording")}
                                 />
                               }
                             >
@@ -260,7 +265,7 @@ export default async function AdminEnVivoPage({ searchParams }: PageProps) {
                             }
                           >
                             <Pencil className="size-3.5" />
-                            Editar
+                            {t("live.edit")}
                           </Button>
                         </div>
                       </TableCell>

@@ -1,0 +1,48 @@
+{
+  "Footer": {
+    "home": "DAP — Home",
+    "tagline": "Apostolic Pastoral Diploma. A comprehensive 18-month formation for Spanish-speaking pastors and leaders.",
+    "values": {
+      "biblical": "Biblical",
+      "practical": "Practical",
+      "strategic": "Strategic",
+      "technological": "Technological",
+      "apostolic": "Apostolic"
+    },
+    "cols": {
+      "support": {
+        "title": "Support",
+        "faq": "Frequently asked questions",
+        "login": "Log in",
+        "contact": "Contact"
+      },
+      "legal": {
+        "title": "Legal",
+        "terms": "Terms",
+        "privacy": "Privacy",
+        "refunds": "Refunds"
+      }
+    },
+    "backing": {
+      "title": "Official backing",
+      "description": "DAP is an education department of <org>Revival & Kingdom Ministries, INC</org>."
+    },
+    "legalBar": {
+      "copyright": "© {year} DAP. All rights reserved.",
+      "developedBy": "Developed by",
+      "builtWithPurpose": "Built with purpose",
+      "apostolicTech": "Apostolic + Tech"
+    },
+    "marquee": "A comprehensive ecosystem of Kingdom education, government, and leadership"
+  },
+  "Launch": {
+    "gate": {
+      "title": "Enrollment opens on {date}",
+      "description": "The first cohort of the Apostolic Pastoral Diploma opens enrollment on <strong>{date}</strong>. Come back on that date to submit your admission and secure your place.",
+      "classesStart": "Classes begin:"
+    }
+  },
+  "Legal": {
+    "lastUpdated": "Last updated: {date}"
+  }
+}

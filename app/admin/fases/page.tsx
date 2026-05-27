@@ -11,11 +11,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 
-export const metadata = {
-  title: "Fases — Admin DAP",
-};
+export async function generateMetadata() {
+  const t = await getTranslations("Admin");
+  return {
+    title: t("phases.metaTitle"),
+  };
+}
 
 type PhaseRow = {
   id: string;
@@ -30,6 +34,7 @@ type PhaseRow = {
 };
 
 export default async function AdminBlocksPage() {
+  const t = await getTranslations("Admin");
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("phases")
@@ -41,7 +46,7 @@ export default async function AdminBlocksPage() {
     .order("order_index", { ascending: true })
     .returns<PhaseRow[]>();
   if (error) {
-    throw new Error(`No se pudo cargar fases: ${error.message}`);
+    throw new Error(t("phases.loadError", { message: error.message }));
   }
   const phases = data ?? [];
 
@@ -51,16 +56,18 @@ export default async function AdminBlocksPage() {
         <header className="mb-8 flex items-end justify-between gap-4">
           <div>
             <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
-              Admin
+              {t("phases.eyebrow")}
             </p>
-            <h1 className="font-serif text-3xl font-semibold">Fases</h1>
+            <h1 className="font-serif text-3xl font-semibold">{t("phases.title")}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Los 9 fases del diplomado. Edita metadatos, sube portada y
-              publica/despublica.
+              {t("phases.description")}
             </p>
           </div>
           <p className="text-xs text-muted-foreground">
-            {phases.filter((b) => b.published).length} / {phases.length} publicados
+            {t("phases.publishedCount", {
+              published: phases.filter((b) => b.published).length,
+              total: phases.length,
+            })}
           </p>
         </header>
 
@@ -69,13 +76,13 @@ export default async function AdminBlocksPage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-14">#</TableHead>
-                <TableHead className="w-20">Portada</TableHead>
-                <TableHead>Fase</TableHead>
-                <TableHead className="hidden md:table-cell">Dimensión</TableHead>
+                <TableHead className="w-20">{t("phases.thCover")}</TableHead>
+                <TableHead>{t("phases.thPhase")}</TableHead>
+                <TableHead className="hidden md:table-cell">{t("phases.thDimension")}</TableHead>
                 <TableHead className="hidden sm:table-cell w-24 text-center">
-                  Módulos
+                  {t("phases.thModules")}
                 </TableHead>
-                <TableHead className="w-28 text-center">Publicado</TableHead>
+                <TableHead className="w-28 text-center">{t("phases.thPublished")}</TableHead>
                 <TableHead className="w-56 text-right" />
               </TableRow>
             </TableHeader>
@@ -129,12 +136,12 @@ export default async function AdminBlocksPage() {
                       {b.published ? (
                         <Badge className="bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/20 dark:text-emerald-400">
                           <Check className="size-3" strokeWidth={3} />
-                          Sí
+                          {t("phases.yes")}
                         </Badge>
                       ) : (
                         <Badge variant="secondary" className="text-muted-foreground">
                           <X className="size-3" strokeWidth={3} />
-                          No
+                          {t("phases.no")}
                         </Badge>
                       )}
                     </TableCell>
@@ -148,7 +155,7 @@ export default async function AdminBlocksPage() {
                           }
                         >
                           <Layers className="size-3.5" />
-                          Módulos
+                          {t("phases.modules")}
                         </Button>
                         <Button
                           size="sm"

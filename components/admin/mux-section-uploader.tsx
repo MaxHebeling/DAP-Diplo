@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import MuxUploader from "@mux/mux-uploader-react";
+import { useTranslations } from "next-intl";
 import { CheckCircle2, Loader2, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
 
@@ -20,6 +21,7 @@ export function MuxSectionUploader({
   // Renombrada conceptualmente: "ya existe asset en la sección".
   hasExistingVideo: boolean;
 }) {
+  const t = useTranslations("AdminUI");
   const [status, setStatus] = useState<Status>({ phase: "idle" });
 
   // Mux Uploader llama a esta función para obtener el upload URL.
@@ -42,23 +44,23 @@ export function MuxSectionUploader({
     <div className="space-y-3 rounded-lg border bg-muted/20 p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-medium">Subir video a Mux</p>
+          <p className="text-sm font-medium">{t("muxUploader.heading")}</p>
           <p className="text-xs text-muted-foreground">
             {hasExistingVideo
-              ? "Ya hay un video asociado. Subir otro lo reemplazará cuando termine el procesamiento."
-              : "Arrastra un archivo de video (MP4, MOV, WEBM) o haz click para seleccionarlo. Se sube directo a Mux."}
+              ? t("muxUploader.hasExisting")
+              : t("muxUploader.noExisting")}
           </p>
         </div>
         {status.phase === "processing" && (
           <span className="inline-flex items-center gap-1.5 text-xs text-brand-coral">
             <Loader2 className="size-3.5 animate-spin" />
-            Procesando…
+            {t("muxUploader.processing")}
           </span>
         )}
         {hasExistingVideo && status.phase === "idle" && (
           <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600">
             <CheckCircle2 className="size-3.5" />
-            Video activo
+            {t("muxUploader.videoActive")}
           </span>
         )}
       </div>
@@ -74,14 +76,11 @@ export function MuxSectionUploader({
         }}
         onSuccess={() => {
           setStatus({ phase: "processing" });
-          toast.success(
-            "Video subido. Mux está procesando — la sección se actualiza sola en 1-3 minutos.",
-          );
+          toast.success(t("muxUploader.uploadSuccess"));
         }}
         onUploadError={(e) => {
           const detail = (e as CustomEvent<{ message?: string }>).detail;
-          const msg =
-            detail?.message ?? "Error subiendo a Mux. Intenta de nuevo.";
+          const msg = detail?.message ?? t("muxUploader.uploadError");
           setStatus({ phase: "error", message: msg });
           toast.error(msg);
         }}
@@ -98,7 +97,7 @@ export function MuxSectionUploader({
             className="inline-flex items-center gap-2 rounded-md border bg-card px-4 py-2 text-sm font-medium hover:bg-brand-coral hover:text-brand-coral-foreground hover:border-brand-coral transition-colors"
           >
             <UploadCloud className="size-4" />
-            Elegir video…
+            {t("muxUploader.chooseVideo")}
           </button>
         </div>
       </MuxUploader>

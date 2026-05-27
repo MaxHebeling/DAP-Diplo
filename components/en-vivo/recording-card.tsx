@@ -3,6 +3,7 @@
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import { CalendarClock, ExternalLink, Play, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 // Lazy: el player solo se monta cuando el alumno abre la grabación.
 const MuxPlayer = dynamic(() => import("@mux/mux-player-react"), {
@@ -24,6 +25,7 @@ const KIND_BADGE_COLOR: Record<LiveKind, string> = {
 };
 
 export function RecordingCard({ session }: { session: StudentSession }) {
+  const t = useTranslations("LiveSessions");
   const [open, setOpen] = useState(false);
   const hasMux = !!session.recording_mux_playback_id;
   const hasExternal = !!session.recording_url;
@@ -48,7 +50,7 @@ export function RecordingCard({ session }: { session: StudentSession }) {
             </Badge>
             {session.phase && (
               <Badge variant="secondary" className="font-normal">
-                Fase {String(session.phase.order_index).padStart(2, "0")}
+                {t("phaseShort", { number: String(session.phase.order_index).padStart(2, "0") })}
               </Badge>
             )}
           </div>
@@ -67,7 +69,7 @@ export function RecordingCard({ session }: { session: StudentSession }) {
             {hasMux ? (
               <Button size="sm" onClick={() => setOpen(true)} className="w-full">
                 <Play className="size-3.5" />
-                Ver grabación
+                {t("viewRecording")}
               </Button>
             ) : hasExternal ? (
               <Button
@@ -82,11 +84,11 @@ export function RecordingCard({ session }: { session: StudentSession }) {
                 }
               >
                 <ExternalLink className="size-3.5" />
-                Ver grabación
+                {t("viewRecording")}
               </Button>
             ) : (
               <Button size="sm" variant="outline" disabled className="w-full">
-                Grabación no disponible
+                {t("recordingUnavailable")}
               </Button>
             )}
           </div>
@@ -113,6 +115,7 @@ function RecordingModal({
   playbackId: string;
   onClose: () => void;
 }) {
+  const t = useTranslations("LiveSessions");
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
@@ -128,7 +131,7 @@ function RecordingModal({
             type="button"
             onClick={onClose}
             className="rounded-full p-1.5 text-white/70 hover:bg-white/10 hover:text-white transition-colors"
-            aria-label="Cerrar"
+            aria-label={t("close")}
           >
             <X className="size-4" />
           </button>

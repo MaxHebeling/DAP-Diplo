@@ -1,14 +1,17 @@
 import { redirect } from "next/navigation";
 import Image from "next/image";
+import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { AdmissionForm } from "./admission-form";
 
-export const metadata = {
-  title: "Admisión — DAP",
-  description:
-    "Completá tu formulario de admisión al Diplomado Apostólico Pastoral.",
-};
+export async function generateMetadata() {
+  const t = await getTranslations("Student");
+  return {
+    title: t("admission.metaTitle"),
+    description: t("admission.metaDescription"),
+  };
+}
 
 type ProfileRow = {
   full_name: string;
@@ -17,6 +20,7 @@ type ProfileRow = {
 
 export default async function AdmisionPage() {
   const supabase = await createClient();
+  const t = await getTranslations("Student");
 
   const {
     data: { user },
@@ -52,21 +56,20 @@ export default async function AdmisionPage() {
         <header className="mb-12 text-center">
           <Image
             src="/dap-logo-white.png"
-            alt="DAP"
+            alt={t("admission.logoAlt")}
             width={56}
             height={56}
             className="mx-auto size-14 rounded-lg"
             priority
           />
           <p className="mt-6 font-inter text-xs font-medium uppercase tracking-[0.3em] text-brand-coral">
-            Diplomado Apostólico Pastoral
+            {t("common.diplomaEyebrow")}
           </p>
           <h1 className="mt-3 font-grotesk text-h2 font-bold leading-tight text-text-primary">
-            Tu formulario de admisión
+            {t("admission.title")}
           </h1>
           <p className="mx-auto mt-4 max-w-xl font-inter text-base leading-relaxed text-text-secondary">
-            Completá estos datos para que el equipo de admisiones revise tu
-            solicitud. Te avisaremos por email apenas esté lista.
+            {t("admission.intro")}
           </p>
         </header>
 
@@ -79,7 +82,7 @@ export default async function AdmisionPage() {
         />
 
         <p className="mt-10 text-center font-inter text-xs text-text-tertiary">
-          ¿Dudas? Escribinos a{" "}
+          {t("admission.doubts")}{" "}
           <a
             href="mailto:admisiones@dapglobal.org"
             className="text-brand-coral hover:underline"

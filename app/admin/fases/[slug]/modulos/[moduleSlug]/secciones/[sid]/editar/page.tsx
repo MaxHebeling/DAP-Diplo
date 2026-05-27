@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import {
   SectionEditForm,
   type SectionFormSection,
@@ -16,10 +17,14 @@ type PageProps = {
   params: Promise<{ slug: string; moduleSlug: string; sid: string }>;
 };
 
-export const metadata = { title: "Editar sección — Admin DAP" };
+export async function generateMetadata() {
+  const t = await getTranslations("Admin");
+  return { title: t("sectionEdit.metaTitle") };
+}
 
 export default async function AdminSectionEditPage({ params }: PageProps) {
   const { slug: id, moduleSlug: mid, sid } = await params;
+  const t = await getTranslations("Admin");
   const supabase = await createClient();
 
   const { data: phase } = await supabase
@@ -85,7 +90,7 @@ export default async function AdminSectionEditPage({ params }: PageProps) {
         .single();
       if (createErr) {
         throw new Error(
-          `No se pudo crear el quiz: ${createErr.message}`,
+          t("sectionEdit.createQuizError", { message: createErr.message }),
         );
       }
       quiz = created as QuizRow;
@@ -99,7 +104,7 @@ export default async function AdminSectionEditPage({ params }: PageProps) {
       .returns<QuestionRow[]>();
     if (qsErr) {
       throw new Error(
-        `No se pudieron cargar las preguntas: ${qsErr.message}`,
+        t("sectionEdit.loadQuestionsError", { message: qsErr.message }),
       );
     }
     questions = qs ?? [];
@@ -113,20 +118,24 @@ export default async function AdminSectionEditPage({ params }: PageProps) {
           className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-brand-coral"
         >
           <ArrowLeft className="size-4" />
-          Volver a secciones
+          {t("sectionEdit.backToSections")}
         </Link>
 
         <header className="mb-8">
           <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
-            Fase {String(phase.order_index).padStart(2, "0")} · Módulo{" "}
-            {String(mod.order_index).padStart(2, "0")} · {mod.title}
+            {t("sectionEdit.eyebrow", {
+              phaseIndex: String(phase.order_index).padStart(2, "0"),
+              moduleIndex: String(mod.order_index).padStart(2, "0"),
+              moduleTitle: mod.title,
+            })}
           </p>
           <h1 className="font-serif text-3xl font-semibold">
-            Sección {String(section.order_index).padStart(2, "0")}
+            {t("sectionEdit.title", {
+              index: String(section.order_index).padStart(2, "0"),
+            })}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Edita el contenido de esta sección. Los cambios son inmediatos para
-            los alumnos con acceso a la fase.
+            {t("sectionEdit.description")}
           </p>
         </header>
 

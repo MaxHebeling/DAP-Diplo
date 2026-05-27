@@ -1,0 +1,117 @@
+{
+  "PastoresTeam": {
+    "metadata": {
+      "title": "DAP · Levantemos líderes juntos",
+      "description": "Una oportunidad especial para pastores y líderes: inscribe a 12 personas y cursa el Diplomado sin costo."
+    },
+    "footer": {
+      "tagline": "DAP · Oportunidad exclusiva para líderes",
+      "privacy": "Página privada. No compartir públicamente."
+    },
+    "hero": {
+      "eyebrow": "Oportunidad exclusiva · Pastores & Líderes",
+      "headlineTop": "LEVANTEMOS",
+      "headlineBottom": "LÍDERES JUNTOS",
+      "subheadlineLead": "Tu liderazgo puede abrir puertas para muchos…",
+      "subheadlineEmphasis": "y también para ti.",
+      "scrollCue": "Conoce la propuesta"
+    },
+    "message": {
+      "leadStart": "Creemos que los pastores y líderes deben tener acceso a",
+      "leadEmphasis": "formación integral, moderna y profunda",
+      "body": "Por eso abrimos una oportunidad especial para quienes desean impulsar el crecimiento de su gente."
+    },
+    "rule": {
+      "eyebrow": "La mecánica",
+      "headingTop": "Una regla simple.",
+      "headingBottom": "Un impacto multiplicado.",
+      "card1Title": "Si inscribes a 12 personas…",
+      "card1Highlight": "cursas el Diplomado SIN COSTO.",
+      "card2Title": "Si tu cónyuge logra otras 12…",
+      "card2Highlight": "ambos cursan el Diplomado GRATIS.",
+      "step": "Paso {step}",
+      "people": "personas",
+      "openTitle": "Sin distinciones. Cualquier persona suma.",
+      "openBody": "Puedes invitar a quienes quieran crecer contigo: líderes, servidores, voluntarios, miembros, jóvenes, empresarios. Cualquier persona dispuesta a aprender cuenta.",
+      "audience": {
+        "leaders": "Líderes",
+        "servers": "Servidores",
+        "volunteers": "Voluntarios",
+        "members": "Miembros",
+        "youth": "Jóvenes",
+        "entrepreneurs": "Empresarios"
+      }
+    },
+    "network": {
+      "eyebrow": "Multiplicación y expansión",
+      "headingTop": "Mientras más personas formes,",
+      "headingBottom": "más acceso generas.",
+      "body": "Cada persona que se forma contigo abre puertas para más. La red crece, los territorios se transforman.",
+      "centerLabel": "Tú",
+      "statLeadership": "Tu liderazgo",
+      "statTrained": "Personas formadas",
+      "statGenerations": "Generaciones impactadas"
+    },
+    "benefits": {
+      "eyebrow": "Lo que incluye",
+      "headingLead": "Una formación",
+      "headingEmphasis": "integral.",
+      "body": "8 dimensiones, 72 semanas. El DAP forma al líder completo: pastor, administrador, reformador, comunicador, mentor, empresario, estratega y gobernador espiritual.",
+      "items": {
+        "biblical": {
+          "title": "Formación bíblica",
+          "desc": "Fundamentos sólidos, doctrina apostólica con visión moderna del Reino."
+        },
+        "leadership": {
+          "title": "Liderazgo",
+          "desc": "Carácter, gobierno, mentoreo. Formas líderes que forman líderes."
+        },
+        "finances": {
+          "title": "Finanzas",
+          "desc": "Mayordomía, economía del Reino, multiplicación con sabiduría."
+        },
+        "administration": {
+          "title": "Administración",
+          "desc": "Estructura, orden, sistemas que sostienen el crecimiento ministerial."
+        },
+        "business": {
+          "title": "Empresas",
+          "desc": "Plantar empresas del Reino. Influencia desde el mercado y la cultura."
+        },
+        "technology": {
+          "title": "Tecnología & IA",
+          "desc": "Domina las herramientas que dominan el siglo XXI. Sin perder el alma."
+        },
+        "communication": {
+          "title": "Comunicación moderna",
+          "desc": "Storytelling, medios, marca personal. Tu mensaje llega más lejos."
+        },
+        "government": {
+          "title": "Gobierno del Reino",
+          "desc": "Reforma territorios. Autoridad apostólica que va más allá del púlpito."
+        }
+      }
+    },
+    "finalCta": {
+      "waMessage": "Hola, vi la oportunidad para pastores en DAP y quiero activarla.",
+      "headingTop": "No se trata",
+      "headingBottom": "solo de estudiar…",
+      "bodyLead": "Se trata de",
+      "bodyGenerations": "levantar generaciones",
+      "bodyMiddle": ", formar líderes y",
+      "bodyEmphasis": "transformar territorios.",
+      "button": "Quiero activar esta oportunidad",
+      "note": "Te respondemos personalmente por WhatsApp."
+    }
+  },
+  "ErrorPages": {
+    "error": {
+      "eyebrow": "Algo salió mal",
+      "title": "Tuvimos un problema cargando esta página.",
+      "body": "El error ya quedó registrado y vamos a revisarlo. Mientras tanto, podés intentar otra vez o volver al inicio.",
+      "retry": "Reintentar",
+      "backHome": "Volver al inicio",
+      "ref": "Ref: {digest}"
+    }
+  }
+}

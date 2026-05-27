@@ -1,13 +1,19 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations, getLocale } from "next-intl/server";
 import { Award, CheckCircle2, Clock, GraduationCap } from "lucide-react";
 
 import { signOutAction } from "@/lib/auth/actions";
 import { createClient } from "@/lib/supabase/server";
+import { localized } from "@/lib/i18n/localized";
+import type { Locale } from "@/i18n/config";
 
 import { DapStudentShell } from "@/components/layouts/dap-student-shell";
 
-export const metadata = { title: "Mi Progreso — DAP" };
+export async function generateMetadata() {
+  const t = await getTranslations("Student");
+  return { title: t("progress.metaTitle") };
+}
 
 type ProfileRow = {
   full_name: string;
@@ -26,11 +32,13 @@ type CertificateRow = {
   id: string;
   verification_code: string;
   issued_at: string;
-  phase: { title: string; order_index: number } | null;
+  phase: { title: string; title_en: string | null; order_index: number } | null;
 };
 
 export default async function MiProgresoPage() {
   const supabase = await createClient();
+  const t = await getTranslations("Student");
+  const locale = (await getLocale()) as Locale;
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -60,7 +68,7 @@ export default async function MiProgresoPage() {
   const { data: certificates } = await supabase
     .from("certificates")
     .select(
-      "id, verification_code, issued_at, phase:phases(title, order_index)",
+      "id, verification_code, issued_at, phase:phases(title, title_en, order_index)",
     )
     .eq("user_id", user.id)
     .order("issued_at", { ascending: false })
@@ -68,11 +76,15 @@ export default async function MiProgresoPage() {
 
   const { data: studentDims } = await supabase
     .from("student_dimensions")
-    .select("dimension:dimensions(name, order_index), awarded_at")
+    .select("dimension:dimensions(name, name_en, order_index), awarded_at")
     .eq("user_id", user.id)
     .returns<
       Array<{
-        dimension: { name: string; order_index: number } | null;
+        dimension: {
+          name: string;
+          name_en: string | null;
+          order_index: number;
+        } | null;
         awarded_at: string;
       }>
     >();
@@ -81,21 +93,21 @@ export default async function MiProgresoPage() {
     <DapStudentShell
       userName={profile.full_name}
       userAvatar={profile.avatar_url}
-      title="Mi Progreso"
+      title={t("progress.topbarTitle")}
       onSignOut={signOutAction}
     >
       <div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-10">
         <div className="mx-auto max-w-5xl space-y-8">
             <header>
               <p className="font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
-                Tu camino en el DAP
+                {t("progress.eyebrow")}
               </p>
               <h1 className="mt-2 font-grotesk text-h1 font-bold leading-tight text-text-primary">
-                Mi Progreso
+                {t("progress.title")}
               </h1>
               {profile.matricula && (
                 <p className="mt-2 font-mono text-xs text-text-tertiary">
-                  Matrícula · {profile.matricula}
+                  {t("progress.matricula", { matricula: profile.matricula })}
                 </p>
               )}
             </header>
@@ -105,11 +117,15 @@ export default async function MiProgresoPage() {
               <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
                   <p className="font-inter text-xs font-medium uppercase tracking-widest text-text-tertiary">
-                    Progreso del programa
+                    {t("progress.programProgress")}
                   </p>
                   <p className="mt-1 font-grotesk text-h2 font-bold text-text-primary">
-                    {completedCount}{" "}
-                    <span className="text-text-secondary">de 72 módulos</span>
+                    {t.rich("progress.modulesCount", {
+                      count: completedCount,
+                      muted: (chunks) => (
+                        <span className="text-text-secondary">{chunks}</span>
+                      ),
+                    })}
                   </p>
                 </div>
                 <p className="font-grotesk text-h1 font-bold text-brand-coral">
@@ -123,7 +139,12 @@ export default async function MiProgresoPage() {
                 />
               </div>
               <p className="mt-3 font-inter text-xs text-text-tertiary">
-                Semana actual: {currentWeekN > 0 ? `${currentWeekN} de 72` : "Tu programa aún no inició"}
+                {t("progress.currentWeekLabel", {
+                  value:
+                    currentWeekN > 0
+                      ? t("progress.currentWeekValue", { week: currentWeekN })
+                      : t("progress.notStartedValue"),
+                })}
               </p>
             </section>
 
@@ -132,7 +153,7 @@ export default async function MiProgresoPage() {
               <div className="mb-4 flex items-center gap-2">
                 <Award className="size-5 text-brand-coral" />
                 <h2 className="font-grotesk text-h4 font-semibold">
-                  Dimensiones obtenidas
+                  {t("progress.dimensions.title")}
                 </h2>
               </div>
               {studentDims && studentDims.length > 0 ? (
@@ -143,14 +164,20 @@ export default async function MiProgresoPage() {
                       className="rounded-lg border border-emerald-500/30 bg-emerald-500/[0.04] p-4"
                     >
                       <p className="font-grotesk text-sm font-semibold text-foreground">
-                        {d.dimension?.name ?? "—"}
+                        {(d.dimension
+                          ? localized(d.dimension, "name", locale)
+                          : null) ?? t("progress.dimensions.fallback")}
                       </p>
                       <p className="mt-1 font-inter text-xs text-text-tertiary">
-                        Otorgada el{" "}
-                        {new Date(d.awarded_at).toLocaleDateString("es-MX", {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
+                        {t("progress.dimensions.awardedOn", {
+                          date: new Date(d.awarded_at).toLocaleDateString(
+                            "es-MX",
+                            {
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                            },
+                          ),
                         })}
                       </p>
                     </li>
@@ -158,8 +185,7 @@ export default async function MiProgresoPage() {
                 </ul>
               ) : (
                 <p className="text-sm text-text-secondary">
-                  Aún no has alcanzado ninguna dimensión. Completá los 8 módulos
-                  de un bloque para recibir la primera (Discípulo).
+                  {t("progress.dimensions.empty")}
                 </p>
               )}
             </section>
@@ -169,7 +195,7 @@ export default async function MiProgresoPage() {
               <div className="mb-4 flex items-center gap-2">
                 <GraduationCap className="size-5 text-brand-coral" />
                 <h2 className="font-grotesk text-h4 font-semibold">
-                  Certificados emitidos
+                  {t("progress.certificates.title")}
                 </h2>
               </div>
               {certificates && certificates.length > 0 ? (
@@ -181,33 +207,43 @@ export default async function MiProgresoPage() {
                     >
                       <div>
                         <p className="font-grotesk text-sm font-medium">
-                          Bloque{" "}
-                          {String(c.phase?.order_index ?? "?").padStart(2, "0")}
-                          : {c.phase?.title ?? "—"}
+                          {t("progress.certificates.blockTitle", {
+                            order: String(
+                              c.phase?.order_index ?? "?",
+                            ).padStart(2, "0"),
+                            title:
+                              (c.phase
+                                ? localized(c.phase, "title", locale)
+                                : null) ??
+                              t("progress.certificates.blockFallback"),
+                          })}
                         </p>
                         <p className="font-inter text-xs text-text-tertiary">
-                          Emitido el{" "}
-                          {new Date(c.issued_at).toLocaleDateString("es-MX", {
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric",
-                          })}{" "}
-                          · Código: {c.verification_code}
+                          {t("progress.certificates.issuedOn", {
+                            date: new Date(c.issued_at).toLocaleDateString(
+                              "es-MX",
+                              {
+                                day: "numeric",
+                                month: "long",
+                                year: "numeric",
+                              },
+                            ),
+                            code: c.verification_code,
+                          })}
                         </p>
                       </div>
                       <Link
                         href={`/verificar/${c.verification_code}`}
                         className="text-xs font-medium text-brand-coral hover:underline"
                       >
-                        Ver
+                        {t("progress.certificates.view")}
                       </Link>
                     </li>
                   ))}
                 </ul>
               ) : (
                 <p className="text-sm text-text-secondary">
-                  Aún no tienes certificados emitidos. Se generan automáticamente
-                  al completar cada bloque.
+                  {t("progress.certificates.empty")}
                 </p>
               )}
             </section>
@@ -217,7 +253,7 @@ export default async function MiProgresoPage() {
               <div className="mb-4 flex items-center gap-2">
                 <CheckCircle2 className="size-5 text-brand-coral" />
                 <h2 className="font-grotesk text-h4 font-semibold">
-                  Últimos módulos completados
+                  {t("progress.completed.title")}
                 </h2>
               </div>
               {progress && progress.filter((p) => p.completed).length > 0 ? (
@@ -231,7 +267,7 @@ export default async function MiProgresoPage() {
                         className="flex items-center justify-between border-b border-white/[0.04] pb-2"
                       >
                         <span className="text-foreground">
-                          Módulo completado
+                          {t("progress.completed.item")}
                         </span>
                         <span className="inline-flex items-center gap-1 text-xs text-text-tertiary">
                           <Clock className="size-3" />
@@ -246,12 +282,16 @@ export default async function MiProgresoPage() {
                 </ul>
               ) : (
                 <p className="text-sm text-text-secondary">
-                  Aún no completaste ningún módulo. Empieza por el módulo de tu
-                  semana actual desde{" "}
-                  <Link href="/dashboard" className="text-brand-coral hover:underline">
-                    Inicio
-                  </Link>
-                  .
+                  {t.rich("progress.completed.empty", {
+                    home: (chunks) => (
+                      <Link
+                        href="/dashboard"
+                        className="text-brand-coral hover:underline"
+                      >
+                        {chunks}
+                      </Link>
+                    ),
+                  })}
                 </p>
               )}
             </section>

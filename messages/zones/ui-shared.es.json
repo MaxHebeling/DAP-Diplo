@@ -1,0 +1,52 @@
+{
+  "UiDap": {
+    "moduleCard": {
+      "ctaReview": "Repasar",
+      "ctaStart": "Iniciar",
+      "stateApproved": "Aprobado",
+      "stateLocked": "Bloqueado"
+    },
+    "rankBadge": {
+      "ariaLabel": "Rango {order}"
+    }
+  },
+  "Pwa": {
+    "install": {
+      "dialogLabel": "Instalar DAP",
+      "closeLabel": "Cerrar",
+      "title": "Instalá DAP en tu celular",
+      "description": "Acceso directo al dashboard, recordatorios cuando abre tu módulo semanal, sin pasar por el browser.",
+      "installButton": "Instalar",
+      "dismissButton": "Ahora no"
+    },
+    "push": {
+      "notSupported": "Tu navegador no soporta notificaciones push.",
+      "notConfigured": "Notificaciones push aún no configuradas en este sitio.",
+      "permissionBlocked": "Permiso bloqueado. Habilitalo manualmente desde la configuración de tu browser.",
+      "permissionNeeded": "Necesitamos tu permiso para enviarte avisos.",
+      "subscribeSuccess": "Listo — te avisaremos cuando abra tu módulo.",
+      "subscribeError": "No se pudo suscribir: {message}",
+      "unsubscribeSuccess": "Notificaciones desactivadas.",
+      "unsubscribeError": "No se pudo desactivar: {message}",
+      "deactivateButton": "Desactivar notificaciones",
+      "activateButton": "Activar notificaciones"
+    }
+  },
+  "Toast": {
+    "alreadySubscribed": "Ya tienes una suscripción activa.",
+    "subscriptionCanceled": "Tu suscripción fue cancelada.",
+    "phaseLocked": "Aún no tienes acceso a esta fase. Se desbloquea cada 2 meses de suscripción.",
+    "moduleCompleted": "¡Módulo completado! Sigue al siguiente.",
+    "phaseCompleted": "¡Fase completado! Pronto recibirás tu dimensión.",
+    "phaseSaved": "Fase guardado correctamente.",
+    "moduleSaved": "Módulo guardado correctamente.",
+    "sectionSaved": "Sección guardada correctamente.",
+    "threadSaved": "Hilo actualizado.",
+    "threadClosed": "Hilo cerrado. Ya no acepta respuestas.",
+    "postCreated": "Respuesta publicada.",
+    "communityNeedsSub": "La comunidad es solo para suscriptores activos del DAP.",
+    "liveCreated": "Sesión creada.",
+    "liveSaved": "Sesión actualizada."
+  },
+  "Ui": {}
+}

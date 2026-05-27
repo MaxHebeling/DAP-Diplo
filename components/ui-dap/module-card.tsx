@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CheckCircle2, Lock } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
 import { DapButton } from "./button";
@@ -23,6 +24,7 @@ function DapModuleCard({
   ctaLabel,
   className,
 }: DapModuleCardProps) {
+  const t = useTranslations("UiDap");
   const numberLabel = String(moduleNumber).padStart(2, "0");
 
   const StateIcon =
@@ -34,7 +36,9 @@ function DapModuleCard({
         ? "text-text-tertiary"
         : "text-brand-coral";
 
-  const cta = ctaLabel ?? (state === "approved" ? "Repasar" : "Iniciar");
+  const cta =
+    ctaLabel ??
+    (state === "approved" ? t("moduleCard.ctaReview") : t("moduleCard.ctaStart"));
 
   return (
     <div
@@ -71,7 +75,11 @@ function DapModuleCard({
         {StateIcon && (
           <StateIcon
             className={cn("size-4", stateColor)}
-            aria-label={state === "approved" ? "Aprobado" : "Bloqueado"}
+            aria-label={
+              state === "approved"
+                ? t("moduleCard.stateApproved")
+                : t("moduleCard.stateLocked")
+            }
           />
         )}
         {state !== "locked" &&

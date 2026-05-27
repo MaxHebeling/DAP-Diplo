@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Send } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,9 +20,10 @@ type Result = {
 };
 
 export function PushTestForm() {
+  const t = useTranslations("PushTestForm");
   const [email, setEmail] = useState("embajadormax@amppbr.org");
-  const [title, setTitle] = useState("DAP — prueba");
-  const [body, setBody] = useState("Esto es una notificación de prueba.");
+  const [title, setTitle] = useState(() => t("defaultTitle"));
+  const [body, setBody] = useState(() => t("defaultBody"));
   const [url, setUrl] = useState("/dashboard");
   const [pending, startTransition] = useTransition();
   const [result, setResult] = useState<Result | null>(null);
@@ -43,14 +45,15 @@ export function PushTestForm() {
           return;
         }
         if ((data.sent ?? 0) > 0) {
-          toast.success(`Push enviado a ${data.sent} dispositivo(s).`);
+          toast.success(t("pushSent", { count: data.sent ?? 0 }));
         } else if ((data.total ?? 0) === 0) {
-          toast.warning(
-            "El alumno no tiene suscripciones activas. Que active notificaciones primero desde /configuracion.",
-          );
+          toast.warning(t("noSubscriptions"));
         } else {
           toast.warning(
-            `${data.failed ?? 0} fallaron, ${data.expiredCleaned ?? 0} expiradas limpiadas.`,
+            t("someFailed", {
+              failed: data.failed ?? 0,
+              expired: data.expiredCleaned ?? 0,
+            }),
           );
         }
       } catch (err) {
@@ -66,7 +69,7 @@ export function PushTestForm() {
       className="space-y-4 rounded-xl border border-white/[0.06] bg-surface-elevated/60 p-5 sm:p-6"
     >
       <div>
-        <Label htmlFor="email">Email del alumno destino</Label>
+        <Label htmlFor="email">{t("emailLabel")}</Label>
         <Input
           id="email"
           type="email"
@@ -77,7 +80,7 @@ export function PushTestForm() {
         />
       </div>
       <div>
-        <Label htmlFor="title">Título</Label>
+        <Label htmlFor="title">{t("titleLabel")}</Label>
         <Input
           id="title"
           value={title}
@@ -88,7 +91,7 @@ export function PushTestForm() {
         />
       </div>
       <div>
-        <Label htmlFor="body">Mensaje</Label>
+        <Label htmlFor="body">{t("bodyLabel")}</Label>
         <Input
           id="body"
           value={body}
@@ -99,7 +102,7 @@ export function PushTestForm() {
         />
       </div>
       <div>
-        <Label htmlFor="url">URL al hacer click</Label>
+        <Label htmlFor="url">{t("urlLabel")}</Label>
         <Input
           id="url"
           value={url}
@@ -114,7 +117,7 @@ export function PushTestForm() {
       <div className="flex justify-end">
         <Button type="submit" disabled={pending}>
           <Send className="size-4" />
-          {pending ? "Enviando…" : "Enviar push"}
+          {pending ? t("sending") : t("send")}
         </Button>
       </div>
 

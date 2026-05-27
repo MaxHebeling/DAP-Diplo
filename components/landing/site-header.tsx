@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { LogOut, LayoutDashboard, ShieldCheck } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -26,13 +27,6 @@ export type HeaderUser = {
   role: "student" | "admin";
 } | null;
 
-const NAV_ITEMS = [
-  { href: "/#diplomado", label: "El Diplomado" },
-  { href: "/#fases", label: "Fases" },
-  { href: "/#dimensiones", label: "Dimensiones" },
-  { href: "/#faq", label: "Preguntas" },
-];
-
 function initialsOf(name: string | null): string {
   if (!name) return "DAP";
   const parts = name.trim().split(/\s+/).slice(0, 2);
@@ -40,9 +34,17 @@ function initialsOf(name: string | null): string {
 }
 
 export function SiteHeader({ user }: { user: HeaderUser }) {
+  const t = useTranslations("Landing");
   const [scrolled, setScrolled] = useState(false);
   const [gateOpen, setGateOpen] = useState(false);
   const enrollmentOpen = isEnrollmentOpen();
+
+  const NAV_ITEMS = [
+    { href: "/#diplomado", label: t("header.navDiplomado") },
+    { href: "/#fases", label: t("header.navFases") },
+    { href: "/#dimensiones", label: t("header.navDimensiones") },
+    { href: "/#faq", label: t("header.navPreguntas") },
+  ];
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -79,7 +81,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger
-                aria-label="Abrir menú de cuenta"
+                aria-label={t("header.accountMenuAria")}
                 className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-brand-coral/60"
               >
                 <Avatar className="size-9 border border-white/10">
@@ -93,18 +95,18 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="truncate">
-                  {user.fullName ?? "Mi cuenta"}
+                  {user.fullName ?? t("header.myAccount")}
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                   <DropdownMenuItem render={<Link href="/dashboard" />}>
                     <LayoutDashboard className="size-4" />
-                    Dashboard
+                    {t("header.dashboard")}
                   </DropdownMenuItem>
                   {user.role === "admin" && (
                     <DropdownMenuItem render={<Link href="/admin" />}>
                       <ShieldCheck className="size-4" />
-                      Admin
+                      {t("header.admin")}
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuGroup>
@@ -114,7 +116,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
                     render={<button type="submit" className="w-full" />}
                   >
                     <LogOut className="size-4" />
-                    Cerrar sesión
+                    {t("header.signOut")}
                   </DropdownMenuItem>
                 </form>
               </DropdownMenuContent>
@@ -127,7 +129,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
                 className="text-neutral-200 hover:bg-white/5 hover:text-neutral-50"
                 render={<Link href="/login" />}
               >
-                Iniciar sesión
+                {t("header.login")}
               </Button>
               {enrollmentOpen ? (
                 <Button
@@ -135,7 +137,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
                   className="bg-brand-coral text-brand-coral-foreground hover:bg-brand-coral/90"
                   render={<Link href="/signup" />}
                 >
-                  Inscribirme
+                  {t("header.enroll")}
                 </Button>
               ) : (
                 <Button
@@ -143,7 +145,7 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
                   className="bg-brand-coral text-brand-coral-foreground hover:bg-brand-coral/90"
                   onClick={() => setGateOpen(true)}
                 >
-                  Inscribirme
+                  {t("header.enroll")}
                 </Button>
               )}
             </>
