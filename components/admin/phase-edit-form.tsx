@@ -42,6 +42,9 @@ const formSchema = z.object({
   title: z.string().trim().min(2, "titleMin").max(120),
   subtitle: z.string().trim().max(200).nullable(),
   description: z.string().trim().max(4000).nullable(),
+  title_en: z.string().trim().max(120).nullable(),
+  subtitle_en: z.string().trim().max(200).nullable(),
+  description_en: z.string().trim().max(4000).nullable(),
   cover_image_url: z.string().trim().nullable(),
   months_duration: z.number().int().min(1).max(12),
   dimension_id: z.uuid().nullable(),
@@ -57,6 +60,9 @@ export type BlockFormBlock = {
   title: string;
   subtitle: string | null;
   description: string | null;
+  title_en: string | null;
+  subtitle_en: string | null;
+  description_en: string | null;
   cover_image_url: string | null;
   months_duration: number;
   dimension_id: string | null;
@@ -83,6 +89,9 @@ export function PhaseEditForm({
       title: phase.title,
       subtitle: phase.subtitle ?? "",
       description: phase.description ?? "",
+      title_en: phase.title_en ?? "",
+      subtitle_en: phase.subtitle_en ?? "",
+      description_en: phase.description_en ?? "",
       cover_image_url: phase.cover_image_url ?? null,
       months_duration: phase.months_duration,
       dimension_id: phase.dimension_id,
@@ -115,6 +124,9 @@ export function PhaseEditForm({
     fd.set("title", values.title);
     fd.set("subtitle", values.subtitle ?? "");
     fd.set("description", values.description ?? "");
+    fd.set("title_en", values.title_en ?? "");
+    fd.set("subtitle_en", values.subtitle_en ?? "");
+    fd.set("description_en", values.description_en ?? "");
     fd.set("cover_image_url", values.cover_image_url ?? "");
     fd.set("months_duration", String(values.months_duration));
     fd.set("dimension_id", values.dimension_id ?? "");
@@ -211,10 +223,32 @@ export function PhaseEditForm({
           </Field>
 
           <Field>
+            <FieldLabel htmlFor="title_en">Título (inglés)</FieldLabel>
+            <Input id="title_en" {...register("title_en")} />
+            <p className="text-xs text-muted-foreground">
+              Opcional — si lo dejas vacío, se muestra el español.
+            </p>
+            {errors.title_en && (
+              <FieldError>{errors.title_en.message}</FieldError>
+            )}
+          </Field>
+
+          <Field>
             <FieldLabel htmlFor="subtitle">{t("phaseEdit.subtitleLabel")}</FieldLabel>
             <Input id="subtitle" {...register("subtitle")} />
             {errors.subtitle && (
               <FieldError>{errors.subtitle.message}</FieldError>
+            )}
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="subtitle_en">Subtítulo (inglés)</FieldLabel>
+            <Input id="subtitle_en" {...register("subtitle_en")} />
+            <p className="text-xs text-muted-foreground">
+              Opcional — si lo dejas vacío, se muestra el español.
+            </p>
+            {errors.subtitle_en && (
+              <FieldError>{errors.subtitle_en.message}</FieldError>
             )}
           </Field>
 
@@ -230,6 +264,22 @@ export function PhaseEditForm({
             />
             {errors.description && (
               <FieldError>{errors.description.message}</FieldError>
+            )}
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="description_en">Descripción (inglés)</FieldLabel>
+            <Textarea
+              id="description_en"
+              rows={8}
+              className="font-mono text-sm"
+              {...register("description_en")}
+            />
+            <p className="text-xs text-muted-foreground">
+              Opcional — si lo dejas vacío, se muestra el español.
+            </p>
+            {errors.description_en && (
+              <FieldError>{errors.description_en.message}</FieldError>
             )}
           </Field>
         </FieldGroup>

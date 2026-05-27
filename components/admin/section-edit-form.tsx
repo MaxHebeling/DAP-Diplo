@@ -23,6 +23,8 @@ import { updateSectionAction } from "@/lib/admin/actions";
 const formSchema = z.object({
   title: z.string().trim().min(1).max(120),
   body_md: z.string().trim().max(20000).nullable(),
+  title_en: z.string().trim().max(120).nullable(),
+  body_md_en: z.string().trim().max(20000).nullable(),
   mux_playback_id: z.string().trim().max(80).nullable(),
   duration_seconds: z.number().int().min(0).max(36000).nullable(),
 });
@@ -36,6 +38,8 @@ export type SectionFormSection = {
   kind: "intro" | "teaching" | "activation" | "evaluation" | "impartation";
   title: string;
   body_md: string | null;
+  title_en: string | null;
+  body_md_en: string | null;
   mux_playback_id: string | null;
   duration_seconds: number | null;
 };
@@ -60,6 +64,8 @@ export function SectionEditForm({
     defaultValues: {
       title: section.title,
       body_md: section.body_md ?? "",
+      title_en: section.title_en ?? "",
+      body_md_en: section.body_md_en ?? "",
       mux_playback_id: section.mux_playback_id ?? "",
       duration_seconds: section.duration_seconds,
     },
@@ -75,6 +81,7 @@ export function SectionEditForm({
   const isTeaching = section.kind === "teaching";
   // useWatch en vez de form.watch — compatible con React Compiler.
   const body = useWatch({ control, name: "body_md" }) ?? "";
+  const bodyEn = useWatch({ control, name: "body_md_en" }) ?? "";
 
   function onSubmit(values: FormValues) {
     const fd = new FormData();
@@ -83,6 +90,8 @@ export function SectionEditForm({
     fd.set("moduleId", section.module_id);
     fd.set("title", values.title);
     fd.set("body_md", values.body_md ?? "");
+    fd.set("title_en", values.title_en ?? "");
+    fd.set("body_md_en", values.body_md_en ?? "");
     fd.set("mux_playback_id", values.mux_playback_id ?? "");
     fd.set(
       "duration_seconds",
@@ -120,6 +129,17 @@ export function SectionEditForm({
           </Field>
 
           <Field>
+            <FieldLabel htmlFor="title_en">Título (inglés)</FieldLabel>
+            <Input id="title_en" {...register("title_en")} />
+            <p className="text-xs text-muted-foreground">
+              Opcional — si lo dejas vacío, se muestra el español.
+            </p>
+            {errors.title_en && (
+              <FieldError>{errors.title_en.message}</FieldError>
+            )}
+          </Field>
+
+          <Field>
             <FieldLabel htmlFor="body_md">
               {t("sectionEdit.bodyLabel")}
             </FieldLabel>
@@ -146,6 +166,37 @@ export function SectionEditForm({
             )}
             <p className="text-xs text-muted-foreground">
               {t("sectionEdit.charCount", { count: body.length.toLocaleString() })}
+            </p>
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="body_md_en">Cuerpo (inglés)</FieldLabel>
+            <Controller
+              control={control}
+              name="body_md_en"
+              render={({ field }) => (
+                <MarkdownEditor
+                  id="body_md_en"
+                  value={field.value ?? ""}
+                  onChange={(v) =>
+                    setValue("body_md_en", v, { shouldDirty: true })
+                  }
+                  placeholder={
+                    section.kind === "impartation"
+                      ? t("sectionEdit.impartationPlaceholder")
+                      : t("sectionEdit.bodyPlaceholder")
+                  }
+                />
+              )}
+            />
+            {errors.body_md_en && (
+              <FieldError>{errors.body_md_en.message}</FieldError>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Opcional — si lo dejas vacío, se muestra el español.{" "}
+              {t("sectionEdit.charCount", {
+                count: bodyEn.length.toLocaleString(),
+              })}
             </p>
           </Field>
 

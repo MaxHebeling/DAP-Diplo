@@ -44,7 +44,7 @@ export default async function AdminSectionEditPage({ params }: PageProps) {
   const { data: section } = await supabase
     .from("module_sections")
     .select(
-      "id, module_id, kind, order_index, title, body_md, mux_playback_id, duration_seconds",
+      "id, module_id, kind, order_index, title, body_md, title_en, body_md_en, mux_playback_id, duration_seconds",
     )
     .eq("id", sid)
     .maybeSingle();
@@ -57,6 +57,8 @@ export default async function AdminSectionEditPage({ params }: PageProps) {
     kind: section.kind,
     title: section.title,
     body_md: section.body_md,
+    title_en: section.title_en,
+    body_md_en: section.body_md_en,
     mux_playback_id: section.mux_playback_id,
     duration_seconds: section.duration_seconds,
   };

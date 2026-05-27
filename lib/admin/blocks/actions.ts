@@ -47,6 +47,41 @@ const updateSchema = z.object({
     .transform((v) => (v.length === 0 ? null : v))
     .nullable()
     .optional(),
+  brandNameEn: z
+    .string()
+    .trim()
+    .max(80)
+    .transform((v) => (v.length === 0 ? null : v))
+    .nullable()
+    .optional(),
+  titleEn: z
+    .string()
+    .trim()
+    .max(200)
+    .transform((v) => (v.length === 0 ? null : v))
+    .nullable()
+    .optional(),
+  subtitleEn: z
+    .string()
+    .trim()
+    .max(400)
+    .transform((v) => (v.length === 0 ? null : v))
+    .nullable()
+    .optional(),
+  promiseEn: z
+    .string()
+    .trim()
+    .max(600)
+    .transform((v) => (v.length === 0 ? null : v))
+    .nullable()
+    .optional(),
+  descriptionEn: z
+    .string()
+    .trim()
+    .max(2000)
+    .transform((v) => (v.length === 0 ? null : v))
+    .nullable()
+    .optional(),
   published: z.boolean(),
 });
 
@@ -65,6 +100,11 @@ export async function updateBlockAction(
     promise: formData.get("promise") ?? "",
     description: formData.get("description") ?? "",
     coverImageUrl: formData.get("coverImageUrl") ?? "",
+    brandNameEn: formData.get("brandNameEn") ?? "",
+    titleEn: formData.get("titleEn") ?? "",
+    subtitleEn: formData.get("subtitleEn") ?? "",
+    promiseEn: formData.get("promiseEn") ?? "",
+    descriptionEn: formData.get("descriptionEn") ?? "",
     published: formData.get("published") === "on",
   });
   if (!parsed.success) {
@@ -93,6 +133,11 @@ export async function updateBlockAction(
     promise: parsed.data.promise ?? null,
     description: parsed.data.description ?? null,
     cover_image_url: parsed.data.coverImageUrl ?? null,
+    brand_name_en: parsed.data.brandNameEn ?? null,
+    title_en: parsed.data.titleEn ?? null,
+    subtitle_en: parsed.data.subtitleEn ?? null,
+    promise_en: parsed.data.promiseEn ?? null,
+    description_en: parsed.data.descriptionEn ?? null,
     published: parsed.data.published,
     updated_at: new Date().toISOString(),
   };

@@ -29,6 +29,27 @@ export const blockUpdateSchema = z.object({
     .max(500)
     .nullable()
     .or(z.literal("").transform(() => null)),
+  title_en: z
+    .string()
+    .trim()
+    .max(120)
+    .nullable()
+    .optional()
+    .transform((v) => (v && v.length > 0 ? v : null)),
+  subtitle_en: z
+    .string()
+    .trim()
+    .max(200)
+    .nullable()
+    .optional()
+    .transform((v) => (v && v.length > 0 ? v : null)),
+  description_en: z
+    .string()
+    .trim()
+    .max(4000)
+    .nullable()
+    .optional()
+    .transform((v) => (v && v.length > 0 ? v : null)),
   months_duration: z.coerce.number().int().min(1).max(12),
   dimension_id: z.uuid().nullable().or(z.literal("").transform(() => null)),
   published: z.coerce.boolean(),
@@ -73,6 +94,48 @@ export const moduleUpdateSchema = z.object({
     .max(500)
     .nullable()
     .transform((v) => (v && v.length > 0 ? v : null)),
+  title_en: z
+    .string()
+    .trim()
+    .max(160)
+    .nullable()
+    .optional()
+    .transform((v) => (v && v.length > 0 ? v : null)),
+  subtitle_en: z
+    .string()
+    .trim()
+    .max(200)
+    .nullable()
+    .optional()
+    .transform((v) => (v && v.length > 0 ? v : null)),
+  description_en: z
+    .string()
+    .trim()
+    .max(4000)
+    .nullable()
+    .optional()
+    .transform((v) => (v && v.length > 0 ? v : null)),
+  objective_en: z
+    .string()
+    .trim()
+    .max(500)
+    .nullable()
+    .optional()
+    .transform((v) => (v && v.length > 0 ? v : null)),
+  main_revelation_en: z
+    .string()
+    .trim()
+    .max(500)
+    .nullable()
+    .optional()
+    .transform((v) => (v && v.length > 0 ? v : null)),
+  impartation_phrase_en: z
+    .string()
+    .trim()
+    .max(500)
+    .nullable()
+    .optional()
+    .transform((v) => (v && v.length > 0 ? v : null)),
   duration_minutes: z.coerce.number().int().min(1).max(180).nullable(),
   is_free_preview: z.coerce.boolean(),
 });
@@ -89,6 +152,20 @@ export const sectionUpdateSchema = z.object({
     .trim()
     .max(20000)
     .nullable()
+    .transform((v) => (v && v.length > 0 ? v : null)),
+  title_en: z
+    .string()
+    .trim()
+    .max(120)
+    .nullable()
+    .optional()
+    .transform((v) => (v && v.length > 0 ? v : null)),
+  body_md_en: z
+    .string()
+    .trim()
+    .max(20000)
+    .nullable()
+    .optional()
     .transform((v) => (v && v.length > 0 ? v : null)),
   mux_playback_id: z
     .string()

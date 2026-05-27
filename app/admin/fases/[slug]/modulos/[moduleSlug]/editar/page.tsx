@@ -31,7 +31,7 @@ export default async function AdminModuleEditPage({ params }: PageProps) {
   const { data: mod } = await supabase
     .from("modules")
     .select(
-      "id, phase_id, order_index, title, subtitle, description, objective, main_revelation, impartation_phrase, duration_minutes, is_free_preview",
+      "id, phase_id, order_index, title, subtitle, description, objective, main_revelation, impartation_phrase, title_en, subtitle_en, description_en, objective_en, main_revelation_en, impartation_phrase_en, duration_minutes, is_free_preview",
     )
     .eq("id", mid)
     .maybeSingle();
@@ -46,6 +46,12 @@ export default async function AdminModuleEditPage({ params }: PageProps) {
     objective: mod.objective,
     main_revelation: mod.main_revelation,
     impartation_phrase: mod.impartation_phrase,
+    title_en: mod.title_en,
+    subtitle_en: mod.subtitle_en,
+    description_en: mod.description_en,
+    objective_en: mod.objective_en,
+    main_revelation_en: mod.main_revelation_en,
+    impartation_phrase_en: mod.impartation_phrase_en,
     duration_minutes: mod.duration_minutes,
     is_free_preview: mod.is_free_preview,
   };

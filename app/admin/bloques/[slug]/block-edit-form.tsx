@@ -21,6 +21,11 @@ type Initial = {
   description: string;
   coverImageUrl: string;
   published: boolean;
+  brandNameEn: string;
+  titleEn: string;
+  subtitleEn: string;
+  promiseEn: string;
+  descriptionEn: string;
 };
 
 export function BlockEditForm({ initial }: { initial: Initial }) {
@@ -40,6 +45,11 @@ export function BlockEditForm({ initial }: { initial: Initial }) {
       fd.set("promise", data.promise);
       fd.set("description", data.description);
       fd.set("coverImageUrl", data.coverImageUrl);
+      fd.set("brandNameEn", data.brandNameEn);
+      fd.set("titleEn", data.titleEn);
+      fd.set("subtitleEn", data.subtitleEn);
+      fd.set("promiseEn", data.promiseEn);
+      fd.set("descriptionEn", data.descriptionEn);
       if (data.published) fd.set("published", "on");
 
       const res = await updateBlockAction(fd);
@@ -77,6 +87,20 @@ export function BlockEditForm({ initial }: { initial: Initial }) {
       </div>
 
       <div>
+        <Label htmlFor="brandNameEn">Nombre de marca (inglés)</Label>
+        <Input
+          id="brandNameEn"
+          value={data.brandNameEn}
+          onChange={(e) => field("brandNameEn", e.target.value)}
+          maxLength={80}
+          className="mt-1"
+        />
+        <p className="mt-1 text-xs text-muted-foreground">
+          Opcional — si lo dejas vacío, se muestra el español.
+        </p>
+      </div>
+
+      <div>
         <Label htmlFor="title">{t("title")}</Label>
         <Input
           id="title"
@@ -92,6 +116,20 @@ export function BlockEditForm({ initial }: { initial: Initial }) {
       </div>
 
       <div>
+        <Label htmlFor="titleEn">Título (inglés)</Label>
+        <Input
+          id="titleEn"
+          value={data.titleEn}
+          onChange={(e) => field("titleEn", e.target.value)}
+          maxLength={200}
+          className="mt-1"
+        />
+        <p className="mt-1 text-xs text-muted-foreground">
+          Opcional — si lo dejas vacío, se muestra el español.
+        </p>
+      </div>
+
+      <div>
         <Label htmlFor="subtitle">{t("subtitle")}</Label>
         <textarea
           id="subtitle"
@@ -102,6 +140,21 @@ export function BlockEditForm({ initial }: { initial: Initial }) {
           className="mt-1 w-full rounded-md border border-white/[0.08] bg-white/[0.04] p-3 font-inter text-sm outline-none focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20"
           placeholder={t("subtitlePlaceholder")}
         />
+      </div>
+
+      <div>
+        <Label htmlFor="subtitleEn">Subtítulo (inglés)</Label>
+        <textarea
+          id="subtitleEn"
+          value={data.subtitleEn}
+          onChange={(e) => field("subtitleEn", e.target.value)}
+          rows={2}
+          maxLength={400}
+          className="mt-1 w-full rounded-md border border-white/[0.08] bg-white/[0.04] p-3 font-inter text-sm outline-none focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20"
+        />
+        <p className="mt-1 text-xs text-muted-foreground">
+          Opcional — si lo dejas vacío, se muestra el español.
+        </p>
       </div>
 
       <div>
@@ -121,6 +174,21 @@ export function BlockEditForm({ initial }: { initial: Initial }) {
       </div>
 
       <div>
+        <Label htmlFor="promiseEn">Promesa (inglés)</Label>
+        <textarea
+          id="promiseEn"
+          value={data.promiseEn}
+          onChange={(e) => field("promiseEn", e.target.value)}
+          rows={3}
+          maxLength={600}
+          className="mt-1 w-full rounded-md border border-white/[0.08] bg-white/[0.04] p-3 font-inter text-sm outline-none focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20"
+        />
+        <p className="mt-1 text-xs text-muted-foreground">
+          Opcional — si lo dejas vacío, se muestra el español.
+        </p>
+      </div>
+
+      <div>
         <Label htmlFor="description">{t("description")}</Label>
         <textarea
           id="description"
@@ -131,6 +199,21 @@ export function BlockEditForm({ initial }: { initial: Initial }) {
           className="mt-1 w-full rounded-md border border-white/[0.08] bg-white/[0.04] p-3 font-inter text-sm leading-relaxed outline-none focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20"
           placeholder={t("descriptionPlaceholder")}
         />
+      </div>
+
+      <div>
+        <Label htmlFor="descriptionEn">Descripción (inglés)</Label>
+        <textarea
+          id="descriptionEn"
+          value={data.descriptionEn}
+          onChange={(e) => field("descriptionEn", e.target.value)}
+          rows={6}
+          maxLength={2000}
+          className="mt-1 w-full rounded-md border border-white/[0.08] bg-white/[0.04] p-3 font-inter text-sm leading-relaxed outline-none focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20"
+        />
+        <p className="mt-1 text-xs text-muted-foreground">
+          Opcional — si lo dejas vacío, se muestra el español.
+        </p>
       </div>
 
       <div>

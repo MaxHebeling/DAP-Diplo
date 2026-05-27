@@ -22,6 +22,11 @@ type Row = {
   promise: string | null;
   description: string | null;
   cover_image_url: string | null;
+  brand_name_en: string | null;
+  title_en: string | null;
+  subtitle_en: string | null;
+  promise_en: string | null;
+  description_en: string | null;
   published: boolean;
   dimension: { name: string; order_index: number } | null;
 };
@@ -37,7 +42,7 @@ export default async function EditBloquePage({
   const { data: block } = await supabase
     .from("blocks")
     .select(
-      "id, order_index, slug, title, brand_name, subtitle, promise, description, cover_image_url, published, dimension:ranks(name, order_index)",
+      "id, order_index, slug, title, brand_name, subtitle, promise, description, cover_image_url, brand_name_en, title_en, subtitle_en, promise_en, description_en, published, dimension:ranks(name, order_index)",
     )
     .eq("slug", slug)
     .maybeSingle<Row>();
@@ -90,6 +95,11 @@ export default async function EditBloquePage({
             promise: block.promise ?? "",
             description: block.description ?? "",
             coverImageUrl: block.cover_image_url ?? "",
+            brandNameEn: block.brand_name_en ?? "",
+            titleEn: block.title_en ?? "",
+            subtitleEn: block.subtitle_en ?? "",
+            promiseEn: block.promise_en ?? "",
+            descriptionEn: block.description_en ?? "",
             published: block.published,
           }}
         />

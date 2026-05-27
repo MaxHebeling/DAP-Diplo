@@ -32,7 +32,7 @@ export default async function EditBlockPage({ params }: PageProps) {
   const { data: phase, error } = await supabase
     .from("phases")
     .select(
-      "id, order_index, slug, title, subtitle, description, cover_image_url, months_duration, dimension_id, published",
+      "id, order_index, slug, title, subtitle, description, cover_image_url, title_en, subtitle_en, description_en, months_duration, dimension_id, published",
     )
     .eq("id", id)
     .maybeSingle();
