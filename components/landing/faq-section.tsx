@@ -35,7 +35,7 @@ const FAQS = [
   },
   {
     q: "¿Hay material descargable?",
-    a: "Sí. Cada módulo incluye PDFs y audios descargables relacionados con la enseñanza. El alumno los conserva mientras esté suscrito.",
+    a: "Sí. Cada módulo incluye PDFs y recursos descargables relacionados con la enseñanza. El alumno los conserva mientras esté suscrito.",
   },
 ];
 

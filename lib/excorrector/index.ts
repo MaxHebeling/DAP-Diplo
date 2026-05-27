@@ -73,7 +73,7 @@ Recibí tu entrega pero el texto que escribiste es muy breve para devolverte una
 Vuelve a la consigna del módulo y dedícale unos minutos a desarrollar tu respuesta. No hace falta que sea larga, pero sí que tenga sustancia.
 
 ### 3. Tu próximo paso
-Vuelve a escuchar el audio de la enseñanza y responde en tus palabras: ¿qué fue lo que más te marcó? Esa es la base para una buena activación.
+Vuelve a mirar el video de la enseñanza y responde en tus palabras: ¿qué fue lo que más te marcó? Esa es la base para una buena activación.
 
 ### 4. Palabra de impartación
 Hijo, el llamado se desarrolla en el detalle. No subestimes el peso de una entrega seria, aunque sea de pocas líneas.`,

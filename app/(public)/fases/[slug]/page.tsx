@@ -352,7 +352,7 @@ export default async function BlockDetailPage({ params }: PageProps) {
               </p>
               <h2 className="mb-12 font-serif text-balance text-3xl font-semibold leading-tight text-neutral-50 sm:text-4xl">
                 {modules.length}{" "}
-                {modules.length === 1 ? "clase" : "clases"} de 40 min en audio
+                {modules.length === 1 ? "clase" : "clases"} de 40 min en video
                 cada una.
               </h2>
             </Reveal>

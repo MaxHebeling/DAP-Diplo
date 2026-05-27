@@ -24,14 +24,14 @@ import { DemoQuiz } from "@/components/demo/demo-quiz";
 export const metadata: Metadata = {
   title: "Demo gratis — Diplomado Apostólico Pastoral",
   description:
-    "Probá una semana completa del DAP sin pagar. Audio, activación, evaluación e impartición — la misma experiencia que recibe un alumno suscripto, gratis.",
+    "Probá una semana completa del DAP sin pagar. Video, activación, evaluación e impartición — la misma experiencia que recibe un alumno suscripto, gratis.",
   alternates: { canonical: "/demo" },
   openGraph: {
     type: "website",
     url: "/demo",
     title: "Demo gratis · DAP",
     description:
-      "Una semana completa del Diplomado Apostólico Pastoral. Audio + activación + quiz + impartición.",
+      "Una semana completa del Diplomado Apostólico Pastoral. Video + activación + quiz + impartición.",
   },
 };
 
@@ -80,7 +80,7 @@ export default async function DemoPage() {
             </h1>
             <p className="mx-auto mt-6 max-w-2xl font-inter text-base leading-relaxed text-text-secondary md:text-lg">
               Esta es exactamente la experiencia que recibe un alumno
-              suscripto. Audio, activación, evaluación e impartición —
+              suscripto. Video, activación, evaluación e impartición —
               módulo completo del programa, accesible sin login.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3 font-inter text-xs text-text-tertiary">
@@ -134,14 +134,14 @@ export default async function DemoPage() {
           </div>
         </section>
 
-        {/* ───────── SECCIÓN 02: ENSEÑANZA (AUDIO) ───────── */}
+        {/* ───────── SECCIÓN 02: ENSEÑANZA (VIDEO) ───────── */}
         <section className="border-b border-white/[0.06] bg-gradient-to-br from-brand-violet/[0.06] via-surface-base to-brand-coral/[0.04] px-6 py-20">
           <div className="mx-auto max-w-3xl">
             <p className="mb-3 font-inter text-xs font-medium uppercase tracking-widest text-brand-coral">
               02 · Enseñanza
             </p>
             <h2 className="mb-6 font-grotesk text-h2 font-bold leading-tight text-text-primary">
-              Audio del Dr. Max · 40 min
+              Video del Ap. Max · 40 min
             </h2>
 
             <div className="rounded-2xl border border-white/[0.08] bg-surface-elevated/60 p-8 backdrop-blur-sm">
@@ -154,7 +154,7 @@ export default async function DemoPage() {
                     Reino de Dios — La realidad presente
                   </p>
                   <p className="mt-1 font-inter text-sm text-text-secondary">
-                    40 minutos · Audio principal del módulo
+                    40 minutos · Video principal del módulo
                   </p>
                 </div>
               </div>
@@ -162,17 +162,17 @@ export default async function DemoPage() {
               <div className="mt-6 rounded-lg border border-dashed border-white/[0.12] bg-white/[0.02] p-5 text-center">
                 <Clock className="mx-auto mb-2 size-5 text-text-tertiary" />
                 <p className="font-grotesk text-sm font-semibold text-text-primary">
-                  Audio en producción
+                  Video en producción
                 </p>
                 <p className="mt-1 font-inter text-xs text-text-tertiary">
-                  Suscribite al programa y recibí el audio completo más los
-                  otros 71 módulos. Demo de audio disponible al abrir la
+                  Suscribite al programa y recibí el video completo más los
+                  otros 71 módulos. Demo de video disponible al abrir la
                   convocatoria.
                 </p>
               </div>
 
               <p className="mt-6 font-inter text-sm leading-relaxed text-text-secondary">
-                En este audio el Ap. Max Hebeling desarrolla doctrinalmente
+                En este video el Ap. Max Hebeling desarrolla doctrinalmente
                 el concepto del Reino, citando los pasajes clave de los
                 evangelios donde Jesús lo describe, y bajándolo a
                 aplicación práctica para pastores que están construyendo

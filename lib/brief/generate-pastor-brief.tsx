@@ -591,7 +591,7 @@ const INCLUIDO = [
   "Mentoría grupal por convocatoria apostólica",
   "Comunidad privada de pastores en formación",
   "Tutor IA del DAP — entrenado con todos los materiales del programa, disponible 24/7",
-  "Material descargable por módulo (PDFs, audios, plantillas)",
+  "Material descargable por módulo (PDFs, plantillas, recursos extra)",
   "Certificado, insignia y nueva dimensión ministerial al aprobar cada bloque",
 ];
 
@@ -808,8 +808,8 @@ function BriefDocument() {
             <Text style={styles.para}>
               Cada módulo tiene 5 secciones:{" "}
               <Text style={styles.bold}>(1)</Text> introducción y contexto,{" "}
-              <Text style={styles.bold}>(2)</Text> enseñanza en audio del
-              Dr. Max (40 min, para escuchar donde quieras),{" "}
+              <Text style={styles.bold}>(2)</Text> enseñanza en video del
+              Ap. Max Hebeling (40 min),{" "}
               <Text style={styles.bold}>(3)</Text> activación práctica
               escrita,{" "}
               <Text style={styles.bold}>(4)</Text> evaluación con quiz

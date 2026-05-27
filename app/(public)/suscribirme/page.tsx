@@ -38,7 +38,7 @@ const INCLUDED = [
   "Mentoría grupal por convocatoria del apóstol",
   "Corrección personalizada de tu activación con la voz del Dr. Max (48h)",
   "Comunidad privada de pastores en formación",
-  "Material descargable por módulo (PDFs, audios, plantillas)",
+  "Material descargable por módulo (PDFs, plantillas, recursos extra)",
   "Certificado, insignia y dimensión nueva al completar cada bloque",
 ];
 
