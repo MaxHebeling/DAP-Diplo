@@ -180,30 +180,41 @@ export default async function ProgramaPage() {
       onSignOut={signOutAction}
     >
     <main className="mx-auto max-w-5xl space-y-8 px-5 py-8 sm:px-8">
-      {/* Hero */}
-      <header className="rounded-2xl border bg-gradient-to-br from-brand-violet/[0.08] via-card to-brand-coral/[0.05] p-8 sm:p-10">
-        <div className="flex items-center gap-2">
-          <Sparkles className="size-4 text-brand-coral" strokeWidth={2} />
-          <p className="font-inter text-[10px] font-bold uppercase tracking-[0.4em] text-brand-coral">
-            El camino completo
+      {/* Hero oscuro */}
+      <header className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#04081A] p-8 sm:p-10">
+        {/* Halos decorativos */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-16 -top-20 size-64 rounded-full bg-brand-violet/25 blur-3xl"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -bottom-16 -left-16 size-56 rounded-full bg-brand-coral/15 blur-3xl"
+        />
+        <div className="relative">
+          <div className="flex items-center gap-2">
+            <Sparkles className="size-4 text-brand-coral" strokeWidth={2} />
+            <p className="font-inter text-[10px] font-bold uppercase tracking-[0.4em] text-brand-coral">
+              El camino completo
+            </p>
+          </div>
+          <h1 className="mt-3 bg-gradient-to-br from-white via-white/95 to-white/70 bg-clip-text font-grotesk text-3xl font-bold leading-tight text-transparent sm:text-4xl">
+            Currículum del DAP
+          </h1>
+          <p className="mt-3 max-w-2xl font-inter text-base leading-relaxed text-white/70">
+            9 dimensiones de la unción apostólica. 72 módulos. 18 meses de
+            formación. Cada martes a las 00:01 se abre un módulo nuevo y
+            recibís activación práctica con feedback en 48h.
           </p>
-        </div>
-        <h1 className="mt-3 font-grotesk text-3xl font-bold leading-tight text-text-primary sm:text-4xl">
-          Currículum del DAP
-        </h1>
-        <p className="mt-3 max-w-2xl font-inter text-base leading-relaxed text-text-secondary">
-          9 dimensiones de la unción apostólica. 72 módulos. 18 meses de
-          formación. Cada martes a las 00:01 se abre un módulo nuevo y
-          recibís activación práctica con feedback en 48h.
-        </p>
-        <div className="mt-5 inline-flex flex-wrap items-center gap-2 rounded-full border border-brand-violet/30 bg-brand-violet/10 px-3 py-1.5">
-          <CalendarClock className="size-3.5 text-brand-violet" />
-          <p className="font-inter text-xs font-medium text-brand-violet">
-            Inicio del programa:{" "}
-            <strong className="font-semibold text-text-primary">
-              {formatDapLongDate(new Date(`${startDateIso}T12:00:00`))}
-            </strong>
-          </p>
+          <div className="mt-5 inline-flex flex-wrap items-center gap-2 rounded-full border border-brand-violet/40 bg-brand-violet/15 px-3 py-1.5 backdrop-blur">
+            <CalendarClock className="size-3.5 text-brand-violet" />
+            <p className="font-inter text-xs font-medium text-brand-violet">
+              Inicio del programa:{" "}
+              <strong className="font-semibold text-white">
+                {formatDapLongDate(new Date(`${startDateIso}T12:00:00`))}
+              </strong>
+            </p>
+          </div>
         </div>
       </header>
 
