@@ -129,6 +129,7 @@
     "studentShell": {
       "navHome": "Inicio",
       "navModules": "Mis Módulos",
+      "navCurriculum": "Currículum",
       "navProgress": "Mi Progreso",
       "groupCommunity": "Comunidad",
       "navCommunity": "Comunidad",
@@ -155,6 +156,7 @@
     "studentSidebar": {
       "navHome": "Inicio",
       "navModules": "Mis Módulos",
+      "navCurriculum": "Currículum",
       "navProgress": "Mi Progreso",
       "groupCommunity": "Comunidad",
       "navCommunity": "Comunidad",

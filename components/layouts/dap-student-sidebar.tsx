@@ -12,6 +12,7 @@ import {
   GraduationCap,
   Home,
   LogOut,
+  Map,
   MessageCircle,
   Radio,
   Settings,
@@ -59,6 +60,11 @@ export function DapStudentSidebar({
           href: "/fases",
           icon: BookOpen,
           label: t("studentSidebar.navModules"),
+        },
+        {
+          href: "/programa",
+          icon: Map,
+          label: t("studentSidebar.navCurriculum"),
         },
         {
           href: "/progreso",
