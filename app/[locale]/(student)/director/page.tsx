@@ -1,3 +1,4 @@
+import Image from "next/image";
 import {
   Award,
   BookOpen,
@@ -120,10 +121,15 @@ export default async function DirectorPage() {
 
           <div className="relative flex flex-col gap-8 sm:flex-row sm:items-center">
             <div className="relative shrink-0">
-              <div className="relative flex h-32 w-32 items-center justify-center overflow-hidden rounded-2xl border border-white/15 bg-gradient-to-br from-brand-violet via-fuchsia-600 to-brand-coral shadow-2xl sm:h-40 sm:w-40">
-                <span className="font-grotesk text-5xl font-extrabold text-white drop-shadow-lg sm:text-6xl">
-                  MH
-                </span>
+              <div className="relative h-32 w-32 overflow-hidden rounded-2xl border border-white/15 bg-gradient-to-br from-brand-violet via-fuchsia-600 to-brand-coral shadow-2xl sm:h-40 sm:w-40">
+                <Image
+                  src="/director-max.jpg"
+                  alt="Dr. Max Hebeling"
+                  fill
+                  sizes="160px"
+                  priority
+                  className="object-cover"
+                />
               </div>
               <div
                 aria-hidden
@@ -160,11 +166,11 @@ export default async function DirectorPage() {
                   office@rkchurch.com
                 </a>
                 <a
-                  href="tel:+18583159770"
+                  href="tel:+526642323257"
                   className="inline-flex items-center gap-2 font-inter text-xs text-white/85 hover:text-white"
                 >
                   <Phone className="size-3.5 text-brand-violet" />
-                  +1 (858) 315 9770
+                  +52 (664) 232 3257
                 </a>
               </div>
             </div>
@@ -313,7 +319,7 @@ export default async function DirectorPage() {
           </h2>
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <a
-              href="https://wa.me/18583159770"
+              href="https://wa.me/526642323257"
               target="_blank"
               rel="noopener"
               className="inline-flex items-center gap-2 rounded-full bg-brand-coral px-5 py-2.5 font-inter text-sm font-semibold text-white transition-transform hover:scale-[1.02]"
