@@ -147,7 +147,7 @@ export default async function DirectorPage() {
               <h1 className="mt-2 bg-gradient-to-br from-white via-white/95 to-white/70 bg-clip-text font-grotesk text-4xl font-bold leading-tight text-transparent sm:text-5xl">
                 Dr. Max Hebeling
               </h1>
-              <p className="mt-2 font-inter text-sm text-white/65 sm:text-base">
+              <p className="mt-2 text-justify font-inter text-sm text-white/65 hyphens-auto sm:text-base">
                 Argentino · Residente en Tijuana BC, México.
               </p>
 
@@ -203,12 +203,12 @@ export default async function DirectorPage() {
           <p className="font-inter text-[10px] font-bold uppercase tracking-[0.4em] text-brand-coral">
             Experiencia
           </p>
-          <p className="mt-4 max-w-3xl font-grotesk text-xl font-medium leading-snug text-white/90 sm:text-2xl">
+          <p className="mt-4 max-w-3xl text-justify font-grotesk text-xl font-medium leading-snug text-white/90 hyphens-auto sm:text-2xl">
             Conferencista internacional con participación en más de{" "}
             <span className="text-brand-coral">17 países</span>, formando y
             activando líderes y ministros.
           </p>
-          <p className="mt-4 max-w-3xl font-inter text-sm leading-relaxed text-white/65">
+          <p className="mt-4 max-w-3xl text-justify font-inter text-sm leading-relaxed text-white/65 hyphens-auto">
             Apasionado por la capacitación y activación ministerial, con una
             visión de transformación global basada en principios del Reino.
           </p>
@@ -247,7 +247,7 @@ export default async function DirectorPage() {
                     {d.spanish}
                   </p>
                 )}
-                <p className="mt-1.5 font-inter text-sm leading-relaxed text-white/70">
+                <p className="mt-1.5 text-justify font-inter text-sm leading-relaxed text-white/70 hyphens-auto">
                   {d.institution}
                 </p>
               </li>
@@ -266,7 +266,7 @@ export default async function DirectorPage() {
           <h2 className="mt-2 font-grotesk text-2xl font-bold text-white sm:text-3xl">
             Embajador de la Paz y la Justicia.
           </h2>
-          <p className="mt-5 max-w-3xl font-inter text-sm leading-relaxed text-white/75 sm:text-base">
+          <p className="mt-5 max-w-3xl text-justify font-inter text-sm leading-relaxed text-white/75 hyphens-auto sm:text-base">
             En 2023, junto a su esposa, fue nombrado con grado honorífico como
             <strong className="text-white"> Doctor</strong>, recibiendo el
             título de <strong className="text-white">Embajador de la Paz y la Justicia</strong>,
@@ -300,7 +300,7 @@ export default async function DirectorPage() {
                   <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand-violet/15 text-brand-violet">
                     <Icon className="size-4" strokeWidth={2} />
                   </div>
-                  <p className="font-inter text-sm font-medium leading-snug text-white/85">
+                  <p className="text-justify font-inter text-sm font-medium leading-snug text-white/85 hyphens-auto">
                     {s.text}
                   </p>
                 </div>
