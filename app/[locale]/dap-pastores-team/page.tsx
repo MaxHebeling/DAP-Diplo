@@ -18,6 +18,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t("metadata.title"),
     description: t("metadata.description"),
+    openGraph: {
+      title: t("metadata.title"),
+      description: t("metadata.description"),
+      images: [{ url: "/dap-pastores-og.jpg", width: 1200, height: 630 }],
+    },
     robots: {
       index: false,
       follow: false,
