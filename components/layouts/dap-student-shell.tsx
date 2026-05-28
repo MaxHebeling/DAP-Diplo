@@ -13,6 +13,7 @@ import {
   GraduationCap,
   Home,
   LogOut,
+  Map,
   MessageCircle,
   Menu,
   Radio,
@@ -76,6 +77,11 @@ export function DapStudentShell({
       items: [
         { href: "/dashboard", icon: Home, label: t("studentShell.navHome") },
         { href: "/fases", icon: BookOpen, label: t("studentShell.navModules") },
+        {
+          href: "/programa",
+          icon: Map,
+          label: t("studentShell.navCurriculum"),
+        },
         {
           href: "/progreso",
           icon: GraduationCap,
