@@ -139,14 +139,15 @@ export default async function DirectorPage() {
                 </p>
               </div>
               <h1 className="mt-2 bg-gradient-to-br from-white via-white/95 to-white/70 bg-clip-text font-grotesk text-4xl font-bold leading-tight text-transparent sm:text-5xl">
-                Max Hebeling
+                Dr. Max Hebeling
               </h1>
               <p className="mt-2 font-inter text-sm text-white/65 sm:text-base">
-                Argentino · Residente en San Diego, California, Estados Unidos.
+                Argentino · Residente en Tijuana BC, México.
               </p>
 
               <div className="mt-5 flex flex-wrap items-center gap-2">
-                <Pill icon={MapPin} text="San Diego, CA" />
+                <Pill icon={MapPin} text="Tijuana, BC, México" />
+                <Pill icon={Globe2} text="maxhebeling.org" />
                 <Pill icon={Globe2} text="rkchurch.com" />
                 <Pill icon={Globe2} text="ikingdom.org" />
               </div>
@@ -327,6 +328,15 @@ export default async function DirectorPage() {
             >
               <Mail className="size-4" />
               office@rkchurch.com
+            </a>
+            <a
+              href="https://www.maxhebeling.org"
+              target="_blank"
+              rel="noopener"
+              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-5 py-2.5 font-inter text-sm font-semibold text-white/90 transition-colors hover:bg-white/[0.08]"
+            >
+              <Globe2 className="size-4" />
+              maxhebeling.org
             </a>
             <a
               href="https://www.rkchurch.com"
