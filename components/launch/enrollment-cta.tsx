@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useState, type ReactNode } from "react";
 
 import { DapButton } from "@/components/ui-dap/button";

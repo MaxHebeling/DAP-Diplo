@@ -53,11 +53,13 @@ export function getClientIp(request: NextRequest): string {
 }
 
 export async function checkRateLimit(
-  request: NextRequest,
+  request: NextRequest | null,
   opts: Options,
 ): Promise<Result> {
   const admin = createAdminClient();
-  const key = opts.key ?? getClientIp(request);
+  // Si el caller pasa `key` explícito (ej. server action sin acceso a
+  // NextRequest), lo usamos. Si no, derivamos del request.
+  const key = opts.key ?? (request ? getClientIp(request) : "unknown");
   const since = new Date(Date.now() - opts.windowSeconds * 1000).toISOString();
 
   // 1. Registrar el intento actual.

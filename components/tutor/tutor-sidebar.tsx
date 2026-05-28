@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useTransition } from "react";
 import { ArrowLeft, Loader2, MessageSquare, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";

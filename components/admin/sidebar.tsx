@@ -1,16 +1,17 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import {
   Bell,
   Brain,
   FileText,
+  Globe2,
   GraduationCap,
   Layers,
   LayoutDashboard,
   LogOut,
+  Mail,
   MessagesSquare,
   Radio,
   Sparkles,
@@ -22,6 +23,8 @@ import { signOutAction } from "@/lib/auth/actions";
 
 const NAV = [
   { href: "/admin", labelKey: "dashboard", icon: LayoutDashboard, exact: true },
+  { href: "/admin/leads", labelKey: "leads", icon: Mail, exact: false },
+  { href: "/admin/visitas", labelKey: "visits", icon: Globe2, exact: false },
   { href: "/admin/admisiones", labelKey: "admissions", icon: GraduationCap, exact: false },
   { href: "/admin/bloques", labelKey: "blocksCopy", icon: Layers, exact: false },
   { href: "/admin/fases", labelKey: "phasesModules", icon: Layers, exact: false },

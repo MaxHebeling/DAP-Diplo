@@ -1,8 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowUpRight, Loader2, MessageCirclePlus, X } from "lucide-react";
 import { useTranslations } from "next-intl";

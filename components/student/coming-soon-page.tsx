@@ -1,10 +1,10 @@
-import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { ArrowRight, Sparkles } from "lucide-react";
+import { getLocale } from "next-intl/server";
 
+import { Link, redirect } from "@/i18n/navigation";
 import { signOutAction } from "@/lib/auth/actions";
 import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
 
 import { DapStudentShell } from "@/components/layouts/dap-student-shell";
 import { DapButton } from "@/components/ui-dap/button";
@@ -32,10 +32,11 @@ export async function ComingSoonPage({
   secondaryActions?: ComingSoonAction[];
 }) {
   const supabase = await createClient();
+  const locale = await getLocale();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect(`/login?redirectTo=/dashboard`);
+  if (!user) return redirect({ href: `/login?redirectTo=/dashboard`, locale });
 
   const { data: profile } = await supabase
     .from("profiles")

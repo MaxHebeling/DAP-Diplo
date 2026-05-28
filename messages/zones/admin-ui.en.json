@@ -159,7 +159,9 @@
       "adminBadge": "Admin",
       "adminFallback": "Admin",
       "goToDashboard": "Go to my dashboard",
-      "signOut": "Sign out"
+      "signOut": "Sign out",
+      "leads": "Leads",
+      "visits": "Visits"
     },
     "sectionEdit": {
       "kindIntro": "Introduction",

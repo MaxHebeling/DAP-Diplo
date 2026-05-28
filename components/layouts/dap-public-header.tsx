@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { LayoutDashboard, LogOut, Menu, ShieldCheck, X } from "lucide-react";
 import { motion, useScroll, useSpring } from "motion/react";
 import { useTranslations } from "next-intl";

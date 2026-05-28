@@ -1,9 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
+
+import { Link, usePathname } from "@/i18n/navigation";
 import {
   BarChart3,
   BookOpen,

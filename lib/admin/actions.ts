@@ -1,8 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
 import { z } from "zod";
+import { redirect } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { muxClient } from "@/lib/mux/server";
 import {
@@ -97,7 +98,8 @@ export async function updateBlockAction(
   revalidatePath("/admin/fases");
   revalidatePath(`/admin/fases/${id}/editar`);
 
-  redirect("/admin/fases?toast=phase-saved");
+  const locale = await getLocale();
+  return redirect({ href: "/admin/fases?toast=phase-saved", locale });
 }
 
 // =====================================================================
@@ -137,9 +139,11 @@ export async function updateModuleAction(
     revalidatePath(`/admin/fases/${phaseId}/modulos/${id}/editar`);
   }
 
-  redirect(
-    `/admin/fases/${phaseId}/modulos/${id}/editar?toast=module-saved`,
-  );
+  const locale = await getLocale();
+  return redirect({
+    href: `/admin/fases/${phaseId}/modulos/${id}/editar?toast=module-saved`,
+    locale,
+  });
 }
 
 // =====================================================================
@@ -209,8 +213,10 @@ export async function updateSectionAction(
     );
   }
 
-  redirect(
-    `/admin/fases/${phaseId}/modulos/${moduleId}/secciones?toast=section-saved`,
-  );
+  const locale = await getLocale();
+  return redirect({
+    href: `/admin/fases/${phaseId}/modulos/${moduleId}/secciones?toast=section-saved`,
+    locale,
+  });
 }
 

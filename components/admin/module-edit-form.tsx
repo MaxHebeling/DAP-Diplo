@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { useForm, Controller } from "react-hook-form";

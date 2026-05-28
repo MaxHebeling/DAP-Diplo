@@ -1,7 +1,8 @@
 import { getRequestConfig } from "next-intl/server";
-import { cookies } from "next/headers";
+import { hasLocale } from "next-intl";
 
-import { defaultLocale, isLocale, type Locale } from "./config";
+import { routing } from "./routing";
+import { type Locale } from "./config";
 
 /**
  * Carga y fusiona los mensajes del locale activo.
@@ -11,8 +12,7 @@ import { defaultLocale, isLocale, type Locale } from "./config";
  *   propio namespace de nivel superior (Landing, PublicPages, Footer, …).
  *   Se fusionan con Object.assign; al ser namespaces distintos, no colisionan.
  *
- * Al migrar una zona nueva, añade aquí su import (es la única edición que
- * requiere este archivo central — el resto vive en messages/zones/).
+ * Al migrar una zona nueva, añade aquí su import.
  */
 async function loadMessages(locale: Locale) {
   const [
@@ -67,15 +67,14 @@ async function loadMessages(locale: Locale) {
 }
 
 /**
- * Resuelve el locale por request (cookie NEXT_LOCALE, sin i18n routing) y
- * entrega los mensajes fusionados. Leer la cookie hace que las páginas se
- * rendericen de forma dinámica; aceptable para esta app.
+ * Modo i18n routing (Fase 2): el locale viene del segmento [locale] de la URL.
+ * Si no hay locale válido, cae al defaultLocale ("es").
  */
-export default getRequestConfig(async () => {
-  const cookieStore = await cookies();
-  const cookieLocale = cookieStore.get("NEXT_LOCALE")?.value;
-
-  const locale: Locale = isLocale(cookieLocale) ? cookieLocale : defaultLocale;
+export default getRequestConfig(async ({ requestLocale }) => {
+  const requested = await requestLocale;
+  const locale: Locale = hasLocale(routing.locales, requested)
+    ? requested
+    : routing.defaultLocale;
 
   return {
     locale,

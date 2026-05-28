@@ -1,10 +1,12 @@
 import * as React from "react";
-import Link, { type LinkProps } from "next/link";
 import type { LucideIcon } from "lucide-react";
 
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
-type DapNavItemProps = Omit<LinkProps, "href"> & {
+// Props del Link locale-aware de next-intl (acepta el mismo href base que
+// next/link). Derivamos del componente para mantener compatibilidad de tipos.
+type DapNavItemProps = Omit<React.ComponentProps<typeof Link>, "href"> & {
   href: string;
   icon: LucideIcon;
   label: string;

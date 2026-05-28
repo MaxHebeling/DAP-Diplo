@@ -1,9 +1,11 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { redirect as externalRedirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { getLocale } from "next-intl/server";
 import { z } from "zod";
+import { redirect } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
   requestPasswordResetSchema,
@@ -68,7 +70,8 @@ export async function signUpAction(
 
   const redirectTo = safeRedirectTo(formData.get("redirectTo"));
   revalidatePath("/", "layout");
-  redirect(redirectTo);
+  const locale = await getLocale();
+  return redirect({ href: redirectTo, locale });
 }
 
 export async function signInAction(
@@ -100,14 +103,16 @@ export async function signInAction(
 
   const redirectTo = safeRedirectTo(formData.get("redirectTo"));
   revalidatePath("/", "layout");
-  redirect(redirectTo);
+  const locale = await getLocale();
+  return redirect({ href: redirectTo, locale });
 }
 
 export async function signOutAction() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   revalidatePath("/", "layout");
-  redirect("/");
+  const locale = await getLocale();
+  redirect({ href: "/", locale });
 }
 
 /**
@@ -165,10 +170,13 @@ export async function signInWithGoogleAction(formData: FormData) {
   });
 
   if (error || !data?.url) {
-    redirect("/login?toast=oauth-google-error");
+    const locale = await getLocale();
+    return redirect({ href: "/login?toast=oauth-google-error", locale });
   }
 
-  redirect(data.url);
+  // data.url es una URL absoluta de Google (consent screen): se usa el
+  // redirect nativo, no el de next-intl (que prependería el locale).
+  externalRedirect(data.url);
 }
 
 /**
@@ -243,6 +251,7 @@ export async function updatePasswordAction(
   }
 
   revalidatePath("/", "layout");
-  redirect("/dashboard?toast=password-updated");
+  const locale = await getLocale();
+  return redirect({ href: "/dashboard?toast=password-updated", locale });
 }
 

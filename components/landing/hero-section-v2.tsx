@@ -8,6 +8,7 @@ import { ArrowRight, PlayCircle } from "lucide-react";
 
 import { DapButton } from "@/components/ui-dap/button";
 import { EnrollmentCTA } from "@/components/launch/enrollment-cta";
+import { Link } from "@/i18n/navigation";
 import { HeroParticles } from "./hero-particles";
 
 export function HeroSectionV2() {
@@ -116,7 +117,7 @@ export function HeroSectionV2() {
             <ArrowRight />
           </EnrollmentCTA>
           <DapButton
-            render={<a href="/demo" />}
+            render={<Link href="/demo" />}
             variant="secondary"
             size="lg"
           >
