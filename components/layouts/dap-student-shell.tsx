@@ -78,9 +78,9 @@ export function DapStudentShell({
         { href: "/dashboard", icon: Home, label: t("studentShell.navHome") },
         { href: "/fases", icon: BookOpen, label: t("studentShell.navModules") },
         {
-          href: "/programa",
-          icon: Map,
-          label: t("studentShell.navCurriculum"),
+          href: "/director",
+          icon: Compass,
+          label: t("studentShell.navDirector"),
         },
         {
           href: "/progreso",

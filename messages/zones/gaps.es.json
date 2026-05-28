@@ -129,7 +129,7 @@
     "studentShell": {
       "navHome": "Inicio",
       "navModules": "Mis Módulos",
-      "navCurriculum": "Currículum",
+      "navDirector": "Director del DAP",
       "navProgress": "Mi Progreso",
       "groupCommunity": "Comunidad",
       "navCommunity": "Comunidad",
@@ -156,7 +156,7 @@
     "studentSidebar": {
       "navHome": "Inicio",
       "navModules": "Mis Módulos",
-      "navCurriculum": "Currículum",
+      "navDirector": "Director del DAP",
       "navProgress": "Mi Progreso",
       "groupCommunity": "Comunidad",
       "navCommunity": "Comunidad",

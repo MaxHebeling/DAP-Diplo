@@ -62,9 +62,9 @@ export function DapStudentSidebar({
           label: t("studentSidebar.navModules"),
         },
         {
-          href: "/programa",
-          icon: Map,
-          label: t("studentSidebar.navCurriculum"),
+          href: "/director",
+          icon: Compass,
+          label: t("studentSidebar.navDirector"),
         },
         {
           href: "/progreso",
