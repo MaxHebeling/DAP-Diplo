@@ -3,7 +3,6 @@ import {
   BookOpen,
   Globe2,
   GraduationCap,
-  Handshake,
   Languages,
   Mail,
   MapPin,
@@ -69,7 +68,6 @@ const SKILLS = [
     icon: Globe2,
     text: "Planificación y gestión de eventos internacionales",
   },
-  { icon: Handshake, text: "Negociación y asesoría organizacional" },
   {
     icon: GraduationCap,
     text: "Capacitación, entrenamiento y desarrollo de equipos",
@@ -81,6 +79,7 @@ const ROLES = [
   "Pastor Principal de Revival & Kingdom Ministries, Inc.",
   "Autor de ocho libros. Conferencista internacional.",
   "CEO de Reino Editorial.",
+  "CEO de iKingdom LLC.",
 ];
 
 export default async function DirectorPage() {
@@ -149,6 +148,7 @@ export default async function DirectorPage() {
               <div className="mt-5 flex flex-wrap items-center gap-2">
                 <Pill icon={MapPin} text="San Diego, CA" />
                 <Pill icon={Globe2} text="rkchurch.com" />
+                <Pill icon={Globe2} text="ikingdom.org" />
               </div>
 
               <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -336,6 +336,15 @@ export default async function DirectorPage() {
             >
               <Globe2 className="size-4" />
               rkchurch.com
+            </a>
+            <a
+              href="https://www.ikingdom.org"
+              target="_blank"
+              rel="noopener"
+              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-5 py-2.5 font-inter text-sm font-semibold text-white/90 transition-colors hover:bg-white/[0.08]"
+            >
+              <Globe2 className="size-4" />
+              ikingdom.org
             </a>
           </div>
         </section>
