@@ -33,6 +33,7 @@ import {
 } from "@/components/ui-dap/card";
 import { DapStudentShell } from "@/components/layouts/dap-student-shell";
 import { DashboardTour } from "@/components/onboarding/dashboard-tour";
+import { LaunchCountdown } from "@/components/student/launch-countdown";
 
 // Force dynamic — el dashboard depende de auth (cookies) y del estado
 // de subscription en DB. Sin esto Next 16 puede cachear y mostrar el
@@ -426,39 +427,43 @@ function NotStartedYet({
         )}
       </header>
 
-      <DapCard>
-        <div className="flex items-start gap-4">
-          <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-brand-violet/10 text-brand-violet">
-            <CalendarClock className="size-6" strokeWidth={1.8} />
-          </div>
-          <div>
-            <h2 className="font-grotesk text-h4 font-semibold text-text-primary">
-              {t("dashboard.notStarted.cardTitle")}
-            </h2>
-            {startsAt ? (
-              <p className="mt-2 font-inter text-sm leading-relaxed text-text-secondary">
-                {t.rich("dashboard.notStarted.startsOn", {
-                  startsAt,
-                  strong: (chunks) => (
-                    <span className="font-semibold text-text-primary">
-                      {chunks}
-                    </span>
-                  ),
-                })}
-              </p>
-            ) : (
+      {startsAt && programStartDate ? (
+        <LaunchCountdown
+          startsAtIso={programStartDate}
+          formattedDate={startsAt}
+          labels={{
+            eyebrow: t("common.diplomaEyebrow"),
+            title: t("dashboard.notStarted.cardTitle"),
+            days: t("dashboard.notStarted.days"),
+            hours: t("dashboard.notStarted.hours"),
+            minutes: t("dashboard.notStarted.minutes"),
+            seconds: t("dashboard.notStarted.seconds"),
+            explore: t("dashboard.notStarted.exploreShort"),
+          }}
+        />
+      ) : (
+        <DapCard>
+          <div className="flex items-start gap-4">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-brand-violet/10 text-brand-violet">
+              <CalendarClock className="size-6" strokeWidth={1.8} />
+            </div>
+            <div>
+              <h2 className="font-grotesk text-h4 font-semibold text-text-primary">
+                {t("dashboard.notStarted.cardTitle")}
+              </h2>
               <p className="mt-2 font-inter text-sm leading-relaxed text-text-secondary">
                 {t("dashboard.notStarted.noDate")}
               </p>
-            )}
-            {matricula && (
-              <p className="mt-3 font-mono text-xs text-text-tertiary">
-                {t("dashboard.notStarted.matricula", { matricula })}
-              </p>
-            )}
+            </div>
           </div>
-        </div>
-      </DapCard>
+        </DapCard>
+      )}
+
+      {matricula && (
+        <p className="font-mono text-xs text-text-tertiary">
+          {t("dashboard.notStarted.matricula", { matricula })}
+        </p>
+      )}
 
       <p className="font-inter text-xs text-text-tertiary">
         {t.rich("dashboard.notStarted.explore", {

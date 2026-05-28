@@ -26,11 +26,16 @@
         "noModule": "We couldn't find this week's module. If this persists, let us know at admisiones@dapglobal.org."
       },
       "notStarted": {
-        "cardTitle": "Your program starts soon",
+        "cardTitle": "Your journey starts soon",
         "startsOn": "It starts on <strong>{startsAt}</strong>. That day Week 1 opens and you'll receive an email notice.",
         "noDate": "You don't have a start date assigned yet. You'll get an email once admissions approves your application and issues your enrollment number.",
         "matricula": "Enrollment · {matricula}",
-        "explore": "In the meantime you can explore the <community>community</community> or the <tutor>AI tutor</tutor>."
+        "explore": "In the meantime you can explore the <community>community</community> or the <tutor>AI tutor</tutor>.",
+        "exploreShort": "In the meantime, walk through your portal, meet the community, and prepare your heart. The day Week 1 opens, you'll get an email at 00:01.",
+        "days": "Days",
+        "hours": "Hours",
+        "minutes": "Min",
+        "seconds": "Sec"
       },
       "currentCard": {
         "eyebrow": "Your module this week · Week {week}",

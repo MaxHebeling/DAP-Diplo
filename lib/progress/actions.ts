@@ -52,6 +52,18 @@ export async function markSectionCompleted(
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "No autenticado." };
 
+  // 0) Defense-in-depth: el módulo debe estar abierto para este alumno.
+  //    has_access_to_module verifica suscripción + course_week <=
+  //    current_program_week + admin override. Sin este check, alguien
+  //    podría llamar la action vía fetch antes del 23-jun-2026 y marcar
+  //    progreso fantasma.
+  const { data: hasAccess } = await supabase.rpc("has_access_to_module", {
+    p_module_id: parsed.data.moduleId,
+  });
+  if (!hasAccess) {
+    return { ok: false, error: "Este módulo aún no está disponible." };
+  }
+
   // 1) Upsert section_progress completed = true
   const { error: sErr } = await supabase.from("section_progress").upsert(
     {
