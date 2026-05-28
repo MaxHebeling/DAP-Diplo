@@ -1,13 +1,17 @@
 import {
+  Award,
   BookOpen,
-  Calendar,
   Globe2,
   GraduationCap,
+  Handshake,
+  Languages,
   Mail,
   MapPin,
   MessageCircle,
-  Quote,
+  Phone,
   Sparkles,
+  Trophy,
+  Users,
 } from "lucide-react";
 import { getLocale } from "next-intl/server";
 
@@ -21,61 +25,62 @@ export const dynamic = "force-dynamic";
 
 /**
  * Ficha profesional del Director del DAP — visible para todo alumno
- * desde el sidebar. Pensada como "carta de presentación" para que el
- * alumno conozca quién va a corregir sus activaciones y dar las
- * MasterClasses.
- *
- * Texto editable directo en este archivo. Si más adelante hay que
- * versionarlo o traducirlo, mover a una tabla `director_profile`.
+ * desde el sidebar. Contenido tomado del CV oficial.
  */
 
-type TimelineItem = { year: string; label: string; detail: string };
-type Credential = {
-  icon: typeof GraduationCap;
+type Degree = {
   title: string;
-  detail: string;
+  spanish: string;
+  honor?: string;
+  institution: string;
 };
 
-const TIMELINE: TimelineItem[] = [
+const DEGREES: Degree[] = [
   {
-    year: "2026",
-    label: "Director · Diplomado Apostólico Pastoral",
-    detail:
-      "Lanzamiento del DAP — programa de 18 meses con 9 dimensiones apostólicas para pastores y reformadores.",
+    title: "Bachelor of Theology & Counseling",
+    spanish: "Licenciatura en Teología y Consejería",
+    institution: "Redime Christian University · Ohio, United States",
   },
   {
-    year: "2018 – Hoy",
-    label: "Presidente · Revival & Kingdom Ministries, INC.",
-    detail:
-      "Plataforma apostólica con base en San Diego que cubre iglesias, líderes y reformadores en Latinoamérica y Estados Unidos.",
+    title: "Bachelor of Business Administration",
+    spanish: "Licenciatura en Administración de Empresas",
+    honor: "Honor Summa Cum Laude",
+    institution: "UTH Florida University · Miami, FL, United States",
   },
   {
-    year: "Desde 2010",
-    label: "Ministerio apostólico itinerante",
-    detail:
-      "Predicación y mentoría en más de 12 naciones. Conferencias, escuelas proféticas y consultoría a redes pastorales.",
+    title: "Master of Christian Ministry",
+    spanish: "Maestría en Ministerio Cristiano",
+    institution: "Oral Roberts University · Tulsa, Oklahoma, United States",
+  },
+  {
+    title: "Maestría en Colaboración Internacional y Diplomacia",
+    spanish: "",
+    institution: "CEUPE · European Business School · Madrid, España",
   },
 ];
 
-const CREDENTIALS: Credential[] = [
+const SKILLS = [
+  { icon: Sparkles, text: "Liderazgo espiritual y desarrollo ministerial" },
   {
-    icon: GraduationCap,
-    title: "Formación ministerial",
-    detail:
-      "Estudios teológicos y formación apostólica bajo mentores de la quinta generación del avivamiento contemporáneo.",
-  },
-  {
-    icon: BookOpen,
-    title: "Producción de contenido",
-    detail:
-      "Autor de materiales de discipulado, escuela ministerial y consultoría apostólica. Productor de RKCH Podcast.",
+    icon: Users,
+    text: "Formación y mentoría de pastores, líderes y ministros",
   },
   {
     icon: Globe2,
-    title: "Alcance internacional",
-    detail:
-      "Ministerio activo en Argentina, México, Estados Unidos, Centroamérica y el Caribe. Audiencia hispana global.",
+    text: "Planificación y gestión de eventos internacionales",
   },
+  { icon: Handshake, text: "Negociación y asesoría organizacional" },
+  {
+    icon: GraduationCap,
+    text: "Capacitación, entrenamiento y desarrollo de equipos",
+  },
+];
+
+const ROLES = [
+  "Director Internacional de la Red Apostólica Reino y Avivamiento.",
+  "Pastor Principal de Revival & Kingdom Ministries, Inc.",
+  "Autor de ocho libros. Conferencista internacional.",
+  "CEO de Reino Editorial.",
 ];
 
 export default async function DirectorPage() {
@@ -135,98 +140,162 @@ export default async function DirectorPage() {
                 </p>
               </div>
               <h1 className="mt-2 bg-gradient-to-br from-white via-white/95 to-white/70 bg-clip-text font-grotesk text-4xl font-bold leading-tight text-transparent sm:text-5xl">
-                Ap. Max Hebeling
+                Max Hebeling
               </h1>
               <p className="mt-2 font-inter text-sm text-white/65 sm:text-base">
-                Presidente de Revival &amp; Kingdom Ministries, INC. · Fundador
-                y Director del Diplomado Apostólico Pastoral.
+                Argentino · Residente en San Diego, California, Estados Unidos.
               </p>
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                <Pill icon={MapPin} text="San Diego · Tijuana" />
-                <Pill icon={Calendar} text="Ministerio desde 2010" />
+
+              <div className="mt-5 flex flex-wrap items-center gap-2">
+                <Pill icon={MapPin} text="San Diego, CA" />
+                <Pill icon={Globe2} text="rkchurch.com" />
+              </div>
+
+              <div className="mt-4 flex flex-wrap items-center gap-3">
+                <a
+                  href="mailto:office@rkchurch.com"
+                  className="inline-flex items-center gap-2 font-inter text-xs text-white/85 hover:text-white"
+                >
+                  <Mail className="size-3.5 text-brand-violet" />
+                  office@rkchurch.com
+                </a>
+                <a
+                  href="tel:+18583159770"
+                  className="inline-flex items-center gap-2 font-inter text-xs text-white/85 hover:text-white"
+                >
+                  <Phone className="size-3.5 text-brand-violet" />
+                  +1 (858) 315 9770
+                </a>
               </div>
             </div>
           </div>
         </section>
 
-        {/* LLAMADO */}
-        <section className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#04081A] p-8 sm:p-10">
-          <Quote
-            className="absolute right-6 top-6 size-16 text-brand-violet/15"
-            strokeWidth={1.2}
-          />
+        {/* PERFIL PROFESIONAL */}
+        <section className="rounded-2xl border border-white/[0.06] bg-[#04081A] p-8 sm:p-10">
           <p className="font-inter text-[10px] font-bold uppercase tracking-[0.4em] text-brand-coral">
-            Mi llamado
+            Perfil profesional
+          </p>
+          <ul className="mt-4 space-y-2.5">
+            {ROLES.map((r, i) => (
+              <li
+                key={i}
+                className="flex items-start gap-3 font-inter text-base leading-relaxed text-white/85"
+              >
+                <span
+                  aria-hidden
+                  className="mt-2.5 size-1.5 shrink-0 rounded-full bg-brand-coral"
+                />
+                {r}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* EXPERIENCIA */}
+        <section className="rounded-2xl border border-white/[0.06] bg-[#04081A] p-8 sm:p-10">
+          <p className="font-inter text-[10px] font-bold uppercase tracking-[0.4em] text-brand-coral">
+            Experiencia
           </p>
           <p className="mt-4 max-w-3xl font-grotesk text-xl font-medium leading-snug text-white/90 sm:text-2xl">
-            &ldquo;Formar pastores que sean apostólicamente padres,
-            empresarialmente reformadores y espiritualmente
-            gobernantes &mdash; capaces de tomar territorios y de sostenerlos
-            en el tiempo.&rdquo;
+            Conferencista internacional con participación en más de{" "}
+            <span className="text-brand-coral">17 países</span>, formando y
+            activando líderes y ministros.
           </p>
-          <p className="mt-6 max-w-3xl font-inter text-sm leading-relaxed text-white/65">
-            El DAP nace de 16 años de ministerio apostólico viendo lo mismo en
-            cada nación: pastores con corazón ardiente pero sin la estructura,
-            la mentoría y las herramientas para sostener la unción a largo
-            plazo. Este Diplomado existe para cerrar esa brecha.
+          <p className="mt-4 max-w-3xl font-inter text-sm leading-relaxed text-white/65">
+            Apasionado por la capacitación y activación ministerial, con una
+            visión de transformación global basada en principios del Reino.
           </p>
         </section>
 
-        {/* TRAYECTORIA */}
+        {/* FORMACIÓN ACADÉMICA */}
         <section className="rounded-2xl border border-white/[0.06] bg-[#04081A] p-8 sm:p-10">
-          <p className="font-inter text-[10px] font-bold uppercase tracking-[0.4em] text-brand-coral">
-            Trayectoria
-          </p>
+          <div className="flex items-center gap-2">
+            <GraduationCap className="size-4 text-brand-violet" />
+            <p className="font-inter text-[10px] font-bold uppercase tracking-[0.4em] text-brand-coral">
+              Formación académica
+            </p>
+          </div>
           <h2 className="mt-2 font-grotesk text-2xl font-bold text-white sm:text-3xl">
-            16 años edificando obra apostólica.
+            Cuatro grados académicos.
           </h2>
 
           <ol className="mt-7 space-y-5 border-l-2 border-brand-violet/30 pl-6">
-            {TIMELINE.map((t, i) => (
+            {DEGREES.map((d, i) => (
               <li key={i} className="relative">
                 <span
                   aria-hidden
                   className="absolute -left-[31px] top-1.5 size-3 rounded-full bg-gradient-to-br from-brand-violet to-brand-coral ring-4 ring-[#04081A]"
                 />
-                <p className="font-inter text-xs font-bold uppercase tracking-wider text-brand-violet">
-                  {t.year}
+                <p className="font-grotesk text-base font-bold text-white sm:text-lg">
+                  {d.title}
+                  {d.honor && (
+                    <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-amber-400/15 px-2 py-0.5 font-inter text-[10px] font-semibold uppercase tracking-wider text-amber-300">
+                      <Award className="size-3" />
+                      {d.honor}
+                    </span>
+                  )}
                 </p>
-                <p className="mt-1 font-grotesk text-base font-bold text-white sm:text-lg">
-                  {t.label}
-                </p>
-                <p className="mt-1 max-w-2xl font-inter text-sm leading-relaxed text-white/60">
-                  {t.detail}
+                {d.spanish && (
+                  <p className="mt-0.5 font-inter text-sm italic text-white/55">
+                    {d.spanish}
+                  </p>
+                )}
+                <p className="mt-1.5 font-inter text-sm leading-relaxed text-white/70">
+                  {d.institution}
                 </p>
               </li>
             ))}
           </ol>
         </section>
 
-        {/* CREDENCIALES */}
+        {/* LOGROS Y DISTINCIONES */}
+        <section className="relative overflow-hidden rounded-2xl border border-amber-400/20 bg-gradient-to-br from-amber-500/[0.08] via-[#04081A] to-[#04081A] p-8 sm:p-10">
+          <div className="flex items-center gap-2">
+            <Trophy className="size-4 text-amber-300" />
+            <p className="font-inter text-[10px] font-bold uppercase tracking-[0.4em] text-amber-300">
+              Logros y distinciones
+            </p>
+          </div>
+          <h2 className="mt-2 font-grotesk text-2xl font-bold text-white sm:text-3xl">
+            Embajador de la Paz y la Justicia.
+          </h2>
+          <p className="mt-5 max-w-3xl font-inter text-sm leading-relaxed text-white/75 sm:text-base">
+            En 2023, junto a su esposa, fue nombrado con grado honorífico como
+            <strong className="text-white"> Doctor</strong>, recibiendo el
+            título de <strong className="text-white">Embajador de la Paz y la Justicia</strong>,
+            con la encomienda de <strong className="text-white">Pacificador en nivel de Oficial</strong>,
+            y la <strong className="text-white">Medalla de la Gran Cruz del Mercosur</strong> junto
+            al <strong className="text-white">Mérito de la Orden del Águila Dorada</strong>, otorgados
+            por la <strong className="text-white">A.M.P.P. (Academia Mundial para a Promoção da Paz — Brasil)</strong>,
+            convirtiéndose en un diplomático encargado de la promoción de la
+            paz, la justicia y el bienestar para el{" "}
+            <strong className="text-white">MERCOSUR</strong>.
+          </p>
+        </section>
+
+        {/* HABILIDADES Y ESPECIALIDADES */}
         <section className="rounded-2xl border border-white/[0.06] bg-[#04081A] p-8 sm:p-10">
           <p className="font-inter text-[10px] font-bold uppercase tracking-[0.4em] text-brand-coral">
-            Credenciales
+            Habilidades y especialidades
           </p>
           <h2 className="mt-2 font-grotesk text-2xl font-bold text-white sm:text-3xl">
-            Formación, producción e influencia.
+            Donde su unción se hace estrategia.
           </h2>
 
-          <div className="mt-7 grid gap-4 sm:grid-cols-3">
-            {CREDENTIALS.map((c, i) => {
-              const Icon = c.icon;
+          <div className="mt-7 grid gap-3 sm:grid-cols-2">
+            {SKILLS.map((s, i) => {
+              const Icon = s.icon;
               return (
                 <div
                   key={i}
-                  className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 transition-colors hover:border-brand-violet/40"
+                  className="flex items-start gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 transition-colors hover:border-brand-violet/40"
                 >
-                  <div className="flex size-10 items-center justify-center rounded-lg bg-brand-violet/15 text-brand-violet">
-                    <Icon className="size-5" strokeWidth={1.8} />
+                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand-violet/15 text-brand-violet">
+                    <Icon className="size-4" strokeWidth={2} />
                   </div>
-                  <h3 className="mt-4 font-grotesk text-base font-bold text-white">
-                    {c.title}
-                  </h3>
-                  <p className="mt-2 font-inter text-sm leading-relaxed text-white/60">
-                    {c.detail}
+                  <p className="font-inter text-sm font-medium leading-snug text-white/85">
+                    {s.text}
                   </p>
                 </div>
               );
@@ -234,7 +303,7 @@ export default async function DirectorPage() {
           </div>
         </section>
 
-        {/* CONTACTO ligero */}
+        {/* CONTACTO */}
         <section className="rounded-2xl border border-white/[0.06] bg-gradient-to-br from-brand-violet/10 via-[#04081A] to-brand-coral/10 p-8 sm:p-10">
           <p className="font-inter text-[10px] font-bold uppercase tracking-[0.4em] text-brand-coral">
             Para los alumnos del DAP
@@ -244,7 +313,7 @@ export default async function DirectorPage() {
           </h2>
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <a
-              href="https://wa.me/19565095558"
+              href="https://wa.me/18583159770"
               target="_blank"
               rel="noopener"
               className="inline-flex items-center gap-2 rounded-full bg-brand-coral px-5 py-2.5 font-inter text-sm font-semibold text-white transition-transform hover:scale-[1.02]"
@@ -253,11 +322,20 @@ export default async function DirectorPage() {
               WhatsApp directo
             </a>
             <a
-              href="mailto:director@dapglobal.org"
+              href="mailto:office@rkchurch.com"
               className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-5 py-2.5 font-inter text-sm font-semibold text-white/90 transition-colors hover:bg-white/[0.08]"
             >
               <Mail className="size-4" />
-              director@dapglobal.org
+              office@rkchurch.com
+            </a>
+            <a
+              href="https://www.rkchurch.com"
+              target="_blank"
+              rel="noopener"
+              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-5 py-2.5 font-inter text-sm font-semibold text-white/90 transition-colors hover:bg-white/[0.08]"
+            >
+              <Globe2 className="size-4" />
+              rkchurch.com
             </a>
           </div>
         </section>
