@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { Check, Download, Mail, Search, Send } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/client";
 
 type Lead = {
   id: string;
@@ -35,7 +36,39 @@ export function LeadsTable({ leads: initialLeads }: { leads: Lead[] }) {
   const [country, setCountry] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [flashIds, setFlashIds] = useState<Set<string>>(new Set());
   const [, startTransition] = useTransition();
+
+  // Suscripción realtime: cuando entra un nuevo lead, aparece arriba
+  // con un flash visual de 3 segundos. `.on()` ANTES de `.subscribe()`.
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel("admin-live-leads")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "leads" },
+        (payload) => {
+          const row = payload.new as Lead;
+          setLeads((prev) =>
+            prev.some((l) => l.id === row.id) ? prev : [row, ...prev],
+          );
+          setFlashIds((prev) => new Set(prev).add(row.id));
+          setTimeout(() => {
+            setFlashIds((prev) => {
+              const next = new Set(prev);
+              next.delete(row.id);
+              return next;
+            });
+          }, 3000);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const countries = useMemo(() => {
     const set = new Map<string, string>();
@@ -208,7 +241,10 @@ export function LeadsTable({ leads: initialLeads }: { leads: Lead[] }) {
               </tr>
             )}
             {filtered.map((l) => (
-              <tr key={l.id} className="hover:bg-muted/20">
+              <tr
+                key={l.id}
+                className={`hover:bg-muted/20 ${flashIds.has(l.id) ? "animate-pulse bg-brand-coral/10" : ""}`}
+              >
                 <td className="whitespace-nowrap px-4 py-3 text-xs text-muted-foreground">
                   {formatDate(l.created_at)}
                 </td>

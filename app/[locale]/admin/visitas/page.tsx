@@ -1,9 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
+import { LiveVisitorsPanel } from "@/components/admin/live-visitors-panel";
 
 export const metadata = { title: "Visitas · DAP Admin" };
 export const dynamic = "force-dynamic";
 
 type VisitRow = {
+  id: string;
   country: string | null;
   country_code: string | null;
   page_path: string | null;
@@ -24,13 +26,14 @@ export default async function AdminVisitasPage() {
   const sinceIso = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
   const { data: visits } = await supabase
     .from("visit_logs")
-    .select("country, country_code, page_path, created_at")
+    .select("id, country, country_code, page_path, created_at")
     .gte("created_at", sinceIso)
     .order("created_at", { ascending: false })
     .limit(5000)
     .returns<VisitRow[]>();
 
   const rows = visits ?? [];
+  const liveInitial = rows.slice(0, 30);
   const total = rows.length;
 
   const last7Iso = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
@@ -55,6 +58,8 @@ export default async function AdminVisitasPage() {
           (IP hasheada). Últimos 30 días.
         </p>
       </header>
+
+      <LiveVisitorsPanel initial={liveInitial} />
 
       <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Kpi label="30 días" value={total} />
