@@ -148,7 +148,6 @@ export default async function DirectorPage() {
               <div className="mt-5 flex flex-wrap items-center gap-2">
                 <Pill icon={MapPin} text="Tijuana, BC, México" />
                 <Pill icon={Globe2} text="maxhebeling.org" />
-                <Pill icon={Globe2} text="rkchurch.com" />
                 <Pill icon={Globe2} text="ikingdom.org" />
               </div>
 
@@ -337,15 +336,6 @@ export default async function DirectorPage() {
             >
               <Globe2 className="size-4" />
               maxhebeling.org
-            </a>
-            <a
-              href="https://www.rkchurch.com"
-              target="_blank"
-              rel="noopener"
-              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-5 py-2.5 font-inter text-sm font-semibold text-white/90 transition-colors hover:bg-white/[0.08]"
-            >
-              <Globe2 className="size-4" />
-              rkchurch.com
             </a>
             <a
               href="https://www.ikingdom.org"
