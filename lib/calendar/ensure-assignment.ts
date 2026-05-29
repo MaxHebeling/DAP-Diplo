@@ -35,11 +35,17 @@ export async function ensureWeekAssignment({
   sectionId,
   courseWeek,
 }: Args): Promise<void> {
-  // 1. ¿Estamos en la semana de este módulo?
+  // 1. ¿El alumno tiene acceso a este módulo? course_week > currentWeek
+  //    significa que el módulo es del futuro: no crear.
+  //    course_week == currentWeek → semana actual.
+  //    course_week < currentWeek → módulo pasado pero accesible
+  //    (el alumno puede subir tarea retroactiva o ponerse al día).
+  //    currentWeek === 0 → programa todavía no arrancó.
   const { data: cw } = await supabase.rpc("current_program_week", {
     p_user_id: userId,
   });
-  if (cw !== courseWeek) return;
+  const currentWeek = typeof cw === "number" ? cw : 0;
+  if (currentWeek === 0 || courseWeek > currentWeek) return;
 
   // 2. ¿Ya existe?
   const { data: existing } = await supabase
@@ -51,18 +57,31 @@ export async function ensureWeekAssignment({
     .maybeSingle<{ id: string }>();
   if (existing) return;
 
-  // 3. Pedir ventana semanal y crear el row
-  const { data: win, error: winErr } = await supabase
-    .rpc("week_window", {
-      p_user_id: userId,
-      p_course_week: courseWeek,
-    })
-    .single<{ opens_at: string; closes_at: string }>();
-  if (winErr || !win) {
-    console.error(
-      `[ensureWeekAssignment] week_window falló user=${userId} week=${courseWeek}: ${winErr?.message ?? "no data"}`,
-    );
-    return;
+  // 3. Determinar opens_at/closes_at:
+  //    - Semana actual: pedir week_window al server (ventana semanal canónica)
+  //    - Módulo pasado: ventana extendida (12 meses) para que el alumno pueda
+  //      ponerse al día sin trabar el flujo.
+  let opensAt: string;
+  let closesAt: string;
+  if (courseWeek === currentWeek) {
+    const { data: win, error: winErr } = await supabase
+      .rpc("week_window", {
+        p_user_id: userId,
+        p_course_week: courseWeek,
+      })
+      .single<{ opens_at: string; closes_at: string }>();
+    if (winErr || !win) {
+      console.error(
+        `[ensureWeekAssignment] week_window falló user=${userId} week=${courseWeek}: ${winErr?.message ?? "no data"}`,
+      );
+      return;
+    }
+    opensAt = win.opens_at;
+    closesAt = win.closes_at;
+  } else {
+    const now = new Date();
+    opensAt = now.toISOString();
+    closesAt = new Date(now.getTime() + 365 * 24 * 3600 * 1000).toISOString();
   }
 
   const { error: insErr } = await supabase
@@ -71,8 +90,8 @@ export async function ensureWeekAssignment({
       user_id: userId,
       module_id: moduleId,
       module_section_id: sectionId,
-      opens_at: win.opens_at,
-      closes_at: win.closes_at,
+      opens_at: opensAt,
+      closes_at: closesAt,
       status: "open",
     });
 
