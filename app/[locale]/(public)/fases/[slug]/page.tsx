@@ -438,31 +438,56 @@ export default async function BlockDetailPage({ params }: PageProps) {
               </p>
             ) : (
               <ol className="grid gap-2 sm:grid-cols-2">
-                {modules.map((m) => (
-                  <li
-                    key={m.id}
-                    className="flex items-center gap-4 rounded-xl border border-white/5 bg-neutral-900/30 px-5 py-4 transition-colors hover:border-white/10"
-                  >
-                    <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/10 font-grotesk text-sm font-medium text-neutral-300">
-                      {String(m.order_index).padStart(2, "0")}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-neutral-50">
-                        {localized(m, "title", locale) ?? m.title}
-                      </p>
-                      {localized(m, "subtitle", locale) && (
-                        <p className="truncate text-xs text-neutral-500">
-                          {localized(m, "subtitle", locale)}
+                {modules.map((m) => {
+                  const moduleTitle = localized(m, "title", locale) ?? m.title;
+                  const moduleSubtitle = localized(m, "subtitle", locale);
+                  // Alumnos logueados con suscripción O admins pueden entrar
+                  // directamente al módulo. Visitantes públicos solo ven la
+                  // tarjeta como display (no clickable).
+                  const canOpen = isLoggedIn && (hasActiveSub || isAdmin);
+                  const inner = (
+                    <>
+                      <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/10 font-grotesk text-sm font-medium text-neutral-300">
+                        {String(m.order_index).padStart(2, "0")}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-neutral-50">
+                          {moduleTitle}
                         </p>
-                      )}
-                    </div>
+                        {moduleSubtitle && (
+                          <p className="truncate text-xs text-neutral-500">
+                            {moduleSubtitle}
+                          </p>
+                        )}
+                      </div>
                     <span className="shrink-0 text-xs tabular-nums text-neutral-500">
                       {t("phases.moduleMinutes", {
                         minutes: m.duration_minutes ?? 50,
                       })}
                     </span>
-                  </li>
-                ))}
+                    </>
+                  );
+                  if (canOpen) {
+                    return (
+                      <li key={m.id}>
+                        <Link
+                          href={`/fases/${phase.slug}/modulos/${m.slug}`}
+                          className="flex items-center gap-4 rounded-xl border border-white/5 bg-neutral-900/30 px-5 py-4 transition-all hover:border-brand-coral/40 hover:bg-neutral-900/60"
+                        >
+                          {inner}
+                        </Link>
+                      </li>
+                    );
+                  }
+                  return (
+                    <li
+                      key={m.id}
+                      className="flex items-center gap-4 rounded-xl border border-white/5 bg-neutral-900/30 px-5 py-4"
+                    >
+                      {inner}
+                    </li>
+                  );
+                })}
               </ol>
             )}
           </div>
