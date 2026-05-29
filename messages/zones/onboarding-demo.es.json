@@ -5,7 +5,7 @@
       "comingSoonEyebrow": "Próximamente",
       "comingSoonTitle": "Inscripciones abren el {date}",
       "comingSoonBodyBefore": "La primera convocatoria del Diplomado Apostólico Pastoral abre inscripciones el ",
-      "comingSoonBodyAfter": ". Volvé en esa fecha para asegurar tu lugar.",
+      "comingSoonBodyAfter": ". Vuelve en esa fecha para asegurar tu lugar.",
       "classesStartLabel": "Inicio de clases:",
       "closeButton": "Cerrar",
       "redirectingTitle": "Llevándote al pago seguro",
@@ -15,10 +15,10 @@
       "step": "Paso 1 de 2",
       "title": "¿Desde dónde te conectas?",
       "subtitle": "Tu país nos ayuda a personalizar tu experiencia y prepararte el camino correcto dentro del Diplomado.",
-      "searchPlaceholder": "Buscá tu país...",
+      "searchPlaceholder": "Busca tu país...",
       "featuredLabel": "Destacados · Hispanohablantes",
       "restLabel": "Resto del mundo",
-      "noResults": "No encontramos ese país. Probá con otro nombre."
+      "noResults": "No encontramos ese país. Prueba con otro nombre."
     },
     "signupForm": {
       "changeCountry": "Cambiar país",
@@ -31,7 +31,7 @@
       "orWithEmail": "o con tu correo",
       "geoMismatchTitle": "Beneficio matrimonio Argentina no disponible",
       "geoMismatchBodyBefore": "Detectamos que estás conectándote desde ",
-      "geoMismatchBodyAfter": ". La inscripción especial de matrimonio es exclusiva para residentes en Argentina. Podés seguir adelante con tu inscripción individual normal.",
+      "geoMismatchBodyAfter": ". La inscripción especial de matrimonio es exclusiva para residentes en Argentina. Puedes seguir adelante con tu inscripción individual normal.",
       "geoMismatchChange": "Cambiar a {country}",
       "geoMismatchChangeFallback": "otro país",
       "fullNameMarriage": "Nombre completo (cónyuge 1)",
@@ -41,7 +41,7 @@
       "passwordLabel": "Contraseña",
       "passwordHint": "Mínimo 8 caracteres",
       "ministryLabel": "Ministerio / iglesia",
-      "ministryHint": "Opcional — completá después si querés",
+      "ministryHint": "Opcional — completa después si quieres",
       "spouse2Divider": "Cónyuge 2",
       "residenceDeclaration": "Confirmamos que residimos actualmente en Argentina y que esta inscripción corresponde a un matrimonio. Aceptamos verificación posterior si fuera necesario.",
       "submitCreatingMarriage": "Creando cuentas...",
@@ -55,11 +55,11 @@
       "errorEmail": "Email inválido.",
       "errorPassword": "Mínimo 8 caracteres.",
       "errorPhonePrefix": "Debe empezar con {code}",
-      "errorProvince": "Seleccioná tu provincia.",
+      "errorProvince": "Selecciona tu provincia.",
       "errorSpouseFullName": "Mínimo 3 caracteres.",
       "errorSpouseEmail": "Email inválido.",
       "errorSpouseEmailDistinct": "Debe ser distinto al del cónyuge 1.",
-      "errorSpouseProvince": "Seleccioná la provincia.",
+      "errorSpouseProvince": "Selecciona la provincia.",
       "errorResidence": "Necesitamos tu confirmación para aplicar el beneficio.",
       "toastError": "No se pudo completar el registro.",
       "toastNetworkError": "Error de red",
@@ -86,7 +86,7 @@
       "phoneLabel": "WhatsApp / Teléfono",
       "phoneHint": "Formato: {code} 11 1234 5678",
       "provinceLabel": "Provincia",
-      "provincePlaceholder": "Seleccioná tu provincia...",
+      "provincePlaceholder": "Selecciona tu provincia...",
       "ministryLabel": "Ministerio / iglesia",
       "ministryHint": "Opcional"
     },
@@ -114,7 +114,7 @@
     "avatarHost": {
       "iframeTitle": "Avatar IA — Guía del demo",
       "placeholderTitle": "Tu guía digital se está preparando",
-      "placeholderBody": "En breve un avatar virtual te va a recibir y te va a llevar paso a paso por el módulo. Mientras tanto, podés bajar y explorar todo el contenido del módulo directamente."
+      "placeholderBody": "En breve un avatar virtual te va a recibir y te va a llevar paso a paso por el módulo. Mientras tanto, puedes bajar y explorar todo el contenido del módulo directamente."
     },
     "quiz": {
       "questions": {
@@ -154,7 +154,7 @@
       "resultLabel": "Tu resultado",
       "resultSummary": "{correct} de {total} correctas · ",
       "passed": "¡Aprobado! (≥ 70%)",
-      "notPassed": "No aprobado — necesitás 70% mínimo",
+      "notPassed": "No aprobado — necesitas 70% mínimo",
       "yourAnswer": "Tu respuesta: ",
       "correctAnswer": "Correcta: ",
       "retry": "Volver a intentar"

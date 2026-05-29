@@ -19,19 +19,19 @@ export function Markdown({ children }: { children: string }) {
           h1: ({ ...props }) => (
             <h1
               {...props}
-              className="mb-3 mt-6 font-serif text-2xl font-semibold leading-tight text-foreground"
+              className="mb-3 mt-6 font-grotesk text-2xl font-semibold leading-tight text-foreground"
             />
           ),
           h2: ({ ...props }) => (
             <h2
               {...props}
-              className="mb-2 mt-5 font-serif text-xl font-semibold leading-tight text-foreground"
+              className="mb-2 mt-5 font-grotesk text-xl font-semibold leading-tight text-foreground"
             />
           ),
           h3: ({ ...props }) => (
             <h3
               {...props}
-              className="mb-2 mt-4 font-serif text-lg font-semibold leading-tight text-foreground"
+              className="mb-2 mt-4 font-grotesk text-lg font-semibold leading-tight text-foreground"
             />
           ),
           ul: ({ ...props }) => (

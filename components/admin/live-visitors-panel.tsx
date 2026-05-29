@@ -102,7 +102,7 @@ export function LiveVisitorsPanel({ initial }: { initial: LiveVisit[] }) {
           <div className="flex items-center justify-center gap-2 py-8 text-muted-foreground">
             <Globe2 className="size-4" />
             <span className="font-inter text-sm">
-              Esperando visitas… (dejá esta pestaña abierta)
+              Esperando visitas… (deja esta pestaña abierta)
             </span>
           </div>
         ) : (

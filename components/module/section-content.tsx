@@ -203,7 +203,7 @@ async function ImpartationPhrase({ phrase }: { phrase: string }) {
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(50%_60%_at_50%_30%,rgba(253,173,90,0.16),transparent)]"
       />
-      <p className="relative font-serif text-2xl font-medium leading-tight sm:text-3xl">
+      <p className="relative font-grotesk text-2xl font-medium leading-tight sm:text-3xl">
         &ldquo;{phrase}&rdquo;
       </p>
       <p className="relative mt-5 text-xs font-medium uppercase tracking-[0.3em] text-brand-coral">

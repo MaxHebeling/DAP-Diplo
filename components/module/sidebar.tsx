@@ -38,7 +38,7 @@ export async function ModuleSidebar({
         </p>
         <Link
           href={`/fases/${phaseSlug}`}
-          className="font-serif text-lg font-medium leading-tight hover:text-brand-coral"
+          className="font-grotesk text-lg font-medium leading-tight hover:text-brand-coral"
         >
           {phaseTitle}
         </Link>

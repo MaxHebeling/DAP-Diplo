@@ -93,7 +93,7 @@ function render(p: {
         <tr><td align="center" style="padding:24px 0 0;">
           <p style="margin:0;font-size:11px;color:#64748B;">
             Tu puntuación: <strong style="color:${accent};">${p.score}/100</strong>
-            ${p.passed ? "" : " · Podés rehacer la entrega cuando quieras."}
+            ${p.passed ? "" : " · Puedes rehacer la entrega cuando quieras."}
           </p>
         </td></tr>
       </table>

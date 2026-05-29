@@ -179,10 +179,10 @@ function LeadSheet({
               Conversemos
             </p>
             <h3 className="mt-2 font-grotesk text-xl font-bold leading-tight text-text-primary sm:text-2xl">
-              ¿Querés conocer más del DAP?
+              ¿Quieres conocer más del DAP?
             </h3>
             <p className="mt-2 font-inter text-sm leading-relaxed text-text-secondary">
-              Dejá tu email y te mando información personalizada sobre la
+              Deja tu email y te mando información personalizada sobre la
               próxima cohorte. Sin spam.
             </p>
 
@@ -262,7 +262,7 @@ function ThanksState({
       <p className="mt-3 font-inter text-sm leading-relaxed text-text-secondary">
         {duplicated
           ? "Ya teníamos tu email. Actualizamos tu información con lo nuevo. Te vamos a estar escribiendo pronto."
-          : "Te vamos a estar escribiendo en las próximas horas con la info de la cohorte. Mientras tanto, podés explorar el sitio."}
+          : "Te vamos a estar escribiendo en las próximas horas con la info de la cohorte. Mientras tanto, puedes explorar el sitio."}
       </p>
       <button
         type="button"

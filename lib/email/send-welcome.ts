@@ -97,7 +97,7 @@ function renderWelcomeHtml(opts: {
                 </h1>
                 <p style="margin:0 0 18px;font-size:16px;line-height:1.65;color:#CBD5E1;">
                   Tu suscripción de <strong style="color:#F8FAFC;font-weight:600;">USD $25 al mes</strong> quedó activa.
-                  Ya tenés acceso al <strong style="color:#F8FAFC;font-weight:600;">Bloque 1 — Raíces (Fundamentos Espirituales)</strong>,
+                  Ya tienes acceso al <strong style="color:#F8FAFC;font-weight:600;">Bloque 1 — Raíces (Fundamentos Espirituales)</strong>,
                   el primero de los nueve bloques del proceso.
                 </p>
                 <p style="margin:0 0 36px;font-size:16px;line-height:1.65;color:#CBD5E1;">
@@ -171,7 +171,7 @@ function renderWelcomeHtml(opts: {
                 </p>
                 <p style="margin:0;font-size:10px;line-height:1.6;color:#475569;">
                   Departamento de educación de Revival &amp; Kingdom Ministries, INC.<br>
-                  Recibís este correo porque te suscribiste en
+                  Recibes este correo porque te suscribiste en
                   <a href="${appUrl}" style="color:#7B61FF;text-decoration:none;">dapglobal.org</a>
                 </p>
               </td>

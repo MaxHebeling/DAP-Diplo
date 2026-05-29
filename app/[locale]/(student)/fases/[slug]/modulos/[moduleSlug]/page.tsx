@@ -22,6 +22,7 @@ import type { Locale } from "@/i18n/config";
 import { ensureWeekAssignment } from "@/lib/calendar/ensure-assignment";
 import { signMuxPlayerTokens } from "@/lib/mux/playback";
 import { ModuleQuickActions } from "@/components/module/module-quick-actions";
+import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 
 const SECTION_KINDS: SectionKind[] = [
   "intro",
@@ -392,7 +393,7 @@ export default async function ModulePlayerPage({
   const activeBodyMd = localized(activeSection, "body_md", locale);
 
   return (
-    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[300px_1fr]">
+    <div className="grid min-h-screen grid-cols-1 bg-surface-base text-text-primary lg:grid-cols-[300px_1fr]">
       <ModuleSidebar
         phaseTitle={phaseTitle}
         phaseOrderIndex={mod.phase.order_index}
@@ -402,8 +403,8 @@ export default async function ModulePlayerPage({
       />
 
       <div className="flex min-h-screen flex-col">
-        {/* Top bar mini — responsive */}
-        <header className="flex items-center justify-between gap-2 border-b px-4 py-3 sm:px-6 sm:py-4">
+        {/* Top bar mini — responsive, en línea con el shell del portal */}
+        <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-white/[0.06] bg-surface-base/85 px-4 py-3 backdrop-blur-xl sm:px-6 sm:py-4">
           {/* Breadcrumb compacto en mobile, completo en desktop */}
           <nav
             aria-label="Breadcrumb"
@@ -438,6 +439,7 @@ export default async function ModulePlayerPage({
             </span>
           </nav>
           <div className="flex items-center gap-2 sm:gap-3">
+            <LanguageSwitcher />
             <Logo size="sm" />
             <SignOutButton variant="ghost" />
           </div>
@@ -455,14 +457,14 @@ export default async function ModulePlayerPage({
 
             <header className="mb-8">
               {moduleSubtitle && (
-                <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
+                <p className="mb-2 font-inter text-[10px] font-bold uppercase tracking-[0.4em] text-brand-coral">
                   {moduleSubtitle}
                 </p>
               )}
-              <h1 className="font-serif text-3xl font-semibold leading-tight sm:text-4xl">
+              <h1 className="bg-gradient-to-br from-white via-white/95 to-white/70 bg-clip-text font-grotesk text-3xl font-bold leading-tight text-transparent sm:text-4xl">
                 {moduleTitle}
               </h1>
-              <p className="mt-2 text-sm text-muted-foreground">
+              <p className="mt-2 font-inter text-sm text-text-secondary">
                 {t("module.duration", { minutes: mod.duration_minutes ?? 50 })}
               </p>
             </header>
@@ -492,7 +494,7 @@ export default async function ModulePlayerPage({
             <section aria-labelledby="section-heading">
               <h2
                 id="section-heading"
-                className="mb-6 font-serif text-2xl font-semibold"
+                className="mb-6 font-grotesk text-2xl font-bold text-white"
               >
                 {t(SECTION_TITLE_KEY[currentSection])}
               </h2>

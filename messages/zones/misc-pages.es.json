@@ -108,7 +108,7 @@
     "error": {
       "eyebrow": "Algo salió mal",
       "title": "Tuvimos un problema cargando esta página.",
-      "body": "El error ya quedó registrado y vamos a revisarlo. Mientras tanto, podés intentar otra vez o volver al inicio.",
+      "body": "El error ya quedó registrado y vamos a revisarlo. Mientras tanto, puedes intentar otra vez o volver al inicio.",
       "retry": "Reintentar",
       "backHome": "Volver al inicio",
       "ref": "Ref: {digest}"

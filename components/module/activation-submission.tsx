@@ -192,7 +192,7 @@ function PendingCorrectionView({
   return (
     <div className="rounded-2xl border border-amber-500/30 bg-amber-500/[0.04] p-8 text-center">
       <Clock className="mx-auto size-9 text-amber-400" strokeWidth={1.7} />
-      <h3 className="mt-4 font-serif text-xl font-semibold">
+      <h3 className="mt-4 font-grotesk text-xl font-semibold">
         {t("activation.pendingTitle")}
       </h3>
       <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
@@ -245,7 +245,7 @@ function FeedbackView({ submission }: { submission: ActivationSubmission }) {
             <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
               {passed ? t("activation.feedbackApproved") : t("activation.feedbackNeedsReview")}
             </p>
-            <p className="font-serif text-2xl font-semibold leading-tight">
+            <p className="font-grotesk text-2xl font-semibold leading-tight">
               {submission.ai_score ?? "—"}
               <span className="text-base text-muted-foreground">/100</span>
             </p>
@@ -291,7 +291,7 @@ function NotSubmittedView({
   return (
     <div className="rounded-2xl border border-muted-foreground/20 bg-muted/[0.04] p-8 text-center">
       <Clock className="mx-auto size-9 text-muted-foreground" strokeWidth={1.7} />
-      <h3 className="mt-4 font-serif text-lg font-semibold">
+      <h3 className="mt-4 font-grotesk text-lg font-semibold">
         {t("activation.windowClosedTitle")}
       </h3>
       <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">

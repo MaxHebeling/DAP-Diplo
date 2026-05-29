@@ -270,7 +270,7 @@ export function QuizPlayer({
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <div className="rounded-2xl border border-brand-coral/30 bg-brand-coral/5 p-6">
-        <h3 className="font-serif text-xl font-semibold">{quiz.title}</h3>
+        <h3 className="font-grotesk text-xl font-semibold">{quiz.title}</h3>
         {quiz.description && (
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             {quiz.description}
@@ -412,7 +412,7 @@ function PendingRevealView({
     <div className="space-y-6">
       <div className="rounded-2xl border border-amber-500/30 bg-amber-500/[0.05] p-8 text-center">
         <Clock className="mx-auto size-9 text-amber-400" strokeWidth={1.7} />
-        <h3 className="mt-4 font-serif text-xl font-semibold">
+        <h3 className="mt-4 font-grotesk text-xl font-semibold">
           {t("quiz.pendingTitle")}
         </h3>
         <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
@@ -505,7 +505,7 @@ function ResultView({
             <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
               {t("quiz.result")}
             </p>
-            <p className="font-serif text-3xl font-semibold leading-none">
+            <p className="font-grotesk text-3xl font-semibold leading-none">
               {reveal.score_percent}%
             </p>
           </div>
@@ -669,7 +669,7 @@ export function QuizAlreadyPassed({
             <p className="text-xs font-medium uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
               {t("quiz.quizApproved")}
             </p>
-            <p className="font-serif text-2xl font-semibold leading-tight">
+            <p className="font-grotesk text-2xl font-semibold leading-tight">
               {quiz.title}
             </p>
           </div>

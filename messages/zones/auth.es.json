@@ -56,7 +56,7 @@
       "submitting": "Enviando…",
       "emailLabel": "Tu email",
       "emailPlaceholder": "tu@email.com",
-      "successTitle": "Revisá tu email",
+      "successTitle": "Revisa tu email",
       "successBody": "Si el correo existe en nuestra base, te llegará un link para crear una contraseña nueva. Puede tardar 1–2 minutos.",
       "rememberedQuestion": "¿Te acordaste?",
       "backToLogin": "Volver a iniciar sesión"
@@ -81,7 +81,7 @@
       "backToHome": "Volver al inicio",
       "eyebrow": "Suscripción",
       "title": "Diplomado Apostólico Pastoral",
-      "intro": "Una sola suscripción mensual te da acceso al diplomado completo de 18 meses. Recibís un módulo nuevo cada semana (martes 00:01). Cancela cuando quieras desde tu dashboard — tu progreso queda guardado.",
+      "intro": "Una sola suscripción mensual te da acceso al diplomado completo de 18 meses. Recibes un módulo nuevo cada semana (martes 00:01). Cancela cuando quieras desde tu dashboard — tu progreso queda guardado.",
       "price": "$25",
       "priceUnit": "USD por mes",
       "planSingle": "Plan único",

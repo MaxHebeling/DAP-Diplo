@@ -87,10 +87,10 @@
     },
     "admission": {
       "metaTitle": "Admisión — DAP",
-      "metaDescription": "Completá tu formulario de admisión al Diplomado Apostólico Pastoral.",
+      "metaDescription": "Completa tu formulario de admisión al Diplomado Apostólico Pastoral.",
       "logoAlt": "DAP",
       "title": "Tu formulario de admisión",
-      "intro": "Completá estos datos para que el equipo de admisiones revise tu solicitud. Te avisaremos por email apenas esté lista.",
+      "intro": "Completa estos datos para que el equipo de admisiones revise tu solicitud. Te avisaremos por email apenas esté lista.",
       "doubts": "¿Dudas? Escribinos a"
     },
     "admissionStatus": {
@@ -117,7 +117,7 @@
       "submittedAt": "Enviada el {date}",
       "reviewedAt": "Revisada el {date}",
       "contact": "Contactar admisiones",
-      "spamNote": "Revisá tu bandeja de spam por si nuestra respuesta llega ahí. Te avisamos por email apenas tengamos novedades."
+      "spamNote": "Revisa tu bandeja de spam por si nuestra respuesta llega ahí. Te avisamos por email apenas tengamos novedades."
     },
     "agenda": {
       "metaTitle": "Agenda — DAP",
@@ -255,7 +255,7 @@
         "title": "Dimensiones obtenidas",
         "fallback": "—",
         "awardedOn": "Otorgada el {date}",
-        "empty": "Aún no has alcanzado ninguna dimensión. Completá los 8 módulos de un bloque para recibir la primera (Discípulo)."
+        "empty": "Aún no has alcanzado ninguna dimensión. Completa los 8 módulos de un bloque para recibir la primera (Discípulo)."
       },
       "certificates": {
         "title": "Certificados emitidos",

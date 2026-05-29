@@ -52,7 +52,7 @@ export function ModulePdfManager({
   async function handleUpload(e: React.FormEvent) {
     e.preventDefault();
     if (!file || !title.trim()) {
-      toast.error("Completá título y elegí un PDF");
+      toast.error("Completa título y elegí un PDF");
       return;
     }
     if (file.type !== "application/pdf") {

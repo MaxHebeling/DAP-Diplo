@@ -74,7 +74,7 @@
       "fileMetaFallback": "archivo",
       "remove": "Quitar",
       "errorRetry": "Prueba de nuevo. PDF, JPG o PNG · max 10 MB.",
-      "emptyTitle": "Arrastrá la carta o hacé clic",
+      "emptyTitle": "Arrastrá la carta o haz clic",
       "emptyHint": "PDF, JPG o PNG · máximo 10 MB"
     }
   },

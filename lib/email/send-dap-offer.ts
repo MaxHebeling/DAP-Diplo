@@ -50,7 +50,7 @@ function renderHtml(opts: {
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:rgba(123,97,255,0.06);border:1px solid rgba(123,97,255,0.18);border-radius:14px;">
           <tr><td style="padding:24px 24px;">
             <p style="margin:0 0 12px;font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#FF4D6D;">🇦🇷 Especial para Argentina</p>
-            <p style="margin:0;font-size:14px;line-height:1.6;color:#CBD5E1;">Si te inscribís junto a tu cónyuge, hay una <strong style="color:#F8FAFC;">oportunidad especial: USD $35 al mes para los dos</strong> (una sola suscripción cubre el acceso completo de ambos).</p>
+            <p style="margin:0;font-size:14px;line-height:1.6;color:#CBD5E1;">Si te inscribes junto a tu cónyuge, hay una <strong style="color:#F8FAFC;">oportunidad especial: USD $35 al mes para los dos</strong> (una sola suscripción cubre el acceso completo de ambos).</p>
           </td></tr>
         </table>
       </td></tr>`
@@ -74,13 +74,13 @@ function renderHtml(opts: {
 </td></tr>
 ${argentinaBlock}
 <tr><td style="padding:32px 8px 0;border-top:1px solid rgba(248,250,252,0.06);">
-  <p style="margin:0 0 14px;font-size:14px;line-height:1.6;color:#CBD5E1;">Si querés conversar antes de decidir, podés responderme directo a este correo o escribirme al WhatsApp:</p>
+  <p style="margin:0 0 14px;font-size:14px;line-height:1.6;color:#CBD5E1;">Si quieres conversar antes de decidir, puedes responderme directo a este correo o escribirme al WhatsApp:</p>
   <p style="margin:0 0 28px;font-size:14px;line-height:1.6;color:#F8FAFC;font-weight:600;">+1 956 509 5558</p>
 </td></tr>
 <tr><td align="center" style="padding:24px 8px 0;">
   <p style="margin:0 0 8px;font-size:11px;line-height:1.6;color:#64748B;">— Ap. Max Hebeling</p>
   <p style="margin:0 0 8px;font-size:11px;line-height:1.6;color:#64748B;">© 2026 DAP · Diplomado Apostólico Pastoral</p>
-  <p style="margin:0;font-size:10px;line-height:1.6;color:#475569;">Departamento de educación de Revival &amp; Kingdom Ministries, INC.<br>Recibís este correo porque dejaste tus datos en <a href="${appUrl}" style="color:#7B61FF;text-decoration:none;">dapglobal.org</a></p>
+  <p style="margin:0;font-size:10px;line-height:1.6;color:#475569;">Departamento de educación de Revival &amp; Kingdom Ministries, INC.<br>Recibes este correo porque dejaste tus datos en <a href="${appUrl}" style="color:#7B61FF;text-decoration:none;">dapglobal.org</a></p>
 </td></tr>
 </table></td></tr></table></body></html>`;
 }

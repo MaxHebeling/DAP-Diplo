@@ -129,7 +129,7 @@ function renderAdmissionRequestHtml(p: AdmissionRequestEmailPayload): string {
 
             <tr><td style="padding:24px 8px 0;border-top:1px solid rgba(255,255,255,0.06);">
               <p style="margin:0;font-size:13px;line-height:1.6;color:#94A3B8;">
-                Revisá en el panel admin: <a href="${escapeHtml(process.env.NEXT_PUBLIC_APP_URL ?? "https://www.dapglobal.org")}/admin/admisiones" style="color:#FF4D6D;">/admin/admisiones</a>
+                Revisa en el panel admin: <a href="${escapeHtml(process.env.NEXT_PUBLIC_APP_URL ?? "https://www.dapglobal.org")}/admin/admisiones" style="color:#FF4D6D;">/admin/admisiones</a>
               </p>
             </td></tr>
 

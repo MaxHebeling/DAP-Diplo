@@ -91,7 +91,7 @@ function renderHtml(opts: {
   </td></tr>
 
   <tr><td style="padding:18px 0 0 0;border-top:1px solid rgba(248,250,252,0.06);">
-    <p style="margin:0;font-size:11px;color:#64748B;line-height:1.6;">Responder a este correo te conecta directo con el alumno (reply-to configurado). Si querés correrlo a mano, abrí el panel de admin para registrar el feedback con IA.</p>
+    <p style="margin:0;font-size:11px;color:#64748B;line-height:1.6;">Responder a este correo te conecta directo con el alumno (reply-to configurado). Si quieres correrlo a mano, abre el panel de admin para registrar el feedback con IA.</p>
   </td></tr>
 </table>
 </td></tr></table>

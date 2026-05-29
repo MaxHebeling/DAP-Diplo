@@ -34,14 +34,14 @@
       "minutes": "{minutes} min",
       "mainVideo": "Video principal del módulo",
       "videoMetadataTitle": "Enseñanza (video)",
-      "finishToMark": "Tenés que terminar el video para marcarlo como visto. Podés pausar cuando necesites.",
-      "loadError": "No pudimos cargar el video en este momento. Recargá la página o contactanos si el problema persiste.",
+      "finishToMark": "Tienes que terminar el video para marcarlo como visto. Puedes pausar cuando necesites.",
+      "loadError": "No pudimos cargar el video en este momento. Recarga la página o contactanos si el problema persiste.",
       "videoPending": "Video pendiente de subir (sin mux_playback_id en esta sección).",
       "resources": "Recursos descargables",
       "advanceLabel": "Marcar como visto y continuar",
-      "advanceDisabledReason": "Completá el video para continuar",
-      "skipBlockedToast": "Para marcar como visto, tenés que ver el video sin adelantar.",
-      "playerErrorToast": "Hubo un problema cargando el video. Recargá la página para reintentar."
+      "advanceDisabledReason": "Completa el video para continuar",
+      "skipBlockedToast": "Para marcar como visto, tienes que ver el video sin adelantar.",
+      "playerErrorToast": "Hubo un problema cargando el video. Recarga la página para reintentar."
     },
     "advanceButton": {
       "done": "¡Listo!"
@@ -56,7 +56,7 @@
       "correctionByDrMax": "Corrección con voz del Dr. Max",
       "submitting": "Enviando…",
       "submit": "Entregar",
-      "tooShortToast": "Tu entrega es muy corta. Escribí al menos 20 caracteres.",
+      "tooShortToast": "Tu entrega es muy corta. Escribe al menos 20 caracteres.",
       "submittedToast": "Entrega recibida.",
       "pendingTitle": "El Dr. Max está revisando tu entrega",
       "pendingBody": "Tu corrección llega en <strong>48 horas</strong> desde tu envío. Te avisamos por email apenas esté lista.",
@@ -95,7 +95,7 @@
       "result": "Resultado",
       "passThresholdLabel": "Umbral aprobatorio",
       "passedMessage": "¡Felicidades! Aprobaste esta evaluación.",
-      "failedMessage": "Aún no alcanzas el umbral. Revisá las explicaciones y volvé a intentarlo.",
+      "failedMessage": "Aún no alcanzas el umbral. Revisa las explicaciones y vuelve a intentarlo.",
       "yourAnswer": "Tu respuesta",
       "correct": "Correcta",
       "explanation": "Explicación:",
