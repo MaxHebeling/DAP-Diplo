@@ -21,6 +21,7 @@ import { localized } from "@/lib/i18n/localized";
 import type { Locale } from "@/i18n/config";
 import { ensureWeekAssignment } from "@/lib/calendar/ensure-assignment";
 import { signMuxPlayerTokens } from "@/lib/mux/playback";
+import { ModuleQuickActions } from "@/components/module/module-quick-actions";
 
 const SECTION_KINDS: SectionKind[] = [
   "intro",
@@ -255,6 +256,22 @@ export default async function ModulePlayerPage({
     corrected_at: string | null;
     results_sent_at: string | null;
   } | null = null;
+  // Para el banner de acciones rápidas: indica si el alumno ya entregó.
+  // Aplica solo a section activation. Query liviana — solo el status.
+  let hasSubmittedActivation = false;
+  const activationSectionForBanner = sectionsByKind.get("activation");
+  if (activationSectionForBanner && !isAdmin) {
+    const { data: anySubmitted } = await supabase
+      .from("assignment_submissions")
+      .select("status")
+      .eq("user_id", user.id)
+      .eq("module_section_id", activationSectionForBanner.id)
+      .in("status", ["submitted", "corrected", "completed"])
+      .limit(1)
+      .maybeSingle<{ status: string }>();
+    hasSubmittedActivation = !!anySubmitted;
+  }
+
   if (currentSection === "activation") {
     const { data: subData } = await supabase
       .from("assignment_submissions")
@@ -448,6 +465,24 @@ export default async function ModulePlayerPage({
                 {t("module.duration", { minutes: mod.duration_minutes ?? 50 })}
               </p>
             </header>
+
+            {/* Banner sticky de acciones del módulo: PDF + Subir tarea */}
+            <div className="mb-6">
+              <ModuleQuickActions
+                resources={(mod.resources ?? [])
+                  .slice()
+                  .sort((a, b) => a.order_index - b.order_index)
+                  .map(({ id, title, kind, url }) => ({
+                    id,
+                    title,
+                    kind,
+                    url,
+                  }))}
+                phaseSlug={mod.phase.slug}
+                moduleSlug={mod.slug}
+                alreadySubmitted={hasSubmittedActivation}
+              />
+            </div>
 
             <div className="mb-10">
               <ModuleStepper
