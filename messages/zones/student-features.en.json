@@ -3,8 +3,8 @@
     "stepper": {
       "navLabel": "Module sections",
       "intro": "Introduction",
-      "teaching": "Teachings",
-      "activation": "Assignment",
+      "teaching": "Teaching",
+      "activation": "Activation",
       "evaluation": "Evaluation",
       "impartation": "Impartation"
     },
@@ -14,7 +14,7 @@
       "navLabel": "Phase modules"
     },
     "sectionContent": {
-      "nextIntro": "Continue to Teachings",
+      "nextIntro": "Continue to Teaching",
       "nextActivation": "I marked it as done",
       "nextEvaluation": "Skip",
       "nextImpartation": "Complete module",
@@ -29,11 +29,11 @@
       "emptyImpartation": "The closing word has not been published yet."
     },
     "teaching": {
-      "teachingLabel": "Teachings",
-      "teachingLabelWithDuration": "Teachings · {duration}",
+      "teachingLabel": "Teaching",
+      "teachingLabelWithDuration": "Teaching · {duration}",
       "minutes": "{minutes} min",
       "mainVideo": "Main module video",
-      "videoMetadataTitle": "Teachings (video)",
+      "videoMetadataTitle": "Teaching (video)",
       "finishToMark": "You have to finish the video to mark it as watched. You can pause whenever you need to.",
       "loadError": "We couldn't load the video right now. Reload the page or contact us if the problem persists.",
       "videoPending": "Video pending upload (no mux_playback_id on this section).",
@@ -53,7 +53,7 @@
       "closesAt": "Closes on {date}",
       "placeholder": "Write your activation here. Take it seriously — Dr. Max will review your submission and return personal feedback within 48 hours.",
       "charactersCount": "{count} characters",
-      "correctionByDrMax": "Reviewed in Dr. Max's voice",
+      "correctionByDrMax": "Graded in Dr. Max's voice",
       "submitting": "Submitting…",
       "submit": "Submit",
       "tooShortToast": "Your submission is too short. Write at least 20 characters.",
@@ -109,7 +109,7 @@
   },
   "LiveSessions": {
     "liveNow": "Live now",
-    "host": "Hosted by: ",
+    "host": "Taught by: ",
     "joinNow": "Join now",
     "openRoom": "Open room",
     "phaseBadge": "Phase {number}: {title}",
