@@ -167,12 +167,22 @@ export default async function BlockDetailPage({ params }: PageProps) {
 
   let headerUser: HeaderUser = null;
   let isAdmin = false;
+  let hasActiveSub = false;
   if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("full_name, avatar_url, role")
-      .eq("id", user.id)
-      .maybeSingle();
+    const [{ data: profile }, { data: sub }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("full_name, avatar_url, role")
+        .eq("id", user.id)
+        .maybeSingle(),
+      supabase
+        .from("subscriptions")
+        .select("status, current_period_end")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle<{ status: string; current_period_end: string | null }>(),
+    ]);
     if (profile) {
       headerUser = {
         fullName: profile.full_name ?? null,
@@ -181,7 +191,15 @@ export default async function BlockDetailPage({ params }: PageProps) {
       };
       isAdmin = profile.role === "admin";
     }
+    hasActiveSub =
+      !!sub &&
+      (sub.status === "active" || sub.status === "trialing") &&
+      (sub.current_period_end === null ||
+        new Date(sub.current_period_end) > new Date());
   }
+  // El alumno con suscripción activa o el admin no necesitan ver el CTA
+  // de "Suscríbete para acceder a esta fase" — ya tienen acceso.
+  const showSubscribeCta = !(hasActiveSub || isAdmin);
 
   // Gate: fase no publicado → 404 a no ser que sea admin.
   if (!phase.published && !isAdmin) {
@@ -450,7 +468,8 @@ export default async function BlockDetailPage({ params }: PageProps) {
           </div>
         </section>
 
-        {/* CTA grande coral */}
+        {/* CTA grande coral — solo para visitantes sin suscripción activa */}
+        {showSubscribeCta && (
         <section className="bg-brand-coral px-6 py-24 sm:py-28">
           <div
             aria-hidden
@@ -473,6 +492,7 @@ export default async function BlockDetailPage({ params }: PageProps) {
             </Reveal>
           </div>
         </section>
+        )}
 
         {/* PREV / NEXT */}
         {(prev || next) && (
