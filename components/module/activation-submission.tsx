@@ -149,17 +149,31 @@ function OpenForm({ submission }: { submission: ActivationSubmission }) {
           placeholder={t("activation.placeholder")}
           className="w-full resize-y rounded-md border border-white/[0.08] bg-white/[0.04] p-4 text-sm leading-relaxed outline-none placeholder:text-muted-foreground focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20"
         />
-        <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-          <span>{t("activation.charactersCount", { count: text.trim().length })}</span>
-          <span className="inline-flex items-center gap-1">
-            <Sparkles className="size-3 text-brand-coral" />
-            {t("activation.correctionByDrMax")}
+        <div className="mt-2 flex items-center justify-between text-xs">
+          <span
+            className={
+              text.trim().length < 20
+                ? "text-amber-300"
+                : "text-emerald-300"
+            }
+          >
+            {text.trim().length < 20
+              ? `Mínimo 20 caracteres (${text.trim().length} hasta ahora)`
+              : `${text.trim().length} caracteres`}
+          </span>
+          <span className="inline-flex items-center gap-1 text-white/55">
+            <Send className="size-3 text-brand-coral" />
+            Llega al Director del DAP
           </span>
         </div>
       </div>
 
       <div className="flex justify-end">
-        <Button type="submit" disabled={pending || text.trim().length < 20}>
+        <Button
+          type="submit"
+          disabled={pending || text.trim().length < 20}
+          className="bg-brand-coral text-white hover:bg-brand-coral/90 disabled:opacity-50"
+        >
           {pending ? (
             <>
               <Loader2 className="size-4 animate-spin" />
