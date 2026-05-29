@@ -2,35 +2,51 @@
 
 import { useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 
 import { cn } from "@/lib/utils";
+import { useRouter, usePathname } from "@/i18n/navigation";
 import { locales, LOCALE_COOKIE, type Locale } from "@/i18n/config";
 
-// La escritura de cookie vive a nivel de módulo (no dentro del componente)
-// para no disparar la regla react-hooks/immutability del React Compiler.
 function persistLocaleCookie(locale: Locale) {
-  // 1 año de persistencia. samesite=lax para que sobreviva navegaciones.
+  // 1 año, samesite=lax. Necesario para que el cron de email + SSR fresh
+  // request lean el idioma elegido aunque la URL no lleve prefijo.
   document.cookie = `${LOCALE_COOKIE}=${locale}; path=/; max-age=31536000; samesite=lax`;
 }
 
 /**
  * Selector de idioma ES / EN.
  *
- * Modo "sin i18n routing": no cambia la URL. Escribe la cookie NEXT_LOCALE
- * y refresca el árbol de Server Components (router.refresh()), que vuelve a
- * leer la cookie en i18n/request.ts y re-renderiza con el idioma elegido.
+ * Modo `localePrefix: "as-needed"`: para que el cambio se aplique el server
+ * tiene que recibir un request con el segmento /en (o sin segmento para es).
+ * Solo escribir la cookie y hacer router.refresh() NO cambia nada — el
+ * server ignora la cookie y mira la URL.
+ *
+ * El fix: router.replace(pathname, {locale}) — next-intl reescribe la URL
+ * preservando el path actual y el query, agregando o quitando /en según
+ * corresponda. Además persistimos la cookie para que próximas SSR fresh
+ * (links de email, deep-links) respeten el idioma.
  */
 export function LanguageSwitcher({ className }: { className?: string }) {
   const active = useLocale();
   const t = useTranslations("LanguageSwitcher");
   const router = useRouter();
+  const pathname = usePathname();
+  const params = useParams();
   const [isPending, startTransition] = useTransition();
 
   function switchTo(next: Locale) {
     if (next === active) return;
     persistLocaleCookie(next);
-    startTransition(() => router.refresh());
+    startTransition(() => {
+      // Pasa los dynamic params del segmento actual para que las rutas
+      // [slug]/[moduleSlug] etc. no se rompan al cambiar de locale.
+      router.replace(
+        // @ts-expect-error params son `Record<string, string|string[]>`
+        { pathname, params },
+        { locale: next },
+      );
+    });
   }
 
   return (
