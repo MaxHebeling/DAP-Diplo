@@ -97,7 +97,16 @@ export const metadata: Metadata = {
     title: "DAP · Diplomado Apostólico Pastoral",
     description:
       "Formamos líderes integrales que transforman su generación. 9 Dimensiones, 18 Meses 1 Experiencia.",
-    // Imagen estática servida desde app/opengraph-image.png (file convention).
+    // El root layout vive en [locale]/, así que la file-convention
+    // app/opengraph-image.jpg NO se auto-detecta. Referencia explícita:
+    images: [
+      {
+        url: "/opengraph-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "DAP · Diplomado Apostólico Pastoral",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
@@ -105,7 +114,7 @@ export const metadata: Metadata = {
     title: "DAP · Diplomado Apostólico Pastoral",
     description:
       "Formamos líderes integrales que transforman su generación. 9 Dimensiones, 18 Meses 1 Experiencia.",
-    // Imagen estática servida desde app/opengraph-image.png (file convention).
+    images: ["/opengraph-image.jpg"],
   },
   // Icons + manifest se sirven via file conventions:
   // app/favicon.ico, app/icon.svg, app/apple-icon.png, app/manifest.ts
