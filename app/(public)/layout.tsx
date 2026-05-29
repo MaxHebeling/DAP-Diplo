@@ -7,6 +7,7 @@ import { CustomCursor } from "@/components/landing/custom-cursor";
 import { KonamiEasterEgg } from "@/components/landing/konami-easter-egg";
 import { WelcomePopup } from "@/components/landing/welcome-popup";
 import { OnboardingProvider } from "@/components/onboarding/onboarding-provider";
+import { RegistrationOpenPopup } from "@/components/launch/registration-open-popup";
 
 /**
  * Layout específico de las rutas públicas (landing, /rangos, /precios,
@@ -43,6 +44,7 @@ export default function PublicLayout({
       <CustomCursor />
       <KonamiEasterEgg />
       <WelcomePopup />
+      <RegistrationOpenPopup />
     </OnboardingProvider>
   );
 }

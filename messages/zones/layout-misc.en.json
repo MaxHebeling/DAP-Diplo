@@ -40,6 +40,12 @@
       "title": "Enrollment opens on {date}",
       "description": "The first cohort of the Apostolic Pastoral Diploma opens enrollment on <strong>{date}</strong>. Come back on that date to submit your admission and secure your place.",
       "classesStart": "Classes begin:"
+    },
+    "openPopup": {
+      "title": "ENROLLMENTS OPEN",
+      "body": "The Apostolic Pastoral Diploma is now open for enrollment. Submit your admission today and secure your place before classes begin.",
+      "cta": "Enroll now",
+      "close": "Maybe later"
     }
   },
   "Legal": {

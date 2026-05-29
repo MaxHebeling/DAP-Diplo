@@ -40,6 +40,12 @@
       "title": "Inscripciones abren el {date}",
       "description": "La primera convocatoria del Diplomado Apostólico Pastoral abre inscripciones el <strong>{date}</strong>. Vuelve en esa fecha para postular tu admisión y asegurar tu lugar.",
       "classesStart": "Inicio de clases:"
+    },
+    "openPopup": {
+      "title": "INSCRIPCIONES ABIERTAS",
+      "body": "El Diplomado Apostólico Pastoral abrió sus inscripciones. Completá tu admisión hoy y asegurá tu lugar para el inicio de clases.",
+      "cta": "Inscribirme ahora",
+      "close": "Más tarde"
     }
   },
   "Legal": {
