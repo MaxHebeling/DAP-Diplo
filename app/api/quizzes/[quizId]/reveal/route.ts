@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { runQuizPassedCascade } from "@/lib/quizzes/cascade";
 
@@ -11,9 +12,12 @@ type AnswerEntry =
 type QuestionRow = {
   id: string;
   prompt: string;
+  prompt_en: string | null;
   kind: "multiple_choice" | "true_false";
   payload: Record<string, unknown>;
+  payload_en: Record<string, unknown> | null;
   explanation: string | null;
+  explanation_en: string | null;
   order_index: number;
 };
 
@@ -142,25 +146,37 @@ export async function POST(
   // 3. Cargar preguntas para armar el graded breakdown
   const { data: questions } = await supabase
     .from("quiz_questions")
-    .select("id, prompt, kind, payload, explanation, order_index")
+    .select(
+      "id, prompt, prompt_en, kind, payload, payload_en, explanation, explanation_en, order_index",
+    )
     .eq("quiz_id", quizId)
     .order("order_index", { ascending: true })
     .returns<QuestionRow[]>();
 
+  const locale = await getLocale();
+  const useEn = locale === "en";
+
   const graded: GradedQuestion[] = (questions ?? []).map((q) => {
     const studentAns = revealData.answers[q.id];
+    // Para localización el `correct_index` debe coincidir entre payload y
+    // payload_en (no movimos posiciones). El scoring base usa `payload`,
+    // pero las options/explanation visibles deben ir en el idioma activo.
+    const prompt = useEn && q.prompt_en ? q.prompt_en : q.prompt;
+    const payload = useEn && q.payload_en ? q.payload_en : q.payload;
+    const explanation =
+      useEn && q.explanation_en ? q.explanation_en : q.explanation;
     return {
       question_id: q.id,
-      prompt: q.prompt,
+      prompt,
       kind: q.kind,
       is_correct: isCorrect(q, studentAns),
       student_answer: studentAns ?? null,
       correct_answer: correctAnswerOf(q),
       options:
         q.kind === "multiple_choice"
-          ? ((q.payload?.options as string[] | undefined) ?? [])
+          ? ((payload?.options as string[] | undefined) ?? [])
           : undefined,
-      explanation: q.explanation,
+      explanation,
     };
   });
 

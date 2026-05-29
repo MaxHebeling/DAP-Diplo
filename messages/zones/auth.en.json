@@ -2,7 +2,7 @@
   "Auth": {
     "signOut": {
       "signingOut": "Signing out...",
-      "label": "Log out"
+      "label": "Sign out"
     },
     "google": {
       "connecting": "Connecting...",
@@ -88,8 +88,8 @@
       "included": {
         "item1": "Personal weekly calendar: 1 module per week for 72 weeks",
         "item2": "Live MasterClass by event (minimum 1 guaranteed per month)",
-        "item3": "Group mentoring by the apostle's call",
-        "item4": "Personalized feedback on your activation in Dr. Max's voice (48h)",
+        "item3": "Group mentoring by apostolic summons",
+        "item4": "Personalized grading of your activation in Dr. Max's voice (48h)",
         "item5": "Private community of pastors in training",
         "item6": "Downloadable material per module (PDFs, templates, extra resources)",
         "item7": "Certificate, badge, and a new dimension upon completing each block"

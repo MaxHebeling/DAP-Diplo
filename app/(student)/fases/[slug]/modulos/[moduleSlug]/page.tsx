@@ -293,28 +293,35 @@ export default async function ModulePlayerPage({
       evaluationQuiz = q;
       const { data: qs } = await supabase
         .from("quiz_questions")
-        .select("id, prompt, kind, payload, order_index")
+        .select("id, prompt, prompt_en, kind, payload, payload_en, order_index")
         .eq("quiz_id", q.id)
         .order("order_index", { ascending: true })
         .returns<
           {
             id: string;
             prompt: string;
+            prompt_en: string | null;
             kind: "multiple_choice" | "true_false";
             payload: Record<string, unknown>;
+            payload_en: Record<string, unknown> | null;
             order_index: number;
           }[]
         >();
-      evaluationQuestions = (qs ?? []).map((row) => ({
-        id: row.id,
-        prompt: row.prompt,
-        kind: row.kind,
-        // El alumno NUNCA recibe correct_index/correct. Solo options visibles.
-        options:
-          row.kind === "multiple_choice"
-            ? ((row.payload?.options as string[] | undefined) ?? [])
-            : undefined,
-      }));
+      evaluationQuestions = (qs ?? []).map((row) => {
+        const useEn = locale === "en";
+        const prompt = useEn && row.prompt_en ? row.prompt_en : row.prompt;
+        const payload = useEn && row.payload_en ? row.payload_en : row.payload;
+        return {
+          id: row.id,
+          prompt,
+          kind: row.kind,
+          // El alumno NUNCA recibe correct_index/correct. Solo options visibles.
+          options:
+            row.kind === "multiple_choice"
+              ? ((payload?.options as string[] | undefined) ?? [])
+              : undefined,
+        };
+      });
 
       const { data: attempts } = await supabase
         .from("quiz_attempts")

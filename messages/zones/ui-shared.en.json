@@ -7,7 +7,7 @@
       "stateLocked": "Locked"
     },
     "rankBadge": {
-      "ariaLabel": "Rank {order}"
+      "ariaLabel": "Dimension {order}"
     }
   },
   "Pwa": {

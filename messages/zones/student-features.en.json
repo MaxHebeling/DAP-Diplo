@@ -53,7 +53,7 @@
       "closesAt": "Closes on {date}",
       "placeholder": "Write your activation here. Take it seriously — Dr. Max will review your submission and return personal feedback within 48 hours.",
       "charactersCount": "{count} characters",
-      "correctionByDrMax": "Reviewed in Dr. Max's voice",
+      "correctionByDrMax": "Graded in Dr. Max's voice",
       "submitting": "Submitting…",
       "submit": "Submit",
       "tooShortToast": "Your submission is too short. Write at least 20 characters.",
@@ -109,7 +109,7 @@
   },
   "LiveSessions": {
     "liveNow": "Live now",
-    "host": "Hosted by: ",
+    "host": "Taught by: ",
     "joinNow": "Join now",
     "openRoom": "Open room",
     "phaseBadge": "Phase {number}: {title}",
