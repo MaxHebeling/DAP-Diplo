@@ -178,7 +178,7 @@ async function IntroExtras({
           <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
             {t("sectionContent.objective")}
           </p>
-          <p className="text-sm leading-relaxed text-foreground">{objective}</p>
+          <p className="text-sm leading-relaxed text-white/90">{objective}</p>
         </div>
       )}
       {mainRevelation && (
@@ -186,7 +186,7 @@ async function IntroExtras({
           <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
             {t("sectionContent.mainRevelation")}
           </p>
-          <p className="text-sm leading-relaxed text-foreground">
+          <p className="text-sm leading-relaxed text-white/90">
             {mainRevelation}
           </p>
         </div>
