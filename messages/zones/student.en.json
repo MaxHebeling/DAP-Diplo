@@ -231,10 +231,10 @@
     "module": {
       "metaTitle": "{slug} — DAP",
       "sectionIntro": "Introduction",
-      "sectionTeaching": "Teaching",
-      "sectionActivation": "Activation",
+      "sectionTeaching": "Teachings",
+      "sectionActivation": "Assignment",
       "sectionEvaluation": "Evaluation",
-      "sectionImpartation": "Impartation phrase",
+      "sectionImpartation": "Impartation",
       "breadcrumbBlock": "Block {order}",
       "breadcrumbDiploma": "Diploma",
       "backToBlock": "Back to the block",

@@ -105,7 +105,7 @@ export function ModuleQuickActions({
               alreadySubmitted ? "text-emerald-400" : "text-brand-coral"
             }`}
           >
-            {alreadySubmitted ? "Tu entrega" : "Activación práctica"}
+            {alreadySubmitted ? "Tu entrega" : "Tarea de la lección"}
           </p>
           <p className="mt-1 font-grotesk text-sm font-bold text-text-primary sm:text-base">
             {alreadySubmitted ? "Ya enviaste tu tarea" : "Subir mi tarea"}
