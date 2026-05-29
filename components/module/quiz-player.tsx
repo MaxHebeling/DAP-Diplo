@@ -269,20 +269,20 @@ export function QuizPlayer({
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
-      <div className="rounded-2xl border border-brand-coral/30 bg-brand-coral/5 p-6">
-        <h3 className="font-grotesk text-xl font-semibold">{quiz.title}</h3>
+      <div className="rounded-2xl border border-brand-coral/30 bg-brand-coral/10 p-6">
+        <h3 className="font-grotesk text-xl font-bold text-white">{quiz.title}</h3>
         {quiz.description && (
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          <p className="mt-2 text-sm leading-relaxed text-white/75">
             {quiz.description}
           </p>
         )}
-        <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+        <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-white/70">
           <span>
-            {t("quiz.passThreshold")}<strong>{quiz.pass_threshold}%</strong>
+            {t("quiz.passThreshold")}<strong className="text-white">{quiz.pass_threshold}%</strong>
           </span>
           {attemptsRemaining !== null && (
             <span>
-              {t("quiz.attemptsRemaining")}<strong>{attemptsRemaining}</strong>
+              {t("quiz.attemptsRemaining")}<strong className="text-white">{attemptsRemaining}</strong>
             </span>
           )}
           <span>
@@ -291,7 +291,7 @@ export function QuizPlayer({
               ? t("quiz.questionSingular")
               : t("quiz.questionPlural")}
           </span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-amber-300">
+          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-amber-300">
             <Clock className="size-3" />
             {t("quiz.resultIn48h")}
           </span>
@@ -302,23 +302,23 @@ export function QuizPlayer({
         {ordered.map((q, i) => (
           <li
             key={q.id}
-            className="rounded-xl border bg-card p-5"
+            className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-5"
             aria-labelledby={`q-${q.id}-prompt`}
           >
-            <div className="mb-3 flex items-start gap-3">
-              <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-coral text-xs font-medium text-brand-coral-foreground tabular-nums">
+            <div className="mb-4 flex items-start gap-3">
+              <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-brand-coral text-xs font-bold text-white tabular-nums">
                 {i + 1}
               </span>
               <p
                 id={`q-${q.id}-prompt`}
-                className="font-medium leading-snug"
+                className="font-grotesk text-base font-semibold leading-snug text-white"
               >
                 {q.prompt}
               </p>
             </div>
 
             {q.kind === "multiple_choice" && (
-              <ul className="space-y-2 pl-9">
+              <ul className="space-y-2 pl-10">
                 {(q.options ?? []).map((opt, idx) => {
                   const selected =
                     answers[q.id] &&
@@ -327,7 +327,7 @@ export function QuizPlayer({
                       .selected_index === idx;
                   return (
                     <li key={idx}>
-                      <label className="flex cursor-pointer items-center gap-3 rounded-lg border bg-card px-3 py-2 hover:bg-muted/40 has-[:checked]:border-brand-coral has-[:checked]:bg-brand-coral/5">
+                      <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-white/[0.08] bg-white/[0.02] px-4 py-2.5 text-white/90 transition-colors hover:border-white/20 hover:bg-white/[0.05] has-[:checked]:border-brand-coral has-[:checked]:bg-brand-coral/15 has-[:checked]:text-white">
                         <input
                           type="radio"
                           name={`q-${q.id}`}
@@ -335,7 +335,7 @@ export function QuizPlayer({
                           onChange={() => setMC(q.id, idx)}
                           className="size-4 accent-brand-coral"
                         />
-                        <span className="text-sm">{opt}</span>
+                        <span className="text-sm font-medium">{opt}</span>
                       </label>
                     </li>
                   );
@@ -344,7 +344,7 @@ export function QuizPlayer({
             )}
 
             {q.kind === "true_false" && (
-              <div className="flex gap-3 pl-9">
+              <div className="flex gap-3 pl-10">
                 {[
                   { label: t("quiz.true"), val: true },
                   { label: t("quiz.false"), val: false },
@@ -357,7 +357,7 @@ export function QuizPlayer({
                   return (
                     <label
                       key={opt.label}
-                      className="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border bg-card px-4 py-3 hover:bg-muted/40 has-[:checked]:border-brand-coral has-[:checked]:bg-brand-coral/5"
+                      className="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-4 py-3 text-white/90 transition-colors hover:border-white/20 hover:bg-white/[0.05] has-[:checked]:border-brand-coral has-[:checked]:bg-brand-coral/15 has-[:checked]:text-white"
                     >
                       <input
                         type="radio"
