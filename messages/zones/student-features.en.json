@@ -2,10 +2,10 @@
   "Module": {
     "stepper": {
       "navLabel": "Module sections",
-      "intro": "Intro",
-      "teaching": "Teaching",
-      "activation": "Activation",
-      "evaluation": "Quiz",
+      "intro": "Introduction",
+      "teaching": "Teachings",
+      "activation": "Assignment",
+      "evaluation": "Evaluation",
       "impartation": "Impartation"
     },
     "sidebar": {
@@ -14,7 +14,7 @@
       "navLabel": "Phase modules"
     },
     "sectionContent": {
-      "nextIntro": "Continue to Teaching",
+      "nextIntro": "Continue to Teachings",
       "nextActivation": "I marked it as done",
       "nextEvaluation": "Skip",
       "nextImpartation": "Complete module",
@@ -24,16 +24,16 @@
       "evaluationLabel": "Quiz",
       "evaluationEmpty": "The team has not yet published the questions for this quiz.",
       "emptyIntro": "The introduction for this module has not been published yet. The admin edits it from the backoffice.",
-      "emptyActivation": "The activation exercise has not been published yet.",
+      "emptyActivation": "The assignment for this lesson has not been published yet.",
       "emptyEvaluation": "The quiz is enabled in Phase 5.",
       "emptyImpartation": "The closing word has not been published yet."
     },
     "teaching": {
-      "teachingLabel": "Teaching",
-      "teachingLabelWithDuration": "Teaching · {duration}",
+      "teachingLabel": "Teachings",
+      "teachingLabelWithDuration": "Teachings · {duration}",
       "minutes": "{minutes} min",
       "mainVideo": "Main module video",
-      "videoMetadataTitle": "Teaching (video)",
+      "videoMetadataTitle": "Teachings (video)",
       "finishToMark": "You have to finish the video to mark it as watched. You can pause whenever you need to.",
       "loadError": "We couldn't load the video right now. Reload the page or contact us if the problem persists.",
       "videoPending": "Video pending upload (no mux_playback_id on this section).",

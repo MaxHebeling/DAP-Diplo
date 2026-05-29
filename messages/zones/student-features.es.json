@@ -2,9 +2,9 @@
   "Module": {
     "stepper": {
       "navLabel": "Secciones del módulo",
-      "intro": "Intro",
-      "teaching": "Enseñanza",
-      "activation": "Activación",
+      "intro": "Introducción",
+      "teaching": "Enseñanzas",
+      "activation": "Tarea",
       "evaluation": "Evaluación",
       "impartation": "Impartición"
     },
@@ -14,7 +14,7 @@
       "navLabel": "Módulos de la fase"
     },
     "sectionContent": {
-      "nextIntro": "Continuar a Enseñanza",
+      "nextIntro": "Continuar a Enseñanzas",
       "nextActivation": "Marqué como hecho",
       "nextEvaluation": "Saltar",
       "nextImpartation": "Completar módulo",
@@ -24,16 +24,16 @@
       "evaluationLabel": "Evaluación",
       "evaluationEmpty": "El equipo aún no ha publicado las preguntas de esta evaluación.",
       "emptyIntro": "Aún no se ha publicado la introducción de este módulo. El admin la edita desde el backoffice.",
-      "emptyActivation": "Aún no se ha publicado el ejercicio de activación.",
+      "emptyActivation": "Aún no se ha publicado la tarea de esta lección.",
       "emptyEvaluation": "La evaluación se habilita en Fase 5.",
       "emptyImpartation": "Aún no se ha publicado la palabra de cierre."
     },
     "teaching": {
-      "teachingLabel": "Enseñanza",
-      "teachingLabelWithDuration": "Enseñanza · {duration}",
+      "teachingLabel": "Enseñanzas",
+      "teachingLabelWithDuration": "Enseñanzas · {duration}",
       "minutes": "{minutes} min",
       "mainVideo": "Video principal del módulo",
-      "videoMetadataTitle": "Enseñanza (video)",
+      "videoMetadataTitle": "Enseñanzas (video)",
       "finishToMark": "Tienes que terminar el video para marcarlo como visto. Puedes pausar cuando necesites.",
       "loadError": "No pudimos cargar el video en este momento. Recarga la página o contactanos si el problema persiste.",
       "videoPending": "Video pendiente de subir (sin mux_playback_id en esta sección).",
