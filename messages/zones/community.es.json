@@ -33,9 +33,9 @@
         "minBody": "Cuenta un poco más"
       },
       "titleLabel": "Título",
-      "phaseLabel": "Fase relacionado (opcional)",
+      "phaseLabel": "Fase relacionada (opcional)",
       "phasePlaceholder": "Ninguno",
-      "noPhase": "Sin fase específico",
+      "noPhase": "Sin fase específica",
       "phaseOption": "Fase {number} · {title}",
       "bodyLabel": "Cuerpo (Markdown)",
       "cancel": "Cancelar",
@@ -49,9 +49,9 @@
       },
       "titleLabel": "Título",
       "titlePlaceholder": "¿Sobre qué quieres conversar?",
-      "phaseLabel": "Fase relacionado (opcional)",
+      "phaseLabel": "Fase relacionada (opcional)",
       "phasePlaceholder": "Ninguno",
-      "noPhase": "Sin fase específico",
+      "noPhase": "Sin fase específica",
       "phaseOption": "Fase {number} · {title}",
       "bodyLabel": "Cuerpo (Markdown)",
       "bodyPlaceholder": "Escribe en Markdown. Encabezados, listas, **negrita**, _itálica_, [enlaces](url)...",
@@ -61,8 +61,8 @@
     },
     "phaseFilter": {
       "label": "Filtrar por fase",
-      "placeholder": "Todos las fases",
-      "all": "Todos las fases",
+      "placeholder": "Todas las fases",
+      "all": "Todas las fases",
       "phaseOption": "Fase {number} · {title}"
     }
   },
