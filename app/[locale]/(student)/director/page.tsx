@@ -309,51 +309,6 @@ export default async function DirectorPage() {
           </div>
         </section>
 
-        {/* CONTACTO */}
-        <section className="rounded-2xl border border-white/[0.06] bg-gradient-to-br from-brand-violet/10 via-[#04081A] to-brand-coral/10 p-8 sm:p-10">
-          <p className="font-inter text-[10px] font-bold uppercase tracking-[0.4em] text-brand-coral">
-            Para los alumnos del DAP
-          </p>
-          <h2 className="mt-2 max-w-2xl font-grotesk text-2xl font-bold text-white sm:text-3xl">
-            Si necesitás cobertura, oración o mentoría &mdash; escribíme.
-          </h2>
-          <div className="mt-5 flex flex-wrap items-center gap-3">
-            <a
-              href="https://wa.me/526642323257"
-              target="_blank"
-              rel="noopener"
-              className="inline-flex items-center gap-2 rounded-full bg-brand-coral px-5 py-2.5 font-inter text-sm font-semibold text-white transition-transform hover:scale-[1.02]"
-            >
-              <MessageCircle className="size-4" />
-              WhatsApp directo
-            </a>
-            <a
-              href="mailto:office@rkchurch.com"
-              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-5 py-2.5 font-inter text-sm font-semibold text-white/90 transition-colors hover:bg-white/[0.08]"
-            >
-              <Mail className="size-4" />
-              office@rkchurch.com
-            </a>
-            <a
-              href="https://www.maxhebeling.org"
-              target="_blank"
-              rel="noopener"
-              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-5 py-2.5 font-inter text-sm font-semibold text-white/90 transition-colors hover:bg-white/[0.08]"
-            >
-              <Globe2 className="size-4" />
-              maxhebeling.org
-            </a>
-            <a
-              href="https://www.ikingdom.org"
-              target="_blank"
-              rel="noopener"
-              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-5 py-2.5 font-inter text-sm font-semibold text-white/90 transition-colors hover:bg-white/[0.08]"
-            >
-              <Globe2 className="size-4" />
-              ikingdom.org
-            </a>
-          </div>
-        </section>
       </main>
     </DapStudentShell>
   );
