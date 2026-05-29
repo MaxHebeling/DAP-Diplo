@@ -56,7 +56,7 @@ export default async function TutorIndexPage() {
             <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
               {t("tutor.eyebrow")}
             </p>
-            <h1 className="font-serif text-3xl font-semibold">
+            <h1 className="font-grotesk text-3xl font-semibold">
               {t("tutor.title")}
             </h1>
             <p className="mt-3 text-sm text-muted-foreground">

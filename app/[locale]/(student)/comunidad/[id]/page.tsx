@@ -121,7 +121,7 @@ export default async function ThreadPage({ params }: PageProps) {
               </Badge>
             )}
           </div>
-          <h1 className="font-serif text-3xl font-semibold leading-tight sm:text-4xl">
+          <h1 className="font-grotesk text-3xl font-semibold leading-tight sm:text-4xl">
             {thread.title}
           </h1>
           <div className="mt-4 flex items-center justify-between gap-3">

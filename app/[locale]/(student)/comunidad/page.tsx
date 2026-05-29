@@ -82,7 +82,7 @@ export default async function ComunidadPage({ searchParams }: PageProps) {
             <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
               {tr("community.eyebrow")}
             </p>
-            <h1 className="font-serif text-3xl font-semibold">
+            <h1 className="font-grotesk text-3xl font-semibold">
               {tr("community.title")}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">

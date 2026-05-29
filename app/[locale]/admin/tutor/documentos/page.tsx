@@ -61,7 +61,7 @@ export default async function AdminTutorDocumentosPage() {
           <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
             {t("tutorDocs.eyebrow")}
           </p>
-          <h1 className="font-serif text-3xl font-semibold">
+          <h1 className="font-grotesk text-3xl font-semibold">
             {t("tutorDocs.title")}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -196,7 +196,7 @@ function Metric({
         {icon}
         {label}
       </div>
-      <p className="font-serif text-3xl font-semibold leading-none">{value}</p>
+      <p className="font-grotesk text-3xl font-semibold leading-none">{value}</p>
       {hint && <p className="mt-2 text-xs text-muted-foreground">{hint}</p>}
     </div>
   );

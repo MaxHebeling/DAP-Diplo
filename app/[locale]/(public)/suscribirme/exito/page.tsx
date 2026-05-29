@@ -34,7 +34,7 @@ export default async function SubscribeSuccessPage() {
             <p className="mb-4 text-xs font-medium uppercase tracking-[0.32em] text-brand-coral">
               {t("subscribeSuccess.eyebrow")}
             </p>
-            <h1 className="mb-6 font-serif text-balance text-4xl font-semibold leading-tight sm:text-5xl">
+            <h1 className="mb-6 font-grotesk text-balance text-4xl font-semibold leading-tight sm:text-5xl">
               {t("subscribeSuccess.title")}
             </h1>
             <p className="mb-10 text-base leading-relaxed text-neutral-300">

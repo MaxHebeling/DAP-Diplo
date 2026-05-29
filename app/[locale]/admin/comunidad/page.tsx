@@ -95,7 +95,7 @@ export default async function AdminComunidadPage() {
           <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
             {t("community.eyebrow")}
           </p>
-          <h1 className="font-serif text-3xl font-semibold">{t("community.title")}</h1>
+          <h1 className="font-grotesk text-3xl font-semibold">{t("community.title")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {t("community.description")}
           </p>
@@ -105,7 +105,7 @@ export default async function AdminComunidadPage() {
         <section>
           <div className="mb-4 flex items-end justify-between">
             <div>
-              <h2 className="font-serif text-2xl font-semibold">
+              <h2 className="font-grotesk text-2xl font-semibold">
                 {t("community.allThreads")}
               </h2>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -237,7 +237,7 @@ export default async function AdminComunidadPage() {
         <section>
           <div className="mb-4 flex items-end justify-between">
             <div>
-              <h2 className="font-serif text-2xl font-semibold flex items-center gap-2">
+              <h2 className="font-grotesk text-2xl font-semibold flex items-center gap-2">
                 <Flag className="size-5 text-red-500" />
                 {t("community.reportedPosts")}
               </h2>

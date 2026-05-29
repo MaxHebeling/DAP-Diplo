@@ -99,7 +99,7 @@ export default async function SuscribirmePage() {
             <p className="mb-4 text-xs font-medium uppercase tracking-[0.32em] text-brand-coral">
               {t("subscribe.eyebrow")}
             </p>
-            <h1 className="mb-5 font-serif text-balance text-4xl font-semibold leading-tight sm:text-5xl">
+            <h1 className="mb-5 font-grotesk text-balance text-4xl font-semibold leading-tight sm:text-5xl">
               {t("subscribe.title")}
             </h1>
             <p className="mb-10 max-w-xl text-justify text-base leading-relaxed text-neutral-300 hyphens-auto">
@@ -109,7 +109,7 @@ export default async function SuscribirmePage() {
             <div className="mb-10 rounded-2xl border border-white/10 bg-neutral-900/40 p-8 sm:p-10">
               <div className="mb-7 flex items-end justify-between">
                 <div>
-                  <p className="font-serif text-5xl font-semibold text-neutral-50 sm:text-6xl">
+                  <p className="font-grotesk text-5xl font-semibold text-neutral-50 sm:text-6xl">
                     {t("subscribe.price")}
                   </p>
                   <p className="mt-1 text-sm text-neutral-400">

@@ -38,7 +38,7 @@ export default async function NuevoHiloPage() {
           <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
             {t("communityNew.eyebrow")}
           </p>
-          <h1 className="font-serif text-3xl font-semibold">
+          <h1 className="font-grotesk text-3xl font-semibold">
             {t("communityNew.title")}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">

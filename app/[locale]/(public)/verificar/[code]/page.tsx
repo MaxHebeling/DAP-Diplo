@@ -120,7 +120,7 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
               <p className="text-xs font-medium uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
                 {t("verify.verifiedLabel")}
               </p>
-              <p className="font-serif text-2xl font-semibold leading-tight text-emerald-900 dark:text-emerald-100">
+              <p className="font-grotesk text-2xl font-semibold leading-tight text-emerald-900 dark:text-emerald-100">
                 {t("verify.verifiedStatus")}
               </p>
             </div>
@@ -211,7 +211,7 @@ function DataRow({
       </div>
       <p
         className={[
-          big ? "font-serif text-2xl font-semibold" : "text-base font-medium",
+          big ? "font-grotesk text-2xl font-semibold" : "text-base font-medium",
           emphColor ? "text-brand-coral" : "text-foreground",
         ].join(" ")}
       >
@@ -243,7 +243,7 @@ async function VerificationError({ code }: { code: string }) {
               <p className="text-xs font-medium uppercase tracking-widest text-red-700 dark:text-red-400">
                 {t("verify.errorLabel")}
               </p>
-              <p className="font-serif text-2xl font-semibold leading-tight text-red-900 dark:text-red-100">
+              <p className="font-grotesk text-2xl font-semibold leading-tight text-red-900 dark:text-red-100">
                 {t("verify.errorStatus")}
               </p>
             </div>

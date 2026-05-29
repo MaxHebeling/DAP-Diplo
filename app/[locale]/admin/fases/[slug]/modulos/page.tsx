@@ -78,7 +78,7 @@ export default async function AdminBlockModulesPage({ params }: PageProps) {
                 phaseTitle: phase.title,
               })}
             </p>
-            <h1 className="font-serif text-3xl font-semibold">{t("phaseModules.title")}</h1>
+            <h1 className="font-grotesk text-3xl font-semibold">{t("phaseModules.title")}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {t("phaseModules.description", { count: modules.length })}
             </p>
@@ -107,7 +107,7 @@ export default async function AdminBlockModulesPage({ params }: PageProps) {
                 const pct = Math.round((filled / total) * 100);
                 return (
                   <TableRow key={m.id}>
-                    <TableCell className="font-serif text-brand-coral tabular-nums">
+                    <TableCell className="font-grotesk text-brand-coral tabular-nums">
                       {String(m.order_index).padStart(2, "0")}
                     </TableCell>
                     <TableCell>

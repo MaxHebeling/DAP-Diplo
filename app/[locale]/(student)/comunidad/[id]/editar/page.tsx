@@ -58,7 +58,7 @@ export default async function EditThreadPage({ params }: PageProps) {
           <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
             {t("threadEdit.eyebrow")}
           </p>
-          <h1 className="font-serif text-3xl font-semibold">
+          <h1 className="font-grotesk text-3xl font-semibold">
             {t("threadEdit.title")}
           </h1>
         </header>

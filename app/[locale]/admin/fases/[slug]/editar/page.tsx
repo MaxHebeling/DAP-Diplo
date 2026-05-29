@@ -63,7 +63,7 @@ export default async function EditBlockPage({ params }: PageProps) {
               index: String(phase.order_index).padStart(2, "0"),
             })}
           </p>
-          <h1 className="font-serif text-3xl font-semibold leading-tight">
+          <h1 className="font-grotesk text-3xl font-semibold leading-tight">
             {phase.title}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">

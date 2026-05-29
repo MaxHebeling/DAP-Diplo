@@ -131,7 +131,7 @@ export default async function AdminSectionEditPage({ params }: PageProps) {
               moduleTitle: mod.title,
             })}
           </p>
-          <h1 className="font-serif text-3xl font-semibold">
+          <h1 className="font-grotesk text-3xl font-semibold">
             {t("sectionEdit.title", {
               index: String(section.order_index).padStart(2, "0"),
             })}

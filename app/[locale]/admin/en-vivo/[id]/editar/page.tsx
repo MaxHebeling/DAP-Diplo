@@ -64,7 +64,7 @@ export default async function EditarSesionPage({ params }: PageProps) {
           <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
             {t("liveEdit.eyebrow")}
           </p>
-          <h1 className="font-serif text-3xl font-semibold">{t("liveEdit.title")}</h1>
+          <h1 className="font-grotesk text-3xl font-semibold">{t("liveEdit.title")}</h1>
         </header>
 
         <LiveSessionForm

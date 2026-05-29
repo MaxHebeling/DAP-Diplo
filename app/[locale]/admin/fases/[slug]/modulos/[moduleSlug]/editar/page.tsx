@@ -92,7 +92,7 @@ export default async function AdminModuleEditPage({ params }: PageProps) {
                 phaseTitle: phase.title,
               })}
             </p>
-            <h1 className="font-serif text-3xl font-semibold">
+            <h1 className="font-grotesk text-3xl font-semibold">
               {t("moduleEdit.title", {
                 index: String(mod.order_index).padStart(2, "0"),
               })}

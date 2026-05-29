@@ -88,7 +88,7 @@ export default async function AdminModuleSectionsPage({ params }: PageProps) {
                 moduleTitle: mod.title,
               })}
             </p>
-            <h1 className="font-serif text-3xl font-semibold">{t("moduleSections.title")}</h1>
+            <h1 className="font-grotesk text-3xl font-semibold">{t("moduleSections.title")}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {t("moduleSections.description")}
             </p>
@@ -123,7 +123,7 @@ export default async function AdminModuleSectionsPage({ params }: PageProps) {
                 const isTeaching = s.kind === "teaching";
                 return (
                   <TableRow key={s.id}>
-                    <TableCell className="font-serif text-brand-coral tabular-nums">
+                    <TableCell className="font-grotesk text-brand-coral tabular-nums">
                       {String(s.order_index).padStart(2, "0")}
                     </TableCell>
                     <TableCell>

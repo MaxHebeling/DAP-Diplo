@@ -313,7 +313,7 @@ export default async function BlockDetailPage({ params }: PageProps) {
               </p>
 
               {/* Brand name (título grande gradiente) o fallback al title académico */}
-              <h1 className="mb-3 font-serif text-balance text-5xl font-semibold leading-[1.05] sm:text-6xl">
+              <h1 className="mb-3 font-grotesk text-balance text-5xl font-semibold leading-[1.05] sm:text-6xl">
                 <span className="gradient-text">{phaseHeroTitle}</span>
               </h1>
 
@@ -381,7 +381,7 @@ export default async function BlockDetailPage({ params }: PageProps) {
               <p className="mb-4 text-xs font-medium uppercase tracking-[0.32em] text-brand-coral">
                 {t("phases.whatYouLearnEyebrow")}
               </p>
-              <h2 className="mb-10 font-serif text-balance text-3xl font-semibold leading-tight text-neutral-50 sm:text-4xl">
+              <h2 className="mb-10 font-grotesk text-balance text-3xl font-semibold leading-tight text-neutral-50 sm:text-4xl">
                 {t("phases.whatYouLearnHeading")}
               </h2>
               <div className="rounded-2xl border border-dashed border-white/10 bg-neutral-900/30 p-8 sm:p-10">
@@ -400,7 +400,7 @@ export default async function BlockDetailPage({ params }: PageProps) {
               <p className="mb-4 text-xs font-medium uppercase tracking-[0.32em] text-brand-coral">
                 {t("phases.modulesEyebrow")}
               </p>
-              <h2 className="mb-12 font-serif text-balance text-3xl font-semibold leading-tight text-neutral-50 sm:text-4xl">
+              <h2 className="mb-12 font-grotesk text-balance text-3xl font-semibold leading-tight text-neutral-50 sm:text-4xl">
                 {modules.length === 1
                   ? t("phases.modulesHeadingSingular", { count: modules.length })
                   : t("phases.modulesHeadingPlural", { count: modules.length })}
@@ -418,7 +418,7 @@ export default async function BlockDetailPage({ params }: PageProps) {
                     key={m.id}
                     className="flex items-center gap-4 rounded-xl border border-white/5 bg-neutral-900/30 px-5 py-4 transition-colors hover:border-white/10"
                   >
-                    <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/10 font-serif text-sm font-medium text-neutral-300">
+                    <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/10 font-grotesk text-sm font-medium text-neutral-300">
                       {String(m.order_index).padStart(2, "0")}
                     </span>
                     <div className="min-w-0 flex-1">
@@ -451,7 +451,7 @@ export default async function BlockDetailPage({ params }: PageProps) {
           />
           <div className="mx-auto max-w-3xl text-center text-brand-coral-foreground">
             <Reveal>
-              <h2 className="mb-5 font-serif text-balance text-4xl font-semibold leading-tight sm:text-5xl">
+              <h2 className="mb-5 font-grotesk text-balance text-4xl font-semibold leading-tight sm:text-5xl">
                 {t("phases.ctaHeading")}
               </h2>
               <p className="mb-10 text-balance text-base sm:text-lg">
@@ -485,7 +485,7 @@ export default async function BlockDetailPage({ params }: PageProps) {
                       number: String(prev.order_index).padStart(2, "0"),
                     })}
                   </span>
-                  <span className="font-serif text-lg font-medium text-neutral-50 group-hover:text-brand-coral">
+                  <span className="font-grotesk text-lg font-medium text-neutral-50 group-hover:text-brand-coral">
                     {localized(prev, "title", locale) ?? prev.title}
                   </span>
                 </Link>
@@ -503,7 +503,7 @@ export default async function BlockDetailPage({ params }: PageProps) {
                     })}
                     <ArrowRight className="size-3.5" />
                   </span>
-                  <span className="font-serif text-lg font-medium text-neutral-50 group-hover:text-brand-coral">
+                  <span className="font-grotesk text-lg font-medium text-neutral-50 group-hover:text-brand-coral">
                     {localized(next, "title", locale) ?? next.title}
                   </span>
                 </Link>

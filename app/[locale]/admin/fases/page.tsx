@@ -58,7 +58,7 @@ export default async function AdminBlocksPage() {
             <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
               {t("phases.eyebrow")}
             </p>
-            <h1 className="font-serif text-3xl font-semibold">{t("phases.title")}</h1>
+            <h1 className="font-grotesk text-3xl font-semibold">{t("phases.title")}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {t("phases.description")}
             </p>
@@ -91,7 +91,7 @@ export default async function AdminBlocksPage() {
                 const count = b.modules?.[0]?.count ?? 0;
                 return (
                   <TableRow key={b.id}>
-                    <TableCell className="font-serif text-brand-coral">
+                    <TableCell className="font-grotesk text-brand-coral">
                       {String(b.order_index).padStart(2, "0")}
                     </TableCell>
                     <TableCell>
