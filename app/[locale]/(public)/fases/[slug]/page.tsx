@@ -9,6 +9,8 @@ import { EnrollmentCTAPhase } from "@/components/launch/enrollment-cta-phase";
 import { Reveal } from "@/components/landing/reveal";
 import { SiteHeader, type HeaderUser } from "@/components/landing/site-header";
 import { DapPublicFooter } from "@/components/layouts/dap-public-footer";
+import { DapStudentShell } from "@/components/layouts/dap-student-shell";
+import { signOutAction } from "@/lib/auth/actions";
 import { createClient } from "@/lib/supabase/server";
 import { localized } from "@/lib/i18n/localized";
 import type { Locale } from "@/i18n/config";
@@ -220,8 +222,13 @@ export default async function BlockDetailPage({ params }: PageProps) {
     ? localized(phase.dimension, "name", locale)
     : null;
 
-  return (
-    <div className="flex flex-1 flex-col bg-neutral-950 text-neutral-50">
+  // Si el usuario está logueado, envolvemos el contenido en el shell del
+  // alumno (sidebar global + topbar) para mantener la experiencia del
+  // portal. Si es visitante público, usamos el SiteHeader de marketing.
+  const isLoggedIn = !!user;
+
+  const innerContent = (
+    <>
       {/* JSON-LD Course (rich result oportunidad) */}
       <script
         type="application/ld+json"
@@ -260,7 +267,7 @@ export default async function BlockDetailPage({ params }: PageProps) {
           ),
         }}
       />
-      <SiteHeader user={headerUser} />
+      {!isLoggedIn && <SiteHeader user={headerUser} />}
       <main className="flex flex-1 flex-col">
         {/* HERO */}
         <section className="relative isolate overflow-hidden pt-32 pb-20 sm:pt-36 sm:pb-24">
@@ -514,7 +521,28 @@ export default async function BlockDetailPage({ params }: PageProps) {
           </nav>
         )}
       </main>
-      <DapPublicFooter />
+      {!isLoggedIn && <DapPublicFooter />}
+    </>
+  );
+
+  if (isLoggedIn) {
+    return (
+      <DapStudentShell
+        userName={headerUser?.fullName ?? "Alumno"}
+        userAvatar={headerUser?.avatarUrl ?? null}
+        title={phaseTitle}
+        onSignOut={signOutAction}
+      >
+        <div className="flex flex-1 flex-col bg-neutral-950 text-neutral-50">
+          {innerContent}
+        </div>
+      </DapStudentShell>
+    );
+  }
+
+  return (
+    <div className="flex flex-1 flex-col bg-neutral-950 text-neutral-50">
+      {innerContent}
     </div>
   );
 }

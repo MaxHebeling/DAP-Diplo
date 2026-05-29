@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { CheckCircle2, Loader2, Mail, MessageCircle, X } from "lucide-react";
 
 import { captureLeadAction } from "@/lib/leads/actions";
+import { createClient } from "@/lib/supabase/client";
 
 /**
  * Widget de lead capture flotante + beacon de visit log anónimo.
@@ -27,6 +28,16 @@ import { captureLeadAction } from "@/lib/leads/actions";
 export function LeadCaptureWidget() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+
+  // Detección de sesión: si el usuario está logueado, NO mostramos el
+  // widget de lead capture (el lead solo tiene sentido para visitantes).
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      setIsLoggedIn(!!data.user);
+    });
+  }, []);
 
   // Beacon de visita on mount + cada cambio de ruta.
   useEffect(() => {
@@ -45,6 +56,10 @@ export function LeadCaptureWidget() {
       // silencio — beacon no debe afectar UX
     });
   }, [pathname]);
+
+  // Si el usuario está logueado, el widget no aplica (es para captar leads
+  // anónimos). El beacon de visita ya se disparó arriba en el useEffect.
+  if (isLoggedIn) return null;
 
   return (
     <>
