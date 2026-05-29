@@ -20,6 +20,7 @@ import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { signOutAction } from "@/lib/auth/actions";
+import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 
 const NAV = [
   { href: "/admin", labelKey: "dashboard", icon: LayoutDashboard, exact: true },
@@ -75,6 +76,9 @@ export function AdminSidebar({ fullName }: { fullName: string | null }) {
       </nav>
 
       <div className="border-t p-4">
+        <div className="mb-3 flex justify-start">
+          <LanguageSwitcher />
+        </div>
         <p className="mb-2 truncate text-xs text-muted-foreground">
           {fullName ?? t("sidebar.adminFallback")}
         </p>
