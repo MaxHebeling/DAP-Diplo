@@ -65,7 +65,7 @@ export function ActivationSubmission({
   return (
     <div className="space-y-6">
       {consignaMd && (
-        <div className="rounded-xl border bg-card p-5">
+        <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-5">
           <p className="mb-3 text-xs font-medium uppercase tracking-widest text-brand-coral">
             {t("activation.consignaLabel")}
           </p>
@@ -132,7 +132,7 @@ function OpenForm({ submission }: { submission: ActivationSubmission }) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <div className="rounded-xl border bg-card p-5">
+      <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-5">
         <div className="mb-3 flex items-center justify-between">
           <p className="text-xs font-medium uppercase tracking-widest text-brand-coral">
             {t("activation.yourSubmission")}
@@ -259,7 +259,7 @@ function FeedbackView({ submission }: { submission: ActivationSubmission }) {
       </div>
 
       {submission.ai_feedback && (
-        <div className="rounded-xl border bg-card p-6">
+        <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-6">
           <p className="mb-4 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
             <Sparkles className="size-3" />
             {t("activation.wordFromDrMax")}
@@ -269,7 +269,7 @@ function FeedbackView({ submission }: { submission: ActivationSubmission }) {
       )}
 
       {submission.content_text && (
-        <details className="rounded-xl border bg-card/40 p-5">
+        <details className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-5">
           <summary className="cursor-pointer text-xs font-medium uppercase tracking-widest text-muted-foreground hover:text-foreground">
             {t("activation.originalSubmission")}
           </summary>

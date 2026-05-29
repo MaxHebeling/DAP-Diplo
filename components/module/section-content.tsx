@@ -174,7 +174,7 @@ async function IntroExtras({
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       {objective && (
-        <div className="rounded-xl border bg-card p-5">
+        <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-5">
           <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
             {t("sectionContent.objective")}
           </p>
@@ -182,7 +182,7 @@ async function IntroExtras({
         </div>
       )}
       {mainRevelation && (
-        <div className="rounded-xl border bg-card p-5">
+        <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-5">
           <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
             {t("sectionContent.mainRevelation")}
           </p>
