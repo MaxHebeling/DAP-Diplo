@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getTranslations, getLocale } from "next-intl/server";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowRight, FilePlus2 } from "lucide-react";
 import { Link, redirect } from "@/i18n/navigation";
 import { Logo } from "@/components/brand/logo";
 import { SignOutButton } from "@/components/auth/sign-out-button";
@@ -558,6 +558,34 @@ export default async function ModulePlayerPage({
                 />
               )}
             </section>
+
+            {/* Footer fijo de la lección — recordatorio para el alumno:
+                cualquier tarea solicitada en el PDF/secciones se trabaja
+                por fuera y se sube en la sección "Tarea" del módulo. */}
+            <aside className="mt-12 rounded-2xl border border-brand-coral/30 bg-gradient-to-br from-brand-coral/[0.08] via-surface-elevated to-brand-violet/[0.05] p-5 sm:p-6">
+              <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-3">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-brand-coral/15 text-brand-coral">
+                    <FilePlus2 className="size-5" strokeWidth={2} />
+                  </div>
+                  <div>
+                    <p className="font-inter text-[10px] font-bold uppercase tracking-[0.32em] text-brand-coral">
+                      Recordatorio
+                    </p>
+                    <p className="mt-1 font-grotesk text-sm font-semibold leading-snug text-white sm:text-base">
+                      Si se te solicita una tarea, hazla por fuera y súbela aquí.
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  href={`/fases/${mod.phase.slug}/modulos/${mod.slug}?section=activation`}
+                  className="inline-flex shrink-0 items-center gap-2 rounded-full bg-brand-coral px-4 py-2 font-inter text-xs font-semibold text-white transition-transform hover:scale-[1.02]"
+                >
+                  Ir a Tarea
+                  <ArrowRight className="size-3.5" />
+                </Link>
+              </div>
+            </aside>
           </div>
         </main>
       </div>
