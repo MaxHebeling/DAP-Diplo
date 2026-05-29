@@ -63,6 +63,7 @@ type DbResource = {
   kind: "pdf" | "audio" | "link" | "slides" | "other";
   url: string;
   order_index: number;
+  locale: "es" | "en";
 };
 type DbModule = {
   id: string;
@@ -149,7 +150,7 @@ export default async function ModulePlayerPage({
          mux_playback_id, duration_seconds,
          progress:section_progress(completed, last_position_seconds)
        ),
-       resources:module_resources(id, title, kind, url, order_index)`,
+       resources:module_resources(id, title, kind, url, order_index, locale)`,
     )
     .eq("slug", moduleSlug)
     .maybeSingle<DbModule>();
@@ -466,18 +467,13 @@ export default async function ModulePlayerPage({
               </p>
             </header>
 
-            {/* Banner sticky de acciones del módulo: PDF + Subir tarea */}
+            {/* Banner sticky de acciones del módulo: PDF + Subir tarea.
+                Filtramos los resources por el locale activo del alumno;
+                si no hay PDF en ese locale, hacemos fallback al otro idioma
+                para no dejar al alumno sin material. */}
             <div className="mb-6">
               <ModuleQuickActions
-                resources={(mod.resources ?? [])
-                  .slice()
-                  .sort((a, b) => a.order_index - b.order_index)
-                  .map(({ id, title, kind, url }) => ({
-                    id,
-                    title,
-                    kind,
-                    url,
-                  }))}
+                resources={pickResourcesForLocale(mod.resources ?? [], locale)}
                 phaseSlug={mod.phase.slug}
                 moduleSlug={mod.slug}
                 alreadySubmitted={hasSubmittedActivation}
@@ -565,4 +561,20 @@ export default async function ModulePlayerPage({
       </div>
     </div>
   );
+}
+
+/**
+ * Devuelve los recursos del módulo (PDFs, etc) en el orden canónico,
+ * filtrados por el locale activo del alumno. Si el módulo no tiene
+ * material en ese locale, hace fallback al otro idioma para no dejar al
+ * alumno sin PDF.
+ */
+function pickResourcesForLocale(
+  resources: DbResource[],
+  locale: Locale,
+): { id: string; title: string; kind: DbResource["kind"]; url: string }[] {
+  const sorted = resources.slice().sort((a, b) => a.order_index - b.order_index);
+  const inLocale = sorted.filter((r) => r.locale === locale);
+  const pool = inLocale.length > 0 ? inLocale : sorted;
+  return pool.map(({ id, title, kind, url }) => ({ id, title, kind, url }));
 }

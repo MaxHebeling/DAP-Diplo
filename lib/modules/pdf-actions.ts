@@ -7,7 +7,15 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export type PdfUploadResult =
-  | { ok: true; resource: { id: string; title: string; url: string } }
+  | {
+      ok: true;
+      resource: {
+        id: string;
+        title: string;
+        url: string;
+        locale: "es" | "en";
+      };
+    }
   | { ok: false; error: string };
 
 const uploadSchema = z.object({
@@ -16,6 +24,7 @@ const uploadSchema = z.object({
     .string()
     .min(2, "Título mínimo 2 caracteres.")
     .max(200, "Título demasiado largo."),
+  locale: z.enum(["es", "en"]).default("es"),
 });
 
 const MAX_PDF_BYTES = 20 * 1024 * 1024;
@@ -49,6 +58,7 @@ export async function uploadModulePdfAction(
   const parsed = uploadSchema.safeParse({
     moduleId: formData.get("moduleId"),
     title: formData.get("title"),
+    locale: formData.get("locale") ?? "es",
   });
   if (!parsed.success) {
     return {
@@ -70,7 +80,7 @@ export async function uploadModulePdfAction(
 
   const admin = createAdminClient();
 
-  // Path único: <moduleId>/<timestamp>-<safe-filename>.pdf
+  // Path único: <moduleId>/<locale>/<timestamp>-<safe-filename>.pdf
   const ts = Date.now();
   const safeName = file.name
     .toLowerCase()
@@ -78,7 +88,7 @@ export async function uploadModulePdfAction(
     .replace(/[^a-z0-9-_]/g, "-")
     .replace(/-+/g, "-")
     .slice(0, 80);
-  const path = `${parsed.data.moduleId}/${ts}-${safeName}.pdf`;
+  const path = `${parsed.data.moduleId}/${parsed.data.locale}/${ts}-${safeName}.pdf`;
 
   const arrayBuf = await file.arrayBuffer();
   const { error: upErr } = await admin.storage
@@ -115,9 +125,10 @@ export async function uploadModulePdfAction(
       kind: "pdf",
       url: publicUrl,
       order_index: nextOrder,
+      locale: parsed.data.locale,
     })
-    .select("id, title, url")
-    .single<{ id: string; title: string; url: string }>();
+    .select("id, title, url, locale")
+    .single<{ id: string; title: string; url: string; locale: "es" | "en" }>();
 
   if (insErr || !inserted) {
     // Rollback: borrar el archivo recién subido para no dejar huérfano

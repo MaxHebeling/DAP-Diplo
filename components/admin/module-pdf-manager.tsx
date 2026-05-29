@@ -20,6 +20,7 @@ type Pdf = {
   id: string;
   title: string;
   url: string;
+  locale: "es" | "en";
 };
 
 /**
@@ -39,10 +40,14 @@ export function ModulePdfManager({
 }) {
   const [pdfs, setPdfs] = useState<Pdf[]>(initialPdfs);
   const [title, setTitle] = useState("");
+  const [locale, setLocale] = useState<"es" | "en">("es");
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [, startTransition] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const esPdfs = pdfs.filter((p) => p.locale === "es");
+  const enPdfs = pdfs.filter((p) => p.locale === "en");
 
   async function handleUpload(e: React.FormEvent) {
     e.preventDefault();
@@ -64,6 +69,7 @@ export function ModulePdfManager({
       const fd = new FormData();
       fd.append("moduleId", moduleId);
       fd.append("title", title.trim());
+      fd.append("locale", locale);
       fd.append("file", file);
 
       const res = await uploadModulePdfAction(fd);
@@ -106,50 +112,59 @@ export function ModulePdfManager({
         </p>
       </header>
 
-      {/* Lista de PDFs existentes */}
-      {pdfs.length > 0 ? (
-        <ul className="mb-5 space-y-2">
-          {pdfs.map((p) => (
-            <li
-              key={p.id}
-              className="flex items-center gap-3 rounded-lg border bg-background p-3"
-            >
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-brand-violet/10 text-brand-violet">
-                <FileText className="size-4" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-inter text-sm font-medium text-foreground">
-                  {p.title}
-                </p>
-              </div>
-              <a
-                href={p.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
-                aria-label="Descargar PDF"
-              >
-                <Download className="size-4" />
-              </a>
-              <button
-                type="button"
-                onClick={() => handleDelete(p.id)}
-                className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                aria-label="Borrar PDF"
-              >
-                <Trash2 className="size-4" />
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="mb-5 rounded-lg border border-dashed bg-muted/30 p-4 text-center font-inter text-sm text-muted-foreground">
-          Aún no hay PDFs en este módulo.
-        </p>
-      )}
+      {/* Lista de PDFs existentes — separados por idioma */}
+      <div className="mb-5 grid gap-4 sm:grid-cols-2">
+        <PdfList
+          locale="es"
+          flag="🇪🇸"
+          label="Español"
+          pdfs={esPdfs}
+          onDelete={handleDelete}
+        />
+        <PdfList
+          locale="en"
+          flag="🇬🇧"
+          label="English"
+          pdfs={enPdfs}
+          onDelete={handleDelete}
+        />
+      </div>
 
       {/* Form de subida */}
       <form onSubmit={handleUpload} className="space-y-3">
+        {/* Selector de idioma del PDF */}
+        <div>
+          <label className="mb-1.5 block font-inter text-xs font-semibold text-foreground">
+            Idioma del PDF
+          </label>
+          <div className="inline-flex rounded-lg border bg-background p-0.5">
+            <button
+              type="button"
+              onClick={() => setLocale("es")}
+              disabled={isUploading}
+              className={`rounded-md px-3 py-1.5 font-inter text-xs font-semibold transition-colors ${
+                locale === "es"
+                  ? "bg-brand-violet text-white"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              🇪🇸 Español
+            </button>
+            <button
+              type="button"
+              onClick={() => setLocale("en")}
+              disabled={isUploading}
+              className={`rounded-md px-3 py-1.5 font-inter text-xs font-semibold transition-colors ${
+                locale === "en"
+                  ? "bg-brand-violet text-white"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              🇬🇧 English
+            </button>
+          </div>
+        </div>
+
         <div>
           <label
             htmlFor="pdf-title"
@@ -162,7 +177,11 @@ export function ModulePdfManager({
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Ej: Material complementario · Semana 1"
+            placeholder={
+              locale === "es"
+                ? "Ej: Material complementario · Semana 1"
+                : "E.g. Complementary material · Week 1"
+            }
             className="w-full rounded-md border bg-background px-3 py-2 font-inter text-sm outline-none focus:border-brand-violet focus:ring-1 focus:ring-brand-violet/40"
             disabled={isUploading}
             required
@@ -201,11 +220,74 @@ export function ModulePdfManager({
           ) : (
             <>
               <UploadCloud className="size-4" />
-              Subir PDF
+              {locale === "es" ? "Subir PDF en español" : "Upload PDF in English"}
             </>
           )}
         </Button>
       </form>
     </section>
+  );
+}
+
+function PdfList({
+  locale,
+  flag,
+  label,
+  pdfs,
+  onDelete,
+}: {
+  locale: "es" | "en";
+  flag: string;
+  label: string;
+  pdfs: Pdf[];
+  onDelete: (id: string) => void;
+}) {
+  return (
+    <div className="rounded-lg border bg-background/50 p-3">
+      <p className="mb-2 flex items-center gap-2 font-inter text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <span className="text-base">{flag}</span>
+        {label}
+      </p>
+      {pdfs.length === 0 ? (
+        <p className="rounded-md border border-dashed bg-muted/20 p-3 text-center font-inter text-xs text-muted-foreground">
+          Sin PDFs en {locale === "es" ? "español" : "inglés"}.
+        </p>
+      ) : (
+        <ul className="space-y-1.5">
+          {pdfs.map((p) => (
+            <li
+              key={p.id}
+              className="flex items-center gap-2 rounded-md border bg-background p-2"
+            >
+              <div className="flex size-7 shrink-0 items-center justify-center rounded bg-brand-violet/10 text-brand-violet">
+                <FileText className="size-3.5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-inter text-xs font-medium text-foreground">
+                  {p.title}
+                </p>
+              </div>
+              <a
+                href={p.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex size-7 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
+                aria-label="Descargar PDF"
+              >
+                <Download className="size-3.5" />
+              </a>
+              <button
+                type="button"
+                onClick={() => onDelete(p.id)}
+                className="inline-flex size-7 items-center justify-center rounded text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                aria-label="Borrar PDF"
+              >
+                <Trash2 className="size-3.5" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }

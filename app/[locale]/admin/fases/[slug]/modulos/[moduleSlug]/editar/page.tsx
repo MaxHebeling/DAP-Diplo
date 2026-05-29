@@ -38,14 +38,21 @@ export default async function AdminModuleEditPage({ params }: PageProps) {
     .maybeSingle();
   if (!mod || mod.phase_id !== id) notFound();
 
-  // PDFs existentes del módulo (kind='pdf')
+  // PDFs existentes del módulo (kind='pdf'), con su locale
   const { data: pdfs } = await supabase
     .from("module_resources")
-    .select("id, title, url, kind, order_index")
+    .select("id, title, url, kind, order_index, locale")
     .eq("module_id", mod.id)
     .eq("kind", "pdf")
     .order("order_index", { ascending: true })
-    .returns<{ id: string; title: string; url: string; kind: string; order_index: number }[]>();
+    .returns<{
+      id: string;
+      title: string;
+      url: string;
+      kind: string;
+      order_index: number;
+      locale: "es" | "en";
+    }[]>();
 
   const formMod: ModuleFormModule = {
     id: mod.id,
@@ -114,6 +121,7 @@ export default async function AdminModuleEditPage({ params }: PageProps) {
               id: p.id,
               title: p.title,
               url: p.url,
+              locale: p.locale,
             }))}
           />
         </div>
