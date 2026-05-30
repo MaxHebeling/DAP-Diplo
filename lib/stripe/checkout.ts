@@ -30,5 +30,12 @@ export async function createSubscriptionCheckoutSession(opts: {
       metadata: { userId },
     },
     billing_address_collection: "auto",
+    // Habilita el campo "Añadir código promocional" en el checkout.
+    // Los códigos se administran desde el Stripe Dashboard (Products →
+    // Coupons → Promotion Codes). Para becas se crea un coupon de 100%
+    // off duration=forever, y dos promotion codes (DAP-HONOR, DAP-VIP)
+    // apuntando a ese mismo coupon. El alumno que ingresa el código
+    // queda con sub activa pero invoice de $0 mes a mes.
+    allow_promotion_codes: true,
   });
 }
