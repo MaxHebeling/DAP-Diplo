@@ -9,6 +9,7 @@ import { WelcomePopup } from "@/components/landing/welcome-popup";
 import { OnboardingProvider } from "@/components/onboarding/onboarding-provider";
 import { RegistrationOpenPopup } from "@/components/launch/registration-open-popup";
 import { VisitBeacon } from "@/components/leads/visit-beacon";
+import { LeadCaptureWidget } from "@/components/leads/lead-capture-widget";
 
 /**
  * Layout específico de las rutas públicas (landing, /rangos, /precios,
@@ -47,6 +48,7 @@ export default function PublicLayout({
       <WelcomePopup />
       <RegistrationOpenPopup />
       <VisitBeacon />
+      <LeadCaptureWidget />
     </OnboardingProvider>
   );
 }
