@@ -8,7 +8,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 export async function sendPauseWarning50Email(
   userId: string,
   daysInPause: number,
-  currentMonth: number,
 ): Promise<SendEmailResult> {
   const admin = createAdminClient();
   const { data: profile } = await admin
@@ -23,7 +22,7 @@ export async function sendPauseWarning50Email(
   const firstName = profile.full_name?.split(" ")[0] ?? "Ministro";
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://dap-diplo.vercel.app";
   const daysLeft = Math.max(0, 60 - daysInPause);
-  const html = renderHtml({ firstName, daysLeft, currentMonth, appUrl });
+  const html = renderHtml({ firstName, daysLeft, appUrl });
 
   return await sendEmail({
     to: userData.user.email,
@@ -35,10 +34,9 @@ export async function sendPauseWarning50Email(
 function renderHtml(opts: {
   firstName: string;
   daysLeft: number;
-  currentMonth: number;
   appUrl: string;
 }): string {
-  const { firstName, daysLeft, currentMonth, appUrl } = opts;
+  const { firstName, daysLeft, appUrl } = opts;
   return `<!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Última semana</title></head>
 <body style="margin:0;padding:0;background:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#e5e5e5;">
@@ -51,12 +49,8 @@ function renderHtml(opts: {
 <tr><td style="padding:0 8px;">
 <p style="margin:0 0 14px;font-size:11px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:#dc2626;">Última semana antes de cancelar</p>
 <h1 style="margin:0 0 24px;font-family:Georgia,'Playfair Display',serif;font-size:30px;line-height:1.2;font-weight:600;color:#fafafa;">Quedan ${daysLeft} días, ${escapeHtml(firstName)}.</h1>
-<p style="margin:0 0 18px;font-size:16px;line-height:1.6;color:#d4d4d4;">Llevas 50 días con tu suscripción pausada por módulos pendientes del Mes ${currentMonth}. Si no retomas en los próximos <strong style="color:#fdad5a;">${daysLeft} días</strong>, la suscripción se cancelará automáticamente.</p>
-<p style="margin:0 0 18px;font-size:16px;line-height:1.6;color:#d4d4d4;">Puedes:</p>
-<ul style="margin:0 0 32px;padding-left:20px;font-size:15px;line-height:1.7;color:#d4d4d4;">
-<li>Completar los módulos pendientes y reactivar tu cobro.</li>
-<li>Pedir una <strong style="color:#fafafa;">extensión de 60 días</strong> (una vez por bloque) desde tu dashboard.</li>
-</ul>
+<p style="margin:0 0 18px;font-size:16px;line-height:1.6;color:#d4d4d4;">Llevas 50 días con tu suscripción pausada por inactividad. Si no retomas en los próximos <strong style="color:#fdad5a;">${daysLeft} días</strong>, la suscripción se cancelará automáticamente. Tu progreso queda guardado de todos modos.</p>
+<p style="margin:0 0 32px;font-size:16px;line-height:1.6;color:#d4d4d4;">Para reactivarla: entrá al dashboard y completá cualquier módulo pendiente. El cobro se reanuda automáticamente.</p>
 </td></tr>
 <tr><td align="center" style="padding:0 8px 28px;">
 <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>

@@ -20,6 +20,10 @@
     {
       "path": "/api/cron/grade-assignments",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/pause-inactive-subs",
+      "schedule": "0 14 * * *"
     }
   ]
 }

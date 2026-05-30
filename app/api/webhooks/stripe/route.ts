@@ -212,6 +212,10 @@ async function upsertSubscription(
   }
 
   const period = subscriptionPeriod(sub);
+  // Si Stripe resume el cobro (pause_collection vuelve a null), también
+  // limpiamos nuestras columnas de pausa para que el cron no le mande
+  // recordatorios de algo que ya no aplica.
+  const isResumed = sub.pause_collection == null;
   const baseRow = {
     stripe_customer_id: customerId,
     stripe_subscription_id: sub.id,
@@ -221,6 +225,12 @@ async function upsertSubscription(
     current_period_end: tsToIso(period.end),
     cancel_at_period_end: sub.cancel_at_period_end ?? false,
     canceled_at: tsToIso(sub.canceled_at),
+    ...(isResumed && {
+      paused_at: null,
+      pause_reason: null,
+      pause_notified_30_at: null,
+      pause_notified_50_at: null,
+    }),
   };
 
   const rows = userIds.map((uid) => ({ ...baseRow, user_id: uid }));
