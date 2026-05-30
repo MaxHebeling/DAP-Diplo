@@ -71,6 +71,42 @@ export default function GlobalError({
           {t("error.ref", { digest: error.digest })}
         </p>
       )}
+
+      {/* TEMPORAL — debug panel para diagnosticar bug avatar/dashboard.
+          Revertir una vez resuelto. */}
+      <details className="mt-8 max-w-2xl rounded-lg border border-white/[0.10] bg-white/[0.03] p-4 text-left font-mono text-xs text-text-secondary">
+        <summary className="cursor-pointer font-inter text-[11px] font-semibold uppercase tracking-[0.32em] text-brand-coral">
+          Debug — abrir para ver detalle técnico
+        </summary>
+        <div className="mt-4 space-y-3">
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-text-tertiary">
+              Message
+            </p>
+            <p className="mt-1 break-all text-text-primary">
+              {error.message || "(empty)"}
+            </p>
+          </div>
+          {error.digest && (
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-text-tertiary">
+                Digest
+              </p>
+              <p className="mt-1 break-all text-text-primary">{error.digest}</p>
+            </div>
+          )}
+          {error.stack && (
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-text-tertiary">
+                Stack
+              </p>
+              <pre className="mt-1 max-h-64 overflow-auto whitespace-pre-wrap break-all rounded bg-black/40 p-2 text-[10px] leading-relaxed text-text-secondary">
+                {error.stack}
+              </pre>
+            </div>
+          )}
+        </div>
+      </details>
     </main>
   );
 }
