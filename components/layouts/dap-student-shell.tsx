@@ -9,7 +9,6 @@ import {
   Award,
   BookOpen,
   Calendar,
-  Compass,
   GraduationCap,
   Home,
   LogOut,
@@ -332,7 +331,13 @@ function SidebarContent({
       </nav>
 
       <div className="border-t border-white/[0.06] p-4">
-        <div className="flex items-center gap-3 rounded-lg bg-white/[0.02] p-3">
+        {/* Card de usuario clickeable → va a /configuracion. Antes era
+            display-only y al lado había un botón "Salir" chico — usuarios
+            cliqueaban accidentalmente y se iban de la sesión. */}
+        <Link
+          href="/configuracion"
+          className="flex items-center gap-3 rounded-lg bg-white/[0.02] p-3 transition-colors hover:bg-white/[0.05]"
+        >
           {rank ? (
             <DapRankBadge
               rankOrder={rank.order}
@@ -346,7 +351,7 @@ function SidebarContent({
               size="sm"
             />
           )}
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="truncate font-inter text-sm font-medium text-text-primary">
               {userName}
             </p>
@@ -354,28 +359,21 @@ function SidebarContent({
               {rank?.label ?? userEmail ?? t("studentShell.studentFallback")}
             </p>
           </div>
-        </div>
-        <div className="mt-2 flex items-center justify-between gap-2">
-          <Link
-            href="/configuracion"
-            className="flex items-center gap-2 rounded-md px-2 py-1.5 font-inter text-xs text-text-tertiary transition-colors hover:text-text-primary"
-          >
-            <Compass className="size-3.5" />
-            {t("studentShell.myJourney")}
-          </Link>
-          {onSignOut && (
-            <form action={onSignOut}>
-              <button
-                type="submit"
-                aria-label={t("studentShell.signOut")}
-                className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 font-inter text-xs text-text-tertiary transition-colors hover:text-brand-coral"
-              >
-                <LogOut className="size-3.5" />
-                {t("studentShell.exit")}
-              </button>
-            </form>
-          )}
-        </div>
+        </Link>
+
+        {/* Botón Salir separado abajo, ancho completo y obvio. */}
+        {onSignOut && (
+          <form action={onSignOut} className="mt-2">
+            <button
+              type="submit"
+              aria-label={t("studentShell.signOut")}
+              className="flex w-full items-center justify-center gap-1.5 rounded-md px-2 py-2 font-inter text-xs text-text-tertiary transition-colors hover:bg-brand-coral/10 hover:text-brand-coral"
+            >
+              <LogOut className="size-3.5" />
+              {t("studentShell.exit")}
+            </button>
+          </form>
+        )}
       </div>
     </>
   );
