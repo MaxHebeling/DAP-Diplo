@@ -165,12 +165,23 @@ export default async function BlockDetailPage({ params }: PageProps) {
 
   let headerUser: HeaderUser = null;
   let isAdmin = false;
+  let hasActiveSub = false;
+  const isLoggedIn = !!user;
   if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("full_name, avatar_url, role")
-      .eq("id", user.id)
-      .maybeSingle();
+    const [{ data: profile }, { data: sub }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("full_name, avatar_url, role")
+        .eq("id", user.id)
+        .maybeSingle(),
+      supabase
+        .from("subscriptions")
+        .select("status, current_period_end")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle<{ status: string; current_period_end: string | null }>(),
+    ]);
     if (profile) {
       headerUser = {
         fullName: profile.full_name ?? null,
@@ -179,6 +190,11 @@ export default async function BlockDetailPage({ params }: PageProps) {
       };
       isAdmin = profile.role === "admin";
     }
+    hasActiveSub =
+      !!sub &&
+      (sub.status === "active" || sub.status === "trialing") &&
+      (sub.current_period_end === null ||
+        new Date(sub.current_period_end) > new Date());
   }
 
   // Gate: fase no publicado → 404 a no ser que sea admin.
@@ -413,31 +429,56 @@ export default async function BlockDetailPage({ params }: PageProps) {
               </p>
             ) : (
               <ol className="grid gap-2 sm:grid-cols-2">
-                {modules.map((m) => (
-                  <li
-                    key={m.id}
-                    className="flex items-center gap-4 rounded-xl border border-white/5 bg-neutral-900/30 px-5 py-4 transition-colors hover:border-white/10"
-                  >
-                    <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/10 font-serif text-sm font-medium text-neutral-300">
-                      {String(m.order_index).padStart(2, "0")}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-neutral-50">
-                        {localized(m, "title", locale) ?? m.title}
-                      </p>
-                      {localized(m, "subtitle", locale) && (
-                        <p className="truncate text-xs text-neutral-500">
-                          {localized(m, "subtitle", locale)}
+                {modules.map((m) => {
+                  const moduleTitle = localized(m, "title", locale) ?? m.title;
+                  const moduleSubtitle = localized(m, "subtitle", locale);
+                  // Alumnos logueados con suscripción O admins pueden entrar
+                  // directamente al módulo. Visitantes públicos solo ven la
+                  // tarjeta como display (no clickable).
+                  const canOpen = isLoggedIn && (hasActiveSub || isAdmin);
+                  const inner = (
+                    <>
+                      <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/10 font-serif text-sm font-medium text-neutral-300">
+                        {String(m.order_index).padStart(2, "0")}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-neutral-50">
+                          {moduleTitle}
                         </p>
-                      )}
-                    </div>
-                    <span className="shrink-0 text-xs tabular-nums text-neutral-500">
-                      {t("phases.moduleMinutes", {
-                        minutes: m.duration_minutes ?? 50,
-                      })}
-                    </span>
-                  </li>
-                ))}
+                        {moduleSubtitle && (
+                          <p className="truncate text-xs text-neutral-500">
+                            {moduleSubtitle}
+                          </p>
+                        )}
+                      </div>
+                      <span className="shrink-0 text-xs tabular-nums text-neutral-500">
+                        {t("phases.moduleMinutes", {
+                          minutes: m.duration_minutes ?? 50,
+                        })}
+                      </span>
+                    </>
+                  );
+                  if (canOpen) {
+                    return (
+                      <li key={m.id}>
+                        <Link
+                          href={`/fases/${phase.slug}/modulos/${m.slug}`}
+                          className="flex items-center gap-4 rounded-xl border border-white/5 bg-neutral-900/30 px-5 py-4 transition-all hover:border-brand-coral/40 hover:bg-neutral-900/60"
+                        >
+                          {inner}
+                        </Link>
+                      </li>
+                    );
+                  }
+                  return (
+                    <li
+                      key={m.id}
+                      className="flex items-center gap-4 rounded-xl border border-white/5 bg-neutral-900/30 px-5 py-4"
+                    >
+                      {inner}
+                    </li>
+                  );
+                })}
               </ol>
             )}
           </div>
