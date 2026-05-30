@@ -61,23 +61,23 @@ export async function ModuleStepper({
               <Link
                 href={`/fases/${phaseSlug}/modulos/${moduleSlug}?section=${kind}`}
                 className={cn(
-                  "group flex items-center gap-2.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                  "group flex items-center gap-2.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
                   isCurrent
-                    ? "bg-brand-coral text-brand-coral-foreground"
+                    ? "bg-brand-coral text-white shadow-glow-coral"
                     : isCompleted
-                      ? "bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/15 dark:text-emerald-400"
-                      : "border text-muted-foreground hover:bg-muted/40 hover:text-foreground",
+                      ? "bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25"
+                      : "border border-white/15 bg-white/[0.03] text-white/80 hover:bg-white/[0.06] hover:text-white",
                 )}
                 aria-current={isCurrent ? "step" : undefined}
               >
                 <span
                   className={cn(
-                    "inline-flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold",
+                    "inline-flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold",
                     isCurrent
-                      ? "bg-brand-coral-foreground/15 text-brand-coral-foreground"
+                      ? "bg-white/20 text-white"
                       : isCompleted
-                        ? "bg-emerald-500/20"
-                        : "bg-muted",
+                        ? "bg-emerald-500/30 text-emerald-200"
+                        : "bg-white/10 text-white/90",
                   )}
                 >
                   {isCompleted && !isCurrent ? (
@@ -91,7 +91,7 @@ export async function ModuleStepper({
               {idx < ORDERED.length - 1 && (
                 <span
                   aria-hidden
-                  className="h-px w-3 bg-border sm:w-6"
+                  className="h-px w-3 bg-white/15 sm:w-6"
                 />
               )}
             </li>

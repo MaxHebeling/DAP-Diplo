@@ -65,7 +65,7 @@ export function ActivationSubmission({
   return (
     <div className="space-y-6">
       {consignaMd && (
-        <div className="rounded-xl border bg-card p-5">
+        <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-5">
           <p className="mb-3 text-xs font-medium uppercase tracking-widest text-brand-coral">
             {t("activation.consignaLabel")}
           </p>
@@ -132,7 +132,7 @@ function OpenForm({ submission }: { submission: ActivationSubmission }) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <div className="rounded-xl border bg-card p-5">
+      <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-5">
         <div className="mb-3 flex items-center justify-between">
           <p className="text-xs font-medium uppercase tracking-widest text-brand-coral">
             {t("activation.yourSubmission")}
@@ -149,17 +149,31 @@ function OpenForm({ submission }: { submission: ActivationSubmission }) {
           placeholder={t("activation.placeholder")}
           className="w-full resize-y rounded-md border border-white/[0.08] bg-white/[0.04] p-4 text-sm leading-relaxed outline-none placeholder:text-muted-foreground focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20"
         />
-        <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-          <span>{t("activation.charactersCount", { count: text.trim().length })}</span>
-          <span className="inline-flex items-center gap-1">
-            <Sparkles className="size-3 text-brand-coral" />
-            {t("activation.correctionByDrMax")}
+        <div className="mt-2 flex items-center justify-between text-xs">
+          <span
+            className={
+              text.trim().length < 20
+                ? "text-amber-300"
+                : "text-emerald-300"
+            }
+          >
+            {text.trim().length < 20
+              ? `Mínimo 20 caracteres (${text.trim().length} hasta ahora)`
+              : `${text.trim().length} caracteres`}
+          </span>
+          <span className="inline-flex items-center gap-1 text-white/55">
+            <Send className="size-3 text-brand-coral" />
+            Llega al Director del DAP
           </span>
         </div>
       </div>
 
       <div className="flex justify-end">
-        <Button type="submit" disabled={pending || text.trim().length < 20}>
+        <Button
+          type="submit"
+          disabled={pending || text.trim().length < 20}
+          className="bg-brand-coral text-white hover:bg-brand-coral/90 disabled:opacity-50"
+        >
           {pending ? (
             <>
               <Loader2 className="size-4 animate-spin" />
@@ -192,7 +206,7 @@ function PendingCorrectionView({
   return (
     <div className="rounded-2xl border border-amber-500/30 bg-amber-500/[0.04] p-8 text-center">
       <Clock className="mx-auto size-9 text-amber-400" strokeWidth={1.7} />
-      <h3 className="mt-4 font-serif text-xl font-semibold">
+      <h3 className="mt-4 font-grotesk text-xl font-semibold">
         {t("activation.pendingTitle")}
       </h3>
       <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
@@ -245,7 +259,7 @@ function FeedbackView({ submission }: { submission: ActivationSubmission }) {
             <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
               {passed ? t("activation.feedbackApproved") : t("activation.feedbackNeedsReview")}
             </p>
-            <p className="font-serif text-2xl font-semibold leading-tight">
+            <p className="font-grotesk text-2xl font-semibold leading-tight">
               {submission.ai_score ?? "—"}
               <span className="text-base text-muted-foreground">/100</span>
             </p>
@@ -259,7 +273,7 @@ function FeedbackView({ submission }: { submission: ActivationSubmission }) {
       </div>
 
       {submission.ai_feedback && (
-        <div className="rounded-xl border bg-card p-6">
+        <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-6">
           <p className="mb-4 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
             <Sparkles className="size-3" />
             {t("activation.wordFromDrMax")}
@@ -269,7 +283,7 @@ function FeedbackView({ submission }: { submission: ActivationSubmission }) {
       )}
 
       {submission.content_text && (
-        <details className="rounded-xl border bg-card/40 p-5">
+        <details className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-5">
           <summary className="cursor-pointer text-xs font-medium uppercase tracking-widest text-muted-foreground hover:text-foreground">
             {t("activation.originalSubmission")}
           </summary>
@@ -291,7 +305,7 @@ function NotSubmittedView({
   return (
     <div className="rounded-2xl border border-muted-foreground/20 bg-muted/[0.04] p-8 text-center">
       <Clock className="mx-auto size-9 text-muted-foreground" strokeWidth={1.7} />
-      <h3 className="mt-4 font-serif text-lg font-semibold">
+      <h3 className="mt-4 font-grotesk text-lg font-semibold">
         {t("activation.windowClosedTitle")}
       </h3>
       <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">

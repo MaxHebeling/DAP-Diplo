@@ -219,11 +219,11 @@ export function SectionTeaching(props: SectionTeachingProps) {
           )}
         </div>
       ) : props.muxPlaybackId ? (
-        <div className="flex items-center justify-center rounded-xl border border-dashed bg-amber-500/10 px-6 py-8 text-center text-sm text-amber-700 dark:text-amber-300">
+        <div className="flex items-center justify-center rounded-xl border border-dashed border-amber-400/30 bg-amber-400/10 px-6 py-8 text-center text-sm text-amber-300">
           {t("teaching.loadError")}
         </div>
       ) : (
-        <div className="flex items-center justify-center rounded-xl border border-dashed bg-muted/30 px-6 py-8 text-sm text-muted-foreground">
+        <div className="flex items-center justify-center rounded-xl border border-dashed border-white/[0.08] bg-white/[0.02] px-6 py-8 text-sm text-white/55">
           {t("teaching.videoPending")}
         </div>
       )}
@@ -232,10 +232,10 @@ export function SectionTeaching(props: SectionTeachingProps) {
 
       {props.resources.length > 0 && (
         <section>
-          <h3 className="mb-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+          <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-brand-coral">
             {t("teaching.resources")}
           </h3>
-          <ul className="divide-y rounded-lg border bg-card">
+          <ul className="divide-y divide-white/[0.06] rounded-lg border border-white/[0.08] bg-white/[0.02]">
             {props.resources.map((r) => {
               const Icon = RESOURCE_ICON[r.kind];
               return (
@@ -244,13 +244,13 @@ export function SectionTeaching(props: SectionTeachingProps) {
                     href={r.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between gap-4 px-4 py-3 text-sm transition-colors hover:bg-muted/40"
+                    className="flex items-center justify-between gap-4 px-4 py-3 text-sm text-white/90 transition-colors hover:bg-white/[0.04] hover:text-white"
                   >
                     <span className="flex items-center gap-3">
                       <Icon className="size-4 text-brand-coral" strokeWidth={1.7} />
                       {r.title}
                     </span>
-                    <Download className="size-4 text-muted-foreground" />
+                    <Download className="size-4 text-white/60" />
                   </a>
                 </li>
               );

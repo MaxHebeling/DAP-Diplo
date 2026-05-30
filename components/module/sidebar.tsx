@@ -31,27 +31,27 @@ export async function ModuleSidebar({
   const pct = modules.length === 0 ? 0 : Math.round((completedCount / modules.length) * 100);
 
   return (
-    <aside className="hidden border-r bg-card/40 lg:block">
-      <div className="border-b p-5">
-        <p className="mb-1 text-xs font-medium uppercase tracking-widest text-brand-coral">
+    <aside className="hidden border-r border-white/[0.06] bg-surface-base lg:block">
+      <div className="border-b border-white/[0.06] p-5">
+        <p className="mb-1 text-xs font-bold uppercase tracking-widest text-brand-coral">
           {t("sidebar.phase", { number: String(phaseOrderIndex).padStart(2, "0") })}
         </p>
         <Link
           href={`/fases/${phaseSlug}`}
-          className="font-serif text-lg font-medium leading-tight hover:text-brand-coral"
+          className="font-grotesk text-lg font-bold leading-tight text-white hover:text-brand-coral"
         >
           {phaseTitle}
         </Link>
         <div className="mt-4">
-          <div className="mb-1.5 flex items-center justify-between text-xs text-muted-foreground">
+          <div className="mb-1.5 flex items-center justify-between text-xs text-white/60">
             <span>
               {t("sidebar.modulesCount", { completed: completedCount, total: modules.length })}
             </span>
-            <span className="tabular-nums">{pct}%</span>
+            <span className="tabular-nums text-white/80">{pct}%</span>
           </div>
-          <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+          <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.08]">
             <div
-              className="h-full rounded-full bg-brand-coral transition-all"
+              className="h-full rounded-full bg-gradient-to-r from-brand-violet to-brand-coral transition-all"
               style={{ width: `${pct}%` }}
             />
           </div>
@@ -72,19 +72,19 @@ export async function ModuleSidebar({
                   className={cn(
                     "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
                     isCurrent
-                      ? "bg-brand-coral/10 text-foreground"
-                      : "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
+                      ? "bg-brand-coral/15 text-white"
+                      : "text-white/70 hover:bg-white/[0.04] hover:text-white",
                   )}
                   aria-current={isCurrent ? "page" : undefined}
                 >
                   <span
                     className={cn(
-                      "inline-flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-medium tabular-nums",
+                      "inline-flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold tabular-nums",
                       m.completed
-                        ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                        ? "bg-emerald-500/20 text-emerald-300"
                         : isCurrent
-                          ? "bg-brand-coral text-brand-coral-foreground"
-                          : "border text-muted-foreground",
+                          ? "bg-brand-coral text-white"
+                          : "border border-white/15 text-white/70",
                     )}
                   >
                     {m.completed ? (
