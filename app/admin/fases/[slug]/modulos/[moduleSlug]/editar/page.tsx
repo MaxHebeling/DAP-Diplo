@@ -7,6 +7,7 @@ import {
   ModuleEditForm,
   type ModuleFormModule,
 } from "@/components/admin/module-edit-form";
+import { ModulePdfManager } from "@/components/admin/module-pdf-manager";
 import { createClient } from "@/lib/supabase/server";
 
 type PageProps = { params: Promise<{ slug: string; moduleSlug: string }> };
@@ -36,6 +37,22 @@ export default async function AdminModuleEditPage({ params }: PageProps) {
     .eq("id", mid)
     .maybeSingle();
   if (!mod || mod.phase_id !== id) notFound();
+
+  // PDFs existentes del módulo (kind='pdf'), con su locale.
+  const { data: pdfs } = await supabase
+    .from("module_resources")
+    .select("id, title, url, kind, order_index, locale")
+    .eq("module_id", mod.id)
+    .eq("kind", "pdf")
+    .order("order_index", { ascending: true })
+    .returns<{
+      id: string;
+      title: string;
+      url: string;
+      kind: string;
+      order_index: number;
+      locale: "es" | "en" | null;
+    }[]>();
 
   const formMod: ModuleFormModule = {
     id: mod.id,
@@ -90,6 +107,18 @@ export default async function AdminModuleEditPage({ params }: PageProps) {
         </header>
 
         <ModuleEditForm mod={formMod} />
+
+        <div className="mt-10">
+          <ModulePdfManager
+            moduleId={mod.id}
+            initialPdfs={(pdfs ?? []).map((p) => ({
+              id: p.id,
+              title: p.title,
+              url: p.url,
+              locale: p.locale ?? "es",
+            }))}
+          />
+        </div>
       </div>
     </main>
   );
