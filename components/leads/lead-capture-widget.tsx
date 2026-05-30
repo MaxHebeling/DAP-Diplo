@@ -5,6 +5,7 @@ import { useActionState } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { CheckCircle2, Loader2, Mail, MessageCircle, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { captureLeadAction } from "@/lib/leads/actions";
 import { createClient } from "@/lib/supabase/client";
@@ -64,6 +65,7 @@ function FloatingButton({
   onClick: () => void;
   hidden: boolean;
 }) {
+  const t = useTranslations("LeadCapture.button");
   if (hidden) return null;
   return (
     <motion.button
@@ -75,13 +77,13 @@ function FloatingButton({
       whileHover={{ scale: 1.04 }}
       whileTap={{ scale: 0.96 }}
       className="fixed bottom-4 left-4 z-40 flex items-center gap-2.5 rounded-full border border-brand-violet/35 bg-[#04081A]/95 py-2.5 pl-3 pr-5 shadow-[0_10px_40px_-10px_rgba(123,97,255,0.55)] backdrop-blur-xl transition-all hover:border-brand-violet/60 hover:shadow-[0_15px_50px_-12px_rgba(123,97,255,0.75)] lg:bottom-6 lg:left-6"
-      aria-label="Recibir más información del DAP"
+      aria-label={t("ariaLabel")}
     >
       <div className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-brand-violet to-brand-coral text-white">
         <MessageCircle className="size-4" strokeWidth={2} />
       </div>
       <span className="font-grotesk text-sm font-semibold text-text-primary">
-        Quiero más info
+        {t("label")}
       </span>
     </motion.button>
   );
@@ -94,6 +96,8 @@ function LeadSheet({
   onClose: () => void;
   pagePath: string | null;
 }) {
+  const t = useTranslations("LeadCapture.modal");
+  const tErr = useTranslations("LeadCapture.errors");
   const [state, formAction] = useActionState(captureLeadAction, undefined);
   const [submitting, setSubmitting] = useState(false);
 
@@ -165,21 +169,20 @@ function LeadSheet({
                 type="button"
                 onClick={onClose}
                 className="rounded-lg p-1.5 text-text-tertiary transition-colors hover:bg-white/[0.05] hover:text-text-primary"
-                aria-label="Cerrar"
+                aria-label={t("close")}
               >
                 <X className="size-4" strokeWidth={2} />
               </button>
             </div>
 
             <p className="mt-4 font-inter text-[10px] font-semibold uppercase tracking-[0.42em] text-brand-coral">
-              Conversemos
+              {t("eyebrow")}
             </p>
             <h3 className="mt-2 font-grotesk text-xl font-bold leading-tight text-text-primary sm:text-2xl">
-              ¿Quieres conocer más del DAP?
+              {t("title")}
             </h3>
             <p className="mt-2 font-inter text-sm leading-relaxed text-text-secondary">
-              Deja tu email y te mando información personalizada sobre la
-              próxima cohorte. Sin spam.
+              {t("subtitle")}
             </p>
 
             <div className="mt-5 space-y-3">
@@ -187,7 +190,7 @@ function LeadSheet({
                 type="email"
                 name="email"
                 required
-                placeholder="tu@email.com"
+                placeholder={t("emailPlaceholder")}
                 autoComplete="email"
                 disabled={submitting}
                 className={fieldCx}
@@ -195,7 +198,7 @@ function LeadSheet({
               <input
                 type="text"
                 name="fullName"
-                placeholder="Tu nombre (opcional)"
+                placeholder={t("namePlaceholder")}
                 autoComplete="name"
                 disabled={submitting}
                 className={fieldCx}
@@ -203,7 +206,7 @@ function LeadSheet({
               <textarea
                 name="message"
                 rows={3}
-                placeholder="¿Hay algo que quieras contarme? (opcional)"
+                placeholder={t("messagePlaceholder")}
                 disabled={submitting}
                 className={`${fieldCx} resize-none`}
               />
@@ -217,21 +220,21 @@ function LeadSheet({
               {submitting ? (
                 <>
                   <Loader2 className="size-4 animate-spin" />
-                  Enviando…
+                  {t("submitting")}
                 </>
               ) : (
-                "Quiero más información"
+                t("submit")
               )}
             </button>
 
             {state && !state.ok && (
               <p className="mt-3 text-center font-inter text-xs text-brand-coral">
-                {state.error}
+                {translateServerError(state.error, tErr)}
               </p>
             )}
 
             <p className="mt-4 text-center font-inter text-[10px] text-text-tertiary">
-              Tu información queda solo entre vos y el equipo de DAP.
+              {t("privacy")}
             </p>
           </form>
         )}
@@ -247,28 +250,47 @@ function ThanksState({
   onClose: () => void;
   duplicated: boolean;
 }) {
+  const t = useTranslations("LeadCapture.thanks");
   return (
     <div className="p-8 text-center">
       <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400">
         <CheckCircle2 className="size-7" strokeWidth={1.8} />
       </div>
       <h3 className="mt-5 font-grotesk text-xl font-bold text-text-primary">
-        {duplicated ? "Actualizado, gracias 🙏" : "¡Recibido!"}
+        {duplicated ? t("titleDuplicated") : t("titleNew")}
       </h3>
       <p className="mt-3 font-inter text-sm leading-relaxed text-text-secondary">
-        {duplicated
-          ? "Ya teníamos tu email. Actualizamos tu información con lo nuevo. Te vamos a estar escribiendo pronto."
-          : "Te vamos a estar escribiendo en las próximas horas con la info de la cohorte. Mientras tanto, puedes explorar el sitio."}
+        {duplicated ? t("bodyDuplicated") : t("bodyNew")}
       </p>
       <button
         type="button"
         onClick={onClose}
         className="mt-6 inline-flex items-center justify-center rounded-full border border-white/[0.10] bg-white/[0.04] px-6 py-2.5 font-inter text-xs font-medium text-text-secondary backdrop-blur-sm transition-all hover:bg-white/[0.08] hover:text-text-primary"
       >
-        Cerrar
+        {t("close")}
       </button>
     </div>
   );
+}
+
+/**
+ * Mapea el `error` string que viene del server action al mensaje
+ * traducido del namespace `LeadCapture.errors`. Los strings del server
+ * llegan en español (action no tiene acceso a locale del request);
+ * acá los re-traducimos al locale activo del browser.
+ */
+function translateServerError(
+  serverError: string,
+  tErr: ReturnType<typeof useTranslations>,
+): string {
+  const lower = serverError.toLowerCase();
+  if (lower.includes("demasiados") || lower.includes("too many")) {
+    return tErr("rateLimit");
+  }
+  if (lower.includes("email") || lower.includes("inv")) {
+    return tErr("invalidEmail");
+  }
+  return tErr("generic");
 }
 
 const fieldCx =
