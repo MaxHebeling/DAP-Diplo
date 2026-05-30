@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations, getLocale } from "next-intl/server";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FilePlus2 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { ModuleSidebar, type SidebarModule } from "@/components/module/sidebar";
@@ -21,6 +21,8 @@ import { localized } from "@/lib/i18n/localized";
 import type { Locale } from "@/i18n/config";
 import { ensureWeekAssignment } from "@/lib/calendar/ensure-assignment";
 import { signMuxPlayerTokens } from "@/lib/mux/playback";
+import { ModuleQuickActions } from "@/components/module/module-quick-actions";
+import { GoToTaskButton } from "@/components/module/go-to-task-button";
 
 const SECTION_KINDS: SectionKind[] = [
   "intro",
@@ -62,6 +64,7 @@ type DbResource = {
   kind: "pdf" | "audio" | "link" | "slides" | "other";
   url: string;
   order_index: number;
+  locale: "es" | "en" | null;
 };
 type DbModule = {
   id: string;
@@ -147,7 +150,7 @@ export default async function ModulePlayerPage({
          mux_playback_id, duration_seconds,
          progress:section_progress(completed, last_position_seconds)
        ),
-       resources:module_resources(id, title, kind, url, order_index)`,
+       resources:module_resources(id, title, kind, url, order_index, locale)`,
     )
     .eq("slug", moduleSlug)
     .maybeSingle<DbModule>();
@@ -237,6 +240,22 @@ export default async function ModulePlayerPage({
       sectionId: activeSection.id,
       courseWeek: mod.course_week,
     });
+  }
+
+  // Para el banner de acciones rápidas: indica si el alumno ya entregó.
+  // Aplica solo a section activation. Query liviana — solo el status.
+  let hasSubmittedActivation = false;
+  const activationSectionForBanner = sectionsByKind.get("activation");
+  if (activationSectionForBanner && !isAdmin) {
+    const { data: anySubmitted } = await supabase
+      .from("assignment_submissions")
+      .select("status")
+      .eq("user_id", user.id)
+      .eq("module_section_id", activationSectionForBanner.id)
+      .in("status", ["submitted", "correcting", "completed"])
+      .limit(1)
+      .maybeSingle<{ status: string }>();
+    hasSubmittedActivation = !!anySubmitted;
   }
 
   // Cargar la submission del alumno para esta activation (si existe)
@@ -464,6 +483,18 @@ export default async function ModulePlayerPage({
               />
             </div>
 
+            {/* Banner sticky de acciones del módulo: PDF + Subir tarea.
+                Filtra recursos por locale del alumno (con fallback al otro
+                idioma si no hay material en el locale activo). */}
+            <div className="mb-6">
+              <ModuleQuickActions
+                resources={pickResourcesForLocale(mod.resources ?? [], locale)}
+                phaseSlug={mod.phase.slug}
+                moduleSlug={mod.slug}
+                alreadySubmitted={hasSubmittedActivation}
+              />
+            </div>
+
             <section aria-labelledby="section-heading">
               <h2
                 id="section-heading"
@@ -531,9 +562,51 @@ export default async function ModulePlayerPage({
                 />
               )}
             </section>
+
+            {/* Footer fijo de la lección — recordatorio para el alumno:
+                cualquier tarea solicitada en el PDF/secciones se trabaja
+                por fuera y se sube en la sección "Tarea" del módulo. */}
+            <aside className="mt-12 rounded-2xl border border-brand-coral/30 bg-gradient-to-br from-brand-coral/[0.08] via-brand-violet/[0.03] to-brand-violet/[0.05] p-5 sm:p-6">
+              <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-3">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-brand-coral/15 text-brand-coral">
+                    <FilePlus2 className="size-5" strokeWidth={2} />
+                  </div>
+                  <div>
+                    <p className="font-inter text-[10px] font-bold uppercase tracking-[0.32em] text-brand-coral">
+                      Recordatorio
+                    </p>
+                    <p className="mt-1 text-sm font-semibold leading-snug sm:text-base">
+                      Si se te solicita una tarea, hazla por fuera y súbela aquí.
+                    </p>
+                  </div>
+                </div>
+                <GoToTaskButton
+                  phaseSlug={mod.phase.slug}
+                  moduleSlug={mod.slug}
+                />
+              </div>
+            </aside>
           </div>
         </main>
       </div>
     </div>
   );
+}
+
+/**
+ * Devuelve los recursos del módulo (PDFs, etc.) en orden canónico,
+ * filtrados por el locale activo del alumno. Si el módulo no tiene
+ * material en ese locale, hace fallback a TODOS los recursos para no
+ * dejar al alumno sin PDF. Recursos con locale=null cuentan como
+ * compatibles con cualquier idioma.
+ */
+function pickResourcesForLocale(
+  resources: DbResource[],
+  locale: Locale,
+): { id: string; title: string; kind: DbResource["kind"]; url: string }[] {
+  const sorted = resources.slice().sort((a, b) => a.order_index - b.order_index);
+  const inLocale = sorted.filter((r) => r.locale === locale || r.locale === null);
+  const pool = inLocale.length > 0 ? inLocale : sorted;
+  return pool.map(({ id, title, kind, url }) => ({ id, title, kind, url }));
 }
