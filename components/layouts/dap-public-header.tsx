@@ -160,9 +160,14 @@ export function DapPublicHeader({
                     />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel className="truncate">
-                      {user.fullName ?? t("account")}
-                    </DropdownMenuLabel>
+                    {/* Base UI requiere que GroupLabel y group-related items
+                        vivan dentro de <Menu.Group>. Sin esto tira error #31
+                        ("MenuGroupContext is missing"). */}
+                    <DropdownMenuGroup>
+                      <DropdownMenuLabel className="truncate">
+                        {user.fullName ?? t("account")}
+                      </DropdownMenuLabel>
+                    </DropdownMenuGroup>
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
                       <DropdownMenuItem render={<Link href="/dashboard" />}>
@@ -179,14 +184,18 @@ export function DapPublicHeader({
                     {onSignOut && (
                       <>
                         <DropdownMenuSeparator />
-                        <form action={onSignOut}>
-                          <DropdownMenuItem
-                            render={<button type="submit" className="w-full" />}
-                          >
-                            <LogOut className="size-4" />
-                            {t("signOut")}
-                          </DropdownMenuItem>
-                        </form>
+                        <DropdownMenuGroup>
+                          <form action={onSignOut}>
+                            <DropdownMenuItem
+                              render={
+                                <button type="submit" className="w-full" />
+                              }
+                            >
+                              <LogOut className="size-4" />
+                              {t("signOut")}
+                            </DropdownMenuItem>
+                          </form>
+                        </DropdownMenuGroup>
                       </>
                     )}
                   </DropdownMenuContent>
