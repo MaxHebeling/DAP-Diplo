@@ -222,7 +222,7 @@ export default async function BlockDetailPage({ params }: PageProps) {
     here >= 0 && here < list.length - 1 ? list[here + 1] : null;
 
   const totalMinutes = modules.reduce(
-    (sum, m) => sum + (m.duration_minutes ?? 50),
+    (sum, m) => sum + (m.duration_minutes ?? 25),
     0,
   );
 
@@ -453,7 +453,7 @@ export default async function BlockDetailPage({ params }: PageProps) {
                       </div>
                       <span className="shrink-0 text-xs tabular-nums text-neutral-500">
                         {t("phases.moduleMinutes", {
-                          minutes: m.duration_minutes ?? 50,
+                          minutes: m.duration_minutes ?? 25,
                         })}
                       </span>
                     </>
