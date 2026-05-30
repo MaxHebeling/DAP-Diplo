@@ -48,6 +48,36 @@
       "close": "Más tarde"
     }
   },
+  "LeadCapture": {
+    "button": {
+      "label": "Quiero más info",
+      "ariaLabel": "Recibir más información del DAP"
+    },
+    "modal": {
+      "close": "Cerrar",
+      "eyebrow": "Conversemos",
+      "title": "¿Querés conocer más del DAP?",
+      "subtitle": "Dejá tu email y te mando información personalizada sobre la próxima cohorte. Sin spam.",
+      "emailPlaceholder": "tu@email.com",
+      "namePlaceholder": "Tu nombre (opcional)",
+      "messagePlaceholder": "¿Hay algo que quieras contarme? (opcional)",
+      "submit": "Quiero más información",
+      "submitting": "Enviando…",
+      "privacy": "Tu información queda solo entre vos y el equipo de DAP."
+    },
+    "thanks": {
+      "titleNew": "¡Recibido!",
+      "titleDuplicated": "Actualizado, gracias 🙏",
+      "bodyNew": "Te vamos a estar escribiendo en las próximas horas con la info de la cohorte. Mientras tanto, podés explorar el sitio.",
+      "bodyDuplicated": "Ya teníamos tu email. Actualizamos tu información con lo nuevo. Te vamos a estar escribiendo pronto.",
+      "close": "Cerrar"
+    },
+    "errors": {
+      "rateLimit": "Demasiados intentos. Esperá unos minutos.",
+      "invalidEmail": "Email inválido. Revisalo y volvé a intentar.",
+      "generic": "Algo no funcionó. Intentá de nuevo."
+    }
+  },
   "Legal": {
     "lastUpdated": "Última actualización: {date}"
   }

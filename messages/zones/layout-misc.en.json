@@ -48,6 +48,36 @@
       "close": "Maybe later"
     }
   },
+  "LeadCapture": {
+    "button": {
+      "label": "Get more info",
+      "ariaLabel": "Get more information about the DAP"
+    },
+    "modal": {
+      "close": "Close",
+      "eyebrow": "Let's talk",
+      "title": "Want to know more about the DAP?",
+      "subtitle": "Drop your email and I'll send you personalized info about the next cohort. No spam.",
+      "emailPlaceholder": "you@email.com",
+      "namePlaceholder": "Your name (optional)",
+      "messagePlaceholder": "Anything you'd like to share? (optional)",
+      "submit": "Get more info",
+      "submitting": "Sending…",
+      "privacy": "Your information stays only between you and the DAP team."
+    },
+    "thanks": {
+      "titleNew": "Received!",
+      "titleDuplicated": "Updated, thank you 🙏",
+      "bodyNew": "We'll be in touch within the next few hours with cohort info. In the meantime, feel free to explore the site.",
+      "bodyDuplicated": "We already had your email. We've updated your information with the new details. We'll be writing to you soon.",
+      "close": "Close"
+    },
+    "errors": {
+      "rateLimit": "Too many attempts. Please wait a few minutes.",
+      "invalidEmail": "Invalid email. Please check and try again.",
+      "generic": "Something didn't work. Please try again."
+    }
+  },
   "Legal": {
     "lastUpdated": "Last updated: {date}"
   }
