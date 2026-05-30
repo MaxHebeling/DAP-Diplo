@@ -470,7 +470,7 @@ export default async function ModulePlayerPage({
                 {moduleTitle}
               </h1>
               <p className="mt-2 text-sm text-muted-foreground">
-                {t("module.duration", { minutes: mod.duration_minutes ?? 50 })}
+                {t("module.duration", { minutes: mod.duration_minutes ?? 25 })}
               </p>
             </header>
 
