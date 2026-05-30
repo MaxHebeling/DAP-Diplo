@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { sendAssignmentToDirector } from "@/lib/email/send-assignment-to-director";
 
 export type SubmitAssignmentResult =
   | { ok: true; message?: string }
@@ -105,6 +107,22 @@ export async function submitAssignmentAction(
     return { ok: false, error: `No se pudo enviar: ${updErr.message}` };
   }
 
+  // Notificar al Director del DAP (fire-and-forget). Si el email falla,
+  // el alumno NO se entera porque su entrega ya quedó guardada. Loggeamos
+  // el error para revisión posterior.
+  void notifyDirectorOfSubmission({
+    submissionId: sub.id,
+    moduleId: sub.module_id,
+    userId: user.id,
+    userEmail: user.email ?? "",
+    contentText: parsed.data.contentText.trim(),
+  }).catch((err) => {
+    console.error(
+      `[submitAssignmentAction] notify director failed for submission=${sub.id}:`,
+      err,
+    );
+  });
+
   revalidatePath("/dashboard");
   // Revalidate del módulo player — el path tiene slugs dinámicos que no
   // tenemos acá. Usamos un revalidate prefix laxo.
@@ -114,4 +132,55 @@ export async function submitAssignmentAction(
     ok: true,
     message: "¡Entrega recibida! Tu corrección estará en 48 horas.",
   };
+}
+
+/**
+ * Trae los datos necesarios para el email del director y dispara el
+ * envío. Hace de orquestador para no inflar la action principal.
+ */
+async function notifyDirectorOfSubmission(opts: {
+  submissionId: string;
+  moduleId: string;
+  userId: string;
+  userEmail: string;
+  contentText: string;
+}): Promise<void> {
+  const admin = createAdminClient();
+
+  const [profileQ, moduleQ] = await Promise.all([
+    admin
+      .from("profiles")
+      .select("full_name, matricula")
+      .eq("id", opts.userId)
+      .maybeSingle<{ full_name: string; matricula: string | null }>(),
+    admin
+      .from("modules")
+      .select("title, course_week, slug, phase:phases(slug, title)")
+      .eq("id", opts.moduleId)
+      .maybeSingle<{
+        title: string;
+        course_week: number;
+        slug: string;
+        phase: { slug: string; title: string } | null;
+      }>(),
+  ]);
+
+  const profile = profileQ.data;
+  const mod = moduleQ.data;
+  if (!profile || !mod) return;
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.dapglobal.org";
+
+  await sendAssignmentToDirector({
+    studentName: profile.full_name,
+    studentEmail: opts.userEmail,
+    studentMatricula: profile.matricula,
+    moduleTitle: mod.title,
+    blockTitle: mod.phase?.title ?? "—",
+    courseWeek: mod.course_week,
+    contentText: opts.contentText,
+    reviewUrl: `${appUrl}/admin/admisiones?lookup=${encodeURIComponent(
+      profile.matricula ?? "",
+    )}`,
+  });
 }
