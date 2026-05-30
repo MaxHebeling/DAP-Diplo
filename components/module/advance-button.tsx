@@ -53,7 +53,7 @@ function SubmitInner({
         type="button"
         size="lg"
         disabled
-        className="h-11 cursor-not-allowed bg-muted/40 text-text-tertiary transition-all"
+        className="h-11 cursor-not-allowed border border-white/[0.08] bg-white/[0.04] text-white/55 transition-all"
       >
         <Lock className="size-4" strokeWidth={2} />
         {disabledReason ?? label}
@@ -66,7 +66,7 @@ function SubmitInner({
       type="submit"
       size="lg"
       disabled={isDisabled}
-      className="h-11 bg-brand text-brand-foreground transition-all hover:bg-brand/90"
+      className="h-11 bg-gradient-to-r from-brand-violet to-brand-coral font-semibold text-white shadow-glow-violet transition-all hover:shadow-glow-coral hover:brightness-110"
     >
       {/* Optimistic UI: apenas se aprieta el botón mostramos check + label
           afirmativo. Si el server falla, el form state lo refleja después. */}

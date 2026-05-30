@@ -174,19 +174,19 @@ async function IntroExtras({
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       {objective && (
-        <div className="rounded-xl border bg-card p-5">
+        <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-5">
           <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
             {t("sectionContent.objective")}
           </p>
-          <p className="text-sm leading-relaxed text-foreground">{objective}</p>
+          <p className="text-sm leading-relaxed text-white/90">{objective}</p>
         </div>
       )}
       {mainRevelation && (
-        <div className="rounded-xl border bg-card p-5">
+        <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-5">
           <p className="mb-2 text-xs font-medium uppercase tracking-widest text-brand-coral">
             {t("sectionContent.mainRevelation")}
           </p>
-          <p className="text-sm leading-relaxed text-foreground">
+          <p className="text-sm leading-relaxed text-white/90">
             {mainRevelation}
           </p>
         </div>
@@ -203,7 +203,7 @@ async function ImpartationPhrase({ phrase }: { phrase: string }) {
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(50%_60%_at_50%_30%,rgba(253,173,90,0.16),transparent)]"
       />
-      <p className="relative font-serif text-2xl font-medium leading-tight sm:text-3xl">
+      <p className="relative font-grotesk text-2xl font-medium leading-tight sm:text-3xl">
         &ldquo;{phrase}&rdquo;
       </p>
       <p className="relative mt-5 text-xs font-medium uppercase tracking-[0.3em] text-brand-coral">
