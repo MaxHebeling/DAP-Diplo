@@ -111,6 +111,7 @@ async function main() {
         storagePath: path,
         sourceTitle,
         createdBy: admin.id,
+        bucket: BUCKET,
       });
       console.log(
         `    OK chunks=${res.chunks_count} tokens=${res.tokens_used} chars=${res.total_chars}`,
