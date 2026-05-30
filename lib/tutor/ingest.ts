@@ -2,7 +2,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { chunkText } from "@/lib/tutor/chunker";
 import { voyageEmbed } from "@/lib/tutor/voyage";
 
-const BUCKET = "ai-documents";
+const DEFAULT_BUCKET = "ai-documents";
 
 export type IngestResult = {
   source_id: string;
@@ -22,12 +22,14 @@ export async function ingestPdf(opts: {
   storagePath: string;
   sourceTitle: string;
   createdBy: string;
+  bucket?: string;
 }): Promise<IngestResult> {
   const admin = createAdminClient();
+  const bucket = opts.bucket ?? DEFAULT_BUCKET;
 
   // 1) Descarga
   const { data: blob, error: dlErr } = await admin.storage
-    .from(BUCKET)
+    .from(bucket)
     .download(opts.storagePath);
   if (dlErr || !blob) {
     throw new Error(
