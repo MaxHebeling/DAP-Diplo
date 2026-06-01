@@ -154,6 +154,11 @@ export async function createSubscriptionCheckoutSession(opts: {
     "metadata[userId]": userId,
     "subscription_data[metadata][userId]": userId,
     billing_address_collection: "auto",
+    // Habilita el campo "Añadir código promocional" en checkout —
+    // necesario para DAP-HONOR / DAP-VIP. Estaba solo en la copia SDK
+    // (lib/stripe/checkout.ts) pero los alumnos de países no-AR entran
+    // por este endpoint HTTP raw vía /api/onboarding/complete.
+    allow_promotion_codes: "true",
   };
   return stripeRequest<StripeCheckoutSession>("/checkout/sessions", body);
 }
