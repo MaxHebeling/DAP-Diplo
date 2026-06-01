@@ -12,6 +12,8 @@ import {
   ENROLLMENT_OPENS_LABEL,
   isEnrollmentOpen,
 } from "@/lib/launch/config";
+import { isArgentina, resolveVisitorCountry } from "@/lib/launch/country";
+import { MP_MONTHLY_ARS } from "@/lib/mercadopago/config";
 import { CalendarClock, GraduationCap } from "lucide-react";
 
 // Force dynamic — la página depende de auth (admin bypass) y status
@@ -34,8 +36,17 @@ export async function generateMetadata() {
   };
 }
 
-export default async function SuscribirmePage() {
+type SearchParams = Promise<{ cc?: string }>;
+
+export default async function SuscribirmePage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
   const t = await getTranslations("Auth");
+  const sp = await searchParams;
+  const visitorCountry = await resolveVisitorCountry(sp);
+  const fromArgentina = isArgentina(visitorCountry);
   const INCLUDED = [
     t("subscribe.included.item1"),
     t("subscribe.included.item2"),
@@ -137,24 +148,62 @@ export default async function SuscribirmePage() {
             </div>
 
             {isEnrollmentOpen() ? (
-              <>
-                <form
-                  action="/api/checkout/create-subscription"
-                  method="POST"
-                  className="w-full"
-                >
-                  <Button
-                    type="submit"
-                    size="lg"
-                    className="h-12 w-full bg-brand-coral px-7 text-base font-medium text-brand-coral-foreground hover:bg-brand-coral/90"
+              fromArgentina ? (
+                <>
+                  <form
+                    action="/api/checkout/create-mp-subscription"
+                    method="POST"
+                    className="w-full space-y-3"
                   >
-                    {t("subscribe.continueToPayment")}
-                  </Button>
-                </form>
-                <p className="mt-5 text-center text-xs text-neutral-500">
-                  {t("subscribe.paymentNote")}
-                </p>
-              </>
+                    <div className="rounded-lg border border-brand-violet/30 bg-brand-violet/[0.06] px-4 py-3 text-sm text-neutral-200">
+                      <p className="font-semibold text-neutral-50">
+                        Pago desde Argentina
+                      </p>
+                      <p className="mt-1 text-neutral-300">
+                        Cobramos <strong className="text-neutral-50">{MP_MONTHLY_ARS.toLocaleString("es-AR")} ARS/mes</strong> vía Mercado Pago.
+                        Sin cargos por cambio de moneda.
+                      </p>
+                    </div>
+                    <input
+                      type="text"
+                      name="coupon"
+                      placeholder="¿Tenés código promocional? (opcional)"
+                      autoComplete="off"
+                      autoCapitalize="characters"
+                      className="h-11 w-full rounded-lg border border-white/10 bg-neutral-900/60 px-4 text-sm text-neutral-50 placeholder:text-neutral-500 focus:border-brand-coral focus:outline-none"
+                    />
+                    <Button
+                      type="submit"
+                      size="lg"
+                      className="h-12 w-full bg-brand-coral px-7 text-base font-medium text-brand-coral-foreground hover:bg-brand-coral/90"
+                    >
+                      Continuar con Mercado Pago
+                    </Button>
+                  </form>
+                  <p className="mt-5 text-center text-xs text-neutral-500">
+                    Te redirigimos a Mercado Pago para autorizar el cobro recurrente con tu tarjeta.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <form
+                    action="/api/checkout/create-subscription"
+                    method="POST"
+                    className="w-full"
+                  >
+                    <Button
+                      type="submit"
+                      size="lg"
+                      className="h-12 w-full bg-brand-coral px-7 text-base font-medium text-brand-coral-foreground hover:bg-brand-coral/90"
+                    >
+                      {t("subscribe.continueToPayment")}
+                    </Button>
+                  </form>
+                  <p className="mt-5 text-center text-xs text-neutral-500">
+                    {t("subscribe.paymentNote")}
+                  </p>
+                </>
+              )
             ) : (
               <div className="w-full rounded-2xl border border-brand-coral/30 bg-brand-coral/[0.06] p-6 text-center">
                 <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand-coral/10 text-brand-coral">
