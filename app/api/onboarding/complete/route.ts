@@ -8,7 +8,12 @@ import {
   createSubscriptionCheckoutSession,
 } from "@/lib/stripe/api";
 import { createMarriagePreapproval } from "@/lib/mercadopago/marriage";
-import { MP_MARRIAGE_MONTHLY_ARS } from "@/lib/mercadopago/config";
+import { createPreapproval } from "@/lib/mercadopago/preapproval";
+import {
+  MP_MARRIAGE_MONTHLY_ARS,
+  MP_MONTHLY_ARS,
+} from "@/lib/mercadopago/config";
+import { applyCoupon, validateCoupon } from "@/lib/coupons/validate";
 import { AR_PROVINCES, isArgentinePhone } from "@/lib/data/argentina";
 import {
   ENROLLMENT_OPENS_LABEL,
@@ -38,6 +43,7 @@ const basePayload = {
 const individualSchema = z.object({
   ...basePayload,
   registrationType: z.literal("individual").optional(),
+  coupon: z.string().max(40).optional().nullable(),
 });
 
 const marriageSchema = z.object({
@@ -350,7 +356,57 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, checkoutUrl });
   }
 
-  // 3b. Rama individual: suscripción regular
+  // 3b. Rama individual: routing por país.
+  //   - AR → Mercado Pago (ARS, con cupón opcional)
+  //   - resto → Stripe (USD, cupón se aplica en Stripe Checkout)
+  if (data.countryCode === "AR") {
+    const couponRaw = "coupon" in data ? data.coupon : null;
+    const coupon = validateCoupon(couponRaw ?? null);
+    const baseAmount = MP_MONTHLY_ARS;
+    const amountAfterCoupon = applyCoupon(baseAmount, coupon);
+    // MP requiere monto > 0 incluso con cupón 100% off → cobra $1 ARS
+    // simbólico (idéntica estrategia al endpoint /create-mp-subscription).
+    const finalAmount = coupon.valid ? 1 : amountAfterCoupon;
+
+    let preapprovalUrl: string | null = null;
+    let preapprovalId: string | null = null;
+    try {
+      const preapproval = await createPreapproval({
+        userId: user.id,
+        payerEmail: data.email,
+        amountArs: finalAmount,
+        backUrl: `${appUrl}/suscribirme/exito?source=mp`,
+        reason: coupon.valid
+          ? `DAP — Beca ${coupon.code} (suscripción mensual simbólica)`
+          : undefined,
+      });
+      preapprovalUrl = preapproval.init_point;
+      preapprovalId = preapproval.id;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Error creando preapproval MP";
+      return NextResponse.json({ error: msg }, { status: 502 });
+    }
+
+    // Persistir fila subscriptions pending; webhook MP la activará.
+    const { error: subErr } = await admin.from("subscriptions").insert({
+      user_id: user.id,
+      payment_processor: "mercadopago",
+      mp_preapproval_id: preapprovalId,
+      status: "pending",
+      currency: "ARS",
+      amount_minor: finalAmount * 100,
+      stripe_customer_id: stripeCustomerId,
+      stripe_subscription_id: null,
+      stripe_price_id: null,
+    });
+    if (subErr) {
+      console.error(`[onboarding] insert MP sub falló: ${subErr.message}`);
+    }
+
+    return NextResponse.json({ ok: true, checkoutUrl: preapprovalUrl });
+  }
+
+  // Resto del mundo → Stripe
   const priceId = process.env.STRIPE_DAP_SUBSCRIPTION_PRICE_ID;
   if (!priceId) {
     return NextResponse.json(
