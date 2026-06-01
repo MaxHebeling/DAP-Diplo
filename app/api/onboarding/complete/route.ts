@@ -400,7 +400,13 @@ export async function POST(request: NextRequest) {
       stripe_price_id: null,
     });
     if (subErr) {
+      // No silenciar: si la fila no se crea, el webhook MP después no
+      // va a poder activar la sub → user paga pero queda sin acceso.
       console.error(`[onboarding] insert MP sub falló: ${subErr.message}`);
+      return NextResponse.json(
+        { error: `No se pudo registrar la suscripción: ${subErr.message}` },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({ ok: true, checkoutUrl: preapprovalUrl });
