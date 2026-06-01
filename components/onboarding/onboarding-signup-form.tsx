@@ -480,8 +480,9 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
             )}
           </AnimatePresence>
 
-          {/* Método de pago — solo AR individuales */}
-          {isArgentina && !effectiveMarriage && !geoMismatch && (
+          {/* Método de pago — AR individuales (independiente de geoMismatch:
+              el método de pago no depende de residencia, solo de país en perfil) */}
+          {isArgentina && !effectiveMarriage && (
             <div className="space-y-2">
               <label className="font-inter text-xs font-medium text-text-secondary">
                 ¿Cómo querés pagar?
@@ -525,8 +526,8 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
             </div>
           )}
 
-          {/* Cupón promocional — solo AR individuales (Stripe lo pide en su propio checkout) */}
-          {isArgentina && !effectiveMarriage && !geoMismatch && (
+          {/* Cupón promocional — AR individuales (Stripe lo pide en su propio checkout) */}
+          {isArgentina && !effectiveMarriage && (
             <Field
               label="¿Tenés código promocional?"
               hint="Opcional · DAP-HONOR / DAP-VIP"
