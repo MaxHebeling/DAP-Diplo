@@ -65,7 +65,42 @@ export async function GET(request: NextRequest) {
   const admin = createAdminClient();
   const stripe = getStripe();
   const now = new Date();
-  const stats = { paused: 0, reminded30: 0, warned50: 0, canceled: 0, errors: 0 };
+  const stats = { paused: 0, cashExpired: 0, reminded30: 0, warned50: 0, canceled: 0, errors: 0 };
+
+  // -----------------------------------------------------------------
+  // 0) PAUSE cash subs vencidos + 5 días de gracia (Checkout Pro AR)
+  //    Política: voucher mensual; si no pagan, gracia 5 días, después pausa.
+  // -----------------------------------------------------------------
+  const cashGraceCutoff = new Date(now.getTime() - 5 * 86_400_000).toISOString();
+  const { data: cashExpired } = await admin
+    .from("subscriptions")
+    .select("id, user_id")
+    .eq("payment_method", "checkout_pro")
+    .eq("status", "active")
+    .is("paused_at", null)
+    .lt("current_period_end", cashGraceCutoff)
+    .returns<{ id: string; user_id: string }[]>();
+
+  for (const sub of cashExpired ?? []) {
+    try {
+      const nowIso = now.toISOString();
+      const { error: updErr } = await admin
+        .from("subscriptions")
+        .update({
+          status: "paused",
+          paused_at: nowIso,
+          pause_reason: "payment_failed",
+        })
+        .eq("id", sub.id);
+      if (updErr) throw new Error(`update paused: ${updErr.message}`);
+      stats.cashExpired++;
+    } catch (err) {
+      stats.errors++;
+      console.error(
+        `[pause-cron] CASH-EXPIRE failed sub=${sub.id}: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+  }
 
   // -----------------------------------------------------------------
   // A) PAUSE active subs inactivos

@@ -87,6 +87,10 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
   // checkout. En MP no existe nativo → capturamos acá y lo validamos
   // server-side (lib/coupons/validate.ts).
   const [coupon, setCoupon] = useState("");
+  // Método de pago AR-only. 'card' = MP Preapproval (tarjeta o saldo MP,
+  // auto-cobro). 'cash' = MP Checkout Pro (efectivo, transferencia,
+  // tarjeta, link mensual sin auto-cobro).
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "cash">("card");
 
   // Campos AR-only
   const [marriage, setMarriage] = useState(false);
@@ -176,8 +180,9 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
           countryCode: country.code,
         };
 
-        if (isArgentina && coupon.trim() && !effectiveMarriage) {
-          body.coupon = coupon.trim().toUpperCase();
+        if (isArgentina && !effectiveMarriage) {
+          if (coupon.trim()) body.coupon = coupon.trim().toUpperCase();
+          body.paymentMethod = paymentMethod;
         }
 
         if (isArgentina && effectiveMarriage) {
@@ -474,6 +479,51 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Método de pago — solo AR individuales */}
+          {isArgentina && !effectiveMarriage && !geoMismatch && (
+            <div className="space-y-2">
+              <label className="font-inter text-xs font-medium text-text-secondary">
+                ¿Cómo querés pagar?
+              </label>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("card")}
+                  disabled={pending}
+                  className={`rounded-xl border p-3.5 text-left transition-all ${
+                    paymentMethod === "card"
+                      ? "border-brand-violet/60 bg-brand-violet/[0.08]"
+                      : "border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.04]"
+                  }`}
+                >
+                  <p className="font-grotesk text-sm font-semibold text-text-primary">
+                    💳 Tarjeta o saldo MP
+                  </p>
+                  <p className="mt-1 font-inter text-xs text-text-tertiary">
+                    Auto-cobro mensual. Tarjeta de crédito o saldo Mercado Pago.
+                  </p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("cash")}
+                  disabled={pending}
+                  className={`rounded-xl border p-3.5 text-left transition-all ${
+                    paymentMethod === "cash"
+                      ? "border-brand-violet/60 bg-brand-violet/[0.08]"
+                      : "border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.04]"
+                  }`}
+                >
+                  <p className="font-grotesk text-sm font-semibold text-text-primary">
+                    💵 Efectivo / Transferencia
+                  </p>
+                  <p className="mt-1 font-inter text-xs text-text-tertiary">
+                    Link mensual. Pagás en RapiPago, PagoFácil o transferencia.
+                  </p>
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Cupón promocional — solo AR individuales (Stripe lo pide en su propio checkout) */}
           {isArgentina && !effectiveMarriage && !geoMismatch && (
