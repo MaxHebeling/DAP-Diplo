@@ -33,7 +33,11 @@ export function getMpAccessToken(): string {
 
 // Precio mensual ARS — en pesos enteros (NO centavos). MP usa "transaction_amount"
 // como decimal (e.g. 30000.00). Mantenemos como int para evitar floats.
+//
+// Individual: 30.000 ARS (~USD 25 paridad)
+// Matrimonio AR: 42.000 ARS (~USD 35 paridad, cubre a los 2 cónyuges)
 export const MP_MONTHLY_ARS = 30000;
+export const MP_MARRIAGE_MONTHLY_ARS = 42000;
 export const MP_CURRENCY = "ARS" as const;
 export const MP_FREQUENCY = 1;
 export const MP_FREQUENCY_TYPE = "months" as const;

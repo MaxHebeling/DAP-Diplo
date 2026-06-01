@@ -4,10 +4,11 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
-  createMarriageCheckoutSession,
   createStripeCustomer,
   createSubscriptionCheckoutSession,
 } from "@/lib/stripe/api";
+import { createMarriagePreapproval } from "@/lib/mercadopago/marriage";
+import { MP_MARRIAGE_MONTHLY_ARS } from "@/lib/mercadopago/config";
 import { AR_PROVINCES, isArgentinePhone } from "@/lib/data/argentina";
 import {
   ENROLLMENT_OPENS_LABEL,
@@ -285,6 +286,11 @@ export async function POST(request: NextRequest) {
         verification_status: verificationStatus,
         verification_flags: verificationFlags,
 
+        // Cobramos por Mercado Pago en ARS. Mantenemos stripe_customer_id
+        // por trazabilidad histórica (igual ya está creado el customer).
+        payment_processor: "mercadopago",
+        currency: "ARS",
+        final_amount_ars: MP_MARRIAGE_MONTHLY_ARS,
         stripe_customer_id: stripeCustomerId,
         argentina_discount_applied: true,
         final_amount_usd: 35,
@@ -314,31 +320,30 @@ export async function POST(request: NextRequest) {
       })
       .eq("id", user.id);
 
+    // Crea preapproval MP por 42.000 ARS recurrente mensual. Cobra
+    // a un solo cónyuge (spouse_1) — el webhook MP, al recibir la
+    // autorización, lee marriage_registrations por mp_preapproval_id
+    // y provisiona spouse 2 + crea 2 filas en subscriptions.
     let checkoutUrl: string | null = null;
     try {
-      const session = await createMarriageCheckoutSession({
-        customerId: stripeCustomerId,
-        userId: user.id,
+      const preapproval = await createMarriagePreapproval({
         marriageGroupId: regRow.marriage_group_id,
-        spouse1Email: data.email,
-        spouse2Email: data.spouse2.email.toLowerCase(),
-        appUrl,
+        payerEmail: data.email,
+        backUrl: `${appUrl}/suscribirme/exito?source=mp&type=marriage`,
       });
-      checkoutUrl = session.url;
-      if (session.id) {
-        await admin
-          .from("marriage_registrations")
-          .update({ stripe_checkout_session_id: session.id })
-          .eq("id", regRow.id);
-      }
+      checkoutUrl = preapproval.init_point;
+      await admin
+        .from("marriage_registrations")
+        .update({ mp_preapproval_id: preapproval.id })
+        .eq("id", regRow.id);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Error creando sesión";
+      const msg = err instanceof Error ? err.message : "Error creando preapproval MP";
       return NextResponse.json({ error: msg }, { status: 502 });
     }
 
     if (!checkoutUrl) {
       return NextResponse.json(
-        { error: "Stripe no devolvió URL de checkout." },
+        { error: "Mercado Pago no devolvió URL de autorización." },
         { status: 502 },
       );
     }
