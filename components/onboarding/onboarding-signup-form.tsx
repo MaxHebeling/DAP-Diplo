@@ -83,6 +83,10 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [ministryName, setMinistryName] = useState("");
+  // Código promocional AR. En Stripe el campo aparece en su propio
+  // checkout. En MP no existe nativo → capturamos acá y lo validamos
+  // server-side (lib/coupons/validate.ts).
+  const [coupon, setCoupon] = useState("");
 
   // Campos AR-only
   const [marriage, setMarriage] = useState(false);
@@ -171,6 +175,10 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
           country: country.name,
           countryCode: country.code,
         };
+
+        if (isArgentina && coupon.trim() && !effectiveMarriage) {
+          body.coupon = coupon.trim().toUpperCase();
+        }
 
         if (isArgentina && effectiveMarriage) {
           body.registrationType = "marriage";
@@ -466,6 +474,27 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Cupón promocional — solo AR individuales (Stripe lo pide en su propio checkout) */}
+          {isArgentina && !effectiveMarriage && !geoMismatch && (
+            <Field
+              label="¿Tenés código promocional?"
+              hint="Opcional · DAP-HONOR / DAP-VIP"
+              input={
+                <input
+                  type="text"
+                  value={coupon}
+                  onChange={(e) => setCoupon(e.target.value)}
+                  disabled={pending}
+                  autoCapitalize="characters"
+                  autoComplete="off"
+                  spellCheck={false}
+                  placeholder="DAP-VIP"
+                  className={fieldCx(false)}
+                />
+              }
+            />
+          )}
 
           <button
             type="submit"
