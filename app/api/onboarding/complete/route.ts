@@ -9,11 +9,13 @@ import {
 } from "@/lib/stripe/api";
 import { createMarriagePreapproval } from "@/lib/mercadopago/marriage";
 import { createPreapproval } from "@/lib/mercadopago/preapproval";
+import { createPreference } from "@/lib/mercadopago/preference";
 import {
   MP_MARRIAGE_MONTHLY_ARS,
   MP_MONTHLY_ARS,
 } from "@/lib/mercadopago/config";
 import { applyCoupon, validateCoupon } from "@/lib/coupons/validate";
+import { sendMpVoucherEmail } from "@/lib/email/send-mp-voucher";
 import { AR_PROVINCES, isArgentinePhone } from "@/lib/data/argentina";
 import {
   ENROLLMENT_OPENS_LABEL,
@@ -44,6 +46,10 @@ const individualSchema = z.object({
   ...basePayload,
   registrationType: z.literal("individual").optional(),
   coupon: z.string().max(40).optional().nullable(),
+  // AR only: el alumno elige cómo pagar.
+  //   'card' → Preapproval (auto-cobro recurrente, tarjeta o saldo MP)
+  //   'cash' → Checkout Pro (one-shot mensual; incluye efectivo RapiPago/PagoFácil)
+  paymentMethod: z.enum(["card", "cash"]).optional(),
 });
 
 const marriageSchema = z.object({
@@ -356,14 +362,108 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, checkoutUrl });
   }
 
-  // 3b. Rama individual: routing por país.
-  //   - AR → Mercado Pago (ARS, con cupón opcional)
-  //   - resto → Stripe (USD, cupón se aplica en Stripe Checkout)
+  // 3b. Rama individual: routing por país + método.
+  //   - AR + 'cash' → MP Checkout Pro (efectivo / transferencia / tarjeta)
+  //   - AR + 'card' (default) → MP Preapproval (auto-cobro tarjeta/saldo)
+  //   - resto del mundo → Stripe (USD, cupón en Stripe Checkout)
   if (data.countryCode === "AR") {
     const couponRaw = "coupon" in data ? data.coupon : null;
     const coupon = validateCoupon(couponRaw ?? null);
     const baseAmount = MP_MONTHLY_ARS;
     const amountAfterCoupon = applyCoupon(baseAmount, coupon);
+    const paymentMethod =
+      ("paymentMethod" in data && data.paymentMethod) || "card";
+
+    if (paymentMethod === "cash") {
+      // Rama efectivo: Checkout Pro one-shot, sin auto-cobro. El alumno
+      // paga mensualmente vía un nuevo link generado por cron.
+      // Si tiene cupón válido, NO le cobramos nada — solo activamos la
+      // sub manualmente (skip MP entero, sin voucher).
+      if (coupon.valid) {
+        const { error: insErr } = await admin.from("subscriptions").insert({
+          user_id: user.id,
+          payment_processor: "mercadopago",
+          payment_method: "checkout_pro",
+          status: "active",
+          currency: "ARS",
+          amount_minor: 0,
+          stripe_customer_id: stripeCustomerId,
+          stripe_subscription_id: null,
+          stripe_price_id: null,
+          started_at: new Date().toISOString(),
+          // 100 años: efectivamente "beca permanente" sin renovación.
+          current_period_end: new Date(
+            Date.now() + 100 * 365 * 24 * 60 * 60 * 1000,
+          ).toISOString(),
+        });
+        if (insErr) {
+          return NextResponse.json(
+            { error: `No se pudo registrar la beca: ${insErr.message}` },
+            { status: 500 },
+          );
+        }
+        // Redirige al dashboard directamente (no hay pago que hacer).
+        return NextResponse.json({
+          ok: true,
+          checkoutUrl: `${appUrl}/dashboard?toast=beca-activa`,
+        });
+      }
+
+      // Caso normal: crea Preference y genera voucher.
+      let preferenceUrl: string | null = null;
+      let preferenceId: string | null = null;
+      try {
+        const preference = await createPreference({
+          userId: user.id,
+          payerEmail: data.email,
+          amountArs: amountAfterCoupon,
+          successUrl: `${appUrl}/suscribirme/exito?source=mp-cash`,
+          failureUrl: `${appUrl}/suscribirme?error=mp-cash`,
+          pendingUrl: `${appUrl}/suscribirme/exito?source=mp-cash&pending=1`,
+          itemTitle: "DAP — Suscripción mensual (primer pago)",
+        });
+        preferenceUrl = preference.init_point;
+        preferenceId = preference.id;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Error creando preference MP";
+        return NextResponse.json({ error: msg }, { status: 502 });
+      }
+
+      const nowIso = new Date().toISOString();
+      const { error: subErr } = await admin.from("subscriptions").insert({
+        user_id: user.id,
+        payment_processor: "mercadopago",
+        payment_method: "checkout_pro",
+        mp_preference_id: preferenceId,
+        status: "pending",
+        currency: "ARS",
+        amount_minor: amountAfterCoupon * 100,
+        stripe_customer_id: stripeCustomerId,
+        stripe_subscription_id: null,
+        stripe_price_id: null,
+        last_voucher_sent_at: nowIso,
+      });
+      if (subErr) {
+        return NextResponse.json(
+          { error: `No se pudo registrar la suscripción: ${subErr.message}` },
+          { status: 500 },
+        );
+      }
+
+      // Mandamos el voucher por email para que el alumno lo tenga
+      // guardado (puede pagar más tarde, no necesariamente al instante).
+      void sendMpVoucherEmail({
+        userId: user.id,
+        checkoutUrl: preferenceUrl!,
+        amountArs: amountAfterCoupon,
+        kind: "initial",
+        currentPeriodEnd: null,
+      });
+
+      return NextResponse.json({ ok: true, checkoutUrl: preferenceUrl });
+    }
+
+    // Default: 'card' (auto-cobro Preapproval).
     // MP requiere monto > 0 incluso con cupón 100% off → cobra $1 ARS
     // simbólico (idéntica estrategia al endpoint /create-mp-subscription).
     const finalAmount = coupon.valid ? 1 : amountAfterCoupon;
@@ -391,6 +491,7 @@ export async function POST(request: NextRequest) {
     const { error: subErr } = await admin.from("subscriptions").insert({
       user_id: user.id,
       payment_processor: "mercadopago",
+      payment_method: "preapproval",
       mp_preapproval_id: preapprovalId,
       status: "pending",
       currency: "ARS",

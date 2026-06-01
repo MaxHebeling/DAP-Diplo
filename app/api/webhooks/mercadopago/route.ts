@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getPreapproval } from "@/lib/mercadopago/preapproval";
+import { getPayment } from "@/lib/mercadopago/preference";
 import { provisionSpouse2ByMarriageGroup } from "@/lib/marriage/provision-spouse2";
 import { MP_CURRENCY, MP_MARRIAGE_MONTHLY_ARS } from "@/lib/mercadopago/config";
 
@@ -69,9 +70,15 @@ async function handle(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true, ignored: "no-id" });
   }
 
-  // Solo procesamos eventos de preapproval. Pagos individuales del
-  // recurring los ignoramos por ahora (no afectan status de la sub
-  // directamente, MP los cobra automáticamente cuando está authorized).
+  // Rama Payment (flow efectivo Checkout Pro). Llega cuando MP
+  // confirma un pago one-shot (preference). Buscamos la sub por
+  // preference_id y la activamos por 30 días.
+  const isPayment = type === "payment" || type?.startsWith("payment");
+  if (isPayment) {
+    return await handlePaymentEvent(resourceId);
+  }
+
+  // Rama Preapproval (flow auto-cobro tarjeta).
   const isPreapproval =
     type === "preapproval" ||
     type === "subscription_preapproval" ||
@@ -227,4 +234,107 @@ function extractIdFromUrl(resourceUrl: string | undefined): string | null {
   if (!resourceUrl) return null;
   const m = resourceUrl.match(/\/([^/?#]+)(?:[?#].*)?$/);
   return m ? m[1] : null;
+}
+
+/**
+ * Maneja eventos `payment` (flow Checkout Pro / efectivo). Refetch del
+ * payment desde MP, busca la sub por preference_id, y si está
+ * approved/authorized → extiende current_period_end por 30 días y deja
+ * status='active'.
+ */
+async function handlePaymentEvent(paymentId: string): Promise<NextResponse> {
+  const admin = createAdminClient();
+
+  let payment;
+  try {
+    payment = await getPayment(paymentId);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "unknown";
+    console.error(`[mp.webhook] getPayment failed id=${paymentId}: ${msg}`);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
+
+  // Solo nos interesan pagos que cierran el ciclo. 'pending' (efectivo
+  // que aún no se acreditó en RapiPago) lo ignoramos: ya tenemos la
+  // sub en pending desde el onboarding y MP nos avisará de nuevo
+  // cuando el cliente realmente pague.
+  if (payment.status !== "approved" && payment.status !== "authorized") {
+    console.log(
+      `[mp.webhook] payment=${paymentId} status=${payment.status} (${payment.status_detail}) — ignorado`,
+    );
+    return NextResponse.json({ ok: true, ignored: `status=${payment.status}` });
+  }
+
+  // Buscamos por preference_id primero (más directo). Si no, fallback
+  // a external_reference (= userId).
+  const preferenceId = payment.preference_id;
+  const userId = payment.external_reference;
+
+  type Row = {
+    id: string;
+    user_id: string;
+    current_period_end: string | null;
+    status: string;
+  };
+
+  let sub: Row | null = null;
+  if (preferenceId) {
+    const { data } = await admin
+      .from("subscriptions")
+      .select("id, user_id, current_period_end, status")
+      .eq("mp_preference_id", preferenceId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle<Row>();
+    sub = data ?? null;
+  }
+  if (!sub && userId) {
+    const { data } = await admin
+      .from("subscriptions")
+      .select("id, user_id, current_period_end, status")
+      .eq("user_id", userId)
+      .eq("payment_method", "checkout_pro")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle<Row>();
+    sub = data ?? null;
+  }
+
+  if (!sub) {
+    console.warn(
+      `[mp.webhook] payment=${paymentId} preference=${preferenceId} userId=${userId} — sub no encontrada`,
+    );
+    return NextResponse.json({ ok: true, ignored: "no-sub-found" });
+  }
+
+  // Extiende el período. Si ya estaba active y current_period_end es
+  // futuro, sumamos al final; si no, arrancamos desde ahora.
+  const now = new Date();
+  const base =
+    sub.current_period_end && new Date(sub.current_period_end) > now
+      ? new Date(sub.current_period_end)
+      : now;
+  const newEnd = new Date(base.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+  const { error: updErr } = await admin
+    .from("subscriptions")
+    .update({
+      status: "active",
+      mp_payment_id: String(payment.id),
+      current_period_start: now.toISOString(),
+      current_period_end: newEnd.toISOString(),
+      started_at: sub.status === "active" ? undefined : now.toISOString(),
+      updated_at: now.toISOString(),
+    })
+    .eq("id", sub.id);
+
+  if (updErr) {
+    console.error(`[mp.webhook] update cash sub failed: ${updErr.message}`);
+    return NextResponse.json({ error: updErr.message }, { status: 500 });
+  }
+
+  console.log(
+    `[mp.webhook] OK payment=${paymentId} sub=${sub.id} → active until ${newEnd.toISOString()}`,
+  );
+  return NextResponse.json({ ok: true, periodEnd: newEnd.toISOString() });
 }
