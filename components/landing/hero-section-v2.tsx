@@ -7,7 +7,7 @@ import { motion, useScroll, useTransform } from "motion/react";
 import { ArrowRight, PlayCircle } from "lucide-react";
 
 import { DapButton } from "@/components/ui-dap/button";
-import { EnrollmentCTA } from "@/components/launch/enrollment-cta";
+import { OnboardingCTA } from "@/components/onboarding/onboarding-cta";
 import { HeroParticles } from "./hero-particles";
 
 export function HeroSectionV2() {
@@ -111,10 +111,10 @@ export function HeroSectionV2() {
           transition={{ duration: 0.7, delay: 1.15 }}
           className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4"
         >
-          <EnrollmentCTA href="/suscribirme" size="lg">
+          <OnboardingCTA size="lg">
             {t("hero.ctaPrimary")}
             <ArrowRight />
-          </EnrollmentCTA>
+          </OnboardingCTA>
           <DapButton
             render={<a href="/demo" />}
             variant="secondary"

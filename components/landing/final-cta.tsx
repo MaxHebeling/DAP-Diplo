@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { ArrowRight, Sparkles } from "lucide-react";
 
-import { EnrollmentCTA } from "@/components/launch/enrollment-cta";
+import { OnboardingCTA } from "@/components/onboarding/onboarding-cta";
 import { Reveal } from "@/components/landing/reveal";
 
 export async function FinalCta() {
@@ -30,10 +30,10 @@ export async function FinalCta() {
           <p className="mb-10 mx-auto max-w-xl text-justify font-inter text-base leading-relaxed text-text-secondary md:text-lg">
             {t("finalCta.subtitle")}
           </p>
-          <EnrollmentCTA href="/suscribirme" size="lg">
+          <OnboardingCTA size="lg">
             {t("finalCta.cta")}
             <ArrowRight />
-          </EnrollmentCTA>
+          </OnboardingCTA>
           <p className="mt-6 font-inter text-xs text-text-tertiary">
             {t("finalCta.disclaimer")}
           </p>

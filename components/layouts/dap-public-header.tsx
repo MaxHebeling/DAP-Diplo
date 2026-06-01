@@ -10,7 +10,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { DapAvatar } from "@/components/ui-dap/avatar";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
-import { EnrollmentCTA } from "@/components/launch/enrollment-cta";
+import { OnboardingCTA } from "@/components/onboarding/onboarding-cta";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -211,9 +211,9 @@ export function DapPublicHeader({
                 {loginText}
               </Link>
               <span className="hidden sm:inline-flex">
-                <EnrollmentCTA href={ctaHref} size="sm">
+                <OnboardingCTA size="sm">
                   {ctaText}
-                </EnrollmentCTA>
+                </OnboardingCTA>
               </span>
             </>
           )}
@@ -263,9 +263,9 @@ export function DapPublicHeader({
                 >
                   {loginText}
                 </Link>
-                <EnrollmentCTA href={ctaHref} size="md">
+                <OnboardingCTA size="md">
                   {ctaText}
-                </EnrollmentCTA>
+                </OnboardingCTA>
               </div>
             )}
           </nav>
