@@ -29,6 +29,7 @@ type CashSub = {
   amount_minor: number | null;
   last_voucher_sent_at: string | null;
   payment_processor: string;
+  mp_preference_id: string | null;
 };
 
 /**
@@ -63,7 +64,7 @@ export async function GET(request: NextRequest) {
   const { data: subs } = await admin
     .from("subscriptions")
     .select(
-      "id, user_id, current_period_end, amount_minor, last_voucher_sent_at, payment_processor",
+      "id, user_id, current_period_end, amount_minor, last_voucher_sent_at, payment_processor, mp_preference_id",
     )
     .eq("payment_method", "checkout_pro")
     .eq("status", "active")
@@ -71,7 +72,33 @@ export async function GET(request: NextRequest) {
     .gt("current_period_end", now.toISOString())
     .returns<CashSub[]>();
 
+  // Dedup matrimonios: si 2 subs comparten el mismo mp_preference_id
+  // (cónyuges del mismo matrimonio), solo procesamos al spouse_1.
+  // Lo identificamos pidiendo a marriage_registrations cuál es.
+  const preferenceIds = (subs ?? [])
+    .map((s) => s.mp_preference_id)
+    .filter((x): x is string => !!x);
+  const spouse1ByPreference = new Map<string, string>();
+  if (preferenceIds.length > 0) {
+    const { data: marriages } = await admin
+      .from("marriage_registrations")
+      .select("mp_preference_id, spouse_1_user_id")
+      .in("mp_preference_id", preferenceIds)
+      .returns<{ mp_preference_id: string; spouse_1_user_id: string }[]>();
+    for (const m of marriages ?? []) {
+      spouse1ByPreference.set(m.mp_preference_id, m.spouse_1_user_id);
+    }
+  }
+
   for (const sub of subs ?? []) {
+    // Skip si es matrimonio y este sub NO es del spouse_1 (evita 2 emails).
+    if (sub.mp_preference_id && spouse1ByPreference.has(sub.mp_preference_id)) {
+      const spouse1Id = spouse1ByPreference.get(sub.mp_preference_id);
+      if (spouse1Id && spouse1Id !== sub.user_id) {
+        stats.skipped++;
+        continue;
+      }
+    }
     try {
       // Idempotencia: si ya mandamos voucher en este ciclo (entre
       // current_period_end - RENEWAL_LEAD_DAYS y current_period_end),

@@ -188,6 +188,7 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
         if (isArgentina && effectiveMarriage) {
           body.registrationType = "marriage";
           body.declaredResidenceInAr = declaredResidence;
+          body.paymentMethod = paymentMethod;
           body.spouse1 = {
             fullName: fullName.trim(),
             email: email.trim(),
@@ -480,9 +481,9 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
             )}
           </AnimatePresence>
 
-          {/* Método de pago — AR individuales (independiente de geoMismatch:
-              el método de pago no depende de residencia, solo de país en perfil) */}
-          {isArgentina && !effectiveMarriage && (
+          {/* Método de pago — AR (individuales y matrimonios). El método
+              no depende de residencia, solo de país en perfil. */}
+          {isArgentina && (
             <div className="space-y-2">
               <label className="font-inter text-xs font-medium text-text-secondary">
                 ¿Cómo querés pagar?

@@ -58,6 +58,8 @@ const marriageSchema = z.object({
   declaredResidenceInAr: z.boolean(),
   spouse1: spouseSchema,
   spouse2: spouseSchema,
+  // 'card' = MP Preapproval recurrente (default) | 'cash' = Checkout Pro one-shot mensual
+  paymentMethod: z.enum(["card", "cash"]).optional(),
 });
 
 const payloadSchema = z.union([marriageSchema, individualSchema]);
@@ -332,30 +334,65 @@ export async function POST(request: NextRequest) {
       })
       .eq("id", user.id);
 
-    // Crea preapproval MP por 42.000 ARS recurrente mensual. Cobra
-    // a un solo cónyuge (spouse_1) — el webhook MP, al recibir la
-    // autorización, lee marriage_registrations por mp_preapproval_id
-    // y provisiona spouse 2 + crea 2 filas en subscriptions.
+    // Branch tarjeta vs efectivo. Default 'card' = Preapproval recurrente.
+    // 'cash' = Checkout Pro one-shot mensual (incluye RapiPago, PagoFácil,
+    // transferencia, además de tarjetas).
+    const marriagePaymentMethod =
+      ("paymentMethod" in data && data.paymentMethod) || "card";
     let checkoutUrl: string | null = null;
-    try {
-      const preapproval = await createMarriagePreapproval({
-        marriageGroupId: regRow.marriage_group_id,
-        payerEmail: data.email,
-        backUrl: `${appUrl}/suscribirme/exito?source=mp&type=marriage`,
-      });
-      checkoutUrl = preapproval.init_point;
-      await admin
-        .from("marriage_registrations")
-        .update({ mp_preapproval_id: preapproval.id })
-        .eq("id", regRow.id);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Error creando preapproval MP";
-      return NextResponse.json({ error: msg }, { status: 502 });
+
+    if (marriagePaymentMethod === "cash") {
+      try {
+        const preference = await createPreference({
+          userId: regRow.marriage_group_id, // marriage_group_id como external_reference
+          payerEmail: data.email,
+          amountArs: MP_MARRIAGE_MONTHLY_ARS,
+          successUrl: `${appUrl}/suscribirme/exito?source=mp-cash&type=marriage`,
+          failureUrl: `${appUrl}/suscribirme?error=mp-cash`,
+          pendingUrl: `${appUrl}/suscribirme/exito?source=mp-cash&type=marriage&pending=1`,
+          itemTitle: "DAP — Inscripción matrimonio Argentina (primer pago)",
+        });
+        checkoutUrl = preference.init_point;
+        await admin
+          .from("marriage_registrations")
+          .update({ mp_preference_id: preference.id, payment_processor: "mercadopago" })
+          .eq("id", regRow.id);
+
+        // Manda voucher al spouse_1 (el payer). Spouse 2 se invita
+        // cuando el pago se confirma vía webhook.
+        void sendMpVoucherEmail({
+          userId: user.id,
+          checkoutUrl: preference.init_point,
+          amountArs: MP_MARRIAGE_MONTHLY_ARS,
+          kind: "initial",
+          currentPeriodEnd: null,
+        });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Error creando preference MP";
+        return NextResponse.json({ error: msg }, { status: 502 });
+      }
+    } else {
+      // Default: Preapproval (auto-cobro tarjeta/saldo).
+      try {
+        const preapproval = await createMarriagePreapproval({
+          marriageGroupId: regRow.marriage_group_id,
+          payerEmail: data.email,
+          backUrl: `${appUrl}/suscribirme/exito?source=mp&type=marriage`,
+        });
+        checkoutUrl = preapproval.init_point;
+        await admin
+          .from("marriage_registrations")
+          .update({ mp_preapproval_id: preapproval.id })
+          .eq("id", regRow.id);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Error creando preapproval MP";
+        return NextResponse.json({ error: msg }, { status: 502 });
+      }
     }
 
     if (!checkoutUrl) {
       return NextResponse.json(
-        { error: "Mercado Pago no devolvió URL de autorización." },
+        { error: "Mercado Pago no devolvió URL." },
         { status: 502 },
       );
     }

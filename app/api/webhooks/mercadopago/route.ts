@@ -266,9 +266,35 @@ async function handlePaymentEvent(paymentId: string): Promise<NextResponse> {
   }
 
   // Buscamos por preference_id primero (más directo). Si no, fallback
-  // a external_reference (= userId).
+  // a external_reference (= userId o marriage_group_id).
   const preferenceId = payment.preference_id;
-  const userId = payment.external_reference;
+  const externalRef = payment.external_reference;
+
+  // Detectar si es matrimonio: external_reference apunta a
+  // marriage_group_id O hay una marriage_registration con este
+  // mp_preference_id.
+  const { data: marriageReg } = await admin
+    .from("marriage_registrations")
+    .select("id, marriage_group_id, spouse_1_user_id, spouse_2_user_id")
+    .or(
+      preferenceId
+        ? `mp_preference_id.eq.${preferenceId},marriage_group_id.eq.${externalRef ?? ""}`
+        : `marriage_group_id.eq.${externalRef ?? ""}`,
+    )
+    .maybeSingle<{
+      id: string;
+      marriage_group_id: string;
+      spouse_1_user_id: string | null;
+      spouse_2_user_id: string | null;
+    }>();
+
+  if (marriageReg) {
+    return await handleMarriageCashPayment({
+      payment,
+      preferenceId,
+      marriageReg,
+    });
+  }
 
   type Row = {
     id: string;
@@ -288,11 +314,11 @@ async function handlePaymentEvent(paymentId: string): Promise<NextResponse> {
       .maybeSingle<Row>();
     sub = data ?? null;
   }
-  if (!sub && userId) {
+  if (!sub && externalRef) {
     const { data } = await admin
       .from("subscriptions")
       .select("id, user_id, current_period_end, status")
-      .eq("user_id", userId)
+      .eq("user_id", externalRef)
       .eq("payment_method", "checkout_pro")
       .order("created_at", { ascending: false })
       .limit(1)
@@ -302,7 +328,7 @@ async function handlePaymentEvent(paymentId: string): Promise<NextResponse> {
 
   if (!sub) {
     console.warn(
-      `[mp.webhook] payment=${paymentId} preference=${preferenceId} userId=${userId} — sub no encontrada`,
+      `[mp.webhook] payment=${paymentId} preference=${preferenceId} extRef=${externalRef} — sub no encontrada`,
     );
     return NextResponse.json({ ok: true, ignored: "no-sub-found" });
   }
@@ -337,4 +363,92 @@ async function handlePaymentEvent(paymentId: string): Promise<NextResponse> {
     `[mp.webhook] OK payment=${paymentId} sub=${sub.id} → active until ${newEnd.toISOString()}`,
   );
   return NextResponse.json({ ok: true, periodEnd: newEnd.toISOString() });
+}
+
+/**
+ * Maneja pago confirmado de un matrimonio cash (Checkout Pro).
+ * Provisiona spouse 2 si falta + upsert de 2 filas en subscriptions
+ * con current_period_end +30d. Idempotente.
+ */
+async function handleMarriageCashPayment(opts: {
+  payment: Awaited<ReturnType<typeof getPayment>>;
+  preferenceId: string | null;
+  marriageReg: {
+    id: string;
+    marriage_group_id: string;
+    spouse_1_user_id: string | null;
+    spouse_2_user_id: string | null;
+  };
+}): Promise<NextResponse> {
+  const { payment, preferenceId, marriageReg } = opts;
+  const admin = createAdminClient();
+  const now = new Date();
+  const nowIso = now.toISOString();
+
+  // Provisionar spouse 2 si no existe todavía.
+  let spouse2Id: string | null = marriageReg.spouse_2_user_id;
+  if (!spouse2Id) {
+    try {
+      spouse2Id = await provisionSpouse2ByMarriageGroup(marriageReg.marriage_group_id);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`[mp.webhook] marriage cash provisionSpouse2 falló: ${msg}`);
+      return NextResponse.json({ error: msg }, { status: 500 });
+    }
+  }
+
+  const userIds = [marriageReg.spouse_1_user_id, spouse2Id].filter(
+    (x): x is string => !!x,
+  );
+
+  // Calculamos el nuevo period_end. Si la sub ya existe y está active,
+  // sumamos al final; si no, arrancamos desde ahora.
+  const { data: existingSubs } = await admin
+    .from("subscriptions")
+    .select("id, user_id, current_period_end, status")
+    .eq("mp_preference_id", preferenceId ?? "")
+    .returns<{ id: string; user_id: string; current_period_end: string | null; status: string }[]>();
+
+  const existingEnd = existingSubs?.[0]?.current_period_end ?? null;
+  const base = existingEnd && new Date(existingEnd) > now ? new Date(existingEnd) : now;
+  const newEnd = new Date(base.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+  // Borramos previas con este preference_id (idempotencia) y reinsertamos.
+  if (preferenceId) {
+    await admin
+      .from("subscriptions")
+      .delete()
+      .eq("mp_preference_id", preferenceId);
+  }
+
+  const rows = userIds.map((uid) => ({
+    user_id: uid,
+    payment_processor: "mercadopago" as const,
+    payment_method: "checkout_pro" as const,
+    mp_preference_id: preferenceId,
+    mp_payment_id: String(payment.id),
+    status: "active",
+    currency: MP_CURRENCY,
+    amount_minor: MP_MARRIAGE_MONTHLY_ARS * 100,
+    stripe_customer_id: null,
+    stripe_subscription_id: null,
+    stripe_price_id: null,
+    started_at: nowIso,
+    current_period_start: nowIso,
+    current_period_end: newEnd.toISOString(),
+    updated_at: nowIso,
+  }));
+
+  if (rows.length > 0) {
+    const { error: insErr } = await admin.from("subscriptions").insert(rows);
+    if (insErr) {
+      console.error(`[mp.webhook] insert marriage cash subs failed: ${insErr.message}`);
+      return NextResponse.json({ error: insErr.message }, { status: 500 });
+    }
+  }
+
+  console.log(
+    `[mp.webhook] OK marriage-cash preference=${preferenceId} group=${marriageReg.marriage_group_id} → active until ${newEnd.toISOString()} (${userIds.length} filas)`,
+  );
+  return NextResponse.json({ ok: true, marriage: true, periodEnd: newEnd.toISOString() });
 }
