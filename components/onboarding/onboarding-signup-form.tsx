@@ -180,8 +180,11 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
           countryCode: country.code,
         };
 
+        // Cupón aplica para AR individuales Y matrimonios.
+        if (isArgentina && coupon.trim()) {
+          body.coupon = coupon.trim().toUpperCase();
+        }
         if (isArgentina && !effectiveMarriage) {
-          if (coupon.trim()) body.coupon = coupon.trim().toUpperCase();
           body.paymentMethod = paymentMethod;
         }
 
@@ -527,8 +530,9 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
             </div>
           )}
 
-          {/* Cupón promocional — AR individuales (Stripe lo pide en su propio checkout) */}
-          {isArgentina && !effectiveMarriage && (
+          {/* Cupón promocional — AR (individuales y matrimonios). Stripe
+              non-AR lo pide en su propio checkout. */}
+          {isArgentina && (
             <Field
               label="¿Tenés código promocional?"
               hint="Opcional · DAP-HONOR / DAP-VIP"
