@@ -347,9 +347,9 @@ export async function POST(request: NextRequest) {
           userId: regRow.marriage_group_id, // marriage_group_id como external_reference
           payerEmail: data.email,
           amountArs: MP_MARRIAGE_MONTHLY_ARS,
-          successUrl: `${appUrl}/suscribirme/exito?source=mp-cash&type=marriage`,
+          successUrl: `${appUrl}/dashboard?toast=mp-paid&type=marriage`,
           failureUrl: `${appUrl}/suscribirme?error=mp-cash`,
-          pendingUrl: `${appUrl}/suscribirme/exito?source=mp-cash&type=marriage&pending=1`,
+          pendingUrl: `${appUrl}/dashboard?toast=mp-pending&type=marriage`,
           itemTitle: "DAP — Inscripción matrimonio Argentina (primer pago)",
         });
         checkoutUrl = preference.init_point;
@@ -377,7 +377,7 @@ export async function POST(request: NextRequest) {
         const preapproval = await createMarriagePreapproval({
           marriageGroupId: regRow.marriage_group_id,
           payerEmail: data.email,
-          backUrl: `${appUrl}/suscribirme/exito?source=mp&type=marriage`,
+          backUrl: `${appUrl}/dashboard?toast=mp-paid&type=marriage`,
         });
         checkoutUrl = preapproval.init_point;
         await admin
@@ -454,9 +454,9 @@ export async function POST(request: NextRequest) {
           userId: user.id,
           payerEmail: data.email,
           amountArs: amountAfterCoupon,
-          successUrl: `${appUrl}/suscribirme/exito?source=mp-cash`,
+          successUrl: `${appUrl}/dashboard?toast=mp-paid`,
           failureUrl: `${appUrl}/suscribirme?error=mp-cash`,
-          pendingUrl: `${appUrl}/suscribirme/exito?source=mp-cash&pending=1`,
+          pendingUrl: `${appUrl}/dashboard?toast=mp-pending`,
           itemTitle: "DAP — Suscripción mensual (primer pago)",
         });
         preferenceUrl = preference.init_point;
@@ -512,7 +512,7 @@ export async function POST(request: NextRequest) {
         userId: user.id,
         payerEmail: data.email,
         amountArs: finalAmount,
-        backUrl: `${appUrl}/suscribirme/exito?source=mp`,
+        backUrl: `${appUrl}/dashboard?toast=mp-paid`,
         reason: coupon.valid
           ? `DAP — Beca ${coupon.code} (suscripción mensual simbólica)`
           : undefined,

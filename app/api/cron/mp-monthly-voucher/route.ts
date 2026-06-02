@@ -132,7 +132,7 @@ export async function GET(request: NextRequest) {
         userId: sub.user_id,
         payerEmail,
         amountArs,
-        successUrl: `${appUrl}/suscribirme/exito?source=mp-cash`,
+        successUrl: `${appUrl}/dashboard?toast=mp-paid`,
         failureUrl: `${appUrl}/dashboard?error=mp-cash`,
         pendingUrl: `${appUrl}/dashboard?source=mp-cash&pending=1`,
         itemTitle: "DAP — Suscripción mensual (renovación)",
