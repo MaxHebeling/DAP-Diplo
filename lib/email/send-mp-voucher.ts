@@ -82,7 +82,7 @@ function renderHtml(opts: {
 <tr><td style="height:4px;background:linear-gradient(90deg,#7B61FF 0%,#FF4D6D 100%);font-size:0;line-height:0;">&nbsp;</td></tr>
 
 <tr><td align="center" style="padding:36px 24px 8px;">
-<img src="https://dap-diplo.vercel.app/dap-logo-white.png" width="80" height="80" alt="DAP" style="display:block;border:0;outline:none;">
+<img src="https://www.dapglobal.org/dap-logo-white.png" width="80" height="80" alt="DAP" style="display:block;border:0;outline:none;">
 </td></tr>
 
 <tr><td align="center" style="padding:0 24px 32px;">

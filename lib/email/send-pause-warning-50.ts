@@ -20,7 +20,7 @@ export async function sendPauseWarning50Email(
   if (!userData.user?.email) return { ok: false, error: `email not found userId=${userId}` };
 
   const firstName = profile.full_name?.split(" ")[0] ?? "Ministro";
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://dap-diplo.vercel.app";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.dapglobal.org";
   const daysLeft = Math.max(0, 60 - daysInPause);
   const html = renderHtml({ firstName, daysLeft, appUrl });
 
