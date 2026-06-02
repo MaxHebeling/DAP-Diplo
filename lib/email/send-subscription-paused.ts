@@ -30,7 +30,7 @@ export async function sendSubscriptionPausedEmail(
 
   const firstName = profile.full_name?.split(" ")[0] ?? "Ministro";
   const appUrl =
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://dap-diplo.vercel.app";
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://www.dapglobal.org";
   const html = renderHtml({
     firstName,
     currentMonth,

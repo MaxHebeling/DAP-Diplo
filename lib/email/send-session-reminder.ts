@@ -25,7 +25,7 @@ export async function sendSessionReminderEmail(
   session: ReminderSession,
 ): Promise<SendEmailResult> {
   const appUrl =
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://dap-diplo.vercel.app";
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://www.dapglobal.org";
   const html = renderReminderHtml({ to, session, appUrl });
   return await sendEmail({
     to: to.email,
@@ -155,7 +155,7 @@ function renderReminderHtml(opts: {
                 <p style="margin:0;font-size:11px;color:#525252;">
                   © 2026 DAP — Diplomado Apostólico Pastoral.<br>
                   Recibes este correo porque tienes una suscripción activa en
-                  <a href="${appUrl}" style="color:#737373;text-decoration:underline;">dap-diplo.vercel.app</a>.
+                  <a href="${appUrl}" style="color:#737373;text-decoration:underline;">www.dapglobal.org</a>.
                 </p>
               </td>
             </tr>

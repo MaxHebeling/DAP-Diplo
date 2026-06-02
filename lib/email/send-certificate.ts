@@ -70,7 +70,7 @@ export async function sendCertificateEmail(
 
   const firstName = cert.user.full_name?.split(" ")[0] ?? "Ministro";
   const appUrl =
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://dap-diplo.vercel.app";
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://www.dapglobal.org";
   const blockN = String(cert.phase.order_index).padStart(2, "0");
   const verifyUrl = `${appUrl}/verificar/${cert.verification_code}`;
 
@@ -242,7 +242,7 @@ function renderCertificateHtml(opts: {
               <td align="center" style="padding:24px 8px 0;">
                 <p style="margin:0;font-size:11px;color:#525252;">
                   © 2026 DAP — Diplomado Apostólico Pastoral.<br>
-                  <a href="${appUrl}" style="color:#737373;text-decoration:underline;">dap-diplo.vercel.app</a>
+                  <a href="${appUrl}" style="color:#737373;text-decoration:underline;">www.dapglobal.org</a>
                 </p>
               </td>
             </tr>

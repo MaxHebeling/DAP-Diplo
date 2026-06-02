@@ -15,7 +15,7 @@ export async function generateCertificate(
   data: CertificateData,
 ): Promise<Buffer> {
   const appUrl =
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://dap-diplo.vercel.app";
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://www.dapglobal.org";
   const verifyUrl = `${appUrl}/verificar/${data.verificationCode}`;
   const t = await getTranslations("Certificate");
   return await renderToBuffer(

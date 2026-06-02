@@ -125,7 +125,7 @@ export async function GET(request: NextRequest) {
       }
 
       const appUrl =
-        process.env.NEXT_PUBLIC_APP_URL ?? "https://dap-diplo.vercel.app";
+        process.env.NEXT_PUBLIC_APP_URL ?? "https://www.dapglobal.org";
       const amountArs = sub.amount_minor ? sub.amount_minor / 100 : MP_MONTHLY_ARS;
 
       const preference = await createPreference({

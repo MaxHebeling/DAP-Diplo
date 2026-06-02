@@ -20,7 +20,7 @@ export async function sendSubscriptionCanceledEmail(
   if (!userData.user?.email) return { ok: false, error: `email not found userId=${userId}` };
 
   const firstName = profile.full_name?.split(" ")[0] ?? "Ministro";
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://dap-diplo.vercel.app";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.dapglobal.org";
   const html = renderHtml({ firstName, appUrl });
 
   return await sendEmail({
