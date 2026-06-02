@@ -7,7 +7,6 @@ import {
   createStripeCustomer,
   createSubscriptionCheckoutSession,
 } from "@/lib/stripe/api";
-import { createMarriagePreapproval } from "@/lib/mercadopago/marriage";
 import { createPreapproval } from "@/lib/mercadopago/preapproval";
 import { createPreference } from "@/lib/mercadopago/preference";
 import {
@@ -16,6 +15,7 @@ import {
 } from "@/lib/mercadopago/config";
 import { applyCoupon, validateCoupon } from "@/lib/coupons/validate";
 import { sendMpVoucherEmail } from "@/lib/email/send-mp-voucher";
+import { provisionSpouse2ByMarriageGroup } from "@/lib/marriage/provision-spouse2";
 import { AR_PROVINCES, isArgentinePhone } from "@/lib/data/argentina";
 import {
   ENROLLMENT_OPENS_LABEL,
@@ -60,6 +60,8 @@ const marriageSchema = z.object({
   spouse2: spouseSchema,
   // 'card' = MP Preapproval recurrente (default) | 'cash' = Checkout Pro one-shot mensual
   paymentMethod: z.enum(["card", "cash"]).optional(),
+  // DAP-VIP / DAP-HONOR → 100% off, cubre a los 2 cónyuges.
+  coupon: z.string().max(40).optional().nullable(),
 });
 
 const payloadSchema = z.union([marriageSchema, individualSchema]);
@@ -339,7 +341,63 @@ export async function POST(request: NextRequest) {
     // transferencia, además de tarjetas).
     const marriagePaymentMethod =
       ("paymentMethod" in data && data.paymentMethod) || "card";
+    const marriageCouponRaw =
+      "coupon" in data ? data.coupon : null;
+    const marriageCoupon = validateCoupon(marriageCouponRaw ?? null);
     let checkoutUrl: string | null = null;
+
+    // BECA 100% (DAP-VIP / DAP-HONOR) — beca completa para el matrimonio.
+    // Cubre a los 2 cónyuges sin cobrarles ni un peso.
+    if (marriageCoupon.valid && marriagePaymentMethod === "cash") {
+      // Provisionar cónyuge 2 inline (no esperamos webhook, no hay pago).
+      let spouse2Id: string | null = null;
+      try {
+        spouse2Id = await provisionSpouse2ByMarriageGroup(regRow.marriage_group_id);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Error provisionando cónyuge 2";
+        return NextResponse.json({ error: msg }, { status: 500 });
+      }
+
+      const userIds = [user.id, spouse2Id].filter((x): x is string => !!x);
+      const nowIso = new Date().toISOString();
+      const farFuture = new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000).toISOString();
+      const { error: insErr } = await admin.from("subscriptions").insert(
+        userIds.map((uid) => ({
+          user_id: uid,
+          payment_processor: "mercadopago",
+          payment_method: "checkout_pro",
+          status: "active",
+          currency: "ARS",
+          amount_minor: 0,
+          stripe_customer_id: stripeCustomerId,
+          stripe_subscription_id: null,
+          stripe_price_id: null,
+          started_at: nowIso,
+          current_period_start: nowIso,
+          current_period_end: farFuture,
+        })),
+      );
+      if (insErr) {
+        return NextResponse.json(
+          { error: `No se pudo registrar la beca matrimonio: ${insErr.message}` },
+          { status: 500 },
+        );
+      }
+
+      await admin
+        .from("marriage_registrations")
+        .update({
+          payment_processor: "mercadopago",
+          currency: "ARS",
+          final_amount_ars: 0,
+        })
+        .eq("id", regRow.id);
+
+      return NextResponse.json({
+        ok: true,
+        checkoutUrl: `${appUrl}/dashboard?toast=beca-activa&type=marriage`,
+      });
+    }
 
     if (marriagePaymentMethod === "cash") {
       try {
@@ -373,16 +431,28 @@ export async function POST(request: NextRequest) {
       }
     } else {
       // Default: Preapproval (auto-cobro tarjeta/saldo).
+      // Si hay cupón válido, monto $1 ARS simbólico (MP no permite $0).
+      // El webhook activa las 2 subs cuando MP confirma.
+      const amountArs = marriageCoupon.valid ? 1 : MP_MARRIAGE_MONTHLY_ARS;
       try {
-        const preapproval = await createMarriagePreapproval({
-          marriageGroupId: regRow.marriage_group_id,
+        const preapproval = await createPreapproval({
+          userId: regRow.marriage_group_id, // external_reference = marriage_group_id
           payerEmail: data.email,
+          amountArs,
           backUrl: `${appUrl}/dashboard?toast=mp-paid&type=marriage`,
+          reason: marriageCoupon.valid
+            ? `DAP — Beca ${marriageCoupon.code} matrimonio (cuota simbólica)`
+            : "DAP — Inscripción matrimonio Argentina (suscripción mensual)",
         });
         checkoutUrl = preapproval.init_point;
         await admin
           .from("marriage_registrations")
-          .update({ mp_preapproval_id: preapproval.id })
+          .update({
+            mp_preapproval_id: preapproval.id,
+            payment_processor: "mercadopago",
+            currency: "ARS",
+            final_amount_ars: amountArs,
+          })
           .eq("id", regRow.id);
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Error creando preapproval MP";
