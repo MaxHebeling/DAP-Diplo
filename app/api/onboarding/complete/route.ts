@@ -346,9 +346,10 @@ export async function POST(request: NextRequest) {
     const marriageCoupon = validateCoupon(marriageCouponRaw ?? null);
     let checkoutUrl: string | null = null;
 
-    // BECA 100% (DAP-VIP / DAP-HONOR) — beca completa para el matrimonio.
-    // Cubre a los 2 cónyuges sin cobrarles ni un peso.
-    if (marriageCoupon.valid && marriagePaymentMethod === "cash") {
+    // BECA 100% (DAP-VIP / DAP-HONOR) — beca completa matrimonio.
+    // Cubre a los 2 cónyuges sin cobrarles ni un peso. Skip MP entero
+    // (independiente del método elegido) — MP rechaza preapproval < $15.
+    if (marriageCoupon.valid) {
       // Provisionar cónyuge 2 inline (no esperamos webhook, no hay pago).
       let spouse2Id: string | null = null;
       try {
@@ -430,19 +431,15 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: msg }, { status: 502 });
       }
     } else {
-      // Default: Preapproval (auto-cobro tarjeta/saldo).
-      // Si hay cupón válido, monto $1 ARS simbólico (MP no permite $0).
-      // El webhook activa las 2 subs cuando MP confirma.
-      const amountArs = marriageCoupon.valid ? 1 : MP_MARRIAGE_MONTHLY_ARS;
+      // Default: Preapproval (auto-cobro tarjeta/saldo). Beca con cupón
+      // ya se procesó arriba (early return), acá llegamos solo sin cupón.
       try {
         const preapproval = await createPreapproval({
           userId: regRow.marriage_group_id, // external_reference = marriage_group_id
           payerEmail: data.email,
-          amountArs,
+          amountArs: MP_MARRIAGE_MONTHLY_ARS,
           backUrl: `${appUrl}/dashboard?toast=mp-paid&type=marriage`,
-          reason: marriageCoupon.valid
-            ? `DAP — Beca ${marriageCoupon.code} matrimonio (cuota simbólica)`
-            : "DAP — Inscripción matrimonio Argentina (suscripción mensual)",
+          reason: "DAP — Inscripción matrimonio Argentina (suscripción mensual)",
         });
         checkoutUrl = preapproval.init_point;
         await admin
@@ -451,7 +448,7 @@ export async function POST(request: NextRequest) {
             mp_preapproval_id: preapproval.id,
             payment_processor: "mercadopago",
             currency: "ARS",
-            final_amount_ars: amountArs,
+            final_amount_ars: MP_MARRIAGE_MONTHLY_ARS,
           })
           .eq("id", regRow.id);
       } catch (err) {
@@ -481,42 +478,45 @@ export async function POST(request: NextRequest) {
     const paymentMethod =
       ("paymentMethod" in data && data.paymentMethod) || "card";
 
+    // BECA 100% (DAP-VIP / DAP-HONOR) — skip MP entero para ambos métodos.
+    // MP rechaza preapproval con monto < $15 ARS, así que el patrón de
+    // "$1 simbólico" no funciona. Y para una beca real no tiene sentido
+    // hacer pasar al alumno por checkout: activamos sub directo.
+    if (coupon.valid) {
+      const nowIso = new Date().toISOString();
+      const farFuture = new Date(
+        Date.now() + 100 * 365 * 24 * 60 * 60 * 1000,
+      ).toISOString();
+      const { error: insErr } = await admin.from("subscriptions").insert({
+        user_id: user.id,
+        payment_processor: "mercadopago",
+        payment_method: "checkout_pro",
+        status: "active",
+        currency: "ARS",
+        amount_minor: 0,
+        stripe_customer_id: stripeCustomerId,
+        stripe_subscription_id: null,
+        stripe_price_id: null,
+        started_at: nowIso,
+        current_period_start: nowIso,
+        current_period_end: farFuture,
+      });
+      if (insErr) {
+        return NextResponse.json(
+          { error: `No se pudo registrar la beca: ${insErr.message}` },
+          { status: 500 },
+        );
+      }
+      return NextResponse.json({
+        ok: true,
+        checkoutUrl: `${appUrl}/dashboard?toast=beca-activa`,
+      });
+    }
+
     if (paymentMethod === "cash") {
       // Rama efectivo: Checkout Pro one-shot, sin auto-cobro. El alumno
       // paga mensualmente vía un nuevo link generado por cron.
-      // Si tiene cupón válido, NO le cobramos nada — solo activamos la
-      // sub manualmente (skip MP entero, sin voucher).
-      if (coupon.valid) {
-        const { error: insErr } = await admin.from("subscriptions").insert({
-          user_id: user.id,
-          payment_processor: "mercadopago",
-          payment_method: "checkout_pro",
-          status: "active",
-          currency: "ARS",
-          amount_minor: 0,
-          stripe_customer_id: stripeCustomerId,
-          stripe_subscription_id: null,
-          stripe_price_id: null,
-          started_at: new Date().toISOString(),
-          // 100 años: efectivamente "beca permanente" sin renovación.
-          current_period_end: new Date(
-            Date.now() + 100 * 365 * 24 * 60 * 60 * 1000,
-          ).toISOString(),
-        });
-        if (insErr) {
-          return NextResponse.json(
-            { error: `No se pudo registrar la beca: ${insErr.message}` },
-            { status: 500 },
-          );
-        }
-        // Redirige al dashboard directamente (no hay pago que hacer).
-        return NextResponse.json({
-          ok: true,
-          checkoutUrl: `${appUrl}/dashboard?toast=beca-activa`,
-        });
-      }
-
-      // Caso normal: crea Preference y genera voucher.
+      // (Beca con cupón se procesa arriba, antes del branch cash/card.)
       let preferenceUrl: string | null = null;
       let preferenceId: string | null = null;
       try {
@@ -570,10 +570,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true, checkoutUrl: preferenceUrl });
     }
 
-    // Default: 'card' (auto-cobro Preapproval).
-    // MP requiere monto > 0 incluso con cupón 100% off → cobra $1 ARS
-    // simbólico (idéntica estrategia al endpoint /create-mp-subscription).
-    const finalAmount = coupon.valid ? 1 : amountAfterCoupon;
+    // Default: 'card' (auto-cobro Preapproval). Beca con cupón ya se
+    // procesó arriba (early return), acá llegamos solo sin cupón.
+    const finalAmount = amountAfterCoupon;
 
     let preapprovalUrl: string | null = null;
     let preapprovalId: string | null = null;
@@ -583,9 +582,6 @@ export async function POST(request: NextRequest) {
         payerEmail: data.email,
         amountArs: finalAmount,
         backUrl: `${appUrl}/dashboard?toast=mp-paid`,
-        reason: coupon.valid
-          ? `DAP — Beca ${coupon.code} (suscripción mensual simbólica)`
-          : undefined,
       });
       preapprovalUrl = preapproval.init_point;
       preapprovalId = preapproval.id;
