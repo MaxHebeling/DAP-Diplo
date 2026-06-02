@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import { signOutAction } from "@/lib/auth/actions";
 import { EnrollmentGateDialog } from "@/components/launch/enrollment-gate-dialog";
+import { OnboardingCTA } from "@/components/onboarding/onboarding-cta";
 import { isEnrollmentOpen } from "@/lib/launch/config";
 
 export type HeaderUser = {
@@ -132,13 +133,9 @@ export function SiteHeader({ user }: { user: HeaderUser }) {
                 {t("header.login")}
               </Button>
               {enrollmentOpen ? (
-                <Button
-                  size="sm"
-                  className="bg-brand-coral text-brand-coral-foreground hover:bg-brand-coral/90"
-                  render={<Link href="/signup" />}
-                >
+                <OnboardingCTA size="sm">
                   {t("header.enroll")}
-                </Button>
+                </OnboardingCTA>
               ) : (
                 <Button
                   size="sm"
