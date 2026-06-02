@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
   const finalAmount = coupon.valid ? 1 : amountArs;
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? new URL(request.url).origin;
-  const backUrl = `${appUrl}/suscribirme/exito?source=mp`;
+  const backUrl = `${appUrl}/dashboard?toast=mp-paid`;
 
   let preapproval;
   try {
