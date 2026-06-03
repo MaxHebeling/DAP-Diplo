@@ -87,10 +87,8 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
   // checkout. En MP no existe nativo → capturamos acá y lo validamos
   // server-side (lib/coupons/validate.ts).
   const [coupon, setCoupon] = useState("");
-  // Método de pago AR-only. 'card' = MP Preapproval (tarjeta o saldo MP,
-  // auto-cobro). 'cash' = MP Checkout Pro (efectivo, transferencia,
-  // tarjeta, link mensual sin auto-cobro).
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "cash">("card");
+  // AR siempre usa Checkout Pro (sin tarjetas — solo saldo MP +
+  // transferencia + RapiPago/PagoFácil). Hardcoded 'cash' en el body.
 
   // Campos AR-only
   const [marriage, setMarriage] = useState(false);
@@ -184,14 +182,17 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
         if (isArgentina && coupon.trim()) {
           body.coupon = coupon.trim().toUpperCase();
         }
+        // AR: siempre flow Checkout Pro (sin tarjetas, solo saldo MP +
+        // transferencia + RapiPago/PagoFácil). Removimos el toggle de
+        // tarjeta para evitar rechazos masivos del preapproval con débito.
         if (isArgentina && !effectiveMarriage) {
-          body.paymentMethod = paymentMethod;
+          body.paymentMethod = "cash";
         }
 
         if (isArgentina && effectiveMarriage) {
           body.registrationType = "marriage";
           body.declaredResidenceInAr = declaredResidence;
-          body.paymentMethod = paymentMethod;
+          body.paymentMethod = "cash";
           body.spouse1 = {
             fullName: fullName.trim(),
             email: email.trim(),
@@ -484,48 +485,26 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
             )}
           </AnimatePresence>
 
-          {/* Método de pago — AR (individuales y matrimonios). El método
-              no depende de residencia, solo de país en perfil. */}
+          {/* AR: info card de Mercado Pago (no toggle — único método: MP) */}
           {isArgentina && (
-            <div className="space-y-2">
-              <label className="font-inter text-xs font-medium text-text-secondary">
-                ¿Cómo querés pagar?
-              </label>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("card")}
-                  disabled={pending}
-                  className={`rounded-xl border p-3.5 text-left transition-all ${
-                    paymentMethod === "card"
-                      ? "border-brand-violet/60 bg-brand-violet/[0.08]"
-                      : "border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.04]"
-                  }`}
-                >
+            <div className="rounded-xl border border-[#00B1EA]/40 bg-[#00B1EA]/[0.06] p-4">
+              <div className="flex items-center gap-3">
+                {/* Logo Mercado Pago oficial — Wikimedia (stable URL) */}
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Mercado_Pago_logo.svg/320px-Mercado_Pago_logo.svg.png"
+                  alt="Mercado Pago"
+                  width="80"
+                  height="40"
+                  className="shrink-0 rounded-md bg-white p-1.5"
+                />
+                <div className="min-w-0">
                   <p className="font-grotesk text-sm font-semibold text-text-primary">
-                    💳 Tarjeta o saldo MP
+                    Pagás con Mercado Pago
                   </p>
-                  <p className="mt-1 font-inter text-xs text-text-tertiary">
-                    Auto-cobro mensual. Tarjeta de crédito o saldo Mercado Pago.
+                  <p className="mt-1 font-inter text-xs leading-relaxed text-text-secondary">
+                    Recibís un link mensual para pagar con <strong>saldo MP, transferencia bancaria (CVU/CBU), RapiPago, PagoFácil o Pago Mis Cuentas</strong>. Sin tarjeta.
                   </p>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("cash")}
-                  disabled={pending}
-                  className={`rounded-xl border p-3.5 text-left transition-all ${
-                    paymentMethod === "cash"
-                      ? "border-brand-violet/60 bg-brand-violet/[0.08]"
-                      : "border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.04]"
-                  }`}
-                >
-                  <p className="font-grotesk text-sm font-semibold text-text-primary">
-                    💵 Efectivo / Transferencia
-                  </p>
-                  <p className="mt-1 font-inter text-xs text-text-tertiary">
-                    Link mensual. Pagás en RapiPago, PagoFácil o transferencia.
-                  </p>
-                </button>
+                </div>
               </div>
             </div>
           )}

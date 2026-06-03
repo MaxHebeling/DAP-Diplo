@@ -155,19 +155,30 @@ export default async function SuscribirmePage({
                     method="POST"
                     className="w-full space-y-3"
                   >
-                    <div className="rounded-lg border border-brand-violet/30 bg-brand-violet/[0.06] px-4 py-3 text-sm text-neutral-200">
-                      <p className="font-semibold text-neutral-50">
-                        Pago desde Argentina
-                      </p>
-                      <p className="mt-1 text-neutral-300">
-                        Cobramos <strong className="text-neutral-50">{MP_MONTHLY_ARS.toLocaleString("es-AR")} ARS/mes</strong> vía Mercado Pago.
-                        Sin cargos por cambio de moneda.
-                      </p>
+                    <div className="rounded-lg border border-[#00B1EA]/40 bg-[#00B1EA]/[0.06] p-4">
+                      <div className="flex items-start gap-3">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Mercado_Pago_logo.svg/320px-Mercado_Pago_logo.svg.png"
+                          alt="Mercado Pago"
+                          width="80"
+                          height="40"
+                          className="shrink-0 rounded-md bg-white p-1.5"
+                        />
+                        <div className="min-w-0">
+                          <p className="font-semibold text-neutral-50">
+                            Pago con Mercado Pago
+                          </p>
+                          <p className="mt-1 text-sm leading-relaxed text-neutral-300">
+                            <strong className="text-neutral-50">{MP_MONTHLY_ARS.toLocaleString("es-AR")} ARS/mes</strong> · Pagás con saldo MP, transferencia bancaria, RapiPago, PagoFácil o Pago Mis Cuentas. <strong className="text-neutral-50">Sin tarjeta.</strong>
+                          </p>
+                        </div>
+                      </div>
                     </div>
                     <input
                       type="text"
                       name="coupon"
-                      placeholder="¿Tenés código promocional? (opcional)"
+                      placeholder="Código promocional (opcional)"
                       autoComplete="off"
                       autoCapitalize="characters"
                       className="h-11 w-full rounded-lg border border-white/10 bg-neutral-900/60 px-4 text-sm text-neutral-50 placeholder:text-neutral-500 focus:border-brand-coral focus:outline-none"
@@ -181,7 +192,7 @@ export default async function SuscribirmePage({
                     </Button>
                   </form>
                   <p className="mt-5 text-center text-xs text-neutral-500">
-                    Te redirigimos a Mercado Pago para autorizar el cobro recurrente con tu tarjeta.
+                    Te redirigimos a Mercado Pago para elegir el método de pago.
                   </p>
                 </>
               ) : (
