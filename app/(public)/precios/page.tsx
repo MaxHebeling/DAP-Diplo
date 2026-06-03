@@ -24,6 +24,13 @@ import { DapPublicFooter } from "@/components/layouts/dap-public-footer";
 import { DapButton } from "@/components/ui-dap/button";
 import { EnrollmentCTA } from "@/components/launch/enrollment-cta";
 import { Reveal } from "@/components/landing/reveal";
+import {
+  breadcrumbListSchema,
+  faqPageSchema,
+  jsonLd,
+  productOfferSchema,
+  SITE_URL,
+} from "@/lib/seo/structured-data";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("PublicPages");
@@ -81,8 +88,53 @@ export default async function PreciosPage() {
   // Skip auth check — landing pública estática (cacheable por CDN).
   const headerUser: DapHeaderUser = null;
 
+  // Schema FAQ específico de pricing — diferente al de la home (la home
+  // cubre dudas generales del programa; acá foco en precio/billing).
+  const PRICING_FAQS = [
+    {
+      q: "¿Cuánto cuesta el DAP?",
+      a: "$25 USD por mes vía tarjeta (Stripe), o 30.000 ARS/mes vía Mercado Pago en Argentina (con opción de pagar en efectivo en RapiPago, PagoFácil o transferencia). Sin matrícula, sin cuotas anuales, sin costos ocultos.",
+    },
+    {
+      q: "¿Hay compromiso de permanencia?",
+      a: "No. Cancelás cuando quieras desde tu dashboard. Si dejás de avanzar en los módulos, el cobro se pausa automáticamente — no te cobramos por meses inactivos.",
+    },
+    {
+      q: "¿Qué métodos de pago aceptan?",
+      a: "Internacional: tarjeta de crédito/débito vía Stripe ($25 USD/mes). Argentina: Mercado Pago (tarjeta, débito, saldo MP, RapiPago, PagoFácil, transferencia bancaria, Western Union) por 30.000 ARS/mes.",
+    },
+    {
+      q: "¿El precio incluye certificado y materiales?",
+      a: "Sí. Acceso a los 72 módulos, MasterClass en vivo, comunidad privada, Tutor IA del DAP, corrección personalizada del Dr. Max Hebeling, certificados de bloque y dimensión. Todo incluido sin cargos extra.",
+    },
+    {
+      q: "¿Hay becas o descuentos?",
+      a: "Sí. El DAP otorga becas selectivas (DAP-HONOR y DAP-VIP) a pastores con redes establecidas y a líderes con llamado claro. Las becas se gestionan por invitación directa del Dr. Max Hebeling.",
+    },
+  ];
+
   return (
     <div className="flex flex-1 flex-col bg-surface-base text-text-primary">
+      {/* JSON-LD schema enrichment para /precios — productOffer + FAQ + breadcrumb */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(productOfferSchema()) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(faqPageSchema(PRICING_FAQS)) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLd(
+            breadcrumbListSchema([
+              { name: "Inicio", url: SITE_URL },
+              { name: "Precios", url: `${SITE_URL}/precios` },
+            ]),
+          ),
+        }}
+      />
       <DapPublicHeader user={headerUser} onSignOut={signOutAction} />
 
       <main className="flex flex-1 flex-col">

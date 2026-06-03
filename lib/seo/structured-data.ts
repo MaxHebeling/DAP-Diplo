@@ -189,6 +189,45 @@ export function faqPageSchema(faqs: FaqItem[]) {
   };
 }
 
+/**
+ * Product + Offer schema para la página de precios. Habilita rich
+ * results de precio en Google y permite que AI Overviews respondan
+ * correctamente a "cuánto cuesta el DAP".
+ *
+ * Pricing: $25 USD/mes recurrente. Para AR el flow real es 30.000 ARS
+ * vía MP — pero en el schema mantenemos USD para que matchee con la
+ * audiencia global y el header de pricing del site.
+ */
+export function productOfferSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: SITE_FULL_NAME,
+    description:
+      "Suscripción mensual al Diplomado Apostólico Pastoral. 18 meses, 72 módulos, 9 dimensiones. Mentoría personalizada del Dr. Max Hebeling.",
+    brand: {
+      "@type": "EducationalOrganization",
+      name: SITE_FULL_NAME,
+      url: SITE_URL,
+    },
+    offers: {
+      "@type": "Offer",
+      price: "25.00",
+      priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
+      url: `${SITE_URL}/suscribirme`,
+      priceSpecification: {
+        "@type": "UnitPriceSpecification",
+        price: "25.00",
+        priceCurrency: "USD",
+        billingDuration: "P1M",
+        billingIncrement: 1,
+        unitText: "MONTH",
+      },
+    },
+  } as const;
+}
+
 export function websiteSchema() {
   return {
     "@context": "https://schema.org",
