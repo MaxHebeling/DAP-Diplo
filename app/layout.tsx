@@ -15,6 +15,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { ToastFromQuery } from "@/components/toast-from-query";
 import { RegisterServiceWorker } from "@/components/pwa/register-sw";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
+import { MetaPixel } from "@/components/analytics/meta-pixel";
+import { MetaConversionTracker } from "@/components/analytics/meta-conversion-tracker";
 import {
   jsonLd,
   organizationSchema,
@@ -157,11 +159,17 @@ export default async function RootLayout({
           <Suspense fallback={null}>
             <ToastFromQuery />
           </Suspense>
+          {/* Meta Pixel — PageView automático + Subscribe en conversion pages */}
+          <Suspense fallback={null}>
+            <MetaConversionTracker />
+          </Suspense>
         </NextIntlClientProvider>
         {/* Vercel observability: pageviews + Core Web Vitals reales
             (LCP, INP, CLS). Gratis hasta 2.5k events/mes en Hobby. */}
         <Analytics />
         <SpeedInsights />
+        {/* Meta Pixel — fbevents.js + fbq init. No renderiza si falta env. */}
+        <MetaPixel />
       </body>
     </html>
   );
