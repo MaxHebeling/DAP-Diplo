@@ -23,7 +23,7 @@ export default function PublicLayoutDevPage() {
               Formación integral para pastores y líderes
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-base text-text-secondary md:text-lg">
-              9 bloques. 200 módulos. Espiritualidad, liderazgo, gobierno,
+              9 bloques. 72 módulos. Espiritualidad, liderazgo, gobierno,
               finanzas, empresas y tecnología. Premium, en español.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">

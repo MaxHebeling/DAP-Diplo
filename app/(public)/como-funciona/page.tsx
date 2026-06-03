@@ -18,7 +18,6 @@ import {
 import { getTranslations } from "next-intl/server";
 
 import { signOutAction } from "@/lib/auth/actions";
-import { createClient } from "@/lib/supabase/server";
 import {
   DapPublicHeader,
   type DapHeaderUser,
@@ -45,7 +44,6 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function ComoFuncionaPage() {
   const t = await getTranslations("PublicPages");
-  const supabase = await createClient();
 
   const STEPS = [
     {
@@ -131,25 +129,8 @@ export default async function ComoFuncionaPage() {
     },
   ];
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  let headerUser: DapHeaderUser = null;
-  if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("full_name, avatar_url, role")
-      .eq("id", user.id)
-      .maybeSingle();
-    if (profile) {
-      headerUser = {
-        fullName: profile.full_name ?? null,
-        avatarUrl: profile.avatar_url ?? null,
-        role: profile.role as "student" | "admin",
-      };
-    }
-  }
+  // Skip auth check — landing pública estática (cacheable por CDN).
+  const headerUser: DapHeaderUser = null;
 
   return (
     <div className="flex flex-1 flex-col bg-surface-base text-text-primary">
