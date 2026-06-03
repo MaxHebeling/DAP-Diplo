@@ -28,7 +28,7 @@ export function organizationSchema() {
     url: SITE_URL,
     logo: LOGO_URL,
     description:
-      "Formación apostólica integral para pastores y líderes hispanohablantes. 18 meses, 9 bloques, 200 módulos.",
+      "Formación apostólica integral para pastores y líderes hispanohablantes. 18 meses, 9 bloques, 72 módulos.",
     inLanguage: "es",
     founder: personSchema(),
     sameAs: [

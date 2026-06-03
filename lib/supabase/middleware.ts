@@ -16,6 +16,22 @@ const PROTECTED_PREFIXES = [
   "/admision",
 ];
 
+// Landings públicas estáticas — no requieren auth ni session refresh.
+// Skipear el middleware Supabase entero permite a Next.js cachearlas
+// agresivamente (CDN edge) y mejora SEO (TTFB sub-100ms).
+const STATIC_PUBLIC_PATHS = new Set([
+  "/",
+  "/precios",
+  "/como-funciona",
+  "/contacto",
+  "/privacidad",
+  "/terminos",
+  "/reembolso",
+  "/demo",
+  "/rangos",
+  "/fases",
+]);
+
 /**
  * Decide si la ruta requiere `admission_status = 'approved'` además de
  * login. NO incluye /admision/* (sería loop) ni /admin/* (admin bypassa
@@ -40,6 +56,20 @@ function requiresAdmissionApproval(pathname: string): boolean {
 }
 
 export async function updateSession(request: NextRequest) {
+  const pathnameEarly = request.nextUrl.pathname;
+
+  // Landings públicas estáticas: pasan sin tocar Supabase. Esto evita
+  // que Next.js marque la page como dinámica por leer cookies, y permite
+  // que el CDN de Vercel cachee la respuesta (s-maxage al edge).
+  if (STATIC_PUBLIC_PATHS.has(pathnameEarly)) {
+    const res = NextResponse.next({ request });
+    res.headers.set(
+      "Cache-Control",
+      "public, s-maxage=60, stale-while-revalidate=86400",
+    );
+    return res;
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
