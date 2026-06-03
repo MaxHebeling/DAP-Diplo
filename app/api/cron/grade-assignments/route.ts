@@ -2,8 +2,6 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { correctAssignment } from "@/lib/excorrector";
-import { sendAssignmentFeedbackEmail } from "@/lib/email/send-assignment-feedback";
-import { sendPushToUser } from "@/lib/push/send";
 import { MS_PER_HOUR } from "@/lib/constants/time";
 
 export const runtime = "nodejs";
@@ -19,8 +17,6 @@ function isAuthorized(request: NextRequest): boolean {
 
 const BATCH_SIZE = 20;
 const DELAY_HOURS = 48;
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.dapglobal.org";
-
 type Pending = {
   id: string;
   user_id: string;
@@ -43,11 +39,6 @@ type ModuleInfo = {
 type SectionInfo = {
   id: string;
   body_md: string | null;
-};
-
-type UserInfo = {
-  email: string;
-  full_name: string;
 };
 
 /**
@@ -108,29 +99,20 @@ export async function GET(request: NextRequest) {
   const sectionIds = Array.from(
     new Set(pending.map((p) => p.module_section_id)),
   );
-  const userIds = Array.from(new Set(pending.map((p) => p.user_id)));
-
-  const [modulesRes, sectionsRes, profilesRes, admissionsRes] =
-    await Promise.all([
-      admin
-        .from("modules")
-        .select(
-          "id, title, slug, objective, main_revelation, block:blocks(slug)",
-        )
-        .in("id", moduleIds)
-        .returns<ModuleInfo[]>(),
-      admin
-        .from("module_sections")
-        .select("id, body_md")
-        .in("id", sectionIds)
-        .returns<SectionInfo[]>(),
-      admin.from("profiles").select("id, full_name").in("id", userIds),
-      admin
-        .from("admissions")
-        .select("user_id, email, submitted_at")
-        .in("user_id", userIds)
-        .order("submitted_at", { ascending: false }),
-    ]);
+  const [modulesRes, sectionsRes] = await Promise.all([
+    admin
+      .from("modules")
+      .select(
+        "id, title, slug, objective, main_revelation, block:blocks(slug)",
+      )
+      .in("id", moduleIds)
+      .returns<ModuleInfo[]>(),
+    admin
+      .from("module_sections")
+      .select("id, body_md")
+      .in("id", sectionIds)
+      .returns<SectionInfo[]>(),
+  ]);
 
   const modulesById = new Map<string, ModuleInfo>();
   for (const m of modulesRes.data ?? []) {
@@ -139,22 +121,6 @@ export async function GET(request: NextRequest) {
   const sectionsById = new Map<string, SectionInfo>();
   for (const s of sectionsRes.data ?? []) {
     sectionsById.set(s.id, s);
-  }
-  const fullNameByUser = new Map<string, string>();
-  for (const p of (profilesRes.data ?? []) as Array<{
-    id: string;
-    full_name: string;
-  }>) {
-    fullNameByUser.set(p.id, p.full_name);
-  }
-  // El ORDER BY submitted_at DESC garantiza que la primera admission
-  // que aparece por user_id es la más reciente.
-  const emailByUser = new Map<string, string>();
-  for (const a of (admissionsRes.data ?? []) as Array<{
-    user_id: string;
-    email: string;
-  }>) {
-    if (!emailByUser.has(a.user_id)) emailByUser.set(a.user_id, a.email);
   }
 
   const results: Array<{ id: string; ok: boolean; error?: string }> = [];
@@ -167,13 +133,9 @@ export async function GET(request: NextRequest) {
         .update({ status: "correcting", updated_at: new Date().toISOString() })
         .eq("id", sub.id);
 
-      // 2. Lookup en los maps pre-cargados (era 4 queries en este punto)
+      // 2. Lookup en los maps pre-cargados
       const mod = modulesById.get(sub.module_id);
       const sec = sectionsById.get(sub.module_section_id);
-      const userInfo: UserInfo = {
-        email: emailByUser.get(sub.user_id) ?? "",
-        full_name: fullNameByUser.get(sub.user_id) ?? "Estudiante",
-      };
 
       if (!mod) throw new Error(`módulo no encontrado: ${sub.module_id}`);
 
@@ -209,7 +171,11 @@ export async function GET(request: NextRequest) {
         correction.data;
       const finalStatus = passed ? "completed" : "incomplete";
 
-      // 4. Persistir feedback
+      // 4. Persistir feedback IA — pero NO envía email todavía.
+      //    Decisión jun-2026: review obligatorio del admin antes de
+      //    soltar el feedback al alumno. El cron solo genera + deja
+      //    en cola; admin aprueba desde /admin/correcciones.
+      //    section_progress + email + push se disparan en /api/admin/correcciones/[id]/approve.
       const nowIso = new Date().toISOString();
       const { error: updErr } = await admin
         .from("assignment_submissions")
@@ -219,65 +185,11 @@ export async function GET(request: NextRequest) {
           ai_score: score,
           ai_passed: passed,
           corrected_at: nowIso,
-          results_sent_at: nowIso,
+          // results_sent_at SIGUE null. Lo setea /api/admin/correcciones/[id]/approve.
           updated_at: nowIso,
         })
         .eq("id", sub.id);
       if (updErr) throw new Error(`update: ${updErr.message}`);
-
-      // 4b. Si aprobó la activación: section_progress.completed = true.
-      //     Para el módulo: la cascada al rango se dispara cuando alumno
-      //     aprueba la EVALUACIÓN (ahí corre runQuizPassedCascade). Acá
-      //     solo marcamos esta sección — el módulo se completa cuando
-      //     las 5 secciones (incluida la evaluation aprobada) lo estén.
-      if (passed) {
-        const { error: spErr } = await admin
-          .from("section_progress")
-          .upsert(
-            {
-              user_id: sub.user_id,
-              module_section_id: sub.module_section_id,
-              completed: true,
-              completed_at: nowIso,
-            },
-            { onConflict: "user_id,module_section_id" },
-          );
-        if (spErr) {
-          console.error(
-            `[cron/grade] ${sub.id} section_progress upsert: ${spErr.message}`,
-          );
-        }
-      }
-
-      // 5. Email al alumno (best-effort)
-      const moduleRelPath = mod.block
-        ? `/fases/${mod.block.slug}/modulos/${mod.slug}?section=activation`
-        : `/dashboard`;
-      if (userInfo.email) {
-        const emailRes = await sendAssignmentFeedbackEmail({
-          to: userInfo.email,
-          fullName: userInfo.full_name,
-          moduleTitle: mod.title,
-          moduleHref: `${APP_URL}${moduleRelPath}`,
-          passed,
-          score,
-        });
-        if (!emailRes.ok) {
-          console.error(
-            `[cron/grade] email ${sub.id} falló: ${emailRes.error}`,
-          );
-        }
-      }
-
-      // 5b. Push notification (paralelo al email)
-      await sendPushToUser(sub.user_id, {
-        title: passed
-          ? `✓ Tu tarea fue aprobada (${score}/100)`
-          : `Tu corrección llegó (${score}/100)`,
-        body: `${mod.title} — El Ap. Max te dejó feedback. Toca para verlo.`,
-        url: moduleRelPath,
-        tag: `grade-${sub.module_id}`,
-      });
 
       if (notes_for_admin) {
         console.log(

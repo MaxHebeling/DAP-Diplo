@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import {
   Bell,
   Brain,
+  CheckSquare,
   FileText,
   GraduationCap,
   Layers,
@@ -29,6 +30,7 @@ const NAV = [
   { href: "/admin/en-vivo", labelKey: "live", icon: Radio, exact: false },
   { href: "/admin/tutor/documentos", labelKey: "tutorAi", icon: Brain, exact: false },
   { href: "/admin/excorrector", labelKey: "excorrector", icon: Sparkles, exact: false },
+  { href: "/admin/correcciones", labelKey: "corrections", icon: CheckSquare, exact: false },
   { href: "/admin/brief-pastores", labelKey: "pastorsBrief", icon: FileText, exact: false },
   { href: "/admin/notificaciones", labelKey: "notifications", icon: Bell, exact: false },
 ] as const;
