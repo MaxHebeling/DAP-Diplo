@@ -91,10 +91,13 @@ export async function createPreference(
     expires: true,
     expiration_date_from: new Date().toISOString(),
     expiration_date_to: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-    // No restringe métodos — usuario ve crédito, débito, saldo MP,
-    // RapiPago, PagoFácil, transferencia, etc.
+    // Política DAP: excluimos tarjeta crédito y débito (problemas
+    // recurrentes con auto-cobro AR + rechazos masivos). Dejamos solo
+    // saldo MP, transferencia (CVU/CBU), RapiPago/PagoFácil, Western
+    // Union, Pago Mis Cuentas.
     payment_methods: {
-      installments: 1, // sin cuotas (es suscripción mensual one-shot)
+      excluded_payment_types: [{ id: "credit_card" }, { id: "debit_card" }],
+      installments: 1,
     },
   };
 

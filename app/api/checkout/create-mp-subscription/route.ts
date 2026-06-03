@@ -3,7 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isEnrollmentOpen } from "@/lib/launch/config";
 import { checkRateLimit } from "@/lib/security/rate-limit";
-import { createPreapproval } from "@/lib/mercadopago/preapproval";
+import { createPreference } from "@/lib/mercadopago/preference";
+import { sendMpVoucherEmail } from "@/lib/email/send-mp-voucher";
 import { MP_CURRENCY, MP_MONTHLY_ARS } from "@/lib/mercadopago/config";
 import { validateCoupon, applyCoupon } from "@/lib/coupons/validate";
 
@@ -12,16 +13,17 @@ export const runtime = "nodejs";
 /**
  * POST /api/checkout/create-mp-subscription
  *
- * Crea un Preapproval en Mercado Pago AR y redirige al alumno a la
- * página de autorización (init_point). El alumno mete la tarjeta en
- * la página de MP. Cuando autoriza, MP nos avisa por webhook y nuestra
- * fila en `subscriptions` queda con status=active.
+ * Crea una Preference (Checkout Pro) en Mercado Pago AR y redirige al
+ * alumno al init_point. MP muestra: saldo MP, transferencia (CVU/CBU),
+ * RapiPago, PagoFácil, Western Union, Pago Mis Cuentas. SIN tarjetas
+ * (decisión DAP — el preapproval con tarjeta rebotaba demasiado).
  *
- * Acepta cupones DAP-HONOR / DAP-VIP — si el cupón es válido, el
- * preapproval se crea con monto 0 (mismo efecto que en Stripe).
+ * Cupones DAP-HONOR / DAP-VIP → SKIP MP entero, activa sub directo.
  *
- * Sigue el mismo patrón de gates que /api/checkout/create-subscription
- * (Stripe): enrollment open + rate limit + login + sin sub activa.
+ * Nota: se llama "create-mp-subscription" por legacy. En realidad ya no
+ * es Preapproval — usa Checkout Pro one-shot mensual. El renovado se
+ * maneja por el cron `mp-monthly-voucher` que genera nueva Preference
+ * cada mes 5 días antes del vencimiento.
  */
 export async function POST(request: NextRequest) {
   if (!isEnrollmentOpen()) {
@@ -50,9 +52,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.redirect(url, { status: 303 });
   }
 
-  // Cortocircuito si ya tiene sub activa (Stripe o MP). Solo bloqueamos
-  // si está active/trialing — pending no bloquea (alumno abandonó flow,
-  // permitimos reintentar).
+  // Cortocircuito si ya tiene sub active/trialing.
   const { data: existing } = await supabase
     .from("subscriptions")
     .select("status, current_period_end")
@@ -80,64 +80,93 @@ export async function POST(request: NextRequest) {
       couponRaw = (form.get("coupon") as string | null) ?? null;
     }
   } catch {
-    // Body vacío → sin cupón. OK.
+    // OK sin cupón.
   }
   const coupon = validateCoupon(couponRaw);
   const amountArs = applyCoupon(MP_MONTHLY_ARS, coupon);
+  const appUrl =
+    process.env.NEXT_PUBLIC_APP_URL ?? new URL(request.url).origin;
 
-  // MP requiere un monto > 0 incluso para preapproval. Para cupones
-  // 100% off, usamos $1 ARS (centavo simbólico) y lo refundeamos vía
-  // admin si llegara a cobrarse. Alternativa: marcar la fila como
-  // 'active' manualmente sin pasar por MP. Por integridad de webhook
-  // y para que el alumno tenga el flow completo, usamos $1 simbólico.
-  const finalAmount = coupon.valid ? 1 : amountArs;
+  const admin = createAdminClient();
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? new URL(request.url).origin;
-  const backUrl = `${appUrl}/dashboard?toast=mp-paid`;
-
-  let preapproval;
-  try {
-    preapproval = await createPreapproval({
-      userId: user.id,
-      payerEmail: user.email,
-      amountArs: finalAmount,
-      backUrl,
-      reason: coupon.valid
-        ? `DAP — Beca ${coupon.code} (suscripción mensual simbólica)`
-        : undefined,
+  // BECA con cupón válido → SKIP MP, activa sub directo +100 años.
+  if (coupon.valid) {
+    const nowIso = new Date().toISOString();
+    const farFuture = new Date(
+      Date.now() + 100 * 365 * 24 * 60 * 60 * 1000,
+    ).toISOString();
+    const { error: insErr } = await admin.from("subscriptions").insert({
+      user_id: user.id,
+      payment_processor: "mercadopago",
+      payment_method: "checkout_pro",
+      status: "active",
+      currency: MP_CURRENCY,
+      amount_minor: 0,
+      stripe_customer_id: null,
+      stripe_subscription_id: null,
+      stripe_price_id: null,
+      started_at: nowIso,
+      current_period_start: nowIso,
+      current_period_end: farFuture,
     });
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : "Error desconocido";
-    console.error("[mp.create] preapproval failed:", msg);
-    return NextResponse.json(
-      { error: `No se pudo crear la suscripción en Mercado Pago: ${msg}` },
-      { status: 502 },
+    if (insErr) {
+      return NextResponse.json(
+        { error: `No se pudo registrar la beca: ${insErr.message}` },
+        { status: 500 },
+      );
+    }
+    return NextResponse.redirect(
+      new URL("/dashboard?toast=beca-activa", request.url),
+      { status: 303 },
     );
   }
 
-  // Persistimos la fila en estado pending. El webhook la actualizará
-  // a active cuando el alumno autorice.
-  const admin = createAdminClient();
-  const { error: insertErr } = await admin.from("subscriptions").insert({
+  // Flujo normal: Preference Checkout Pro.
+  let preference;
+  try {
+    preference = await createPreference({
+      userId: user.id,
+      payerEmail: user.email,
+      amountArs,
+      successUrl: `${appUrl}/dashboard?toast=mp-paid`,
+      failureUrl: `${appUrl}/suscribirme?error=mp-cash`,
+      pendingUrl: `${appUrl}/dashboard?toast=mp-pending`,
+      itemTitle: "DAP — Suscripción mensual",
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Error creando preference MP";
+    return NextResponse.json({ error: msg }, { status: 502 });
+  }
+
+  // Persistir fila pending.
+  const { error: subErr } = await admin.from("subscriptions").insert({
     user_id: user.id,
     payment_processor: "mercadopago",
-    mp_preapproval_id: preapproval.id,
-    mp_payer_id: preapproval.payer_id?.toString() ?? null,
+    payment_method: "checkout_pro",
+    mp_preference_id: preference.id,
     status: "pending",
     currency: MP_CURRENCY,
-    amount_minor: finalAmount * 100, // ARS pesos enteros → centavos
+    amount_minor: amountArs * 100,
     stripe_customer_id: null,
     stripe_subscription_id: null,
     stripe_price_id: null,
+    last_voucher_sent_at: new Date().toISOString(),
   });
-  if (insertErr) {
-    console.error("[mp.create] insert subs failed:", insertErr.message);
+  if (subErr) {
     return NextResponse.json(
-      { error: `No se pudo persistir la suscripción: ${insertErr.message}` },
+      { error: `No se pudo registrar la suscripción: ${subErr.message}` },
       { status: 500 },
     );
   }
 
-  // Redirigimos al alumno a la página de autorización de MP.
-  return NextResponse.redirect(preapproval.init_point, { status: 303 });
+  // Mandar voucher email (backup por si pierden el redirect).
+  void sendMpVoucherEmail({
+    userId: user.id,
+    checkoutUrl: preference.init_point,
+    amountArs,
+    kind: "initial",
+    currentPeriodEnd: null,
+  });
+
+  return NextResponse.redirect(preference.init_point, { status: 303 });
 }
