@@ -399,7 +399,7 @@ export default async function ModulePlayerPage({
   const activeBodyMd = localized(activeSection, "body_md", locale);
 
   return (
-    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[300px_1fr]">
+    <div className="dark grid min-h-screen grid-cols-1 bg-background text-foreground lg:grid-cols-[300px_1fr]">
       <ModuleSidebar
         phaseTitle={phaseTitle}
         phaseOrderIndex={mod.phase.order_index}
@@ -408,9 +408,9 @@ export default async function ModulePlayerPage({
         currentModuleSlug={mod.slug}
       />
 
-      <div className="flex min-h-screen flex-col">
+      <div className="flex min-h-screen flex-col bg-background">
         {/* Top bar mini — responsive */}
-        <header className="flex items-center justify-between gap-2 border-b px-4 py-3 sm:px-6 sm:py-4">
+        <header className="flex items-center justify-between gap-2 border-b border-border px-4 py-3 sm:px-6 sm:py-4">
           {/* Breadcrumb compacto en mobile, completo en desktop */}
           <nav
             aria-label="Breadcrumb"
