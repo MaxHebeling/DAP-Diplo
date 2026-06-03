@@ -4,7 +4,13 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { generateAdmissionLetter } from "@/lib/admission/generate-letter";
 import { uploadAdmissionLetter } from "@/lib/admission/storage";
 import { sendAdmissionLetterEmail } from "@/lib/email/send-admission-letter";
-import { MS_PER_DAY } from "@/lib/constants/time";
+import { MS_PER_HOUR } from "@/lib/constants/time";
+
+// Ventana mínima entre aprobación y envío de carta. Permite al admin
+// revertir una aprobación accidental sin que el alumno reciba la carta.
+// Bajado de 24h → 12h (decisión jun-2026): alumnos quieren ver la
+// matrícula rápido y los admins corrigen errores casi al instante.
+const ADMISSION_LETTER_DELAY_MS = 12 * MS_PER_HOUR;
 
 // Necesitamos runtime nodejs para fs (cargar PNGs) y @react-pdf/renderer.
 export const runtime = "nodejs";
@@ -60,7 +66,7 @@ export async function GET(request: NextRequest) {
   const admin = createAdminClient();
 
   // 1. Encontrar admisiones elegibles
-  const cutoffIso = new Date(Date.now() - MS_PER_DAY).toISOString();
+  const cutoffIso = new Date(Date.now() - ADMISSION_LETTER_DELAY_MS).toISOString();
 
   const { data: admissions, error: fetchErr } = await admin
     .from("admissions")
