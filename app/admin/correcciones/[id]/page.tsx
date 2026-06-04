@@ -11,6 +11,16 @@ import {
 } from "lucide-react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Markdown } from "@/components/module/markdown";
+import { TextAnnotator } from "@/components/correcciones/text-annotator";
+import { ImageAnnotator } from "@/components/correcciones/image-annotator";
+import {
+  type Annotation,
+  type AttachmentAnnotation,
+  type TextAnnotation,
+  isAnnotatableImageByName,
+  isAttachmentAnnotation,
+  isTextAnnotation,
+} from "@/lib/annotations/types";
 import { CorrectionEditor } from "./editor";
 
 export const dynamic = "force-dynamic";
@@ -92,6 +102,21 @@ export default async function CorreccionDetailPage({
     attachmentSignedUrl = signed?.signedUrl ?? null;
   }
 
+  // Cargar anotaciones existentes (admin las dibuja a medida, no esperan al approve)
+  const { data: annRows } = await admin
+    .from("submission_annotations")
+    .select("*")
+    .eq("submission_id", sub.id)
+    .order("created_at", { ascending: true })
+    .returns<Annotation[]>();
+  const annotations = annRows ?? [];
+  const textAnnotations: TextAnnotation[] = annotations.filter(isTextAnnotation);
+  const attachmentAnnotations: AttachmentAnnotation[] = annotations.filter(
+    isAttachmentAnnotation,
+  );
+
+  const attachmentIsImage = isAnnotatableImageByName(sub.attachment_name);
+
   return (
     <main className="px-6 py-8 lg:px-10">
       <Link
@@ -152,13 +177,21 @@ export default async function CorreccionDetailPage({
           )}
 
           <section className="rounded-xl border border-border bg-card/40 p-5">
-            <h2 className="mb-3 inline-flex items-center gap-1.5 font-grotesk text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+            <h2 className="mb-1 inline-flex items-center gap-1.5 font-grotesk text-sm font-semibold uppercase tracking-widest text-muted-foreground">
               <FileText className="size-3.5" /> Entrega del alumno
             </h2>
-            {sub.content_text ? (
-              <p className="whitespace-pre-wrap font-inter text-sm leading-relaxed text-foreground">
-                {sub.content_text}
+            {!alreadySent && sub.content_text && (
+              <p className="mb-3 font-inter text-xs italic text-muted-foreground">
+                Seleccioná texto para subrayar / tachar / comentar.
               </p>
+            )}
+            {sub.content_text ? (
+              <TextAnnotator
+                submissionId={sub.id}
+                text={sub.content_text}
+                initialAnnotations={textAnnotations}
+                readOnly={alreadySent}
+              />
             ) : (
               <p className="font-inter text-sm italic text-muted-foreground">
                 (sin texto, solo adjunto)
@@ -166,15 +199,37 @@ export default async function CorreccionDetailPage({
             )}
 
             {attachmentSignedUrl && (
-              <a
-                href={attachmentSignedUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-brand-violet/30 bg-brand-violet/[0.06] px-3 py-1.5 text-sm text-brand-violet transition hover:bg-brand-violet/[0.12]"
-              >
-                <Paperclip className="size-3.5" />
-                {sub.attachment_name ?? "Ver adjunto"} ↗
-              </a>
+              <div className="mt-5 border-t border-border pt-5">
+                <h3 className="mb-3 inline-flex items-center gap-1.5 font-grotesk text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  <Paperclip className="size-3" /> Adjunto:{" "}
+                  {sub.attachment_name ?? "archivo"}
+                </h3>
+                {attachmentIsImage ? (
+                  <ImageAnnotator
+                    submissionId={sub.id}
+                    imageUrl={attachmentSignedUrl}
+                    imageName={sub.attachment_name}
+                    initialAnnotations={attachmentAnnotations}
+                    readOnly={alreadySent}
+                  />
+                ) : (
+                  <div className="rounded-lg border border-dashed border-border bg-muted/20 p-4 text-center">
+                    <a
+                      href={attachmentSignedUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-sm text-brand-violet hover:underline"
+                    >
+                      <Paperclip className="size-3.5" /> Abrir{" "}
+                      {sub.attachment_name ?? "adjunto"} ↗
+                    </a>
+                    <p className="mt-2 font-inter text-xs italic text-muted-foreground">
+                      Solo imágenes (JPG/PNG/WebP) son anotables directo. Para
+                      PDFs, abrí, anotá afuera y comentá en el feedback.
+                    </p>
+                  </div>
+                )}
+              </div>
             )}
           </section>
         </div>

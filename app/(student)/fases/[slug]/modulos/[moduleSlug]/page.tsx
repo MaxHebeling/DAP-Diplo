@@ -272,12 +272,16 @@ export default async function ModulePlayerPage({
     ai_passed: boolean | null;
     corrected_at: string | null;
     results_sent_at: string | null;
+    attachment_url: string | null;
+    attachment_name: string | null;
+    attachment_signed_url: string | null;
+    annotations: import("@/lib/annotations/types").Annotation[];
   } | null = null;
   if (currentSection === "activation") {
     const { data: subData } = await supabase
       .from("assignment_submissions")
       .select(
-        "id, status, content_text, opens_at, closes_at, submitted_at, ai_feedback, ai_score, ai_passed, corrected_at, results_sent_at",
+        "id, status, content_text, opens_at, closes_at, submitted_at, ai_feedback, ai_score, ai_passed, corrected_at, results_sent_at, attachment_url, attachment_name",
       )
       .eq("user_id", user.id)
       .eq("module_section_id", activeSection.id)
@@ -285,7 +289,32 @@ export default async function ModulePlayerPage({
       .limit(1)
       .maybeSingle();
     if (subData) {
-      activationSubmission = subData as unknown as typeof activationSubmission;
+      // Las anotaciones solo se exponen al alumno cuando results_sent_at != null
+      // (RLS lo enforcea, pero hacemos la guarda igual para evitar query inútil).
+      let annotations: import("@/lib/annotations/types").Annotation[] = [];
+      let signedUrl: string | null = null;
+      if (subData.results_sent_at) {
+        const { data: anns } = await supabase
+          .from("submission_annotations")
+          .select("*")
+          .eq("submission_id", subData.id)
+          .order("created_at", { ascending: true })
+          .returns<import("@/lib/annotations/types").Annotation[]>();
+        annotations = anns ?? [];
+
+        if (subData.attachment_url) {
+          const { data: signed } = await supabase.storage
+            .from("assignment-attachments")
+            .createSignedUrl(subData.attachment_url, 60 * 60);
+          signedUrl = signed?.signedUrl ?? null;
+        }
+      }
+      const base = subData as Record<string, unknown>;
+      activationSubmission = {
+        ...base,
+        attachment_signed_url: signedUrl,
+        annotations,
+      } as NonNullable<typeof activationSubmission>;
     }
   }
 

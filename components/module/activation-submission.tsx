@@ -15,6 +15,16 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Markdown } from "@/components/module/markdown";
+import { TextAnnotator } from "@/components/correcciones/text-annotator";
+import { ImageAnnotator } from "@/components/correcciones/image-annotator";
+import {
+  type Annotation,
+  type AttachmentAnnotation,
+  type TextAnnotation,
+  isAnnotatableImageByName,
+  isAttachmentAnnotation,
+  isTextAnnotation,
+} from "@/lib/annotations/types";
 import { submitAssignmentAction } from "@/lib/assignments/actions";
 
 export type ActivationSubmission = {
@@ -29,6 +39,10 @@ export type ActivationSubmission = {
   ai_passed: boolean | null;
   corrected_at: string | null;
   results_sent_at: string | null;
+  attachment_url?: string | null;
+  attachment_name?: string | null;
+  attachment_signed_url?: string | null;
+  annotations?: Annotation[];
 };
 
 function formatDateTime(iso: string): string {
@@ -282,17 +296,77 @@ function FeedbackView({ submission }: { submission: ActivationSubmission }) {
         </div>
       )}
 
-      {submission.content_text && (
-        <details className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-5">
-          <summary className="cursor-pointer text-xs font-medium uppercase tracking-widest text-muted-foreground hover:text-foreground">
-            {t("activation.originalSubmission")}
-          </summary>
-          <div className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
-            {submission.content_text}
-          </div>
-        </details>
-      )}
+      <AnnotatedSubmissionView submission={submission} />
     </div>
+  );
+}
+
+function AnnotatedSubmissionView({
+  submission,
+}: {
+  submission: ActivationSubmission;
+}) {
+  const t = useTranslations("Module");
+  const annotations = submission.annotations ?? [];
+  const textAnns: TextAnnotation[] = annotations.filter(isTextAnnotation);
+  const attachmentAnns: AttachmentAnnotation[] = annotations.filter(
+    isAttachmentAnnotation,
+  );
+
+  const hasText = !!submission.content_text;
+  const hasAttachmentImage =
+    submission.attachment_signed_url &&
+    isAnnotatableImageByName(submission.attachment_name ?? null);
+  const hasAttachmentOther =
+    submission.attachment_signed_url && !hasAttachmentImage;
+
+  if (!hasText && !submission.attachment_signed_url) return null;
+
+  return (
+    <details
+      open={annotations.length > 0}
+      className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-5"
+    >
+      <summary className="cursor-pointer text-xs font-medium uppercase tracking-widest text-muted-foreground hover:text-foreground">
+        {t("activation.originalSubmission")}
+        {annotations.length > 0 && (
+          <span className="ml-2 rounded-full bg-brand-coral/15 px-2 py-0.5 text-[10px] text-brand-coral">
+            {annotations.length} marca{annotations.length === 1 ? "" : "s"} del profesor
+          </span>
+        )}
+      </summary>
+      <div className="mt-4 space-y-5">
+        {hasText && (
+          <TextAnnotator
+            submissionId={submission.id}
+            text={submission.content_text ?? ""}
+            initialAnnotations={textAnns}
+            readOnly
+          />
+        )}
+
+        {hasAttachmentImage && submission.attachment_signed_url && (
+          <ImageAnnotator
+            submissionId={submission.id}
+            imageUrl={submission.attachment_signed_url}
+            imageName={submission.attachment_name ?? null}
+            initialAnnotations={attachmentAnns}
+            readOnly
+          />
+        )}
+
+        {hasAttachmentOther && submission.attachment_signed_url && (
+          <a
+            href={submission.attachment_signed_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-brand-violet/30 bg-brand-violet/[0.06] px-3 py-1.5 text-sm text-brand-violet transition hover:bg-brand-violet/[0.12]"
+          >
+            {submission.attachment_name ?? "Ver adjunto"} ↗
+          </a>
+        )}
+      </div>
+    </details>
   );
 }
 
