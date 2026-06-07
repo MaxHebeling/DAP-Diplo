@@ -44,7 +44,7 @@ Antes de acceder al contenido, el aspirante completa un **formulario de admisió
 1. Aspirante envía la solicitud → notificación a `admisiones@dapglobal.org`.
 2. Admisiones revisa (verifica pertenencia, valida carta de consentimiento si aplica).
 3. Al aprobar: se fija `approved_at` y `program_start_date` (= primer martes después de la aprobación, vía función `next_tuesday`).
-4. **Exactamente 24h después de la aprobación**: el sistema genera y envía la **carta de admisión en PDF** al email del alumno, firmada por el Dr. Max Hebeling.
+4. **12h después de la aprobación** (ventana mínima para que admin pueda revertir errores): el sistema genera y envía la **carta de admisión en PDF** al email del alumno, firmada por el Dr. Max Hebeling. Cron diario 15:00 UTC.
 
 ### Avance por calendario semanal (regla central)
 
@@ -67,7 +67,7 @@ Un módulo está **aprobado** cuando:
 ### Corrección de tareas y quizzes (resultados 48h después)
 
 - **Quizzes** (opción múltiple / V-F): autocorregibles por el sistema. El resultado se **revela 48h después** de la entrega (no inmediato).
-- **Tareas escritas** (sección Activación): corregidas por el **agente IA "excorrector"** que da feedback en la voz del Dr. Max Hebeling. Resultado enviado **48h después** de la entrega.
+- **Tareas escritas** (sección Activación): corregidas por el **agente IA "excorrector"** que da feedback en la voz del Dr. Max Hebeling. La IA pre-procesa pasadas las 48h de entrega y deja el feedback en una **cola de review obligatorio** en `/admin/correcciones`. El feedback NO sale al alumno hasta que el admin lo lee, edita si hace falta y aprueba. Recién ahí se setea `results_sent_at` y se dispara email + push. Endpoint `/api/admin/correcciones/[id]/approve` hace el UPDATE atómico con CAS para evitar dobles envíos.
 - Estados de la tarea: `open` → `submitted` → `correcting` → `completed`/`incomplete`. Si nunca se entregó al cerrar la ventana → `not_submitted`.
 
 ---
@@ -205,7 +205,8 @@ Cada bloque completado entrega: insignia digital, certificado PDF descargable, r
 | **stripe_events_processed** | Tabla de idempotencia para el webhook de Stripe. PK = `event.id`. **El handler claim atómico (upsert ignoreDuplicates) ANTES de procesar.** Ver §13. |
 | **module_progress** | Estado del módulo por usuario (`completed` boolean). |
 | **section_progress** | Estado de cada una de las 5 partes por usuario. |
-| **assignment_submissions** | Tareas de la sección Activación: entrega, ventana (martes-lunes), estado, corrección IA, resultado 48h. |
+| **assignment_submissions** | Tareas de la sección Activación: entrega, ventana (martes-lunes), estado, corrección IA pre-procesada, envío al alumno tras aprobación admin (`results_sent_at`). |
+| **submission_annotations** | Marcas del admin sobre la entrega (highlight/strike/comment sobre texto, box sobre imagen adjunta). RLS oculta hasta que `results_sent_at IS NOT NULL`. |
 | **student_ranks** | Rangos otorgados a cada alumno. |
 | **quizzes / quiz_questions / quiz_attempts** | Evaluación de cada módulo (autocorregible). |
 | **certificates** | Certificados por bloque completado. |
@@ -256,7 +257,7 @@ EMAIL_FROM=DAP <hola@dapglobal.org>
 EMAIL_ADMISSIONS=admisiones@dapglobal.org   # recibe las solicitudes de admisión
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ANTHROPIC_API_KEY=
-CRON_SECRET=                                 # autentica los crons (admisión 24h, apertura semanal, corrección 48h)
+CRON_SECRET=                                 # autentica los crons (admisión 12h, apertura semanal, pre-corrección 48h)
 ```
 
 ---
@@ -318,7 +319,7 @@ CRON_SECRET=                                 # autentica los crons (admisión 24
 - **MasterClass** → sesión en vivo. Por evento, mínimo 1/mes garantizado. NO tiene día fijo.
 - **Mentoría grupal** → sesión en vivo por evento (sin cadencia fija). Convocada por el apóstol.
 - **Activación** → Parte 3 de cada módulo (ejercicio práctico). YA NO es sesión en vivo separada.
-- **Admisión** → solicitud formal previa al ingreso. Aprobada manualmente por equipo de admisiones. Dispara `program_start_date` (primer martes después) y carta PDF firmada 24h después.
+- **Admisión** → solicitud formal previa al ingreso. Aprobada manualmente por equipo de admisiones. Dispara `program_start_date` (primer martes después) y carta PDF firmada 12h después.
 
 ---
 
@@ -329,9 +330,9 @@ CRON_SECRET=                                 # autentica los crons (admisión 24
 | Suscripción mensual simple (sin pausa de cobro) | Stripe maneja todo nativamente. Modelo Netflix puro: cobra mientras esté activa, deja de cobrar al cancelar. |
 | Avance por calendario semanal (no por rendimiento) | El tiempo manda. Quita carga emocional de "perder el mes". El gating viene por **admisión** (filtro previo). |
 | Admisión formal con carta del pastor (si no es de la Red) | Filtro de seriedad. Asegura que quien entra está respaldado pastoralmente y es seleccionado, no comprado. |
-| Carta PDF de admisión firmada por el Dr. Max 24h después | Refuerzo simbólico del compromiso. Convierte la inscripción en un acto formal, no transaccional. |
+| Carta PDF de admisión firmada por el Dr. Max 12h después | Refuerzo simbólico del compromiso. Convierte la inscripción en un acto formal, no transaccional. (Bajado de 24h a 12h en jun-2026 — los admins corrigen errores casi al instante y los alumnos quieren ver la matrícula rápido.) |
 | Modelo Netflix (cancela = pierde acceso) | Simple operacionalmente. Progreso se conserva si reactiva. |
-| Resultados de quizzes + tareas 48h después | Genera anticipación, evita el "quiz como juego". Tareas escritas pasan por agente IA "excorrector" con voz del Dr. Max. |
+| Quizzes 48h después de la entrega · Tareas: IA pre-procesa pasadas las 48h y admin aprueba antes de mandar | Quizzes: genera anticipación, evita el "quiz como juego". Tareas escritas: el agente IA "excorrector" arma un borrador en la voz del Dr. Max, pero **no se envía al alumno sin review humana**. El admin lee, edita si hace falta, anota la entrega con highlights/comentarios y recién entonces aprueba en `/admin/correcciones` para disparar email + push. |
 | Rangos al completar bloque (aprobar los 8 módulos) | Los 9 rangos clásicos son hitos visibles. Quien no aprueba todos los módulos del bloque, no recibe el rango hasta ponerse al día. |
 | 9 bloques × 8 módulos = 72 (4/mes, 1/semana simétrico) | Programa enfocado. 4 módulos/mes (1/semana) deja respirar. El valor se complementa con MasterClass, mentoría, comunidad y tutor IA. |
 | Sesiones en vivo por evento (no semanales) | Quita carga operativa de dar clase cada semana. MasterClass como "evento especial" (mín. 1/mes). Mentoría por convocatoria. |
