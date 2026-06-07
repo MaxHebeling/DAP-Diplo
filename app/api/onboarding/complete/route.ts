@@ -1,98 +1,46 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { z } from "zod";
 
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
-import {
-  createStripeCustomer,
-  createSubscriptionCheckoutSession,
-} from "@/lib/stripe/api";
-import { createPreapproval } from "@/lib/mercadopago/preapproval";
-import { createPreference } from "@/lib/mercadopago/preference";
-import {
-  MP_MARRIAGE_MONTHLY_ARS,
-  MP_MONTHLY_ARS,
-} from "@/lib/mercadopago/config";
-import { applyCoupon, validateCoupon } from "@/lib/coupons/validate";
-import { sendMpVoucherEmail } from "@/lib/email/send-mp-voucher";
-import { provisionSpouse2ByMarriageGroup } from "@/lib/marriage/provision-spouse2";
-import { AR_PROVINCES, isArgentinePhone } from "@/lib/data/argentina";
 import {
   ENROLLMENT_OPENS_LABEL,
   isEnrollmentOpen,
 } from "@/lib/launch/config";
 import { checkRateLimit } from "@/lib/security/rate-limit";
+import {
+  isMarriagePayload,
+  payloadSchema,
+} from "@/lib/onboarding/schemas";
+import { validateMarriageInputs } from "@/lib/onboarding/validate-marriage";
+import { signupAndCreateCustomer } from "@/lib/onboarding/signup-and-customer";
+import { handleMarriage } from "@/lib/onboarding/handle-marriage";
+import { handleIndividual } from "@/lib/onboarding/handle-individual";
 
 export const runtime = "nodejs";
 
-const spouseSchema = z.object({
-  fullName: z.string().min(3).max(120),
-  email: z.string().email().max(120),
-  phone: z.string().min(6).max(40),
-  province: z.string().min(1).max(80),
-  ministry: z.string().max(120).nullable().optional(),
-});
-
-const basePayload = {
-  email: z.string().email("Email inválido").max(120),
-  password: z.string().min(8, "Mínimo 8 caracteres").max(80),
-  fullName: z.string().min(3, "Nombre muy corto").max(120),
-  ministryName: z.string().max(120).nullable(),
-  country: z.string().min(1).max(80),
-  countryCode: z.string().length(2),
-};
-
-const individualSchema = z.object({
-  ...basePayload,
-  registrationType: z.literal("individual").optional(),
-  coupon: z.string().max(40).optional().nullable(),
-  // AR only: el alumno elige cómo pagar.
-  //   'card' → Preapproval (auto-cobro recurrente, tarjeta o saldo MP)
-  //   'cash' → Checkout Pro (one-shot mensual; incluye efectivo RapiPago/PagoFácil)
-  paymentMethod: z.enum(["card", "cash"]).optional(),
-});
-
-const marriageSchema = z.object({
-  ...basePayload,
-  registrationType: z.literal("marriage"),
-  declaredResidenceInAr: z.boolean(),
-  spouse1: spouseSchema,
-  spouse2: spouseSchema,
-  // 'card' = MP Preapproval recurrente (default) | 'cash' = Checkout Pro one-shot mensual
-  paymentMethod: z.enum(["card", "cash"]).optional(),
-  // DAP-VIP / DAP-HONOR → 100% off, cubre a los 2 cónyuges.
-  coupon: z.string().max(40).optional().nullable(),
-});
-
-const payloadSchema = z.union([marriageSchema, individualSchema]);
-
 /**
- * Endpoint del onboarding modal. Dos ramas:
+ * Endpoint del onboarding modal.
  *
- *   - Individual (default): signUp + customer + suscripción regular.
- *   - Matrimonio Argentina: signUp del cónyuge 1 + insert en
- *     marriage_registrations (con datos de ambos) + customer + checkout
- *     especial $35/mes. La provisión de la cuenta del cónyuge 2 ocurre
- *     en el webhook tras el pago exitoso.
+ * Orquesta:
+ *   1) Launch gate + rate limit + parse + validación cross-field
+ *   2) signUp + Stripe customer (`signupAndCreateCustomer`)
+ *   3) Branch matrimonio AR (`handleMarriage`) — registration + cupón/MP
+ *   4) Branch individual (`handleIndividual`) — AR (cupón/MP) o Stripe USD
  *
- * GeoIP se lee de los headers Vercel (`x-vercel-ip-country`) — en
- * local devuelve null y se marca como pending_review.
+ * El detalle de cada branch vive en `lib/onboarding/`. Este route solo
+ * orquesta y normaliza la respuesta `{checkoutUrl}`. Para la provisión
+ * del cónyuge 2 post-pago, ver el webhook MP en
+ * `app/api/webhooks/mercadopago`.
  */
 export async function POST(request: NextRequest) {
-  // Defensa en profundidad: el gate del launch corta acá también, no
-  // solo en la UI. Quien intente bypasear el modal vía curl recibe 403.
+  // Defense in depth: el gate del launch también corta acá, no solo en UI.
   if (!isEnrollmentOpen()) {
     return NextResponse.json(
-      {
-        error: `Las inscripciones abren el ${ENROLLMENT_OPENS_LABEL}.`,
-      },
+      { error: `Las inscripciones abren el ${ENROLLMENT_OPENS_LABEL}.` },
       { status: 403 },
     );
   }
 
-  // Rate limit: 5 attempts cada 10 min por IP. Signup real es una acción
-  // poco frecuente; 5 ya cubre retries por errores del usuario sin abrir
-  // la puerta a spam de cuentas o checkouts.
+  // Rate limit: 5 attempts / 10 min por IP. Signup es poco frecuente.
   const limit = await checkRateLimit(request, {
     scope: "onboarding-complete",
     max: 5,
@@ -105,13 +53,13 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Parse + Zod
   let body: unknown;
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
   }
-
   const parsed = payloadSchema.safeParse(body);
   if (!parsed.success) {
     const first = parsed.error.issues[0];
@@ -121,537 +69,43 @@ export async function POST(request: NextRequest) {
     );
   }
   const data = parsed.data;
-  const isMarriage =
-    "registrationType" in data && data.registrationType === "marriage";
 
-  // Guard: matrimonio solo es válido para Argentina y campos coherentes
-  if (isMarriage) {
-    if (data.countryCode !== "AR") {
-      return NextResponse.json(
-        { error: "La inscripción matrimonio es exclusiva para Argentina." },
-        { status: 400 },
-      );
-    }
-    if (!AR_PROVINCES.includes(data.spouse1.province)) {
-      return NextResponse.json(
-        { error: "Provincia inválida del cónyuge 1." },
-        { status: 400 },
-      );
-    }
-    if (!AR_PROVINCES.includes(data.spouse2.province)) {
-      return NextResponse.json(
-        { error: "Provincia inválida del cónyuge 2." },
-        { status: 400 },
-      );
-    }
-    if (!isArgentinePhone(data.spouse1.phone)) {
-      return NextResponse.json(
-        { error: "El teléfono del cónyuge 1 debe ser argentino (+54)." },
-        { status: 400 },
-      );
-    }
-    if (!isArgentinePhone(data.spouse2.phone)) {
-      return NextResponse.json(
-        { error: "El teléfono del cónyuge 2 debe ser argentino (+54)." },
-        { status: 400 },
-      );
-    }
-    if (data.spouse1.email.toLowerCase() === data.spouse2.email.toLowerCase()) {
-      return NextResponse.json(
-        { error: "Los cónyuges deben tener emails distintos." },
-        { status: 400 },
-      );
-    }
-    if (!data.declaredResidenceInAr) {
-      return NextResponse.json(
-        { error: "Falta la confirmación de residencia en Argentina." },
-        { status: 400 },
-      );
-    }
-
-    // Defensa en profundidad: si GeoIP detectó un país distinto a AR,
-    // rechazamos el matrimonio independientemente del cliente. GeoIP
-    // null (local dev / sin header Vercel) NO bloquea.
-    const geoCountry = getGeoIpCountry(request);
-    if (geoCountry && geoCountry.toUpperCase() !== "AR") {
-      return NextResponse.json(
-        {
-          error: `El beneficio matrimonial es exclusivo para Argentina. Detectamos tu conexión desde ${geoCountry.toUpperCase()}.`,
-        },
-        { status: 403 },
-      );
+  // Validación cross-field específica de matrimonio
+  if (isMarriagePayload(data)) {
+    const err = validateMarriageInputs(data, request);
+    if (err) {
+      return NextResponse.json({ error: err.error }, { status: err.status });
     }
   }
 
+  // Signup + Stripe customer
   const supabase = await createClient();
-
-  // 1. Signup cuenta primaria (spouse_1 si matrimonio)
-  const userMetadata: Record<string, unknown> = {
-    full_name: data.fullName,
-    ministry_name: data.ministryName,
-    country: data.country,
-    country_code: data.countryCode,
-  };
-  if (isMarriage) {
-    userMetadata.spouse_role = "spouse_1";
-    userMetadata.province = data.spouse1.province;
-    userMetadata.phone = data.spouse1.phone;
+  const signup = await signupAndCreateCustomer(supabase, data);
+  if (!signup.ok) {
+    return NextResponse.json({ error: signup.error }, { status: signup.status });
   }
-
-  const { error: signUpErr, data: signUpData } = await supabase.auth.signUp({
-    email: data.email,
-    password: data.password,
-    options: {
-      data: userMetadata,
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/login`,
-    },
-  });
-
-  if (signUpErr) {
-    const lower = signUpErr.message.toLowerCase();
-    if (lower.includes("already") || lower.includes("registered")) {
-      return NextResponse.json(
-        {
-          error:
-            "Ya existe una cuenta con ese email. Iniciá sesión y suscribite desde tu dashboard.",
-        },
-        { status: 409 },
-      );
-    }
-    return NextResponse.json(
-      { error: `No se pudo crear la cuenta: ${signUpErr.message}` },
-      { status: 500 },
-    );
-  }
-
-  const user = signUpData.user;
-  if (!user) {
-    return NextResponse.json(
-      { error: "Supabase no devolvió usuario tras signUp." },
-      { status: 500 },
-    );
-  }
-
-  const admin = createAdminClient();
-
-  // 2. Stripe Customer
-  let stripeCustomerId: string;
-  try {
-    const customer = await createStripeCustomer({
-      email: data.email,
-      name: data.fullName,
-      userId: user.id,
-    });
-    stripeCustomerId = customer.id;
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : "Error creando Customer";
-    return NextResponse.json({ error: msg }, { status: 500 });
-  }
-
-  await admin
-    .from("profiles")
-    .update({ stripe_customer_id: stripeCustomerId })
-    .eq("id", user.id);
 
   const appUrl =
     process.env.NEXT_PUBLIC_APP_URL ?? new URL(request.url).origin;
 
-  // 3a. Rama matrimonio: persistir marriage_registration + crear checkout especial
-  if (isMarriage) {
-    const geoCountry = getGeoIpCountry(request);
-    const verificationFlags: string[] = [];
-    let verificationStatus: "verified_argentina" | "pending_review" =
-      "verified_argentina";
-
-    if (!geoCountry) {
-      verificationFlags.push("geoip_unknown");
-      verificationStatus = "pending_review";
-    } else if (geoCountry.toUpperCase() !== "AR") {
-      verificationFlags.push(`geoip_mismatch:${geoCountry}`);
-      verificationStatus = "pending_review";
-    }
-    if (!isArgentinePhone(data.spouse1.phone)) {
-      verificationFlags.push("spouse1_phone_non_ar");
-      verificationStatus = "pending_review";
-    }
-    if (!isArgentinePhone(data.spouse2.phone)) {
-      verificationFlags.push("spouse2_phone_non_ar");
-      verificationStatus = "pending_review";
-    }
-
-    const { data: regRow, error: regErr } = await admin
-      .from("marriage_registrations")
-      .insert({
-        spouse_1_user_id: user.id,
-        spouse_1_full_name: data.spouse1.fullName,
-        spouse_1_email: data.spouse1.email.toLowerCase(),
-        spouse_1_phone: data.spouse1.phone,
-        spouse_1_province: data.spouse1.province,
-        spouse_1_ministry: data.spouse1.ministry ?? null,
-
-        spouse_2_full_name: data.spouse2.fullName,
-        spouse_2_email: data.spouse2.email.toLowerCase(),
-        spouse_2_phone: data.spouse2.phone,
-        spouse_2_province: data.spouse2.province,
-        spouse_2_ministry: data.spouse2.ministry ?? null,
-
-        country: "Argentina",
-        country_code: "AR",
-        geoip_country: geoCountry,
-        declared_residence_in_ar: data.declaredResidenceInAr,
-        verification_status: verificationStatus,
-        verification_flags: verificationFlags,
-
-        // Cobramos por Mercado Pago en ARS. Mantenemos stripe_customer_id
-        // por trazabilidad histórica (igual ya está creado el customer).
-        payment_processor: "mercadopago",
-        currency: "ARS",
-        final_amount_ars: MP_MARRIAGE_MONTHLY_ARS,
-        stripe_customer_id: stripeCustomerId,
-        argentina_discount_applied: true,
-        final_amount_usd: 35,
-      })
-      .select("id, marriage_group_id")
-      .single<{ id: string; marriage_group_id: string }>();
-
-    if (regErr || !regRow) {
-      return NextResponse.json(
-        {
-          error: `No se pudo registrar el matrimonio: ${
-            regErr?.message ?? "row vacía"
-          }`,
-        },
-        { status: 500 },
+  // Branch: matrimonio vs individual
+  const result = isMarriagePayload(data)
+    ? await handleMarriage(
+        request,
+        data,
+        signup.user,
+        signup.stripeCustomerId,
+        appUrl,
+      )
+    : await handleIndividual(
+        data,
+        signup.user,
+        signup.stripeCustomerId,
+        appUrl,
       );
-    }
 
-    // Marcar spouse_1 con marriage_group_id + spouse_role
-    await admin
-      .from("profiles")
-      .update({
-        marriage_group_id: regRow.marriage_group_id,
-        spouse_role: "spouse_1",
-        province: data.spouse1.province,
-        phone: data.spouse1.phone,
-      })
-      .eq("id", user.id);
-
-    // Branch tarjeta vs efectivo. Default 'card' = Preapproval recurrente.
-    // 'cash' = Checkout Pro one-shot mensual (incluye RapiPago, PagoFácil,
-    // transferencia, además de tarjetas).
-    const marriagePaymentMethod =
-      ("paymentMethod" in data && data.paymentMethod) || "card";
-    const marriageCouponRaw =
-      "coupon" in data ? data.coupon : null;
-    const marriageCoupon = validateCoupon(marriageCouponRaw ?? null);
-    let checkoutUrl: string | null = null;
-
-    // BECA 100% (DAP-VIP / DAP-HONOR) — beca completa matrimonio.
-    // Cubre a los 2 cónyuges sin cobrarles ni un peso. Skip MP entero
-    // (independiente del método elegido) — MP rechaza preapproval < $15.
-    if (marriageCoupon.valid) {
-      // Provisionar cónyuge 2 inline (no esperamos webhook, no hay pago).
-      let spouse2Id: string | null = null;
-      try {
-        spouse2Id = await provisionSpouse2ByMarriageGroup(regRow.marriage_group_id);
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : "Error provisionando cónyuge 2";
-        return NextResponse.json({ error: msg }, { status: 500 });
-      }
-
-      const userIds = [user.id, spouse2Id].filter((x): x is string => !!x);
-      const nowIso = new Date().toISOString();
-      const farFuture = new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000).toISOString();
-      const { error: insErr } = await admin.from("subscriptions").insert(
-        userIds.map((uid) => ({
-          user_id: uid,
-          payment_processor: "mercadopago",
-          payment_method: "checkout_pro",
-          status: "active",
-          currency: "ARS",
-          amount_minor: 0,
-          stripe_customer_id: stripeCustomerId,
-          stripe_subscription_id: null,
-          stripe_price_id: null,
-          started_at: nowIso,
-          current_period_start: nowIso,
-          current_period_end: farFuture,
-        })),
-      );
-      if (insErr) {
-        return NextResponse.json(
-          { error: `No se pudo registrar la beca matrimonio: ${insErr.message}` },
-          { status: 500 },
-        );
-      }
-
-      await admin
-        .from("marriage_registrations")
-        .update({
-          payment_processor: "mercadopago",
-          currency: "ARS",
-          final_amount_ars: 0,
-        })
-        .eq("id", regRow.id);
-
-      return NextResponse.json({
-        ok: true,
-        checkoutUrl: `${appUrl}/dashboard?toast=beca-activa&type=marriage`,
-      });
-    }
-
-    if (marriagePaymentMethod === "cash") {
-      try {
-        const preference = await createPreference({
-          userId: regRow.marriage_group_id, // marriage_group_id como external_reference
-          payerEmail: data.email,
-          amountArs: MP_MARRIAGE_MONTHLY_ARS,
-          successUrl: `${appUrl}/dashboard?toast=mp-paid&type=marriage`,
-          failureUrl: `${appUrl}/suscribirme?error=mp-cash`,
-          pendingUrl: `${appUrl}/dashboard?toast=mp-pending&type=marriage`,
-          itemTitle: "DAP — Inscripción matrimonio Argentina (primer pago)",
-        });
-        checkoutUrl = preference.init_point;
-        await admin
-          .from("marriage_registrations")
-          .update({ mp_preference_id: preference.id, payment_processor: "mercadopago" })
-          .eq("id", regRow.id);
-
-        // Manda voucher al spouse_1 (el payer). Spouse 2 se invita
-        // cuando el pago se confirma vía webhook.
-        void sendMpVoucherEmail({
-          userId: user.id,
-          checkoutUrl: preference.init_point,
-          amountArs: MP_MARRIAGE_MONTHLY_ARS,
-          kind: "initial",
-          currentPeriodEnd: null,
-        });
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : "Error creando preference MP";
-        return NextResponse.json({ error: msg }, { status: 502 });
-      }
-    } else {
-      // Default: Preapproval (auto-cobro tarjeta/saldo). Beca con cupón
-      // ya se procesó arriba (early return), acá llegamos solo sin cupón.
-      try {
-        const preapproval = await createPreapproval({
-          userId: regRow.marriage_group_id, // external_reference = marriage_group_id
-          payerEmail: data.email,
-          amountArs: MP_MARRIAGE_MONTHLY_ARS,
-          backUrl: `${appUrl}/dashboard?toast=mp-paid&type=marriage`,
-          reason: "DAP — Inscripción matrimonio Argentina (suscripción mensual)",
-        });
-        checkoutUrl = preapproval.init_point;
-        await admin
-          .from("marriage_registrations")
-          .update({
-            mp_preapproval_id: preapproval.id,
-            payment_processor: "mercadopago",
-            currency: "ARS",
-            final_amount_ars: MP_MARRIAGE_MONTHLY_ARS,
-          })
-          .eq("id", regRow.id);
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : "Error creando preapproval MP";
-        return NextResponse.json({ error: msg }, { status: 502 });
-      }
-    }
-
-    if (!checkoutUrl) {
-      return NextResponse.json(
-        { error: "Mercado Pago no devolvió URL." },
-        { status: 502 },
-      );
-    }
-    return NextResponse.json({ ok: true, checkoutUrl });
+  if (!result.ok) {
+    return NextResponse.json({ error: result.error }, { status: result.status });
   }
-
-  // 3b. Rama individual: routing por país + método.
-  //   - AR + 'cash' → MP Checkout Pro (efectivo / transferencia / tarjeta)
-  //   - AR + 'card' (default) → MP Preapproval (auto-cobro tarjeta/saldo)
-  //   - resto del mundo → Stripe (USD, cupón en Stripe Checkout)
-  if (data.countryCode === "AR") {
-    const couponRaw = "coupon" in data ? data.coupon : null;
-    const coupon = validateCoupon(couponRaw ?? null);
-    const baseAmount = MP_MONTHLY_ARS;
-    const amountAfterCoupon = applyCoupon(baseAmount, coupon);
-    const paymentMethod =
-      ("paymentMethod" in data && data.paymentMethod) || "card";
-
-    // BECA 100% (DAP-VIP / DAP-HONOR) — skip MP entero para ambos métodos.
-    // MP rechaza preapproval con monto < $15 ARS, así que el patrón de
-    // "$1 simbólico" no funciona. Y para una beca real no tiene sentido
-    // hacer pasar al alumno por checkout: activamos sub directo.
-    if (coupon.valid) {
-      const nowIso = new Date().toISOString();
-      const farFuture = new Date(
-        Date.now() + 100 * 365 * 24 * 60 * 60 * 1000,
-      ).toISOString();
-      const { error: insErr } = await admin.from("subscriptions").insert({
-        user_id: user.id,
-        payment_processor: "mercadopago",
-        payment_method: "checkout_pro",
-        status: "active",
-        currency: "ARS",
-        amount_minor: 0,
-        stripe_customer_id: stripeCustomerId,
-        stripe_subscription_id: null,
-        stripe_price_id: null,
-        started_at: nowIso,
-        current_period_start: nowIso,
-        current_period_end: farFuture,
-      });
-      if (insErr) {
-        return NextResponse.json(
-          { error: `No se pudo registrar la beca: ${insErr.message}` },
-          { status: 500 },
-        );
-      }
-      return NextResponse.json({
-        ok: true,
-        checkoutUrl: `${appUrl}/dashboard?toast=beca-activa`,
-      });
-    }
-
-    if (paymentMethod === "cash") {
-      // Rama efectivo: Checkout Pro one-shot, sin auto-cobro. El alumno
-      // paga mensualmente vía un nuevo link generado por cron.
-      // (Beca con cupón se procesa arriba, antes del branch cash/card.)
-      let preferenceUrl: string | null = null;
-      let preferenceId: string | null = null;
-      try {
-        const preference = await createPreference({
-          userId: user.id,
-          payerEmail: data.email,
-          amountArs: amountAfterCoupon,
-          successUrl: `${appUrl}/dashboard?toast=mp-paid`,
-          failureUrl: `${appUrl}/suscribirme?error=mp-cash`,
-          pendingUrl: `${appUrl}/dashboard?toast=mp-pending`,
-          itemTitle: "DAP — Suscripción mensual (primer pago)",
-        });
-        preferenceUrl = preference.init_point;
-        preferenceId = preference.id;
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : "Error creando preference MP";
-        return NextResponse.json({ error: msg }, { status: 502 });
-      }
-
-      const nowIso = new Date().toISOString();
-      const { error: subErr } = await admin.from("subscriptions").insert({
-        user_id: user.id,
-        payment_processor: "mercadopago",
-        payment_method: "checkout_pro",
-        mp_preference_id: preferenceId,
-        status: "pending",
-        currency: "ARS",
-        amount_minor: amountAfterCoupon * 100,
-        stripe_customer_id: stripeCustomerId,
-        stripe_subscription_id: null,
-        stripe_price_id: null,
-        last_voucher_sent_at: nowIso,
-      });
-      if (subErr) {
-        return NextResponse.json(
-          { error: `No se pudo registrar la suscripción: ${subErr.message}` },
-          { status: 500 },
-        );
-      }
-
-      // Mandamos el voucher por email para que el alumno lo tenga
-      // guardado (puede pagar más tarde, no necesariamente al instante).
-      void sendMpVoucherEmail({
-        userId: user.id,
-        checkoutUrl: preferenceUrl!,
-        amountArs: amountAfterCoupon,
-        kind: "initial",
-        currentPeriodEnd: null,
-      });
-
-      return NextResponse.json({ ok: true, checkoutUrl: preferenceUrl });
-    }
-
-    // Default: 'card' (auto-cobro Preapproval). Beca con cupón ya se
-    // procesó arriba (early return), acá llegamos solo sin cupón.
-    const finalAmount = amountAfterCoupon;
-
-    let preapprovalUrl: string | null = null;
-    let preapprovalId: string | null = null;
-    try {
-      const preapproval = await createPreapproval({
-        userId: user.id,
-        payerEmail: data.email,
-        amountArs: finalAmount,
-        backUrl: `${appUrl}/dashboard?toast=mp-paid`,
-      });
-      preapprovalUrl = preapproval.init_point;
-      preapprovalId = preapproval.id;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Error creando preapproval MP";
-      return NextResponse.json({ error: msg }, { status: 502 });
-    }
-
-    // Persistir fila subscriptions pending; webhook MP la activará.
-    const { error: subErr } = await admin.from("subscriptions").insert({
-      user_id: user.id,
-      payment_processor: "mercadopago",
-      payment_method: "preapproval",
-      mp_preapproval_id: preapprovalId,
-      status: "pending",
-      currency: "ARS",
-      amount_minor: finalAmount * 100,
-      stripe_customer_id: stripeCustomerId,
-      stripe_subscription_id: null,
-      stripe_price_id: null,
-    });
-    if (subErr) {
-      // No silenciar: si la fila no se crea, el webhook MP después no
-      // va a poder activar la sub → user paga pero queda sin acceso.
-      console.error(`[onboarding] insert MP sub falló: ${subErr.message}`);
-      return NextResponse.json(
-        { error: `No se pudo registrar la suscripción: ${subErr.message}` },
-        { status: 500 },
-      );
-    }
-
-    return NextResponse.json({ ok: true, checkoutUrl: preapprovalUrl });
-  }
-
-  // Resto del mundo → Stripe
-  const priceId = process.env.STRIPE_DAP_SUBSCRIPTION_PRICE_ID;
-  if (!priceId) {
-    return NextResponse.json(
-      { error: "STRIPE_DAP_SUBSCRIPTION_PRICE_ID no configurado." },
-      { status: 500 },
-    );
-  }
-
-  let checkoutUrl: string | null = null;
-  try {
-    const session = await createSubscriptionCheckoutSession({
-      customerId: stripeCustomerId,
-      userId: user.id,
-      priceId,
-      appUrl,
-    });
-    checkoutUrl = session.url;
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : "Error creando sesión";
-    return NextResponse.json({ error: msg }, { status: 502 });
-  }
-
-  if (!checkoutUrl) {
-    return NextResponse.json(
-      { error: "Stripe no devolvió URL de checkout." },
-      { status: 502 },
-    );
-  }
-  return NextResponse.json({ ok: true, checkoutUrl });
-}
-
-function getGeoIpCountry(request: NextRequest): string | null {
-  return (
-    request.headers.get("x-vercel-ip-country") ??
-    request.headers.get("cf-ipcountry") ??
-    null
-  );
+  return NextResponse.json({ ok: true, checkoutUrl: result.checkoutUrl });
 }
