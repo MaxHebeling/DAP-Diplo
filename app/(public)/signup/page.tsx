@@ -7,9 +7,12 @@ import type { Metadata } from "next";
  * onboarding modal en / (home) que combina signup + checkout en una
  * sola transacción. Esto previene cuentas huérfanas.
  *
- * - Bookmark viejo o link externo → redirect a / para arrancar flow correcto
- * - Usuario logueado (no debería entrar acá) → redirect a /dashboard
- * - Usuario con cuenta existente que quiere iniciar sesión → /login
+ * Antes redireccionaba a `/` y el modal NO se abría — el alumno aterrizaba
+ * en el home sin entender qué hacer. Bug detectado en E2E jun-2026.
+ *
+ * Ahora redirige a `/?open=signup` que el OnboardingProvider intercepta
+ * y abre el modal automáticamente. Preserva bookmarks, links externos y
+ * el deep linking funciona.
  */
 
 export const metadata: Metadata = {
@@ -18,5 +21,5 @@ export const metadata: Metadata = {
 };
 
 export default function SignUpPage() {
-  redirect("/");
+  redirect("/?open=signup");
 }

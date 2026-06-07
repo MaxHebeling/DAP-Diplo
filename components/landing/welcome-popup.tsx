@@ -9,12 +9,16 @@ import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
+import { isEnrollmentOpenLocal } from "@/lib/launch/config";
 
 /**
  * Popup de bienvenida — aparece 4 segundos después del primer load del
- * sitio. Una sola vez por device (persistimos en sessionStorage para
- * que no fastidie al usuario que ya lo vio en esta sesión, pero sí
- * vuelva a aparecer si abre una nueva).
+ * sitio. Una sola vez por device (sessionStorage).
+ *
+ * ⚠ Solo se muestra ANTES de que abran las inscripciones (1-jun-2026).
+ * Después contradice el popup "INSCRIPCIONES ABIERTAS" que sí dispara
+ * y queda absurdo decir "Coming soon" mientras hay un CTA "Inscribirme
+ * ahora" al lado. Bug detectado en E2E jun-2026.
  *
  * Click afuera / botón X / ESC → cierra.
  */
@@ -28,6 +32,9 @@ export function WelcomePopup() {
   useEffect(() => {
     // Si ya lo cerró en esta sesión, no volver a mostrar.
     if (typeof window === "undefined") return;
+    // Post-launch: no mostrar para evitar contradicción con el popup
+    // "INSCRIPCIONES ABIERTAS" que sí aparece pasada esa fecha.
+    if (isEnrollmentOpenLocal()) return;
     try {
       if (sessionStorage.getItem(STORAGE_KEY) === "1") return;
     } catch {

@@ -569,7 +569,7 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
             <span>·</span>
             <span className="inline-flex items-center gap-1">
               <Mail className="size-3 text-brand-coral" />
-              {t("trustStripe")}
+              {isArgentina ? t("trustMercadoPago") : t("trustStripe")}
             </span>
           </div>
         </form>
