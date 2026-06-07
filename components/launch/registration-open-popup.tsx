@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -17,6 +16,7 @@ import {
   isEnrollmentOpenLocal,
   msUntilLocalOpen,
 } from "@/lib/launch/config";
+import { useOnboarding } from "@/components/onboarding/onboarding-provider";
 
 const SEEN_FLAG = "dap.registration-open-popup.seen.v1";
 
@@ -35,6 +35,7 @@ const SEEN_FLAG = "dap.registration-open-popup.seen.v1";
  */
 export function RegistrationOpenPopup() {
   const t = useTranslations("Launch.openPopup");
+  const onboarding = useOnboarding();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -93,15 +94,19 @@ export function RegistrationOpenPopup() {
           </DialogDescription>
         </DialogHeader>
         <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:justify-center">
-          <Link
-            href="/signup"
-            onClick={() => handleOpenChange(false)}
-            className="inline-flex"
+          <DapButton
+            size="md"
+            variant="primary"
+            onClick={() => {
+              handleOpenChange(false);
+              // Dispara el modal de onboarding directamente vía context.
+              // Antes este botón linkeaba a /signup → redirect a / (sin abrir
+              // nada). Bug detectado en E2E jun-2026.
+              onboarding?.open();
+            }}
           >
-            <DapButton size="md" variant="primary">
-              {t("cta")}
-            </DapButton>
-          </Link>
+            {t("cta")}
+          </DapButton>
           <DapButton
             size="md"
             variant="ghost"

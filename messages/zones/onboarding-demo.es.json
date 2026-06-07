@@ -51,6 +51,7 @@
       "trustNoCommitment": "Sin compromiso",
       "trustCancel": "Cancelás cuando quieras",
       "trustStripe": "Stripe seguro",
+      "trustMercadoPago": "Mercado Pago seguro",
       "errorFullName": "Mínimo 3 caracteres.",
       "errorEmail": "Email inválido.",
       "errorPassword": "Mínimo 8 caracteres.",
