@@ -47,7 +47,12 @@ export function RegistrationOpenPopup() {
       // en ese caso mostramos siempre, peor caso es ver el popup más veces.
     }
 
+    // setState en effect es intencional: sincronizamos con dos sistemas
+    // externos (reloj del browser para chequear si ya abrió la inscripción
+    // y localStorage para evitar re-mostrar). El render inicial siempre
+    // es open=false (SSR-safe, anti-flicker); el effect decide si abrir.
     if (isEnrollmentOpenLocal()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setOpen(true);
       return;
     }

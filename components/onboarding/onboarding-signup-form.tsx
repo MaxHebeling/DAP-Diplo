@@ -489,7 +489,11 @@ export function OnboardingSignupForm({ country, onBack, onSuccess }: Props) {
           {isArgentina && (
             <div className="rounded-xl border border-[#00B1EA]/40 bg-[#00B1EA]/[0.06] p-4">
               <div className="flex items-center gap-3">
-                {/* Logo Mercado Pago oficial — Wikimedia (stable URL) */}
+                {/* Logo Mercado Pago oficial — Wikimedia (stable URL).
+                    Usamos <img> nativo (no next/image) porque Wikimedia
+                    no está en remotePatterns y no vale agregarlo solo
+                    para esta imagen pequeña no-LCP. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Mercado_Pago_logo.svg/320px-Mercado_Pago_logo.svg.png"
                   alt="Mercado Pago"

@@ -261,7 +261,7 @@ export function LeadsTable({ leads: initialLeads }: { leads: Lead[] }) {
                   </a>
                   {l.message && (
                     <p className="mt-1 line-clamp-2 max-w-md text-xs text-muted-foreground">
-                      "{l.message}"
+                      &ldquo;{l.message}&rdquo;
                     </p>
                   )}
                 </td>

@@ -102,8 +102,13 @@ function LeadSheet({
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (state?.ok) setSubmitting(false);
-    if (state && !state.ok) setSubmitting(false);
+    // Resetear submitting cuando llega la respuesta del server action
+    // (state pasa de undefined → {ok|error}). El useActionState es el
+    // "sistema externo" desde el punto de vista del lint rule.
+    if (state) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSubmitting(false);
+    }
   }, [state]);
 
   useEffect(() => {
