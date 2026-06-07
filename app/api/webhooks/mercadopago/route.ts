@@ -4,6 +4,7 @@ import { getPreapproval } from "@/lib/mercadopago/preapproval";
 import { getPayment } from "@/lib/mercadopago/preference";
 import { provisionSpouse2ByMarriageGroup } from "@/lib/marriage/provision-spouse2";
 import { MP_CURRENCY, MP_MARRIAGE_MONTHLY_ARS } from "@/lib/mercadopago/config";
+import { verifyMercadoPagoSignature } from "@/lib/mercadopago/verify-signature";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -68,6 +69,21 @@ async function handle(request: NextRequest): Promise<NextResponse> {
   if (!resourceId) {
     // Nada que procesar (ping de health check de MP).
     return NextResponse.json({ ok: true, ignored: "no-id" });
+  }
+
+  // HMAC signature gate. Si el secret está configurado, exigimos firma
+  // válida; sin secret, deja pasar con warn (anti-spoof por re-GET sigue
+  // activo más abajo). Reemplaza la confianza ciega en el payload por
+  // verificación criptográfica end-to-end con MP.
+  const sigResult = verifyMercadoPagoSignature(request, resourceId);
+  if (!sigResult.ok) {
+    console.warn(
+      `[mp.webhook] firma rechazada (id=${resourceId}): ${sigResult.reason}`,
+    );
+    return NextResponse.json(
+      { error: "invalid signature", reason: sigResult.reason },
+      { status: 401 },
+    );
   }
 
   // Rama Payment (flow efectivo Checkout Pro). Llega cuando MP
