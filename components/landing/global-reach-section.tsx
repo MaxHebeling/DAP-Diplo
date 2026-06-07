@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
-import { Globe } from "./globe";
+import { GlobeLazy as Globe } from "./globe-lazy";
 
 export async function GlobalReachSection() {
   const t = await getTranslations("Landing");
