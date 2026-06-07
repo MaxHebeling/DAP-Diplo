@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/require-admin";
 import { muxClient } from "@/lib/mux/server";
 import {
   blockUpdateSchema,
@@ -15,20 +15,6 @@ import {
 type ActionResult =
   | { ok: true }
   | { ok: false; error: string; fieldErrors?: Record<string, string[]> };
-
-async function ensureAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { admin: false as const, supabase };
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-  return { admin: profile?.role === "admin", supabase };
-}
 
 export async function updateBlockAction(
   _prev: ActionResult | undefined,
@@ -48,7 +34,7 @@ export async function updateBlockAction(
     };
   }
 
-  const { admin, supabase } = await ensureAdmin();
+  const { admin, supabase } = await requireAdmin();
   if (!admin) {
     return { ok: false, error: "Solo admin puede editar fases." };
   }
@@ -117,7 +103,7 @@ export async function updateModuleAction(
     };
   }
 
-  const { admin, supabase } = await ensureAdmin();
+  const { admin, supabase } = await requireAdmin();
   if (!admin) return { ok: false, error: "Solo admin puede editar módulos." };
 
   const { id, ...rest } = parsed.data;
@@ -156,7 +142,7 @@ export async function updateSectionAction(
     };
   }
 
-  const { admin, supabase } = await ensureAdmin();
+  const { admin, supabase } = await requireAdmin();
   if (!admin) return { ok: false, error: "Solo admin puede editar secciones." };
 
   const { id, ...rest } = parsed.data;

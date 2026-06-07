@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/require-admin";
 import {
   questionDeleteSchema,
   questionSaveSchema,
@@ -14,20 +14,6 @@ import {
 type ActionResult =
   | { ok: true }
   | { ok: false; error: string; fieldErrors?: Record<string, string[]> };
-
-async function ensureAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { admin: false as const, supabase };
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-  return { admin: profile?.role === "admin", supabase };
-}
 
 function revalidateSectionPath(
   phaseId: string,
@@ -51,7 +37,7 @@ export async function updateQuizAction(
       fieldErrors: z.flattenError(parsed.error).fieldErrors,
     };
   }
-  const { admin, supabase } = await ensureAdmin();
+  const { admin, supabase } = await requireAdmin();
   if (!admin) return { ok: false, error: "Solo admin puede editar quizzes." };
 
   const { id, ...rest } = parsed.data;
@@ -74,7 +60,7 @@ export async function saveQuestionAction(
       fieldErrors: z.flattenError(parsed.error).fieldErrors,
     };
   }
-  const { admin, supabase } = await ensureAdmin();
+  const { admin, supabase } = await requireAdmin();
   if (!admin)
     return { ok: false, error: "Solo admin puede editar preguntas." };
 
@@ -105,7 +91,7 @@ export async function deleteQuestionAction(
   if (!parsed.success) {
     return { ok: false, error: "Validación falló" };
   }
-  const { admin, supabase } = await ensureAdmin();
+  const { admin, supabase } = await requireAdmin();
   if (!admin)
     return { ok: false, error: "Solo admin puede borrar preguntas." };
 

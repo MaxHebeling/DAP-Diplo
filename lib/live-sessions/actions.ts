@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/require-admin";
 import {
   liveSessionCreateSchema,
   liveSessionDeleteSchema,
@@ -13,20 +13,6 @@ import {
 type ActionResult =
   | { ok: true }
   | { ok: false; error: string; fieldErrors?: Record<string, string[]> };
-
-async function ensureAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { admin: false as const, supabase };
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-  return { admin: profile?.role === "admin", supabase };
-}
 
 function rawFromFormData(formData: FormData) {
   return {
@@ -54,7 +40,7 @@ export async function createLiveSessionAction(
     };
   }
 
-  const { admin, supabase } = await ensureAdmin();
+  const { admin, supabase } = await requireAdmin();
   if (!admin) return { ok: false, error: "Solo admin." };
 
   const { error, data } = await supabase
@@ -110,7 +96,7 @@ export async function updateLiveSessionAction(
     };
   }
 
-  const { admin, supabase } = await ensureAdmin();
+  const { admin, supabase } = await requireAdmin();
   if (!admin) return { ok: false, error: "Solo admin." };
 
   const { id, ...rest } = parsed.data;
@@ -137,7 +123,7 @@ export async function deleteLiveSessionAction(
   });
   if (!parsed.success) return { ok: false, error: "Sesión inválida." };
 
-  const { admin, supabase } = await ensureAdmin();
+  const { admin, supabase } = await requireAdmin();
   if (!admin) return { ok: false, error: "Solo admin." };
 
   const { error } = await supabase

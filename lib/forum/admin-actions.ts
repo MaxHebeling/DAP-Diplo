@@ -2,27 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/require-admin";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
-
-async function ensureAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { admin: false as const, supabase, userId: null };
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-  return {
-    admin: profile?.role === "admin",
-    supabase,
-    userId: user.id,
-  };
-}
 
 const idSchema = z.object({ id: z.uuid() });
 
@@ -43,7 +25,7 @@ export async function toggleThreadPinnedAction(
   const parsed = idSchema.safeParse({ id: formData.get("id") });
   if (!parsed.success) return { ok: false, error: "Hilo inválido" };
 
-  const { admin, supabase } = await ensureAdmin();
+  const { admin, supabase } = await requireAdmin();
   if (!admin) return { ok: false, error: "Solo admin." };
 
   const { data: cur } = await supabase
@@ -70,7 +52,7 @@ export async function toggleThreadClosedAction(
   const parsed = idSchema.safeParse({ id: formData.get("id") });
   if (!parsed.success) return { ok: false, error: "Hilo inválido" };
 
-  const { admin, supabase } = await ensureAdmin();
+  const { admin, supabase } = await requireAdmin();
   if (!admin) return { ok: false, error: "Solo admin." };
 
   const { data: cur } = await supabase
@@ -97,7 +79,7 @@ export async function toggleThreadHiddenAction(
   const parsed = idSchema.safeParse({ id: formData.get("id") });
   if (!parsed.success) return { ok: false, error: "Hilo inválido" };
 
-  const { admin, supabase } = await ensureAdmin();
+  const { admin, supabase } = await requireAdmin();
   if (!admin) return { ok: false, error: "Solo admin." };
 
   const { data: cur } = await supabase
@@ -128,7 +110,7 @@ export async function resolveReportAction(
   const parsed = idSchema.safeParse({ id: formData.get("id") });
   if (!parsed.success) return { ok: false, error: "Reporte inválido" };
 
-  const { admin, supabase, userId } = await ensureAdmin();
+  const { admin, supabase, userId } = await requireAdmin();
   if (!admin) return { ok: false, error: "Solo admin." };
 
   const { error } = await supabase

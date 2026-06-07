@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/require-admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendAssignmentFeedbackEmail } from "@/lib/email/send-assignment-feedback";
 import { sendPushToUser } from "@/lib/push/send";
@@ -57,19 +57,11 @@ export async function POST(
   ctx: { params: Promise<{ id: string }> },
 ) {
   // 1. Admin guard
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
+  const { admin: isAdmin, userId } = await requireAdmin();
+  if (!userId) {
     return NextResponse.json({ error: "No autenticado" }, { status: 401 });
   }
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle<{ role: string }>();
-  if (profile?.role !== "admin") {
+  if (!isAdmin) {
     return NextResponse.json({ error: "Solo admin" }, { status: 403 });
   }
 
