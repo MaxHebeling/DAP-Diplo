@@ -18,12 +18,11 @@ const schema = z.object({
   ai_score: z.number().min(0).max(10),
 });
 
-type Submission = {
+type SubmissionRow = {
   id: string;
   user_id: string;
   module_id: string;
   module_section_id: string;
-  results_sent_at: string | null;
 };
 
 type ModuleInfo = {
@@ -33,23 +32,25 @@ type ModuleInfo = {
 };
 
 type ProfileInfo = { full_name: string };
-type EmailInfo = { email: string };
 
 /**
  * Aprueba una corrección IA y la libera al alumno.
  *
  * Flow:
  *  1) Admin guard
- *  2) Persiste feedback EDITADO + ai_passed + ai_score
- *  3) Si passed → upsert section_progress(completed=true) — desbloquea
- *     la siguiente sección/módulo cuando el alumno entre al player.
- *  4) Email al alumno con link al módulo
- *  5) Push (best-effort)
- *  6) Marca results_sent_at = now() (esto cierra el bucle: la submission
- *     ya no aparece en /admin/correcciones).
+ *  2) UPDATE ATÓMICO: persiste feedback EDITADO + status + results_sent_at
+ *     en un solo statement con CAS (.is('results_sent_at', null)). Esto
+ *     hace de doble función: idempotencia (segunda aprobación falla 409)
+ *     y atomicidad (alumno no ve "approved" hasta que TODO el UPDATE pasó).
+ *  3) Si passed → upsert section_progress(completed=true).
+ *  4) Email + push al alumno (después del UPDATE — si fallan, el alumno
+ *     ya tiene el feedback visible y el admin puede reintentar email
+ *     manualmente sin romper estado).
  *
- * Idempotente por: si ya tiene results_sent_at, retorna 409 — el admin
- * no puede aprobar dos veces la misma corrección.
+ * El cambio vs versión anterior (que tenía dos UPDATEs separados): si el
+ * segundo UPDATE de results_sent_at fallaba o la request se abortaba
+ * entre medio, el admin podía re-aprobar y mandar dos emails. Ahora el
+ * CAS lo bloquea a nivel de DB.
  */
 export async function POST(
   request: NextRequest,
@@ -72,7 +73,7 @@ export async function POST(
     return NextResponse.json({ error: "Solo admin" }, { status: 403 });
   }
 
-  // 2. Parse + load
+  // 2. Parse
   const { id } = await ctx.params;
   let raw: unknown;
   try {
@@ -89,52 +90,60 @@ export async function POST(
   }
 
   const admin = createAdminClient();
-
-  const { data: sub, error: subErr } = await admin
-    .from("assignment_submissions")
-    .select(
-      "id, user_id, module_id, module_section_id, results_sent_at",
-    )
-    .eq("id", id)
-    .maybeSingle<Submission>();
-  if (subErr) {
-    return NextResponse.json(
-      { error: `db: ${subErr.message}` },
-      { status: 500 },
-    );
-  }
-  if (!sub) {
-    return NextResponse.json({ error: "no encontrada" }, { status: 404 });
-  }
-  if (sub.results_sent_at) {
-    return NextResponse.json(
-      { error: "ya fue aprobada y enviada al alumno" },
-      { status: 409 },
-    );
-  }
-
-  // 3. Persistir feedback editado + status final
   const nowIso = new Date().toISOString();
   const finalStatus = parsed.data.ai_passed ? "completed" : "incomplete";
-  const { error: updErr } = await admin
+
+  // 3. UPDATE ATÓMICO con CAS:
+  //    - .eq('id', id) — la submission
+  //    - .is('results_sent_at', null) — todavía no aprobada
+  //    - .select() — devuelve las filas afectadas; 0 filas = ya aprobada o no existe
+  //
+  //    Esto reemplaza el patrón anterior (SELECT existence → UPDATE feedback →
+  //    UPDATE results_sent_at). El doble UPDATE permitía race conditions.
+  const { data: updated, error: updErr } = await admin
     .from("assignment_submissions")
     .update({
       ai_feedback: parsed.data.ai_feedback,
       ai_passed: parsed.data.ai_passed,
       ai_score: parsed.data.ai_score,
       status: finalStatus,
+      results_sent_at: nowIso,
       updated_at: nowIso,
     })
-    .eq("id", id);
+    .eq("id", id)
+    .is("results_sent_at", null)
+    .select("id, user_id, module_id, module_section_id")
+    .returns<SubmissionRow[]>();
+
   if (updErr) {
     return NextResponse.json(
       { error: `update: ${updErr.message}` },
       { status: 500 },
     );
   }
+  if (!updated || updated.length === 0) {
+    // 0 rows afectadas: o la submission no existe (id inválido) o ya
+    // tenía results_sent_at != null (ya aprobada). Distinguimos con un
+    // SELECT chiquito para devolver el 404 vs 409 correcto.
+    const { data: existing } = await admin
+      .from("assignment_submissions")
+      .select("results_sent_at")
+      .eq("id", id)
+      .maybeSingle<{ results_sent_at: string | null }>();
+    if (!existing) {
+      return NextResponse.json({ error: "no encontrada" }, { status: 404 });
+    }
+    return NextResponse.json(
+      { error: "ya fue aprobada y enviada al alumno" },
+      { status: 409 },
+    );
+  }
+  const sub = updated[0];
 
-  // 4. Cargar datos contextuales para email/push
-  const [moduleRes, profileRes, admissionRes] = await Promise.all([
+  // 4. Cargar datos contextuales para email/push.
+  //    Email viene de auth.users (fuente de verdad), no de admissions
+  //    — un alumno puede haber actualizado su email post-admisión.
+  const [moduleRes, profileRes, userRes] = await Promise.all([
     admin
       .from("modules")
       .select("title, slug, phase:phases(slug)")
@@ -145,21 +154,17 @@ export async function POST(
       .select("full_name")
       .eq("id", sub.user_id)
       .maybeSingle<ProfileInfo>(),
-    admin
-      .from("admissions")
-      .select("email")
-      .eq("user_id", sub.user_id)
-      .order("submitted_at", { ascending: false })
-      .limit(1)
-      .maybeSingle<EmailInfo>(),
+    admin.auth.admin.getUserById(sub.user_id),
   ]);
 
   const mod = moduleRes.data;
   const studentName = profileRes.data?.full_name ?? "Estudiante";
-  const studentEmail = admissionRes.data?.email ?? "";
+  const studentEmail = userRes.data?.user?.email ?? "";
 
-  // 5. Si passed → marcar section_progress (admin client bypasea RLS,
-  //    así puede tocar progress del alumno).
+  // 5. Si passed → marcar section_progress. Si falla, no rompemos el
+  //    flujo: el feedback ya está visible y el admin recibe el warning
+  //    en la respuesta para reintentar manualmente.
+  let sectionProgressWarning: string | null = null;
   if (parsed.data.ai_passed) {
     const { error: spErr } = await admin.from("section_progress").upsert(
       {
@@ -171,10 +176,8 @@ export async function POST(
       { onConflict: "user_id,module_section_id", ignoreDuplicates: false },
     );
     if (spErr) {
-      console.error(
-        `[approve] section_progress upsert falló para ${sub.id}: ${spErr.message}`,
-      );
-      // No fail — al menos guardamos el feedback. Admin puede reintentar.
+      sectionProgressWarning = `section_progress upsert falló: ${spErr.message}`;
+      console.error(`[approve] ${sub.id} ${sectionProgressWarning}`);
     }
   }
 
@@ -214,15 +217,10 @@ export async function POST(
     });
   }
 
-  // 8. Cerrar bucle: results_sent_at
-  await admin
-    .from("assignment_submissions")
-    .update({ results_sent_at: nowIso })
-    .eq("id", id);
-
   return NextResponse.json({
     ok: true,
     emailSent,
     passed: parsed.data.ai_passed,
+    ...(sectionProgressWarning ? { warning: sectionProgressWarning } : {}),
   });
 }
