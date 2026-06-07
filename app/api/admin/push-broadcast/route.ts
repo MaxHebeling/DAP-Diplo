@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/require-admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendPushToUsers } from "@/lib/push/send";
 
@@ -24,20 +24,11 @@ const schema = z.object({
  * Requiere rol admin. Devuelve resumen con sent / failed.
  */
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
+  const { admin: isAdmin, userId } = await requireAdmin();
+  if (!userId) {
     return NextResponse.json({ error: "No autenticado" }, { status: 401 });
   }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (!profile || profile.role !== "admin") {
+  if (!isAdmin) {
     return NextResponse.json({ error: "Solo admin" }, { status: 403 });
   }
 
@@ -92,7 +83,7 @@ export async function POST(request: NextRequest) {
   });
 
   console.log(
-    `[push-broadcast] admin=${user.email} audience=${parsed.data.audience} users=${userIds.length} sent=${result.sent} failed=${result.failed}`,
+    `[push-broadcast] admin=${userId} audience=${parsed.data.audience} users=${userIds.length} sent=${result.sent} failed=${result.failed}`,
   );
 
   return NextResponse.json({ ok: true, ...result });

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/require-admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { issueCertificatePdf } from "@/lib/certificates/issue";
 import { signedCertificateUrl } from "@/lib/certificates/upload";
@@ -25,23 +25,12 @@ export async function POST(
 ) {
   const { id } = await ctx.params;
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
+  const { admin: isAdmin, userId } = await requireAdmin();
+  if (!userId) {
     return NextResponse.json({ error: "No autenticado" }, { status: 401 });
   }
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (profile?.role !== "admin") {
-    return NextResponse.json(
-      { error: "Solo admin" },
-      { status: 403 },
-    );
+  if (!isAdmin) {
+    return NextResponse.json({ error: "Solo admin" }, { status: 403 });
   }
 
   const admin = createAdminClient();
