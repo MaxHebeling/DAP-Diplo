@@ -32,7 +32,6 @@ export type DapHeaderUser = {
 type DapPublicHeaderProps = {
   links?: NavLink[];
   ctaLabel?: string;
-  ctaHref?: string;
   loginLabel?: string;
   loginHref?: string;
   user?: DapHeaderUser;
@@ -42,7 +41,6 @@ type DapPublicHeaderProps = {
 export function DapPublicHeader({
   links,
   ctaLabel,
-  ctaHref = "/suscribirme",
   loginLabel,
   loginHref = "/login",
   user,

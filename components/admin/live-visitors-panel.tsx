@@ -27,12 +27,14 @@ type LiveVisit = {
  */
 export function LiveVisitorsPanel({ initial }: { initial: LiveVisit[] }) {
   const [feed, setFeed] = useState<LiveVisit[]>(initial);
-  const [tick, setTick] = useState(0);
+  // nowMs sirve para recomputar "activos ahora" cada 30s. Guardamos
+  // el timestamp en state (no Date.now() en useMemo) para no violar
+  // react-hooks/purity y mantener el render determinístico por tick.
+  const [nowMs, setNowMs] = useState<number>(() => Date.now());
   const [connected, setConnected] = useState(false);
 
-  // Tick cada 30s para que el contador "activos ahora" se vaya recalculando
   useEffect(() => {
-    const id = setInterval(() => setTick((t) => t + 1), 30_000);
+    const id = setInterval(() => setNowMs(Date.now()), 30_000);
     return () => clearInterval(id);
   }, []);
 
@@ -58,11 +60,9 @@ export function LiveVisitorsPanel({ initial }: { initial: LiveVisit[] }) {
   }, []);
 
   const activeNow = useMemo(() => {
-    // `tick` está en la dep array para forzar recompute cada 30s
-    void tick;
-    const cutoff = Date.now() - 5 * 60 * 1000;
+    const cutoff = nowMs - 5 * 60 * 1000;
     return feed.filter((v) => new Date(v.created_at).getTime() >= cutoff).length;
-  }, [feed, tick]);
+  }, [feed, nowMs]);
 
   return (
     <section className="mb-8 rounded-xl border bg-gradient-to-br from-card to-card/50 p-5">

@@ -23,7 +23,10 @@ type PageAgg = { page_path: string; count: number };
 export default async function AdminVisitasPage() {
   const supabase = await createClient();
 
-  const sinceIso = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
+  // Cutoffs fuera del render para evitar Date.now() inline (lint
+  // react-hooks/purity falla aun siendo server component).
+  const { sinceIso, last7Iso, last24Iso } = computeCutoffs();
+
   const { data: visits } = await supabase
     .from("visit_logs")
     .select("id, country, country_code, page_path, created_at")
@@ -35,10 +38,7 @@ export default async function AdminVisitasPage() {
   const rows = visits ?? [];
   const liveInitial = rows.slice(0, 30);
   const total = rows.length;
-
-  const last7Iso = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
   const last7 = rows.filter((r) => r.created_at >= last7Iso).length;
-  const last24Iso = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
   const last24 = rows.filter((r) => r.created_at >= last24Iso).length;
 
   const byCountry = aggregateByCountry(rows);
@@ -141,6 +141,17 @@ export default async function AdminVisitasPage() {
       </div>
     </main>
   );
+}
+
+// Date.now() fuera del render: el lint react-hooks/purity dispara
+// igual en server components.
+function computeCutoffs() {
+  const now = Date.now();
+  return {
+    sinceIso: new Date(now - 30 * 24 * 3600 * 1000).toISOString(),
+    last7Iso: new Date(now - 7 * 24 * 3600 * 1000).toISOString(),
+    last24Iso: new Date(now - 24 * 3600 * 1000).toISOString(),
+  };
 }
 
 function Kpi({ label, value }: { label: string; value: number }) {
