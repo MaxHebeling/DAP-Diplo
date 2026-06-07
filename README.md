@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DAP — Diplomado Apostólico Pastoral
 
-## Getting Started
+Plataforma web de educación premium para pastores y líderes ministeriales hispanohablantes. 72 módulos en 18 meses, 1 módulo por semana, avance por calendario (no por rendimiento).
 
-First, run the development server:
+**Prod**: [dapglobal.org](https://www.dapglobal.org) · [dap-diplo.vercel.app](https://dap-diplo.vercel.app)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+> **Si vas a tocar código, leé [`CLAUDE.md`](./CLAUDE.md) completo primero.** Tiene las reglas de negocio, los invariantes operacionales y las convenciones que no se ven en el código.
+
+## Qué resuelve
+
+Antes de entrar un alumno tiene que:
+1. Llenar formulario de admisión con datos personales, iglesia, ministerio y carta de consentimiento del pastor (si no pertenece a la Red Apostólica).
+2. Esperar aprobación manual del equipo de admisiones.
+3. Pagar suscripción mensual de **US$ 25 vía Stripe** (o equivalente AR vía Mercado Pago con descuento Argentina, individual o matrimonio).
+
+Una vez adentro:
+- Calendario personal arranca el primer martes después de la aprobación.
+- 1 módulo por semana (5 secciones: introducción, enseñanza, activación, evaluación, frase de impartición).
+- Quizzes autocorregibles con resultado a las 48h.
+- Tareas escritas pre-corregidas por agente IA ("excorrector") y aprobadas por admin antes del envío al alumno.
+- Rango ministerial al completar cada bloque (Discípulo → Hijo → ... → Enviado).
+- MasterClasses y mentorías en vivo programadas por evento.
+- Tutor IA con RAG (Claude + pgvector + Voyage embeddings).
+
+## Stack
+
+- **Framework**: Next.js 16 (App Router, Turbopack, `proxy.ts` en vez de `middleware.ts`)
+- **Lenguaje**: TypeScript 6 estricto, React 19.2
+- **Estilos**: Tailwind 4 + Base UI (`base-nova` preset) + componentes DAP (ver `DESIGN-SYSTEM.md`)
+- **DB**: Supabase Postgres (RLS en todas las tablas, pg_trgm + pgvector)
+- **Auth**: Supabase Auth
+- **Video**: Mux con `playback_policies: ["signed"]`
+- **Pagos**: Stripe Subscriptions (USD) + Mercado Pago Checkout Pro (ARS, cash + transferencia, sin tarjetas)
+- **Email**: Resend
+- **Push**: web-push (VAPID)
+- **Tutor IA**: Claude API + Supabase pgvector + Voyage AI embeddings
+- **Hosting**: Vercel (CI + Cron + Edge)
+- **Tests**: Playwright (E2E contra prod)
+- **Quality gates**: ESLint `--max-warnings 0`, Lighthouse CI con thresholds CWV, `tsc --noEmit` estricto
+- **Observabilidad**: Vercel Analytics + Speed Insights + Sentry (con scrub de PII)
+
+## Estructura
+
+```
+app/
+  (public)/    — landing, login, signup, /precios, /suscribirme, /como-funciona
+  (student)/   — dashboard, fases/bloques, módulo player, comunidad, en vivo, tutor IA
+  admin/       — backoffice (admisiones, correcciones, leads, push, comunidad, en vivo)
+  api/         — route handlers, webhooks (Stripe, MP, Mux), crons
+components/
+  ui/          — primitivos (shadcn/Base UI)
+  landing/     — hero, blocks grid, FAQ, etc.
+  module/      — player de módulo (markdown, activation, quiz, evaluation)
+  admin/       — sidebar, editores
+lib/
+  supabase/  stripe/  mercadopago/  mux/  email/  push/
+  auth/  scheduling/  excorrector/  tutor/  certificates/  brief/
+supabase/migrations/    — 39+ migrations numeradas 0001-NNNN
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Desarrollo local
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm install
+cp .env.example .env.local   # rellenar
+pnpm dev                     # http://localhost:3000
+pnpm tsc --noEmit            # TypeScript estricto
+pnpm lint                    # ESLint, max-warnings 0
+pnpm build                   # build de prod
+pnpm test:e2e                # Playwright (¡corre contra prod!)
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Despliegue
 
-## Learn More
+- **Push a `main`** → auto-deploy a Vercel.
+- Branches → preview deployments automáticos.
+- Cron jobs configurados en `vercel.json` con auth `Bearer ${CRON_SECRET}`.
+- Build CI corre: `tsc + lint + build` (verde obligatorio para merge).
 
-To learn more about Next.js, take a look at the following resources:
+## Soporte
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Para preguntas técnicas, leer `CLAUDE.md`. Para issues operativos, escribir a `admisiones@dapglobal.org`.
