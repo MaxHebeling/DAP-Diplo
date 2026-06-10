@@ -21,8 +21,8 @@ export async function sendCertificateEmail(
     .select(
       `id, user_id, verification_code, pdf_url, email_sent_at, issued_at,
        user:profiles!certificates_user_id_fkey(full_name),
-       phase:phases!certificates_phase_id_fkey(order_index, title),
-       dimension:dimensions!certificates_dimension_id_fkey(name)`,
+       block:blocks!certificates_block_id_fkey(order_index, title),
+       rank:ranks!certificates_rank_id_fkey(name)`,
     )
     .eq("id", certificateId)
     .maybeSingle<{
@@ -33,8 +33,8 @@ export async function sendCertificateEmail(
       email_sent_at: string | null;
       issued_at: string;
       user: { full_name: string } | null;
-      phase: { order_index: number; title: string } | null;
-      dimension: { name: string } | null;
+      block: { order_index: number; title: string } | null;
+      rank: { name: string } | null;
     }>();
   if (error || !cert) {
     return {
@@ -51,10 +51,10 @@ export async function sendCertificateEmail(
     };
   }
 
-  if (!cert.user || !cert.phase) {
+  if (!cert.user || !cert.block) {
     return {
       ok: false,
-      error: `Certificado ${certificateId} incompleto (faltan user/phase).`,
+      error: `Certificado ${certificateId} incompleto (faltan user/block).`,
     };
   }
 
@@ -71,7 +71,7 @@ export async function sendCertificateEmail(
   const firstName = cert.user.full_name?.split(" ")[0] ?? "Ministro";
   const appUrl =
     process.env.NEXT_PUBLIC_APP_URL ?? "https://www.dapglobal.org";
-  const blockN = String(cert.phase.order_index).padStart(2, "0");
+  const blockN = String(cert.block.order_index).padStart(2, "0");
   const verifyUrl = `${appUrl}/verificar/${cert.verification_code}`;
 
   // PDF signed URL (1h TTL — el email puede abrirse después del momento del envío)
@@ -90,8 +90,8 @@ export async function sendCertificateEmail(
   const html = renderCertificateHtml({
     firstName,
     phaseNumber: blockN,
-    phaseTitle: cert.phase.title,
-    dimensionName: cert.dimension?.name ?? null,
+    phaseTitle: cert.block.title,
+    dimensionName: cert.rank?.name ?? null,
     verificationCode: cert.verification_code,
     verifyUrl,
     pdfUrl,
@@ -100,8 +100,8 @@ export async function sendCertificateEmail(
 
   const result = await sendEmail({
     to: userData.user.email,
-    subject: cert.dimension
-      ? `Completaste la Fase ${blockN} — eres ${cert.dimension.name}.`
+    subject: cert.rank
+      ? `Completaste la Fase ${blockN} — eres ${cert.rank.name}.`
       : `Completaste la Fase ${blockN} del DAP.`,
     html,
   });
@@ -204,7 +204,7 @@ function renderCertificateHtml(opts: {
                   <tr>
                     <td align="center" bgcolor="#fdad5a" style="background:#fdad5a;border-radius:8px;">
                       <a href="${primaryHref}" target="_blank"
-                         style="display:inline-phase;padding:14px 32px;font-size:15px;font-weight:600;color:#0a0a0a;text-decoration:none;font-family:inherit;">
+                         style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:600;color:#0a0a0a;text-decoration:none;font-family:inherit;">
                         ${primaryLabel}
                       </a>
                     </td>
