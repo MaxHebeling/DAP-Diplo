@@ -124,6 +124,26 @@
     "welcomePopup": {
       "closeAria": "Close",
       "imageAlt": "DAP — Welcome · Classes begin Tuesday, June 23, 2026 · Coming soon"
+    },
+    "academicRecognition": {
+      "eyebrow": "Official Curricular Recognition",
+      "titleLead": "Training backed by",
+      "titleHighlight": "official curricular recognition",
+      "titleTrail": ".",
+      "subheadline": "The Apostolic Pastoral Diploma now holds institutional academic backing.",
+      "body1": "Students who successfully complete the program will receive a diploma with institutionally backed curricular recognition.",
+      "body2": "This partnership strengthens the academic weight of the program and expands the professional and ministerial development opportunities of our students.",
+      "card1Title": "Institutional Backing",
+      "card1Body": "Academic partnership with a recognized university that validates DAP's formative rigor.",
+      "card2Title": "Diploma with Curricular Validity",
+      "card2Body": "Officially recognized credential that you can present in academic and ministerial contexts.",
+      "card3Title": "Wider Professional and Ministerial Reach",
+      "card3Body": "A credential that expands your reach, your authority and your field of service.",
+      "videoPlay": "Play director's video",
+      "videoComingSoon": "Video coming soon",
+      "videoCaption": "A message from the Academic Director — Universidad Cultural Metropolitana",
+      "trustLine1": "More than a diploma.",
+      "trustLine2": "Integral formation backed by academic institution."
     }
   }
 }
