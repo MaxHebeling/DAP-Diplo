@@ -84,12 +84,21 @@ export function AcademicVideoFrame({
         ) : (
           <div className="relative z-10 flex h-full w-full flex-col items-center justify-center">
             {posterSrc && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={posterSrc}
-                alt=""
-                className="absolute inset-0 h-full w-full object-cover opacity-50"
-              />
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={posterSrc}
+                  alt=""
+                  className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
+                    videoSrc ? "opacity-80 group-hover:opacity-95" : "opacity-50"
+                  }`}
+                />
+                {/* Scrim oscuro inferior para legibilidad del caption */}
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#07142B] via-[#07142B]/70 to-transparent"
+                />
+              </>
             )}
 
             <button
