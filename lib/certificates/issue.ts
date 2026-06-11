@@ -25,8 +25,8 @@ export async function issueCertificatePdf(
     .select(
       `id, user_id, verification_code, pdf_url, issued_at,
        user:profiles!certificates_user_id_fkey(full_name),
-       phase:phases!certificates_phase_id_fkey(order_index, title),
-       dimension:dimensions!certificates_dimension_id_fkey(name)`,
+       block:blocks!certificates_block_id_fkey(order_index, title),
+       rank:ranks!certificates_rank_id_fkey(name)`,
     )
     .eq("id", certificateId)
     .maybeSingle<{
@@ -36,8 +36,8 @@ export async function issueCertificatePdf(
       pdf_url: string | null;
       issued_at: string;
       user: { full_name: string } | null;
-      phase: { order_index: number; title: string } | null;
-      dimension: { name: string } | null;
+      block: { order_index: number; title: string } | null;
+      rank: { name: string } | null;
     }>();
   if (error || !cert) {
     throw new Error(
@@ -58,17 +58,17 @@ export async function issueCertificatePdf(
     }
     return { path: cert.pdf_url, skipped: true };
   }
-  if (!cert.user || !cert.phase || !cert.dimension) {
+  if (!cert.user || !cert.block || !cert.rank) {
     throw new Error(
-      `Certificado ${certificateId} incompleto (faltan user/phase/dimension).`,
+      `Certificado ${certificateId} incompleto (faltan user/block/rank).`,
     );
   }
 
   const pdf = await generateCertificate({
     fullName: cert.user.full_name,
-    phaseOrderIndex: cert.phase.order_index,
-    phaseTitle: cert.phase.title,
-    dimensionName: cert.dimension.name,
+    phaseOrderIndex: cert.block.order_index,
+    phaseTitle: cert.block.title,
+    dimensionName: cert.rank.name,
     verificationCode: cert.verification_code,
     issuedAt: new Date(cert.issued_at),
   });
