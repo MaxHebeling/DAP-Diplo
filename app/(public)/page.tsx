@@ -45,7 +45,10 @@ export default async function LandingPage() {
         <PhasesGridV2 />
         <GlobalReachSection />
         <HowItWorks />
-        <AcademicRecognitionSection />
+        <AcademicRecognitionSection
+          videoSrc="https://udrzhoswelxrosznxawe.supabase.co/storage/v1/object/public/landing-assets/academic-recognition/ucm-academic.mp4"
+          posterSrc="https://udrzhoswelxrosznxawe.supabase.co/storage/v1/object/public/landing-assets/academic-recognition/ucm-academic-poster.jpg"
+        />
         <ModuleStructure />
         <DimensionsTimeline />
         <FaqSection />
