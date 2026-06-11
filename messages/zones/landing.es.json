@@ -124,6 +124,26 @@
     "welcomePopup": {
       "closeAria": "Cerrar",
       "imageAlt": "DAP — Bienvenidos · Inicio de clases martes 23 de junio de 2026 · Coming soon"
+    },
+    "academicRecognition": {
+      "eyebrow": "Reconocimiento Curricular Oficial",
+      "titleLead": "Formación con",
+      "titleHighlight": "reconocimiento curricular",
+      "titleTrail": " oficial.",
+      "subheadline": "Ahora el Diplomado Apostólico Pastoral cuenta con respaldo académico institucional.",
+      "body1": "Los estudiantes que completen satisfactoriamente el programa recibirán un diploma con reconocimiento curricular respaldado institucionalmente.",
+      "body2": "Esta alianza fortalece el valor académico del programa y amplía las oportunidades de desarrollo profesional y ministerial para nuestros alumnos.",
+      "card1Title": "Respaldo Institucional",
+      "card1Body": "Alianza académica con universidad reconocida que valida el rigor formativo del DAP.",
+      "card2Title": "Diploma con Validez Curricular",
+      "card2Body": "Constancia oficial reconocida que puedes presentar en contextos académicos y ministeriales.",
+      "card3Title": "Mayor Proyección Profesional y Ministerial",
+      "card3Body": "Credencial que amplía tu alcance, tu autoridad y tu campo de servicio.",
+      "videoPlay": "Reproducir video del director",
+      "videoComingSoon": "Video disponible próximamente",
+      "videoCaption": "Mensaje del Director Académico — Universidad Cultural Metropolitana",
+      "trustLine1": "Más que un diplomado.",
+      "trustLine2": "Una formación integral con respaldo académico."
     }
   }
 }

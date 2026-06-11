@@ -7,6 +7,7 @@ import { StatsStripV2 } from "@/components/landing/stats-strip-v2";
 import { PhasesGridV2 } from "@/components/landing/phases-grid-v2";
 import { GlobalReachSection } from "@/components/landing/global-reach-section";
 import { HowItWorks } from "@/components/landing/how-it-works";
+import { AcademicRecognitionSection } from "@/components/landing/academic-recognition-section";
 import { ModuleStructure } from "@/components/landing/module-structure";
 import { DimensionsTimeline } from "@/components/landing/dimensions-timeline";
 import { FaqSection } from "@/components/landing/faq-section";
@@ -44,6 +45,7 @@ export default async function LandingPage() {
         <PhasesGridV2 />
         <GlobalReachSection />
         <HowItWorks />
+        <AcademicRecognitionSection />
         <ModuleStructure />
         <DimensionsTimeline />
         <FaqSection />
