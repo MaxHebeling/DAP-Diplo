@@ -112,23 +112,35 @@ export async function SectionContent(props: SectionContentProps) {
       {/* Evaluación: quiz o estado vacío */}
       {isEvaluation &&
         (hasQuiz && props.evaluation!.quiz ? (
-          props.evaluation!.passed ? (
-            <QuizAlreadyPassed
-              quiz={props.evaluation!.quiz}
-              bestScore={props.evaluation!.bestScore ?? 100}
-              phaseSlug={props.phaseSlug}
-              moduleSlug={props.moduleSlug}
-            />
-          ) : (
-            <QuizPlayer
-              quiz={props.evaluation!.quiz}
-              questions={props.evaluation!.questions}
-              attemptCount={props.evaluation!.attemptCount}
-              phaseSlug={props.phaseSlug}
-              moduleSlug={props.moduleSlug}
-              latestAttempt={props.evaluation!.latestAttempt}
-            />
-          )
+          <>
+            {/* Aviso: la tarea escrita es independiente del quiz; se sube en
+                la sección Tarea (Activación) con formato libre. */}
+            <div className="rounded-2xl border border-amber-400/30 bg-amber-400/[0.06] p-4 sm:p-5">
+              <p className="font-inter text-[10px] font-bold uppercase tracking-[0.28em] text-amber-300">
+                {t("evaluationNotice.label")}
+              </p>
+              <p className="mt-1.5 font-inter text-sm leading-relaxed text-text-secondary sm:text-[15px]">
+                {t("evaluationNotice.body")}
+              </p>
+            </div>
+            {props.evaluation!.passed ? (
+              <QuizAlreadyPassed
+                quiz={props.evaluation!.quiz}
+                bestScore={props.evaluation!.bestScore ?? 100}
+                phaseSlug={props.phaseSlug}
+                moduleSlug={props.moduleSlug}
+              />
+            ) : (
+              <QuizPlayer
+                quiz={props.evaluation!.quiz}
+                questions={props.evaluation!.questions}
+                attemptCount={props.evaluation!.attemptCount}
+                phaseSlug={props.phaseSlug}
+                moduleSlug={props.moduleSlug}
+                latestAttempt={props.evaluation!.latestAttempt}
+              />
+            )}
+          </>
         ) : (
           <div className="rounded-2xl border border-dashed border-brand-coral/40 bg-brand-coral/5 p-8 text-center">
             <p className="text-xs font-medium uppercase tracking-widest text-brand-coral">

@@ -122,6 +122,10 @@
       "label": "Reminder",
       "body": "If an assignment is requested, complete it offline and upload it here.",
       "goToTask": "Go to Assignment"
+    },
+    "evaluationNotice": {
+      "label": "Heads up",
+      "body": "This quiz is only one part of the evaluation. The module's written assignment is completed separately, on your computer, and uploaded in the Assignment section. Any file format works: PDF, Word, photo, or whatever you prefer."
     }
   },
   "LiveSessions": {

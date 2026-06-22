@@ -122,6 +122,10 @@
       "label": "Recordatorio",
       "body": "Si se te solicita una tarea, hazla por fuera y súbela aquí.",
       "goToTask": "Ir a Tarea"
+    },
+    "evaluationNotice": {
+      "label": "Atención",
+      "body": "Este cuestionario es solo una parte de la evaluación. La tarea escrita del módulo se hace aparte, en tu computadora, y se sube en la sección Tarea. Aceptamos cualquier formato: PDF, Word, foto o el archivo que prefieras."
     }
   },
   "LiveSessions": {
