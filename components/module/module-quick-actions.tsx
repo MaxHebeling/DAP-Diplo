@@ -1,5 +1,6 @@
 import { Download, FileText, FilePlus2 } from "lucide-react";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 /**
  * Banner destacado al inicio de cada módulo con las dos acciones que
@@ -12,7 +13,7 @@ import Link from "next/link";
  *   el principal para no abrumar.
  * - El botón de "Subir tarea" siempre aparece (lleva a ?section=activation).
  *
- * Server component — no necesita estado.
+ * Server component — usa getTranslations para i18n.
  */
 
 export type Resource = {
@@ -22,7 +23,7 @@ export type Resource = {
   url: string;
 };
 
-export function ModuleQuickActions({
+export async function ModuleQuickActions({
   resources,
   phaseSlug,
   moduleSlug,
@@ -33,11 +34,12 @@ export function ModuleQuickActions({
   moduleSlug: string;
   alreadySubmitted: boolean;
 }) {
+  const t = await getTranslations("Module.quickActions");
   const mainPdf = resources.find((r) => r.kind === "pdf");
 
   return (
     <section
-      aria-label="Acciones rápidas del módulo"
+      aria-label={t("ariaLabel")}
       className="grid gap-3 rounded-2xl border border-white/[0.06] bg-gradient-to-br from-brand-violet/[0.06] via-surface-elevated to-brand-coral/[0.04] p-4 sm:grid-cols-2 sm:gap-4 sm:p-5"
     >
       {/* PDF descargable */}
@@ -54,14 +56,14 @@ export function ModuleQuickActions({
           </div>
           <div className="min-w-0 flex-1">
             <p className="font-inter text-[10px] font-bold uppercase tracking-[0.28em] text-brand-violet">
-              Material del módulo
+              {t("moduleMaterial")}
             </p>
             <p className="mt-1 truncate font-grotesk text-sm font-bold text-text-primary sm:text-base">
               {mainPdf.title}
             </p>
             <p className="mt-0.5 inline-flex items-center gap-1 font-inter text-xs text-text-secondary">
               <Download className="size-3" />
-              Descargar PDF
+              {t("downloadPdf")}
             </p>
           </div>
         </a>
@@ -72,10 +74,10 @@ export function ModuleQuickActions({
           </div>
           <div className="min-w-0 flex-1">
             <p className="font-inter text-[10px] font-bold uppercase tracking-[0.28em] text-text-tertiary">
-              Material del módulo
+              {t("moduleMaterial")}
             </p>
             <p className="mt-1 font-inter text-sm text-text-secondary">
-              El PDF de esta semana se publica pronto.
+              {t("pdfComingSoon")}
             </p>
           </div>
         </div>
@@ -105,15 +107,15 @@ export function ModuleQuickActions({
               alreadySubmitted ? "text-emerald-400" : "text-brand-coral"
             }`}
           >
-            {alreadySubmitted ? "Tu entrega" : "Tarea de la lección"}
+            {alreadySubmitted ? t("yourSubmissionLabel") : t("lessonTaskLabel")}
           </p>
           <p className="mt-1 font-grotesk text-sm font-bold text-text-primary sm:text-base">
-            {alreadySubmitted ? "Ya enviaste tu tarea" : "Subir mi tarea"}
+            {alreadySubmitted ? t("alreadySubmitted") : t("uploadAssignment")}
           </p>
           <p className="mt-0.5 font-inter text-xs text-text-secondary">
             {alreadySubmitted
-              ? "El Director la revisará en 48 horas."
-              : "Llega directo al Director del DAP."}
+              ? t("directorReviewing")
+              : t("goesToDirector")}
           </p>
         </div>
       </Link>

@@ -105,6 +105,23 @@
       "optionFallback": "Option {number}",
       "quizApproved": "Quiz passed",
       "bestScore": "Best score"
+    },
+    "quickActions": {
+      "ariaLabel": "Module quick actions",
+      "moduleMaterial": "Module material",
+      "downloadPdf": "Download PDF",
+      "pdfComingSoon": "This week's PDF will be published soon.",
+      "lessonTaskLabel": "Lesson assignment",
+      "yourSubmissionLabel": "Your submission",
+      "uploadAssignment": "Upload my assignment",
+      "alreadySubmitted": "You've already submitted your assignment",
+      "goesToDirector": "Goes directly to the DAP Director.",
+      "directorReviewing": "The Director will review it within 48 hours."
+    },
+    "reminder": {
+      "label": "Reminder",
+      "body": "If an assignment is requested, complete it offline and upload it here.",
+      "goToTask": "Go to Assignment"
     }
   },
   "LiveSessions": {

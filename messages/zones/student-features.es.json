@@ -105,6 +105,23 @@
       "optionFallback": "Opción {number}",
       "quizApproved": "Evaluación aprobada",
       "bestScore": "Mejor puntaje"
+    },
+    "quickActions": {
+      "ariaLabel": "Acciones rápidas del módulo",
+      "moduleMaterial": "Material del módulo",
+      "downloadPdf": "Descargar PDF",
+      "pdfComingSoon": "El PDF de esta semana se publica pronto.",
+      "lessonTaskLabel": "Tarea de la lección",
+      "yourSubmissionLabel": "Tu entrega",
+      "uploadAssignment": "Subir mi tarea",
+      "alreadySubmitted": "Ya enviaste tu tarea",
+      "goesToDirector": "Llega directo al Director del DAP.",
+      "directorReviewing": "El Director la revisará en 48 horas."
+    },
+    "reminder": {
+      "label": "Recordatorio",
+      "body": "Si se te solicita una tarea, hazla por fuera y súbela aquí.",
+      "goToTask": "Ir a Tarea"
     }
   },
   "LiveSessions": {

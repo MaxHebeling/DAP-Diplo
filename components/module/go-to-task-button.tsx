@@ -2,6 +2,7 @@
 
 import { ArrowRight } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 /**
  * Botón "Ir a Tarea" del footer del módulo.
@@ -23,6 +24,7 @@ export function GoToTaskButton({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const t = useTranslations("Module.reminder");
   const targetPath = `/fases/${phaseSlug}/modulos/${moduleSlug}`;
   const targetUrl = `${targetPath}?section=activation`;
 
@@ -50,7 +52,7 @@ export function GoToTaskButton({
       onClick={handleClick}
       className="inline-flex shrink-0 items-center gap-2 rounded-full bg-brand-coral px-4 py-2 font-inter text-xs font-semibold text-white transition-transform hover:scale-[1.02]"
     >
-      Ir a Tarea
+      {t("goToTask")}
       <ArrowRight className="size-3.5" />
     </a>
   );

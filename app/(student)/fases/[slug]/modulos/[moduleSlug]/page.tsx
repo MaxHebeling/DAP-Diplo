@@ -116,6 +116,7 @@ export default async function ModulePlayerPage({
     : "intro";
 
   const t = await getTranslations("Student");
+  const tReminder = await getTranslations("Module.reminder");
   const locale = (await getLocale()) as Locale;
   const supabase = await createClient();
 
@@ -574,10 +575,10 @@ export default async function ModulePlayerPage({
                   </div>
                   <div>
                     <p className="font-inter text-[10px] font-bold uppercase tracking-[0.32em] text-brand-coral">
-                      Recordatorio
+                      {tReminder("label")}
                     </p>
                     <p className="mt-1 text-sm font-semibold leading-snug sm:text-base">
-                      Si se te solicita una tarea, hazla por fuera y súbela aquí.
+                      {tReminder("body")}
                     </p>
                   </div>
                 </div>
