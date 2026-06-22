@@ -305,12 +305,24 @@ export default async function ModulePlayerPage({
     const { data: q } = await supabase
       .from("quizzes")
       .select(
-        "id, title, description, pass_threshold, max_attempts, shuffle_questions",
+        "id, title, title_en, description, description_en, pass_threshold, max_attempts, shuffle_questions",
       )
       .eq("module_section_id", activeSection.id)
-      .maybeSingle<PlayerQuiz>();
+      .maybeSingle<
+        PlayerQuiz & { title_en: string | null; description_en: string | null }
+      >();
     if (q) {
-      evaluationQuiz = q;
+      // Apply EN fallback for title/description (mismo patrón que prompt/payload)
+      const useEn = locale === "en";
+      evaluationQuiz = {
+        id: q.id,
+        title: useEn && q.title_en ? q.title_en : q.title,
+        description:
+          useEn && q.description_en ? q.description_en : q.description,
+        pass_threshold: q.pass_threshold,
+        max_attempts: q.max_attempts,
+        shuffle_questions: q.shuffle_questions,
+      };
       const { data: qs } = await supabase
         .from("quiz_questions")
         .select("id, prompt, prompt_en, kind, payload, payload_en, order_index")
