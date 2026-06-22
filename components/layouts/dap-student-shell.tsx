@@ -29,6 +29,7 @@ import {
   type RankOrder,
 } from "@/components/ui-dap/rank-badge";
 import { EsdrasFloatingBubble } from "@/components/tutor/esdras-floating-bubble";
+import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 
 type NavGroup = {
   title?: string;
@@ -409,9 +410,9 @@ function DapStudentTopbarInline({
         </h1>
       )}
 
-      <div className="ml-auto flex items-center gap-1">
-        {/* Search hidden on mobile (los items ya están en el drawer/bottom nav) */}
-        {/* Placeholder por si después agregamos buscador en desktop */}
+      <div className="ml-auto flex items-center gap-2">
+        {/* Selector de idioma ES/EN — persiste en cookie NEXT_LOCALE. */}
+        <LanguageSwitcher />
       </div>
     </header>
   );
