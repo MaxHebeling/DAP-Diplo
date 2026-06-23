@@ -42,6 +42,7 @@ type SectionTeachingProps = {
   moduleSlug: string;
   muxPlaybackId: string | null;
   muxTokens: MuxTokens | null;
+  posterUrl: string | null;
   bodyMd: string | null;
   durationSeconds: number | null;
   startPositionSeconds: number;
@@ -199,6 +200,7 @@ export function SectionTeaching(props: SectionTeachingProps) {
             streamType="on-demand"
             playbackId={props.muxPlaybackId}
             tokens={props.muxTokens}
+            poster={props.posterUrl ?? undefined}
             startTime={props.startPositionSeconds}
             metadata={{
               video_id: props.sectionId,

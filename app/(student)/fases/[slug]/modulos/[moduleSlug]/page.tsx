@@ -56,6 +56,7 @@ type DbSection = {
   body_md_en: string | null;
   mux_playback_id: string | null;
   duration_seconds: number | null;
+  poster_url: string | null;
   progress: DbSectionProgress[] | null;
 };
 type DbResource = {
@@ -148,7 +149,7 @@ export default async function ModulePlayerPage({
        phase:phases(id, slug, order_index, title, title_en, published),
        sections:module_sections(
          id, kind, order_index, title, title_en, body_md, body_md_en,
-         mux_playback_id, duration_seconds,
+         mux_playback_id, duration_seconds, poster_url,
          progress:section_progress(completed, last_position_seconds)
        ),
        resources:module_resources(id, title, kind, url, order_index, locale)`,
@@ -524,6 +525,7 @@ export default async function ModulePlayerPage({
                   moduleSlug={mod.slug}
                   muxPlaybackId={activeSection.mux_playback_id}
                   muxTokens={muxTokens}
+                  posterUrl={activeSection.poster_url}
                   bodyMd={activeBodyMd}
                   durationSeconds={activeSection.duration_seconds}
                   startPositionSeconds={startPosition}
