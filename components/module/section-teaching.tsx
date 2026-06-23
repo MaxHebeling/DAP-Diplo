@@ -197,23 +197,28 @@ export function SectionTeaching(props: SectionTeachingProps) {
               </p>
             </div>
           </div>
-          <MuxPlayer
-            streamType="on-demand"
-            playbackId={props.muxPlaybackId}
-            tokens={props.muxTokens}
-            poster={props.posterUrl ?? undefined}
-            startTime={props.startPositionSeconds}
-            metadata={{
-              video_id: props.sectionId,
-              video_title: t("teaching.videoMetadataTitle"),
-            }}
-            onTimeUpdate={handleTimeUpdate}
-            onSeeking={handleSeeking}
-            onEnded={handleEnded}
-            onError={handlePlayerError}
-            accentColor="#fdad5a"
-            style={{ width: "100%", aspectRatio: "16/9" }}
-          />
+          {/* Wrapper bloquea clic derecho → "Guardar video" (MuxPlayer no
+              expone onContextMenu; el evento es composed y burbujea hasta aquí). */}
+          <div onContextMenu={(e) => e.preventDefault()}>
+            <MuxPlayer
+              streamType="on-demand"
+              playbackId={props.muxPlaybackId}
+              tokens={props.muxTokens}
+              poster={props.posterUrl ?? undefined}
+              startTime={props.startPositionSeconds}
+              disablePictureInPicture
+              metadata={{
+                video_id: props.sectionId,
+                video_title: t("teaching.videoMetadataTitle"),
+              }}
+              onTimeUpdate={handleTimeUpdate}
+              onSeeking={handleSeeking}
+              onEnded={handleEnded}
+              onError={handlePlayerError}
+              accentColor="#fdad5a"
+              style={{ width: "100%", aspectRatio: "16/9", "--pip-button": "none" }}
+            />
+          </div>
           {!hasFinished && (
             <p className="mt-3 flex items-center gap-1.5 text-xs text-text-tertiary">
               <Lock className="size-3" strokeWidth={2} />
