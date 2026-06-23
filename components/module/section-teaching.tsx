@@ -13,7 +13,8 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
 import { AdvanceButton } from "@/components/module/advance-button";
-import { Markdown } from "@/components/module/markdown";
+// Markdown queda sin uso mientras el bloque body_md está oculto (ver abajo).
+// import { Markdown } from "@/components/module/markdown";
 import { saveLastPosition } from "@/lib/progress/actions";
 
 // Lazy: @mux/mux-player-react pesa ~200KB y solo lo necesitamos cuando
@@ -230,7 +231,9 @@ export function SectionTeaching(props: SectionTeachingProps) {
         </div>
       )}
 
-      {props.bodyMd && <Markdown>{props.bodyMd}</Markdown>}
+      {/* Texto del módulo (body_md) oculto al alumno intencionalmente —
+          el prop y los datos se conservan; solo no se renderiza la vista. */}
+      {/* {props.bodyMd && <Markdown>{props.bodyMd}</Markdown>} */}
 
       {props.resources.length > 0 && (
         <section>
