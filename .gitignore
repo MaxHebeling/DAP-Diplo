@@ -45,3 +45,15 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .lighthouseci/
+
+# personal one-off scripts (embed real student PII: emails, names, user/payment IDs)
+# keep these out of commits — see CLAUDE.md rule 11
+/scripts/email-*
+/scripts/promo-*
+/scripts/send-*
+/scripts/resend-*
+/scripts/broadcast-*
+/scripts/activate-*
+/scripts/sergio-*
+/scripts/issue-cert-*
+/scripts/delete-users-*
