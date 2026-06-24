@@ -44,7 +44,7 @@ export default async function AdminSectionEditPage({ params }: PageProps) {
   const { data: section } = await supabase
     .from("module_sections")
     .select(
-      "id, module_id, kind, order_index, title, body_md, mux_playback_id, duration_seconds",
+      "id, module_id, kind, order_index, title, body_md, mux_playback_id, duration_seconds, poster_url",
     )
     .eq("id", sid)
     .maybeSingle();
@@ -59,6 +59,7 @@ export default async function AdminSectionEditPage({ params }: PageProps) {
     body_md: section.body_md,
     mux_playback_id: section.mux_playback_id,
     duration_seconds: section.duration_seconds,
+    poster_url: section.poster_url,
   };
 
   // Para secciones de evaluación: asegurar que existe un quiz 1:1 y cargar sus preguntas.

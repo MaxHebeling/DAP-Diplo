@@ -17,7 +17,97 @@ const submitSchema = z.object({
     .string()
     .min(20, "Tu entrega es muy corta. Escribí al menos 20 caracteres.")
     .max(20_000, "Tu entrega es demasiado larga (máx 20.000 caracteres)."),
+  attachmentPath: z.string().max(500).optional().nullable(),
+  attachmentName: z.string().max(200).optional().nullable(),
 });
+
+const ATTACHMENT_BUCKET = "assignment-attachments";
+const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024; // 10 MB
+const ALLOWED_MIME = new Set([
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.oasis.opendocument.text",
+  "text/plain",
+  "text/rtf",
+  "application/rtf",
+  "image/jpeg",
+  "image/png",
+]);
+
+export type UploadAttachmentResult =
+  | { ok: true; path: string; filename: string }
+  | { ok: false; error: string };
+
+/**
+ * Sube un archivo adjunto (Word/PDF/imagen) para una assignment_submission
+ * a Supabase Storage (bucket privado). Devuelve el path para que el caller
+ * lo pase a submitAssignmentAction.
+ *
+ * Reglas:
+ *  - Auth requerida; el path se prefijja por user_id (RLS-friendly).
+ *  - MIME en allowlist (10 tipos permitidos).
+ *  - Tamaño <= 10 MB.
+ *  - Path: {userId}/{submissionId}-{timestamp}-{sanitizedFilename}
+ */
+export async function uploadAssignmentAttachmentAction(
+  formData: FormData,
+): Promise<UploadAttachmentResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Sesión expirada." };
+
+  const file = formData.get("file");
+  const submissionId = formData.get("submissionId");
+  if (!(file instanceof File) || typeof submissionId !== "string") {
+    return { ok: false, error: "Archivo o ID inválido." };
+  }
+  if (file.size === 0) return { ok: false, error: "Archivo vacío." };
+  if (file.size > MAX_ATTACHMENT_BYTES) {
+    return { ok: false, error: `Archivo demasiado grande (máx 10 MB).` };
+  }
+  if (!ALLOWED_MIME.has(file.type)) {
+    return {
+      ok: false,
+      error: `Formato no soportado. Aceptamos PDF, Word (.doc/.docx), texto, RTF, ODT y imágenes JPG/PNG.`,
+    };
+  }
+
+  // Validar ownership de la submission
+  const { data: sub } = await supabase
+    .from("assignment_submissions")
+    .select("id, user_id, status")
+    .eq("id", submissionId)
+    .maybeSingle<{ id: string; user_id: string; status: string }>();
+  if (!sub || sub.user_id !== user.id) {
+    return { ok: false, error: "Entrega no encontrada o no es tuya." };
+  }
+  if (sub.status !== "open") {
+    return { ok: false, error: "Esta tarea ya fue enviada." };
+  }
+
+  // Sanitize filename
+  const safe = file.name
+    .replace(/[^a-zA-Z0-9._-]/g, "_")
+    .slice(0, 80);
+  const path = `${user.id}/${submissionId}-${Date.now()}-${safe}`;
+
+  const admin = createAdminClient();
+  const buf = new Uint8Array(await file.arrayBuffer());
+  const { error: upErr } = await admin.storage
+    .from(ATTACHMENT_BUCKET)
+    .upload(path, buf, {
+      contentType: file.type,
+      upsert: false,
+    });
+  if (upErr) {
+    return { ok: false, error: `No se pudo subir el archivo: ${upErr.message}` };
+  }
+
+  return { ok: true, path, filename: file.name };
+}
 
 /**
  * El alumno entrega su tarea de la sección Activación.
@@ -50,6 +140,8 @@ export async function submitAssignmentAction(
   const parsed = submitSchema.safeParse({
     submissionId: formData.get("submissionId"),
     contentText: formData.get("contentText"),
+    attachmentPath: formData.get("attachmentPath") || null,
+    attachmentName: formData.get("attachmentName") || null,
   });
   if (!parsed.success) {
     return {
@@ -95,6 +187,8 @@ export async function submitAssignmentAction(
     .from("assignment_submissions")
     .update({
       content_text: parsed.data.contentText.trim(),
+      attachment_url: parsed.data.attachmentPath ?? null,
+      attachment_name: parsed.data.attachmentName ?? null,
       status: "submitted",
       submitted_at: nowIso,
       updated_at: nowIso,
@@ -121,6 +215,23 @@ export async function submitAssignmentAction(
       `[submitAssignmentAction] notify director failed for submission=${sub.id}:`,
       err,
     );
+  });
+
+  // Disparar IA correctora INSTANTÁNEAMENTE (fire-and-forget). El cron
+  // sigue corriendo cada hora como red de seguridad. Esto hace que la
+  // tarea aparezca corregida en /admin/correcciones en ~30-60s en vez
+  // de hasta 1h.
+  void (async () => {
+    const cronSecret = process.env.CRON_SECRET;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.dapglobal.org";
+    if (!cronSecret) return;
+    await fetch(`${appUrl}/api/admin/grade-now`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${cronSecret}`, "content-type": "application/json" },
+      body: JSON.stringify({ submissionId: sub.id }),
+    });
+  })().catch((err) => {
+    console.error(`[submitAssignmentAction] grade-now failed for submission=${sub.id}:`, err);
   });
 
   revalidatePath("/dashboard");
@@ -179,8 +290,6 @@ async function notifyDirectorOfSubmission(opts: {
     blockTitle: mod.phase?.title ?? "—",
     courseWeek: mod.course_week,
     contentText: opts.contentText,
-    reviewUrl: `${appUrl}/admin/admisiones?lookup=${encodeURIComponent(
-      profile.matricula ?? "",
-    )}`,
+    reviewUrl: `${appUrl}/admin/correcciones/${opts.submissionId}`,
   });
 }

@@ -97,4 +97,10 @@ export const sectionUpdateSchema = z.object({
     .nullable()
     .transform((v) => (v && v.length > 0 ? v : null)),
   duration_seconds: z.coerce.number().int().min(0).max(36000).nullable(),
+  poster_url: z
+    .string()
+    .trim()
+    .max(2000)
+    .nullable()
+    .transform((v) => (v && v.length > 0 ? v : null)),
 });

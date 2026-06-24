@@ -1,5 +1,6 @@
 import { renderToBuffer } from "@react-pdf/renderer";
 import { getTranslations } from "next-intl/server";
+
 import { CertificateDocument } from "@/components/certificate/certificate-document";
 
 export type CertificateData = {

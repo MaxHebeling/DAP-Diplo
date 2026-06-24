@@ -189,10 +189,16 @@ async function upsertSubscription(
     );
   }
 
-  const priceId = sub.items?.data?.[0]?.price?.id;
+  const priceObj = sub.items?.data?.[0]?.price;
+  const priceId = priceObj?.id;
   if (!priceId) {
     throw new Error(`Subscription ${sub.id} sin price_id`);
   }
+  // unit_amount viene en cents (USD, ARS, etc.) — guardamos directo en
+  // amount_minor para no perder precisión. Si el price es free (USD 0
+  // cortesía), unit_amount es 0 y se persiste como tal.
+  const amountMinor = priceObj?.unit_amount ?? 0;
+  const priceCurrency = priceObj?.currency?.toUpperCase() ?? "USD";
 
   const customerId =
     typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
@@ -220,6 +226,9 @@ async function upsertSubscription(
     stripe_customer_id: customerId,
     stripe_subscription_id: sub.id,
     stripe_price_id: priceId,
+    amount_minor: amountMinor,
+    currency: priceCurrency,
+    payment_processor: "stripe",
     status: sub.status,
     current_period_start: tsToIso(period.start),
     current_period_end: tsToIso(period.end),

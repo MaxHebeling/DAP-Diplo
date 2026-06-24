@@ -16,7 +16,10 @@ function isAuthorized(request: NextRequest): boolean {
 }
 
 const BATCH_SIZE = 20;
-const DELAY_HOURS = 48;
+// Sin delay: el alumno entrega → cron al toque procesa con IA. Cambio
+// vs versión anterior (48h) que daba ventana de re-edición silenciosa
+// — hoy el admin prefiere ver la corrección ASAP.
+const DELAY_HOURS = 0;
 type Pending = {
   id: string;
   user_id: string;

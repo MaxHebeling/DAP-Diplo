@@ -32,17 +32,18 @@ export default async function CorreccionesPage() {
   const supabase = await createClient();
   const admin = createAdminClient();
 
-  // Pendientes de review: status completed/incomplete + ai_feedback != null
-  // + results_sent_at IS NULL (cron generó, admin aún no aprobó).
+  // Pendientes de review: TODAS las que el alumno entregó y aún no fueron
+  // aprobadas/enviadas. Incluye:
+  //   · status='submitted' → IA aún no procesó (aparecen apenas el alumno entrega)
+  //   · status='completed'/'incomplete' → IA procesó, esperan aprobación admin
   const { data: pendingRaw } = await admin
     .from("assignment_submissions")
     .select(
       "id, user_id, module_id, content_text, attachment_url, submitted_at, corrected_at, ai_feedback, ai_score, ai_passed, status",
     )
-    .in("status", ["completed", "incomplete"])
-    .not("ai_feedback", "is", null)
+    .in("status", ["submitted", "completed", "incomplete"])
     .is("results_sent_at", null)
-    .order("corrected_at", { ascending: true })
+    .order("submitted_at", { ascending: false })
     .limit(50)
     .returns<Pending[]>();
 

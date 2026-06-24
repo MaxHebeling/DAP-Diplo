@@ -34,11 +34,13 @@ Font.register({
   src: `${APP_URL}/cert/fonts/Allura-Regular.ttf`,
 });
 
-// Assets locales (mismo set que la carta de admisión)
+// Assets locales (mismo set que la carta de admisión + UCM cobranding)
 const ASSETS_DIR = join(process.cwd(), "public", "admission-assets");
 const LOGO_DAP = join(ASSETS_DIR, "logo-dap.png");
 const LOGO_RED = join(ASSETS_DIR, "logo-red-apostolica.png");
+const LOGO_UCM = join(ASSETS_DIR, "logo-ucm.png");
 const FIRMA = join(ASSETS_DIR, "firma-max-hebeling.png");
+const FIRMA_LIZBETH = join(ASSETS_DIR, "firma-lizbeth.png");
 
 // Si los assets no existen al cargar el módulo (build time en algunos
 // edge cases), no rompemos — el render fallará después con un error
@@ -52,6 +54,8 @@ function assetExists(p: string): boolean {
   }
 }
 const HAS_FIRMA = existsSync(FIRMA);
+const HAS_FIRMA_LIZBETH = existsSync(FIRMA_LIZBETH);
+const HAS_LOGO_UCM = existsSync(LOGO_UCM);
 
 const COLORS = {
   ink: "#0B1736",
@@ -101,7 +105,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
 
-  // ---- Header row con logos ----
+  // ---- Header row con logos (3 en cobranding: Red Apostólica + DAP + UCM) ----
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -115,6 +119,7 @@ const styles = StyleSheet.create({
     objectFit: "contain",
     borderRadius: 5,
   },
+  headerLogoUcm: { width: 50, height: 50, objectFit: "contain" },
 
   // ---- Eyebrow + Title ----
   centerBlock: { alignItems: "center" },
@@ -213,17 +218,32 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
 
-  // ---- Footer row: firma izq + verification der ----
+  // ---- Footer row: 2 firmas (Max + Lizbeth) + verification der ----
   footerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-end",
     marginTop: "auto",
+    gap: 24,
+  },
+  signaturesGroup: {
+    flexDirection: "row",
+    gap: 36,
+    alignItems: "flex-end",
   },
   signatureBlock: { alignItems: "flex-start" },
+  // Ambas firmas con mismas dimensiones de box para que se vean alineadas
+  // y de tamaño visual equivalente. objectFit:contain hace que cada una
+  // se ajuste manteniendo su aspect ratio dentro del box.
   signatureImage: {
-    width: 120,
-    height: 38,
+    width: 150,
+    height: 52,
+    objectFit: "contain",
+    marginBottom: -6,
+  },
+  signatureImageLizbeth: {
+    width: 150,
+    height: 52,
     objectFit: "contain",
     marginBottom: -6,
   },
@@ -321,11 +341,14 @@ export function CertificateDocument({
         <View style={styles.bandTopAccent} fixed />
 
         <View style={styles.inner}>
-          {/* Header: logos en esquinas */}
+          {/* Header: logos en cobranding (Red Apostólica + DAP + UCM Centro de Posgrado) */}
           {hasLogos ? (
             <View style={styles.headerRow}>
               <Image src={LOGO_RED} style={styles.headerLogo} />
               <Image src={LOGO_DAP} style={styles.headerLogoDap} />
+              {HAS_LOGO_UCM ? (
+                <Image src={LOGO_UCM} style={styles.headerLogoUcm} />
+              ) : null}
             </View>
           ) : null}
 
@@ -362,17 +385,37 @@ export function CertificateDocument({
             <Text style={styles.dimensionName}>{dimensionName}</Text>
           </View>
 
-          {/* Footer: firma + verification */}
+          {/* Footer: 2 firmas (Dr. Max + Lic. Lizbeth UCM) + verification */}
           <View style={styles.footerRow}>
-            <View style={styles.signatureBlock}>
-              {HAS_FIRMA ? (
-                <Image src={FIRMA} style={styles.signatureImage} />
+            <View style={styles.signaturesGroup}>
+              <View style={styles.signatureBlock}>
+                {HAS_FIRMA ? (
+                  <Image src={FIRMA} style={styles.signatureImage} />
+                ) : null}
+                <View style={styles.signatureLine} />
+                <Text style={styles.signatureName}>{t("document.signatureName")}</Text>
+                <Text style={styles.signatureTitle}>
+                  {t("document.signatureTitle")}
+                </Text>
+              </View>
+
+              {HAS_FIRMA_LIZBETH ? (
+                <View style={styles.signatureBlock}>
+                  <Image
+                    src={FIRMA_LIZBETH}
+                    style={styles.signatureImageLizbeth}
+                  />
+                  <View style={styles.signatureLine} />
+                  <Text style={styles.signatureName}>
+                    Lic. Martha Lizbeth Dueñas González
+                  </Text>
+                  <Text style={styles.signatureTitle}>
+                    Directora{"\n"}
+                    Universidad Cultural Metropolitana{"\n"}
+                    Centro de Posgrado
+                  </Text>
+                </View>
               ) : null}
-              <View style={styles.signatureLine} />
-              <Text style={styles.signatureName}>{t("document.signatureName")}</Text>
-              <Text style={styles.signatureTitle}>
-                {t("document.signatureTitle")}
-              </Text>
             </View>
 
             <View style={styles.verifyBlock}>

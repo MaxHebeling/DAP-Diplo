@@ -25,6 +25,7 @@ const formSchema = z.object({
   body_md: z.string().trim().max(20000).nullable(),
   mux_playback_id: z.string().trim().max(80).nullable(),
   duration_seconds: z.number().int().min(0).max(36000).nullable(),
+  poster_url: z.string().trim().max(2000).nullable(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -38,6 +39,7 @@ export type SectionFormSection = {
   body_md: string | null;
   mux_playback_id: string | null;
   duration_seconds: number | null;
+  poster_url: string | null;
 };
 
 const KIND_LABEL_KEY: Record<SectionFormSection["kind"], string> = {
@@ -62,6 +64,7 @@ export function SectionEditForm({
       body_md: section.body_md ?? "",
       mux_playback_id: section.mux_playback_id ?? "",
       duration_seconds: section.duration_seconds,
+      poster_url: section.poster_url ?? "",
     },
   });
   const {
@@ -88,6 +91,7 @@ export function SectionEditForm({
       "duration_seconds",
       values.duration_seconds !== null ? String(values.duration_seconds) : "",
     );
+    fd.set("poster_url", values.poster_url ?? "");
 
     startTransition(async () => {
       const res = await updateSectionAction(undefined, fd);
@@ -203,6 +207,22 @@ export function SectionEditForm({
                   )}
                 </Field>
               </div>
+
+              <Field>
+                <FieldLabel htmlFor="poster_url">URL de portada</FieldLabel>
+                <Input
+                  id="poster_url"
+                  type="url"
+                  {...register("poster_url")}
+                  placeholder="https://cdn.dapglobal.org/portadas/reino-de-dios.jpg"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Opcional. Si está vacío, se usa el thumbnail auto-generado de Mux.
+                </p>
+                {errors.poster_url && (
+                  <FieldError>{errors.poster_url.message}</FieldError>
+                )}
+              </Field>
             </>
           )}
         </FieldGroup>

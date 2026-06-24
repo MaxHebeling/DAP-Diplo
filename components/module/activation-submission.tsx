@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
@@ -8,14 +8,19 @@ import {
   CheckCircle2,
   Clock,
   Loader2,
+  Paperclip,
   Send,
   Sparkles,
+  X,
   XCircle,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Markdown } from "@/components/module/markdown";
-import { submitAssignmentAction } from "@/lib/assignments/actions";
+import {
+  submitAssignmentAction,
+  uploadAssignmentAttachmentAction,
+} from "@/lib/assignments/actions";
 
 export type ActivationSubmission = {
   id: string;
@@ -109,6 +114,30 @@ function OpenForm({ submission }: { submission: ActivationSubmission }) {
   const router = useRouter();
   const [text, setText] = useState(submission.content_text ?? "");
   const [pending, startTransition] = useTransition();
+  const [uploading, setUploading] = useState(false);
+  const [attachment, setAttachment] = useState<{ path: string; filename: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  async function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.set("submissionId", submission.id);
+      fd.set("file", file);
+      const res = await uploadAssignmentAttachmentAction(fd);
+      if (!res.ok) {
+        toast.error(res.error);
+        return;
+      }
+      setAttachment({ path: res.path, filename: res.filename });
+      toast.success(`Adjunto subido: ${res.filename}`);
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -120,6 +149,8 @@ function OpenForm({ submission }: { submission: ActivationSubmission }) {
       const fd = new FormData();
       fd.set("submissionId", submission.id);
       fd.set("contentText", text.trim());
+      if (attachment?.path) fd.set("attachmentPath", attachment.path);
+      if (attachment?.filename) fd.set("attachmentName", attachment.filename);
       const res = await submitAssignmentAction(fd);
       if (!res.ok) {
         toast.error(res.error);
@@ -165,6 +196,47 @@ function OpenForm({ submission }: { submission: ActivationSubmission }) {
             <Send className="size-3 text-brand-coral" />
             Llega al Director del DAP
           </span>
+        </div>
+
+        <div className="mt-4 border-t border-white/[0.06] pt-4">
+          <p className="mb-2 text-xs text-white/55">
+            Opcional: si hiciste la tarea en Word/PDF, podés adjuntarla además del texto.
+          </p>
+          {attachment ? (
+            <div className="flex items-center justify-between rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm">
+              <span className="flex items-center gap-2 text-emerald-200">
+                <Paperclip className="size-4" />
+                {attachment.filename}
+              </span>
+              <button
+                type="button"
+                onClick={() => setAttachment(null)}
+                className="text-white/55 hover:text-white"
+                aria-label="Quitar adjunto"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+          ) : (
+            <div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx,.odt,.txt,.rtf,.jpg,.jpeg,.png"
+                onChange={onPickFile}
+                disabled={uploading || pending}
+                className="block w-full text-xs text-white/70 file:mr-3 file:rounded-md file:border-0 file:bg-brand-violet/20 file:px-3 file:py-2 file:text-xs file:font-medium file:text-brand-violet hover:file:bg-brand-violet/30 file:cursor-pointer disabled:opacity-50"
+              />
+              <p className="mt-1 text-[11px] text-white/40">
+                PDF, Word, ODT, TXT, RTF, JPG, PNG · máx 10 MB
+              </p>
+              {uploading && (
+                <p className="mt-1 flex items-center gap-1 text-[11px] text-amber-300">
+                  <Loader2 className="size-3 animate-spin" /> Subiendo archivo…
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
