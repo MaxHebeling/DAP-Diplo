@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import {
   requestPasswordResetSchema,
   signInSchema,
@@ -95,7 +96,29 @@ export async function signInAction(
   });
 
   if (error) {
-    return { ok: false, error: "Correo o contraseña incorrectos" };
+    // Muchas cuentas no tienen contraseña local (registradas con Google, o
+    // invitadas por magic link). Para ellas signInWithPassword SIEMPRE falla
+    // y el genérico "incorrectos" las deja en loop. Consultamos el método de
+    // acceso (server-side, service_role) para guiarlas. account_auth_hint
+    // devuelve 'generic' si la cuenta tiene contraseña o no existe
+    // (anti-enumeración), así que no se filtra qué emails están registrados.
+    let message = "Correo o contraseña incorrectos";
+    try {
+      const admin = createAdminClient();
+      const { data: hint } = await admin.rpc("account_auth_hint", {
+        p_email: parsed.data.email,
+      });
+      if (hint === "google_no_password") {
+        message =
+          "Esta cuenta ingresa con Google. Usá el botón «Entrar con Google» de arriba.";
+      } else if (hint === "email_no_password") {
+        message =
+          "Tu cuenta todavía no tiene contraseña. Tocá «¿Olvidaste tu contraseña?» para crear una.";
+      }
+    } catch {
+      // Si el lookup falla, mostramos el mensaje genérico sin romper el login.
+    }
+    return { ok: false, error: message };
   }
 
   const redirectTo = safeRedirectTo(formData.get("redirectTo"));
