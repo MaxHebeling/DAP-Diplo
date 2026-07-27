@@ -21,12 +21,13 @@ async function recomputeTotals(admin: ReturnType<typeof createAdminClient>, past
     .eq("pastor_user_id", pastorUserId).eq("status", "active");
   const churchIds = (myChurches ?? []).map((c) => c.church_id);
 
-  // Alumnos de esas iglesias
+  // Alumnos de esas iglesias — excluye al propio pastor (dual-role)
   const { data: churchStudents } = churchIds.length > 0
     ? await admin.from("profiles")
         .select("id")
         .in("church_id", churchIds)
         .eq("admission_status", "approved")
+        .neq("id", pastorUserId)
     : { data: [] };
   const allStudentIds = (churchStudents ?? []).map((s) => s.id);
 
