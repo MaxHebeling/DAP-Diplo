@@ -131,13 +131,21 @@ export default async function ModulePlayerPage({
     );
   }
 
-  // 2) Perfil para header + check admin
+  // 2) Perfil para header + check admin + modo simplificado
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, role")
+    .select("full_name, role, simplified_mode")
     .eq("id", user.id)
     .maybeSingle();
   const isAdmin = profile?.role === "admin";
+  const simplifiedMode = profile?.simplified_mode === true;
+  // En modo simplificado: intro + teaching + impartation (sin tarea ni quiz)
+  const VISIBLE_KINDS_SIMPLIFIED: SectionKind[] = ["intro", "teaching", "impartation"];
+  const visibleKinds: SectionKind[] = simplifiedMode ? VISIBLE_KINDS_SIMPLIFIED : SECTION_KINDS;
+  // Si intentan ir a una sección oculta en simplified, redirigimos a intro.
+  if (simplifiedMode && !visibleKinds.includes(currentSection)) {
+    redirect(`/fases/${phaseSlug}/modulos/${moduleSlug}?section=intro`);
+  }
 
   // 3) Módulo + fase + secciones + recursos + progreso (filtrado por RLS self)
   const { data: mod, error: modErr } = await supabase
@@ -205,7 +213,7 @@ export default async function ModulePlayerPage({
   const sectionsByKind = new Map<SectionKind, DbSection>();
   for (const s of mod.sections ?? []) sectionsByKind.set(s.kind, s);
 
-  const stepperSections: StepperSection[] = SECTION_KINDS.map((kind) => {
+  const stepperSections: StepperSection[] = visibleKinds.map((kind) => {
     const s = sectionsByKind.get(kind);
     const completed = !!s?.progress?.[0]?.completed;
     return {
@@ -244,11 +252,14 @@ export default async function ModulePlayerPage({
     });
   }
 
-  // Para el banner de acciones rápidas: indica si el alumno ya entregó.
-  // Aplica solo a section activation. Query liviana — solo el status.
+  // Para el banner de acciones rápidas: indica si el alumno ya entregó +
+  // captura el ID de la submission abierta (si existe). El card "Subir mi
+  // tarea" usa el ID para abrir un file picker directo y subir el archivo
+  // sin tener que navegar al form.
   let hasSubmittedActivation = false;
+  let openActivationSubmissionId: string | null = null;
   const activationSectionForBanner = sectionsByKind.get("activation");
-  if (activationSectionForBanner && !isAdmin) {
+  if (activationSectionForBanner) {
     const { data: anySubmitted } = await supabase
       .from("assignment_submissions")
       .select("status")
@@ -258,6 +269,16 @@ export default async function ModulePlayerPage({
       .limit(1)
       .maybeSingle<{ status: string }>();
     hasSubmittedActivation = !!anySubmitted;
+
+    const { data: openSub } = await supabase
+      .from("assignment_submissions")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("module_section_id", activationSectionForBanner.id)
+      .eq("status", "open")
+      .limit(1)
+      .maybeSingle<{ id: string }>();
+    openActivationSubmissionId = openSub?.id ?? null;
   }
 
   // Cargar la submission del alumno para esta activation (si existe)
@@ -274,12 +295,15 @@ export default async function ModulePlayerPage({
     ai_passed: boolean | null;
     corrected_at: string | null;
     results_sent_at: string | null;
+    revision_note: string | null;
+    revision_count: number | null;
+    last_returned_at: string | null;
   } | null = null;
   if (currentSection === "activation") {
     const { data: subData } = await supabase
       .from("assignment_submissions")
       .select(
-        "id, status, content_text, opens_at, closes_at, submitted_at, ai_feedback, ai_score, ai_passed, corrected_at, results_sent_at",
+        "id, status, content_text, opens_at, closes_at, submitted_at, ai_feedback, ai_score, ai_passed, corrected_at, results_sent_at, revision_note, revision_count, last_returned_at",
       )
       .eq("user_id", user.id)
       .eq("module_section_id", activeSection.id)
@@ -506,6 +530,7 @@ export default async function ModulePlayerPage({
                 phaseSlug={mod.phase.slug}
                 moduleSlug={mod.slug}
                 alreadySubmitted={hasSubmittedActivation}
+                openSubmissionId={openActivationSubmissionId}
               />
             </div>
 
@@ -539,6 +564,7 @@ export default async function ModulePlayerPage({
                       kind,
                       url,
                     }))}
+                  simplifiedMode={simplifiedMode}
                 />
               ) : (
                 <SectionContent
@@ -572,6 +598,14 @@ export default async function ModulePlayerPage({
                           bestScore: evaluationBestScore,
                           latestAttempt: evaluationLatestAttempt,
                         }
+                      : undefined
+                  }
+                  simplifiedMode={simplifiedMode}
+                  pdfResources={
+                    simplifiedMode && currentSection === "intro"
+                      ? (mod.resources ?? [])
+                          .filter((r) => r.kind === "pdf")
+                          .map((r) => ({ title: r.title, url: r.url }))
                       : undefined
                   }
                 />

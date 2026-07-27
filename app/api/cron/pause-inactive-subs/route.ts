@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
   const admin = createAdminClient();
   const stripe = getStripe();
   const now = new Date();
-  const stats = { paused: 0, cashExpired: 0, reminded30: 0, warned50: 0, canceled: 0, errors: 0 };
+  const stats = { paused: 0, cashExpired: 0, reminded30: 0, warned50: 0, canceled: 0, errors: 0, skipped: 0 };
 
   // -----------------------------------------------------------------
   // 0) PAUSE cash subs vencidos + 5 días de gracia (Checkout Pro AR)
@@ -81,7 +81,30 @@ export async function GET(request: NextRequest) {
     .lt("current_period_end", cashGraceCutoff)
     .returns<{ id: string; user_id: string }[]>();
 
+  // FASE 1 — Argentina: no pausamos por vencimiento de MP.
+  // El flujo AR ahora es pastoral (día 23 → último del mes → transfer día 1).
+  // Los alumnos AR no pierden acceso automáticamente por falta de renovación MP.
+  const cashUserIds = (cashExpired ?? []).map((s) => s.user_id);
+  const argentineCashIds = new Set<string>();
+  if (cashUserIds.length > 0) {
+    const { data: profiles } = await admin
+      .from("profiles")
+      .select("id, country")
+      .in("id", cashUserIds)
+      .eq("country", "Argentina");
+    for (const p of profiles ?? []) argentineCashIds.add(p.id);
+  }
+  if (argentineCashIds.size > 0) {
+    console.log(
+      `[pause-cron] saltando ${argentineCashIds.size} sub(s) AR — no pausamos por MP`,
+    );
+  }
+
   for (const sub of cashExpired ?? []) {
+    if (argentineCashIds.has(sub.user_id)) {
+      stats.skipped++;
+      continue;
+    }
     try {
       const nowIso = now.toISOString();
       const { error: updErr } = await admin

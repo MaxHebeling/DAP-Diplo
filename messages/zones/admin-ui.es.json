@@ -148,6 +148,10 @@
     "sidebar": {
       "dashboard": "Dashboard",
       "admissions": "Admisiones",
+      "churches": "Iglesias",
+      "simplifiedMode": "Modo simplificado",
+      "arPayments": "Pagos Argentina",
+      "arRemittances": "Liquidaciones AR",
       "blocksCopy": "Bloques (copy)",
       "phasesModules": "Fases (módulos)",
       "community": "Comunidad",

@@ -59,6 +59,15 @@ export default async function DashboardPage() {
   const firstName = profile.full_name.split(" ")[0];
   const { sub, hasActive } = await loadSubscription(supabase, user.id);
 
+  // Fase 2: Beca de Honor vigente — banner en dashboard
+  const { data: honorScholarship } = await supabase
+    .from("honor_scholarships")
+    .select("status, start_date, end_date")
+    .eq("user_id", user.id)
+    .in("status", ["vigente", "proxima_vencer"])
+    .limit(1)
+    .maybeSingle<{ status: string; start_date: string; end_date: string | null }>();
+
   return (
     <DapStudentShell
       userName={profile.full_name}
@@ -67,6 +76,22 @@ export default async function DashboardPage() {
       onSignOut={signOutAction}
     >
       <div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-10">
+        {honorScholarship && (
+          <div className="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/[0.06] p-4">
+            <div className="flex items-start gap-3">
+              <span className="mt-0.5 text-xl">⭐</span>
+              <div className="min-w-0 flex-1">
+                <p className="mb-0.5 text-[11px] font-semibold uppercase tracking-widest text-amber-300">
+                  Beca de Honor vigente
+                </p>
+                <p className="text-sm leading-relaxed text-amber-50">
+                  Estás liberado del pago de mensualidades mientras tu beca esté activa.
+                  Solo se te pide mantener tu participación y avance académico.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
         {!hasActive ? (
           <NoSubscriptionState
             firstName={firstName}

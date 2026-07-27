@@ -182,6 +182,10 @@ export const admissionFormSchema = z
     email: z.string().email(),
 
     // Pertenencia
+    // church_id apunta a public.churches (catálogo canónico). Si el alumno
+    // eligió "Otra — no está en la lista", se envía church_name como texto
+    // libre y church_id queda undefined; el admin luego canoniza.
+    church_id: z.string().uuid().optional(),
     church_name: z.string().max(200).optional(),
     ministry_name: z.string().max(200).optional(),
     profession: z.string().max(120).optional(),

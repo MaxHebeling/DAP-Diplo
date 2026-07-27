@@ -29,6 +29,8 @@ export type ActivationProps = {
   submission: ActivationSubmissionData | null;
 };
 
+type PdfResource = { title: string; url: string };
+
 type SectionContentProps = {
   kind: SectionKind;
   sectionId: string;
@@ -43,12 +45,23 @@ type SectionContentProps = {
   };
   evaluation?: EvaluationProps;
   activation?: ActivationProps;
+  simplifiedMode?: boolean;
+  pdfResources?: PdfResource[];
 };
 
-const NEXT: Record<SectionKind, SectionTeachingKind> = {
+const NEXT_STANDARD: Record<SectionKind, SectionTeachingKind> = {
   intro: "teaching",
   activation: "evaluation",
   evaluation: "impartation",
+  impartation: null,
+};
+
+// En modo simplificado: intro → teaching → impartation → fin.
+// Saltamos activation y evaluation.
+const NEXT_SIMPLIFIED: Record<SectionKind, SectionTeachingKind> = {
+  intro: "teaching",
+  activation: null,
+  evaluation: null,
   impartation: null,
 };
 
@@ -68,12 +81,46 @@ export async function SectionContent(props: SectionContentProps) {
     evaluation: t("sectionContent.nextEvaluation"),
     impartation: t("sectionContent.nextImpartation"),
   };
-  const next = NEXT[props.kind];
+  const next = (props.simplifiedMode ? NEXT_SIMPLIFIED : NEXT_STANDARD)[props.kind];
   const isEvaluation = props.kind === "evaluation";
   const hasQuiz = isEvaluation && props.evaluation?.quiz;
 
+  const showSimplifiedPdfBanner =
+    props.simplifiedMode &&
+    props.kind === "intro" &&
+    (props.pdfResources?.length ?? 0) > 0;
+
   return (
     <div className="space-y-8">
+      {/* Banner PDF destacado para alumnos en modo simplificado */}
+      {showSimplifiedPdfBanner && (
+        <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/[0.08] to-amber-600/[0.04] p-6">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-amber-300">
+            📄 Material de la lección
+          </p>
+          <p className="mb-4 text-lg font-semibold text-white">
+            Descargá la lección completa en PDF
+          </p>
+          <p className="mb-5 text-sm leading-relaxed text-amber-50/80">
+            Podés leerla en pantalla o imprimirla. Tiene todo el contenido
+            del módulo en un solo archivo.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            {props.pdfResources!.map((pdf, i) => (
+              <a
+                key={i}
+                href={pdf.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-lg bg-amber-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-amber-500/20 transition hover:bg-amber-600"
+              >
+                ⬇ {pdf.title}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Render contextual por tipo */}
       {props.kind === "intro" && (
         <IntroExtras

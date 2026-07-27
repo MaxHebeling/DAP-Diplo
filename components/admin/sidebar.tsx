@@ -4,8 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
+  Accessibility,
   Bell,
   Brain,
+  Building2,
   CheckSquare,
   FileText,
   GraduationCap,
@@ -23,7 +25,11 @@ import { signOutAction } from "@/lib/auth/actions";
 
 const NAV = [
   { href: "/admin", labelKey: "dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/admin/admisiones", labelKey: "admissions", icon: GraduationCap, exact: false },
+  { href: "/admin/admisiones", labelKey: "admissions", icon: GraduationCap, exact: true },
+  { href: "/admin/iglesias", labelKey: "churches", icon: Building2, exact: false },
+  { href: "/admin/simplificados", labelKey: "simplifiedMode", icon: Accessibility, exact: false },
+  { href: "/admin/pagos-ar", labelKey: "arPayments", icon: Layers, exact: false },
+  { href: "/admin/liquidaciones", labelKey: "arRemittances", icon: Layers, exact: false },
   { href: "/admin/bloques", labelKey: "blocksCopy", icon: Layers, exact: false },
   { href: "/admin/fases", labelKey: "phasesModules", icon: Layers, exact: false },
   { href: "/admin/comunidad", labelKey: "community", icon: MessagesSquare, exact: false },

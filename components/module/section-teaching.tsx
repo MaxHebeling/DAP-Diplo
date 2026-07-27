@@ -54,6 +54,8 @@ type SectionTeachingProps = {
    */
   alreadyCompleted: boolean;
   resources: Resource[];
+  /** Cuando true, "Continuar" salta a impartación (no activación). */
+  simplifiedMode?: boolean;
 };
 
 const RESOURCE_ICON: Record<Resource["kind"], typeof FileText> = {
@@ -275,7 +277,7 @@ export function SectionTeaching(props: SectionTeachingProps) {
           moduleId={props.moduleId}
           phaseSlug={props.phaseSlug}
           moduleSlug={props.moduleSlug}
-          nextSection="activation"
+          nextSection={props.simplifiedMode ? "impartation" : "activation"}
           label={t("teaching.advanceLabel")}
           disabled={!hasFinished}
           disabledReason={t("teaching.advanceDisabledReason")}

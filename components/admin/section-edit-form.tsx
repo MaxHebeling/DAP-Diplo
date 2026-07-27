@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { useForm, useWatch, Controller } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { z } from "zod";
-import { ExternalLink, Save } from "lucide-react";
+import { ExternalLink, Save, Upload, X, Loader2, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -78,6 +78,7 @@ export function SectionEditForm({
   const isTeaching = section.kind === "teaching";
   // useWatch en vez de form.watch — compatible con React Compiler.
   const body = useWatch({ control, name: "body_md" }) ?? "";
+  const posterUrl = useWatch({ control, name: "poster_url" }) ?? "";
 
   function onSubmit(values: FormValues) {
     const fd = new FormData();
@@ -209,16 +210,16 @@ export function SectionEditForm({
               </div>
 
               <Field>
-                <FieldLabel htmlFor="poster_url">URL de portada</FieldLabel>
-                <Input
-                  id="poster_url"
-                  type="url"
-                  {...register("poster_url")}
-                  placeholder="https://cdn.dapglobal.org/portadas/reino-de-dios.jpg"
+                <FieldLabel htmlFor="poster_url">Portada (thumbnail)</FieldLabel>
+                <PosterUploader
+                  sectionId={section.id}
+                  currentUrl={posterUrl}
+                  onChange={(url) =>
+                    setValue("poster_url", url, { shouldDirty: true })
+                  }
                 />
-                <p className="text-xs text-muted-foreground">
-                  Opcional. Si está vacío, se usa el thumbnail auto-generado de Mux.
-                </p>
+                {/* URL hidden field para que entre al form normal */}
+                <input type="hidden" {...register("poster_url")} />
                 {errors.poster_url && (
                   <FieldError>{errors.poster_url.message}</FieldError>
                 )}
@@ -245,5 +246,106 @@ export function SectionEditForm({
         </Button>
       </div>
     </form>
+  );
+}
+
+function PosterUploader({
+  sectionId,
+  currentUrl,
+  onChange,
+}: {
+  sectionId: string;
+  currentUrl: string;
+  onChange: (url: string) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  // Estado interno para preview instantánea — evita depender del re-render
+  // del form padre (useWatch puede tardar un frame en propagarse).
+  const [previewUrl, setPreviewUrl] = useState(currentUrl);
+  // Si el form padre cambia el valor externamente (reset, etc.), sincronizamos
+  useEffect(() => { setPreviewUrl(currentUrl); }, [currentUrl]);
+
+  async function handleFile(file: File) {
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      toast.error("Solo JPG / PNG / WEBP");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Máximo 5 MB");
+      return;
+    }
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.set("file", file);
+      fd.set("sectionId", sectionId);
+      const res = await fetch("/api/admin/upload-section-poster", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+      setPreviewUrl(data.url);   // preview INMEDIATA
+      onChange(data.url);        // y sincroniza form
+      toast.success("Portada subida. No olvides hacer click en 'Guardar sección'.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falló la subida");
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  }
+
+  function clearPoster() {
+    setPreviewUrl("");
+    onChange("");
+  }
+
+  return (
+    <div className="space-y-3">
+      {previewUrl ? (
+        <div className="relative aspect-video w-full max-w-md overflow-hidden rounded-lg border border-border bg-muted/20">
+          {/* <img> normal (no next/image) — más confiable con URLs externas
+              dinámicas y sin requerir whitelisting extra del dominio. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={previewUrl} alt="Portada" className="absolute inset-0 size-full object-cover" />
+          <button
+            type="button"
+            onClick={clearPoster}
+            className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-md bg-red-500/90 px-2 py-1 text-xs font-semibold text-white hover:bg-red-600"
+          >
+            <X className="size-3" /> Quitar
+          </button>
+        </div>
+      ) : (
+        <div className="flex aspect-video w-full max-w-md items-center justify-center rounded-lg border border-dashed border-border bg-muted/20 text-muted-foreground">
+          <div className="text-center">
+            <ImageIcon className="mx-auto size-10 opacity-40" />
+            <p className="mt-2 text-xs">Sin portada — Mux genera un thumb automático</p>
+          </div>
+        </div>
+      )}
+
+      <div className="flex items-center gap-2">
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) void handleFile(f);
+          }}
+        />
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => inputRef.current?.click()}
+          disabled={uploading}
+        >
+          {uploading ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+          {uploading ? "Subiendo…" : previewUrl ? "Cambiar portada" : "Subir portada"}
+        </Button>
+        <p className="text-xs text-muted-foreground">JPG / PNG / WEBP · máx 5 MB · 16:9 ideal</p>
+      </div>
+    </div>
   );
 }

@@ -11,15 +11,25 @@ export type SubmitAssignmentResult =
   | { ok: true; message?: string }
   | { ok: false; error: string };
 
-const submitSchema = z.object({
-  submissionId: z.string().uuid(),
-  contentText: z
-    .string()
-    .min(20, "Tu entrega es muy corta. Escribí al menos 20 caracteres.")
-    .max(20_000, "Tu entrega es demasiado larga (máx 20.000 caracteres)."),
-  attachmentPath: z.string().max(500).optional().nullable(),
-  attachmentName: z.string().max(200).optional().nullable(),
-});
+const submitSchema = z
+  .object({
+    submissionId: z.string().uuid(),
+    // Acepta texto vacío si el alumno entrega solo con archivo adjunto.
+    contentText: z
+      .string()
+      .max(20_000, "Tu entrega es demasiado larga (máx 20.000 caracteres)."),
+    attachmentPath: z.string().max(500).optional().nullable(),
+    attachmentName: z.string().max(200).optional().nullable(),
+  })
+  .refine(
+    (data) =>
+      data.contentText.trim().length >= 20 || !!data.attachmentPath,
+    {
+      message:
+        "Tu entrega está vacía. Escribí al menos 20 caracteres O adjuntá un archivo.",
+      path: ["contentText"],
+    },
+  );
 
 const ATTACHMENT_BUCKET = "assignment-attachments";
 const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024; // 10 MB

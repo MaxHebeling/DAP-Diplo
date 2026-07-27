@@ -123,6 +123,8 @@ export type ExcorrectorOutput = {
   notes_for_admin?: string;
 };
 
+import type { AttachmentPayload } from "./attachment-loader";
+
 export function buildExcorrectorPrompt(input: {
   moduleTitle: string;
   moduleObjective: string | null;
@@ -130,7 +132,9 @@ export function buildExcorrectorPrompt(input: {
   activationBodyMd: string | null;
   studentText: string;
   studentAttachmentNote?: string;
+  attachment?: AttachmentPayload;
 }): string {
+  const attachmentBlock = renderAttachmentBlock(input.attachment);
   return `# Tarea del alumno a corregir
 
 ## Módulo
@@ -141,10 +145,10 @@ ${input.mainRevelation ? `**Revelación principal:** ${input.mainRevelation}` : 
 ## Consigna de la activación
 ${input.activationBodyMd ?? "(No hay consigna escrita explícita — corregí en base al título y objetivo del módulo, asumiendo que la activación pide aplicar lo aprendido.)"}
 
-## Entrega del alumno
-${input.studentText}
+## Entrega del alumno (texto escrito en el portal)
+${input.studentText.trim() || "(El alumno no escribió texto en el portal — toda su entrega está en el archivo adjunto.)"}
 
-${input.studentAttachmentNote ? `\n## Nota: el alumno adjuntó un archivo (${input.studentAttachmentNote}). No puedes verlo. Corregí solo en base al texto que escribió.` : ""}
+${attachmentBlock}
 
 ---
 
@@ -160,4 +164,25 @@ Devuelve un JSON con esta forma EXACTA:
 \`\`\`
 
 Solo JSON. Sin texto antes ni después.`;
+}
+
+/**
+ * Construye el bloque "## Material adjunto" según el tipo de archivo.
+ * - binary (PDF/imagen) → menciona que está en el mensaje
+ * - text (.docx/.txt) → incluye el texto extraído
+ * - unsupported/error → flag para que el LLM corrija solo con el texto
+ */
+function renderAttachmentBlock(att: AttachmentPayload | undefined): string {
+  if (!att) return "";
+  if (att.kind === "binary") {
+    const what = att.mediaType === "application/pdf" ? "PDF" : "imagen";
+    return `\n## Material adjunto\nEl alumno subió un ${what} ("${att.filename}") que también recibís en este mensaje. Léelo y considéralo como parte central de su entrega. Si la mayor parte de la respuesta está en el adjunto, basá tu corrección ahí.`;
+  }
+  if (att.kind === "text") {
+    return `\n## Material adjunto (${att.sourceType}, archivo "${att.filename}")\n${att.extractedText.slice(0, 30_000)}\n${att.extractedText.length > 30_000 ? "\n[…texto truncado a 30k caracteres]" : ""}`;
+  }
+  if (att.kind === "unsupported") {
+    return `\n## Material adjunto\nEl alumno subió "${att.filename}" (${att.mediaType}) pero no se pudo leer su contenido. Mencionálo en el feedback y corregí en base al texto escrito.`;
+  }
+  return `\n## Material adjunto\nEl alumno subió "${att.filename}" pero hubo un error al descargarlo (${att.error}). Corregí en base al texto escrito.`;
 }

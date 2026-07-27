@@ -57,3 +57,7 @@ next-env.d.ts
 /scripts/sergio-*
 /scripts/issue-cert-*
 /scripts/delete-users-*
+
+# Local scratch / assets not versioned
+_movetest/
+Imagenes de Pantalla Video/
