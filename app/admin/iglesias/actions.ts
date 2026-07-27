@@ -63,6 +63,58 @@ export async function updateChurchAction(fd: FormData): Promise<ActionResult> {
   return { ok: true };
 }
 
+export async function assignPastorToChurchAction(fd: FormData): Promise<ActionResult> {
+  const { admin, userId } = await requireAdmin();
+  if (!admin) return { ok: false, error: "No autorizado." };
+
+  const churchId = String(fd.get("church_id") ?? "");
+  const pastorUserId = String(fd.get("pastor_user_id") ?? "");
+  const isPrimary = fd.get("is_primary") === "true";
+  const pastoralRole = String(fd.get("pastoral_role") ?? "pastor");
+  if (!churchId || !pastorUserId) return { ok: false, error: "Datos incompletos." };
+
+  const service = createAdminClient();
+  // Si ya existe la relación activa, no-op idempotente
+  const { data: existing } = await service
+    .from("church_pastors")
+    .select("id")
+    .eq("church_id", churchId)
+    .eq("pastor_user_id", pastorUserId)
+    .eq("status", "active")
+    .maybeSingle();
+  if (existing) return { ok: true };
+
+  const { error } = await service.from("church_pastors").insert({
+    church_id: churchId,
+    pastor_user_id: pastorUserId,
+    pastoral_role: pastoralRole,
+    is_primary: isPrimary,
+    assigned_by: userId,
+  });
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/admin/iglesias");
+  return { ok: true };
+}
+
+export async function revokePastorFromChurchAction(fd: FormData): Promise<ActionResult> {
+  const { admin } = await requireAdmin();
+  if (!admin) return { ok: false, error: "No autorizado." };
+
+  const relationId = String(fd.get("id") ?? "");
+  if (!relationId) return { ok: false, error: "id faltante." };
+
+  const service = createAdminClient();
+  const { error } = await service
+    .from("church_pastors")
+    .update({ status: "revoked", revoked_at: new Date().toISOString() })
+    .eq("id", relationId);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/admin/iglesias");
+  return { ok: true };
+}
+
 export async function assignStudentChurchAction(fd: FormData): Promise<ActionResult> {
   const { admin } = await requireAdmin();
   if (!admin) return { ok: false, error: "No autorizado." };
