@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CheckCircle2, Users, User, Star, Clock } from "lucide-react";
 import { PastorBillRow } from "./pastor-bill-row";
+import { PeriodSelector } from "./period-selector";
 
 export const metadata = { title: "Portal Pastor · DAP" };
 export const dynamic = "force-dynamic";
@@ -107,14 +108,17 @@ export default async function PastorHomePage({
 
   return (
     <>
-      {/* Header */}
-      <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-brand-coral">Periodo</p>
-        <h2 className="mt-1 font-grotesk text-3xl font-bold">{MONTHS[month]} {year}</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Recolección: <strong>{new Date(collectionStart).getDate()}</strong> al <strong>{collectionEnd ? new Date(collectionEnd).getDate() : "?"}</strong> de {MONTHS[month]}.
-          Transferencia a DAP el día 1 de {MONTHS[month + 1] ?? "próximo mes"}.
-        </p>
+      {/* Header con selector de periodo */}
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-brand-coral">Periodo</p>
+          <h2 className="mt-1 font-grotesk text-3xl font-bold">{MONTHS[month]} {year}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Recolección: <strong>{new Date(collectionStart).getDate()}</strong> al <strong>{collectionEnd ? new Date(collectionEnd).getDate() : "?"}</strong> de {MONTHS[month]}.
+            Transferencia a DAP el día 1 de {MONTHS[month + 1] ?? "próximo mes"}.
+          </p>
+        </div>
+        <PeriodSelector currentYear={year} currentMonth={month} basePath="/pastor" />
       </div>
 
       {/* Stats */}

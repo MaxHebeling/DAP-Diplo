@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { upsertPastorRemittance } from "@/lib/pastor/remittance-actions";
 import { RemittanceForm } from "./remittance-form";
+import { PeriodSelector } from "../period-selector";
 
 export const metadata = { title: "Liquidación · Portal Pastor" };
 export const dynamic = "force-dynamic";
@@ -40,13 +41,16 @@ export default async function LiquidacionPage({
 
   return (
     <>
-      <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-brand-coral">Liquidación mensual</p>
-        <h2 className="mt-1 font-grotesk text-3xl font-bold">{MONTHS[month]} {year}</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Consolidá lo recolectado durante el periodo y transferí a DAP.
-          Fecha esperada de transferencia: <strong>{new Date(rem.transfer_date_expected).toLocaleDateString("es-AR")}</strong>.
-        </p>
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-brand-coral">Liquidación mensual</p>
+          <h2 className="mt-1 font-grotesk text-3xl font-bold">{MONTHS[month]} {year}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Consolidá lo recolectado durante el periodo y transferí a DAP.
+            Fecha esperada de transferencia: <strong>{new Date(rem.transfer_date_expected).toLocaleDateString("es-AR")}</strong>.
+          </p>
+        </div>
+        <PeriodSelector currentYear={year} currentMonth={month} basePath="/pastor/liquidacion" />
       </div>
 
       {/* Resumen */}
