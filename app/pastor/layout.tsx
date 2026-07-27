@@ -42,9 +42,15 @@ export default async function PastorLayout({ children }: { children: React.React
             <p className="text-[10px] font-semibold uppercase tracking-widest text-brand-coral">Portal Pastor</p>
             <h1 className="mt-0.5 font-grotesk text-xl font-bold">Pastor {firstName}</h1>
           </div>
-          <nav className="flex gap-3 text-sm">
+          <nav className="flex items-center gap-3 text-sm">
             <a href="/pastor" className="text-muted-foreground hover:text-foreground">Alumnos</a>
             <a href="/pastor/liquidacion" className="text-muted-foreground hover:text-foreground">Liquidación</a>
+            <a
+              href="/dashboard"
+              className="ml-2 rounded-md border border-white/[0.1] px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-white/[0.2] hover:text-foreground"
+            >
+              ← Mi dashboard
+            </a>
           </nav>
         </div>
       </header>

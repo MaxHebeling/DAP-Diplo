@@ -30,6 +30,7 @@ import {
 } from "@/components/ui-dap/rank-badge";
 import { EsdrasFloatingBubble } from "@/components/tutor/esdras-floating-bubble";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
+import { PastorPortalLink } from "@/components/layouts/pastor-portal-link";
 
 type NavGroup = {
   title?: string;
@@ -308,6 +309,12 @@ function SidebarContent({
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 py-4">
+        {/* Portal Pastor: aparece SOLO si el user tiene church_pastors
+            activo. Para no-pastores es null y no ocupa lugar. */}
+        <div className="px-1">
+          <PastorPortalLink />
+        </div>
+
         {groups.map((group, idx) => (
           <div key={idx} className={cn(idx > 0 && "mt-6")}>
             {group.title && (
@@ -411,7 +418,8 @@ function DapStudentTopbarInline({
       )}
 
       <div className="ml-auto flex items-center gap-2">
-        {/* Selector de idioma ES/EN — persiste en cookie NEXT_LOCALE. */}
+        {/* Portal Pastor (solo pastores) + Language switcher */}
+        <PastorPortalLink variant="topbar" />
         <LanguageSwitcher />
       </div>
     </header>
