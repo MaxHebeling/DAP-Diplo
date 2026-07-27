@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { CheckCircle2, Users, User, Star, Clock } from "lucide-react";
+import { CheckCircle2, Users, Clock } from "lucide-react";
 import { PastorBillRow } from "./pastor-bill-row";
 import { PeriodSelector } from "./period-selector";
 
@@ -148,49 +148,71 @@ export default async function PastorHomePage({
         </p>
       </div>
 
-      {/* Individuales */}
-      {indivBills.length > 0 && (
-        <div className="mb-8">
-          <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-            <User className="size-4" /> Individuales · $30.000 ARS
-          </h3>
-          <div className="space-y-2">
-            {indivBills.map((b) => (
-              <PastorBillRow key={b.id} bill={b} label={nameById.get(b.user_id!) ?? "Alumno"} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Matrimonios */}
-      {marriageBills.length > 0 && (
-        <div className="mb-8">
-          <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-            <Users className="size-4" /> Matrimonios · $42.000 ARS
-          </h3>
-          <div className="space-y-2">
-            {marriageBills.map((b) => {
-              const info = pairInfoById.get(b.spousal_pair_id!);
-              return (
-                <PastorBillRow key={b.id} bill={b} label={info ? `${info.s1} + ${info.s2}` : "Matrimonio"} />
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Becados asignados — informativo */}
-      {honorUserIds.size > 0 && (
+      {/* Lista unificada · orden: pendientes → pagados → becas */}
+      {(indivBills.length > 0 || marriageBills.length > 0 || honorUserIds.size > 0) && (
         <div>
-          <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-amber-400">
-            <Star className="size-4" /> Alumnos con Beca de Honor vigente ({honorUserIds.size})
+          <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+            <Users className="size-4" /> Personas asignadas
           </h3>
-          <p className="mb-3 text-xs text-muted-foreground">Están liberados de pagos. NO cuentan en el total esperado.</p>
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="space-y-2">
+            {/* Pendientes primero (para que el pastor los vea arriba) */}
+            {indivBills
+              .filter((b) => b.status !== "paid")
+              .map((b) => (
+                <PastorBillRow
+                  key={b.id}
+                  bill={b}
+                  modality="individual"
+                  label={nameById.get(b.user_id!) ?? "Alumno"}
+                />
+              ))}
+            {marriageBills
+              .filter((b) => b.status !== "paid")
+              .map((b) => {
+                const info = pairInfoById.get(b.spousal_pair_id!);
+                return (
+                  <PastorBillRow
+                    key={b.id}
+                    bill={b}
+                    modality="marriage"
+                    label={info ? `${info.s1} + ${info.s2}` : "Matrimonio"}
+                  />
+                );
+              })}
+
+            {/* Pagados */}
+            {indivBills
+              .filter((b) => b.status === "paid")
+              .map((b) => (
+                <PastorBillRow
+                  key={b.id}
+                  bill={b}
+                  modality="individual"
+                  label={nameById.get(b.user_id!) ?? "Alumno"}
+                />
+              ))}
+            {marriageBills
+              .filter((b) => b.status === "paid")
+              .map((b) => {
+                const info = pairInfoById.get(b.spousal_pair_id!);
+                return (
+                  <PastorBillRow
+                    key={b.id}
+                    bill={b}
+                    modality="marriage"
+                    label={info ? `${info.s1} + ${info.s2}` : "Matrimonio"}
+                  />
+                );
+              })}
+
+            {/* Becas al final (informativos, no cuentan en total) */}
             {[...honorUserIds].map((id) => (
-              <div key={id} className="rounded-lg border border-amber-500/20 bg-amber-500/[0.04] p-3 text-sm">
-                <span className="text-amber-300">{nameById.get(id) ?? id}</span>
-              </div>
+              <PastorBillRow
+                key={`honor-${id}`}
+                bill={null}
+                modality="honor"
+                label={nameById.get(id) ?? id}
+              />
             ))}
           </div>
         </div>
