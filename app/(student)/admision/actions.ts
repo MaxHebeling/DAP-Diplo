@@ -39,6 +39,28 @@ export async function submitAdmissionAction(
     return { ok: false, error: "Sesión expirada. Vuelve a iniciar sesión." };
   }
 
+  // 1.5 Guard: si el user ya tiene una admission activa (approved/pending/
+  // under_review), rechazar. Usamos service role para evitar que RLS
+  // fallando devuelva null y este guard se caiga silenciosamente — pasó
+  // exactamente eso el 2026-07-27 y 4 alumnos aprobados terminaron con
+  // admisión duplicada + profile degradado a 'pending'.
+  const guard = createAdminClient();
+  const { data: existingAdm } = await guard
+    .from("admissions")
+    .select("status")
+    .eq("user_id", user.id)
+    .in("status", ["approved", "pending", "under_review"])
+    .maybeSingle<{ status: string }>();
+  if (existingAdm) {
+    return {
+      ok: false,
+      error:
+        existingAdm.status === "approved"
+          ? "Ya tenés una admisión aprobada. Ingresá a tu dashboard directamente."
+          : "Ya enviaste tu solicitud. Podés ver el estado en /admisión/estado.",
+    };
+  }
+
   // 2. Parse + valida payload
   const raw = parseFormPayload(formData);
   const parsed = admissionFormSchema.safeParse({
