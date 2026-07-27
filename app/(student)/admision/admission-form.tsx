@@ -15,20 +15,27 @@ import {
   admissionFormSchema,
   type AdmissionFormInput,
 } from "@/lib/admission/schemas";
+import type { ChurchOption } from "@/lib/admission/churches";
 import { DapButton } from "@/components/ui-dap/button";
 import { FileDropzone } from "@/components/admission/file-dropzone";
 import { submitAdmissionAction } from "./actions";
+
+// Valor especial del combobox de iglesia: alumno indica que su iglesia no
+// está en el catálogo canónico → mostramos input texto de fallback y
+// enviamos solo church_name (admin canoniza después desde /admin/iglesias).
+const CHURCH_OTHER = "__other__";
 
 type AdmissionFormProps = {
   prefill: {
     fullName: string;
     email: string;
   };
+  churches: ChurchOption[];
 };
 
 type FieldErrors = Partial<Record<keyof AdmissionFormInput, string>>;
 
-export function AdmissionForm({ prefill }: AdmissionFormProps) {
+export function AdmissionForm({ prefill, churches }: AdmissionFormProps) {
   const t = useTranslations("AdmissionForm");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -49,6 +56,8 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
   const phone = `${dialCode} ${phoneLocal.trim()}`.trim();
   const [email] = useState(prefill.email ?? "");
 
+  // churchSelection = "" (no eligió) | uuid de churches | CHURCH_OTHER
+  const [churchSelection, setChurchSelection] = useState<string>("");
   const [churchName, setChurchName] = useState("");
   const [ministryName, setMinistryName] = useState("");
   const [profession, setProfession] = useState("");
@@ -61,6 +70,18 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
 
   const [errors, setErrors] = useState<FieldErrors>({});
 
+  // Deriva church_id / church_name a enviar según lo que eligió el alumno
+  const churchPayload = (() => {
+    if (churchSelection === CHURCH_OTHER) {
+      return { church_id: undefined, church_name: churchName.trim() || undefined };
+    }
+    if (churchSelection) {
+      // Uuid de una iglesia del catálogo
+      return { church_id: churchSelection, church_name: undefined };
+    }
+    return { church_id: undefined, church_name: undefined };
+  })();
+
   function clientValidate(): boolean {
     const data: AdmissionFormInput = {
       full_name: fullName.trim(),
@@ -70,7 +91,8 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
       city: city.trim(),
       phone: phone.trim(),
       email,
-      church_name: churchName.trim() || undefined,
+      church_id: churchPayload.church_id,
+      church_name: churchPayload.church_name,
       ministry_name: ministryName.trim() || undefined,
       profession: profession.trim() || undefined,
       company_or_sector: companyOrSector.trim() || undefined,
@@ -117,7 +139,8 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
     fd.set("city", city.trim());
     fd.set("phone", phone.trim());
     fd.set("email", email);
-    if (churchName) fd.set("church_name", churchName.trim());
+    if (churchPayload.church_id) fd.set("church_id", churchPayload.church_id);
+    if (churchPayload.church_name) fd.set("church_name", churchPayload.church_name);
     if (ministryName) fd.set("ministry_name", ministryName.trim());
     if (profession) fd.set("profession", profession.trim());
     if (companyOrSector) fd.set("company_or_sector", companyOrSector.trim());
@@ -239,12 +262,38 @@ export function AdmissionForm({ prefill }: AdmissionFormProps) {
         subtitle={t("section2Subtitle")}
       >
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label={t("church")} error={errors.church_name}>
-            <Input
-              value={churchName}
-              onChange={(e) => setChurchName(e.target.value)}
-              placeholder={t("churchPlaceholder")}
-            />
+          <Field
+            label={t("church")}
+            error={errors.church_id ?? errors.church_name}
+          >
+            <Select
+              value={churchSelection}
+              onChange={(e) => {
+                setChurchSelection(e.target.value);
+                if (e.target.value !== CHURCH_OTHER) setChurchName("");
+              }}
+            >
+              <option value="">{t("churchSelectPlaceholder")}</option>
+              {groupChurchesByCountry(churches).map(([countryLabel, list]) => (
+                <optgroup key={countryLabel} label={countryLabel}>
+                  {list.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                      {c.city ? ` — ${c.city}` : ""}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+              <option value={CHURCH_OTHER}>{t("churchOther")}</option>
+            </Select>
+            {churchSelection === CHURCH_OTHER && (
+              <Input
+                value={churchName}
+                onChange={(e) => setChurchName(e.target.value)}
+                placeholder={t("churchPlaceholder")}
+                className="mt-2"
+              />
+            )}
           </Field>
           <Field label={t("ministry")} error={errors.ministry_name}>
             <Input
@@ -449,6 +498,22 @@ function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
       )}
     />
   );
+}
+
+/**
+ * Agrupa el catálogo de iglesias por país (para <optgroup>). Sin país
+ * cae en "Otros". Preserva el orden ya venido del server (por nombre).
+ */
+function groupChurchesByCountry(
+  churches: ChurchOption[],
+): Array<[string, ChurchOption[]]> {
+  const groups = new Map<string, ChurchOption[]>();
+  for (const c of churches) {
+    const key = c.country?.trim() || "Otros";
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(c);
+  }
+  return Array.from(groups.entries());
 }
 
 function RadioPill({

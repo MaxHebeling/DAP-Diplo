@@ -15,7 +15,7 @@ const APP_URL =
 const schema = z.object({
   ai_feedback: z.string().min(10).max(20000),
   ai_passed: z.boolean(),
-  ai_score: z.number().min(0).max(10),
+  ai_score: z.number().min(0).max(100),
 });
 
 type SubmissionRow = {

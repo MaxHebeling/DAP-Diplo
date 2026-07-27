@@ -110,6 +110,7 @@ export async function submitAdmissionAction(
     city: data.city,
     phone: data.phone,
     email: data.email,
+    church_id: data.church_id || null,
     church_name: data.church_name || null,
     ministry_name: data.ministry_name || null,
     profession: data.profession || null,
@@ -128,12 +129,15 @@ export async function submitAdmissionAction(
     };
   }
 
-  // 6. UPDATE profiles.admission_status='pending' — requiere admin
-  //    (la columna está revocada del rol authenticated).
+  // 6. UPDATE profiles.admission_status='pending' + church_id — requiere
+  //    admin (columnas revocadas del rol authenticated).
   const admin = createAdminClient();
   const { error: updErr } = await admin
     .from("profiles")
-    .update({ admission_status: "pending" })
+    .update({
+      admission_status: "pending",
+      ...(data.church_id ? { church_id: data.church_id } : {}),
+    })
     .eq("id", user.id);
   if (updErr) {
     // No revertimos el insert: el equipo lo verá igual; logueamos.
@@ -193,6 +197,7 @@ function parseFormPayload(fd: FormData): Partial<AdmissionFormInput> {
     city: get("city"),
     phone: get("phone"),
     email: get("email"),
+    church_id: get("church_id"),
     church_name: get("church_name"),
     ministry_name: get("ministry_name"),
     profession: get("profession"),

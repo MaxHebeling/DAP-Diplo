@@ -3,6 +3,7 @@ import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 
 import { createClient } from "@/lib/supabase/server";
+import { listActiveChurches } from "@/lib/admission/churches";
 import { AdmissionForm } from "./admission-form";
 
 export async function generateMetadata() {
@@ -38,6 +39,9 @@ export default async function AdmisionPage() {
   if (profile && profile.admission_status !== "none") {
     redirect("/admision/estado");
   }
+
+  // Catálogo de iglesias (SSR — se cachea con la page)
+  const churches = await listActiveChurches();
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-surface-base text-text-primary">
@@ -79,6 +83,7 @@ export default async function AdmisionPage() {
             fullName: profile?.full_name ?? "",
             email: user.email ?? "",
           }}
+          churches={churches}
         />
 
         <p className="mt-10 text-center font-inter text-xs text-text-tertiary">

@@ -10,6 +10,7 @@ import {
   signedConsentLetterUrl,
 } from "@/lib/admission/storage";
 import { AdmissionActions } from "./admission-actions";
+import { SimplifiedModeToggle } from "@/components/admin/simplified-mode-toggle";
 
 export async function generateMetadata() {
   const t = await getTranslations("Admin");
@@ -50,6 +51,7 @@ type ProfileMini = {
   matricula: string | null;
   program_start_date: string | null;
   admission_status: string;
+  simplified_mode: boolean;
 };
 
 function statusBadge(s: AdmissionDetail["status"], t: T) {
@@ -115,9 +117,19 @@ export default async function AdmissionDetailPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("matricula, program_start_date, admission_status")
+    .select("matricula, program_start_date, admission_status, simplified_mode")
     .eq("id", admission.user_id)
     .maybeSingle<ProfileMini>();
+
+  // Fase 2: chequeo Beca de Honor vigente
+  const { data: honorScholarship } = await supabase
+    .from("honor_scholarships")
+    .select("id, status, start_date, end_date, reason")
+    .eq("user_id", admission.user_id)
+    .in("status", ["vigente", "proxima_vencer"])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<{ id: string; status: string; start_date: string; end_date: string | null; reason: string | null }>();
 
   // Signed URLs (24h) — solo si existen.
   const consentUrl = admission.consent_letter_url
@@ -156,6 +168,14 @@ export default async function AdmissionDetailPage({
           </div>
           <div className="flex flex-col items-end gap-2">
             {statusBadge(admission.status, t)}
+            {honorScholarship && (
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/[0.1] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-amber-300"
+                title={honorScholarship.reason ?? ""}
+              >
+                ⭐ Beca de Honor vigente
+              </span>
+            )}
             {profile?.matricula && (
               <p className="font-mono text-xs text-muted-foreground">
                 {profile.matricula}
@@ -254,6 +274,13 @@ export default async function AdmissionDetailPage({
                   </Link>
                 </div>
               )}
+
+              <div className="mt-4">
+                <SimplifiedModeToggle
+                  userId={admission.user_id}
+                  initialValue={profile?.simplified_mode === true}
+                />
+              </div>
             </DetailCard>
           )}
 

@@ -10,6 +10,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { correctAssignment } from "@/lib/excorrector";
+import { loadAttachmentForCorrection } from "@/lib/excorrector/attachment-loader";
 import { gradeNowSchema } from "@/lib/admin/dub-schemas";
 
 export const runtime = "nodejs";
@@ -83,13 +84,19 @@ export async function POST(req: NextRequest) {
         continue;
       }
 
+      // Si hay archivo adjunto, lo descargamos y dejamos que el corrector lo
+      // pase a Claude como parte del input (PDF/imagen nativo, .docx→texto).
+      const attachment = sub.attachment_url
+        ? await loadAttachmentForCorrection(sub.attachment_url)
+        : undefined;
+
       const result = await correctAssignment({
         moduleTitle: mod.title,
         moduleObjective: mod.objective,
         mainRevelation: mod.main_revelation,
         activationBodyMd: sec.body_md,
         studentText: sub.content_text ?? "",
-        studentAttachmentNote: sub.attachment_url ? `Adjunto: ${sub.attachment_url}` : undefined,
+        attachment,
       });
       if (!result.ok) {
         results.push({ id: sub.id, ok: false, error: result.error });

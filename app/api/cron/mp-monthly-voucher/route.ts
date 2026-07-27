@@ -72,6 +72,26 @@ export async function GET(request: NextRequest) {
     .gt("current_period_end", now.toISOString())
     .returns<CashSub[]>();
 
+  // FASE 1 — Argentina no recibe más vouchers MP.
+  // Los alumnos AR pagan a su pastor entre día 23 y último del mes;
+  // el pastor consolida y transfiere a DAP el día 1. El cron nuevo de
+  // notificaciones AR (a implementar en Fase 6) reemplaza este flujo.
+  const userIds = (subs ?? []).map((s) => s.user_id);
+  const argentineUserIds = new Set<string>();
+  if (userIds.length > 0) {
+    const { data: profiles } = await admin
+      .from("profiles")
+      .select("id, country")
+      .in("id", userIds)
+      .eq("country", "Argentina");
+    for (const p of profiles ?? []) argentineUserIds.add(p.id);
+  }
+  if (argentineUserIds.size > 0) {
+    console.log(
+      `[mp-voucher-cron] saltando ${argentineUserIds.size} sub(s) de Argentina — flujo AR por pastor`,
+    );
+  }
+
   // Dedup matrimonios: si 2 subs comparten el mismo mp_preference_id
   // (cónyuges del mismo matrimonio), solo procesamos al spouse_1.
   // Lo identificamos pidiendo a marriage_registrations cuál es.
@@ -91,6 +111,11 @@ export async function GET(request: NextRequest) {
   }
 
   for (const sub of subs ?? []) {
+    // Skip argentinos — flujo pastoral, no MP.
+    if (argentineUserIds.has(sub.user_id)) {
+      stats.skipped++;
+      continue;
+    }
     // Skip si es matrimonio y este sub NO es del spouse_1 (evita 2 emails).
     if (sub.mp_preference_id && spouse1ByPreference.has(sub.mp_preference_id)) {
       const spouse1Id = spouse1ByPreference.get(sub.mp_preference_id);

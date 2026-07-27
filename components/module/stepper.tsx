@@ -46,13 +46,16 @@ export async function ModuleStepper({
     impartation: t("stepper.impartation"),
   };
 
-  // Keep canonical order even if DB returns them in different order
+  // Keep canonical order even if DB returns them in different order.
+  // Solo renderizamos las secciones que vinieron en el prop (en simplified
+  // mode, evaluation/impartation no llegan).
   const byKind = new Map(sections.map((s) => [s.kind, s]));
+  const visibleOrdered = ORDERED.filter((k) => byKind.has(k));
 
   return (
     <nav aria-label={t("stepper.navLabel")} className="overflow-x-auto">
       <ol className="flex min-w-max items-center gap-1.5 sm:gap-3">
-        {ORDERED.map((kind, idx) => {
+        {visibleOrdered.map((kind, idx) => {
           const s = byKind.get(kind);
           const isCurrent = current === kind;
           const isCompleted = s?.completed === true;
@@ -88,7 +91,7 @@ export async function ModuleStepper({
                 </span>
                 <span>{LABEL[kind]}</span>
               </Link>
-              {idx < ORDERED.length - 1 && (
+              {idx < visibleOrdered.length - 1 && (
                 <span
                   aria-hidden
                   className="h-px w-3 bg-white/15 sm:w-6"

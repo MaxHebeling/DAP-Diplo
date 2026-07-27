@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
@@ -34,6 +34,9 @@ export type ActivationSubmission = {
   ai_passed: boolean | null;
   corrected_at: string | null;
   results_sent_at: string | null;
+  revision_note?: string | null;
+  revision_count?: number | null;
+  last_returned_at?: string | null;
 };
 
 function formatDateTime(iso: string): string {
@@ -118,6 +121,23 @@ function OpenForm({ submission }: { submission: ActivationSubmission }) {
   const [attachment, setAttachment] = useState<{ path: string; filename: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  // Si la card "Subir mi tarea" navegó hacia acá con intención de abrir
+  // el picker, ejecutamos click() del input apenas montamos. La señal es
+  // un sessionStorage flag — sobrevive navegación pero no se persiste.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const should = sessionStorage.getItem("openTaskPicker");
+    if (should === "1") {
+      sessionStorage.removeItem("openTaskPicker");
+      // Esperamos un tick para que el input esté en el DOM
+      setTimeout(() => fileInputRef.current?.click(), 100);
+    }
+    // También escuchamos el evento custom para same-page (sin navegación)
+    function handler() { fileInputRef.current?.click(); }
+    window.addEventListener("dap:open-task-picker", handler);
+    return () => window.removeEventListener("dap:open-task-picker", handler);
+  }, []);
+
   async function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -141,7 +161,11 @@ function OpenForm({ submission }: { submission: ActivationSubmission }) {
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (text.trim().length < 20) {
+    // Validación: aceptar si tiene texto ≥20 chars O un archivo adjunto.
+    // Antes exigía ambos → bloqueaba a quien entregaba todo en Word/PDF.
+    const hasText = text.trim().length >= 20;
+    const hasAttachment = !!attachment?.path;
+    if (!hasText && !hasAttachment) {
       toast.error(t("activation.tooShortToast"));
       return;
     }
@@ -161,8 +185,27 @@ function OpenForm({ submission }: { submission: ActivationSubmission }) {
     });
   }
 
+  const wasReturned = (submission.revision_count ?? 0) > 0 && submission.revision_note;
+
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form id="upload-form" onSubmit={onSubmit} className="scroll-mt-24 space-y-4">
+      {wasReturned && (
+        <div className="rounded-xl border border-amber-500/40 bg-amber-500/[0.08] p-5">
+          <p className="mb-2 text-xs font-medium uppercase tracking-widest text-amber-300">
+            📝 Devuelta para revisión · pedido #{submission.revision_count}
+          </p>
+          <p className="mb-3 text-sm font-semibold text-white">
+            El Apóstol Max te pidió que ajustes tu entrega:
+          </p>
+          <div className="whitespace-pre-wrap rounded-md border border-amber-500/20 bg-black/20 p-4 text-sm leading-relaxed text-amber-50">
+            {submission.revision_note}
+          </div>
+          <p className="mt-3 text-xs text-amber-200/70">
+            Tu texto anterior está cargado abajo. Editalo, sumá lo que te pide y volvé a enviar.
+          </p>
+        </div>
+      )}
+
       <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-5">
         <div className="mb-3 flex items-center justify-between">
           <p className="text-xs font-medium uppercase tracking-widest text-brand-coral">
@@ -221,6 +264,7 @@ function OpenForm({ submission }: { submission: ActivationSubmission }) {
             <div>
               <input
                 ref={fileInputRef}
+                id="task-attachment-input"
                 type="file"
                 accept=".pdf,.doc,.docx,.odt,.txt,.rtf,.jpg,.jpeg,.png"
                 onChange={onPickFile}

@@ -66,13 +66,23 @@ async function ttsAndVC(text: string, targetVoice: string, _nativeVoice: string,
   //   stability 0.5 → balance entre consistencia y expresividad
   //   similarity_boost 0.95 → max fidelidad al clone source
   //   style 0.0 → no exagerar (PVC ya tiene estilo del orador)
+  // speed: 0.85 → ElevenLabs habla más despacio en la generación misma.
+  // Esto evita el stretch agresivo (atempo=0.80) post-hoc cuando la
+  // traducción al inglés queda más corta que el audio original. La voz
+  // suena natural sin deformación.
   const ttsRes = await fetch(`${ELEVENLABS_API}/text-to-speech/${targetVoice}?output_format=mp3_44100_128`, {
     method: "POST",
     headers: { "xi-api-key": apiKey, "content-type": "application/json", accept: "audio/mpeg" },
     body: JSON.stringify({
       text,
       model_id: "eleven_multilingual_v2",
-      voice_settings: { stability: 0.5, similarity_boost: 0.95, style: 0.0, use_speaker_boost: true },
+      voice_settings: {
+        stability: 0.5,
+        similarity_boost: 0.95,
+        style: 0.0,
+        use_speaker_boost: true,
+        speed: 0.85,
+      },
     }),
   });
   if (!ttsRes.ok) throw new Error(`TTS PVC (${ttsRes.status}): ${(await ttsRes.text()).slice(0, 200)}`);

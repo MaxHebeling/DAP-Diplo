@@ -150,50 +150,39 @@ export default async function SuscribirmePage({
             {isEnrollmentOpen() ? (
               fromArgentina ? (
                 <>
-                  <form
-                    action="/api/checkout/create-mp-subscription"
-                    method="POST"
-                    className="w-full space-y-3"
-                  >
-                    <div className="rounded-lg border border-[#00B1EA]/40 bg-[#00B1EA]/[0.06] p-4">
-                      <div className="flex items-start gap-3">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Mercado_Pago_logo.svg/320px-Mercado_Pago_logo.svg.png"
-                          alt="Mercado Pago"
-                          width="80"
-                          height="40"
-                          className="shrink-0 rounded-md bg-white p-1.5"
-                        />
-                        <div className="min-w-0">
-                          <p className="font-semibold text-neutral-50">
-                            Pago con Mercado Pago
-                          </p>
-                          <p className="mt-1 text-sm leading-relaxed text-neutral-300">
-                            <strong className="text-neutral-50">{MP_MONTHLY_ARS.toLocaleString("es-AR")} ARS/mes</strong> · Pagás con saldo MP, transferencia bancaria, RapiPago, PagoFácil o Pago Mis Cuentas. <strong className="text-neutral-50">Sin tarjeta.</strong>
-                          </p>
-                        </div>
-                      </div>
+                  <div className="w-full rounded-2xl border border-brand-coral/30 bg-brand-coral/[0.06] p-6">
+                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-brand-coral">
+                      Argentina · Pago pastoral
+                    </p>
+                    <h3 className="font-grotesk text-xl font-bold text-neutral-50">
+                      Tu pago se coordina con tu pastor
+                    </h3>
+                    <div className="mt-4 space-y-3 text-sm leading-relaxed text-neutral-300">
+                      <p>
+                        En Argentina el pago del DAP no se hace online — lo entregás directamente a tus pastores, quienes consolidan y transfieren a DAP el día 1 de cada mes.
+                      </p>
+                      <ul className="space-y-2 text-neutral-200">
+                        <li className="flex gap-2">
+                          <span className="text-brand-coral">•</span>
+                          <span><strong className="text-neutral-50">Individual:</strong> $30.000 ARS por mes</span>
+                        </li>
+                        <li className="flex gap-2">
+                          <span className="text-brand-coral">•</span>
+                          <span><strong className="text-neutral-50">Matrimonio:</strong> $42.000 ARS por mes (un solo pago para ambos)</span>
+                        </li>
+                        <li className="flex gap-2">
+                          <span className="text-brand-coral">•</span>
+                          <span><strong className="text-neutral-50">Periodo de recolección:</strong> del 23 al último día de cada mes</span>
+                        </li>
+                      </ul>
+                      <p className="mt-4 text-neutral-400">
+                        Si ya conocés a tu pastor asignado, coordiná con él el pago. Si necesitás confirmar quién es tu pastor, escribinos a{" "}
+                        <a href="mailto:admisiones@dapglobal.org" className="text-brand-coral hover:underline">
+                          admisiones@dapglobal.org
+                        </a>.
+                      </p>
                     </div>
-                    <input
-                      type="text"
-                      name="coupon"
-                      placeholder="Código promocional (opcional)"
-                      autoComplete="off"
-                      autoCapitalize="characters"
-                      className="h-11 w-full rounded-lg border border-white/10 bg-neutral-900/60 px-4 text-sm text-neutral-50 placeholder:text-neutral-500 focus:border-brand-coral focus:outline-none"
-                    />
-                    <Button
-                      type="submit"
-                      size="lg"
-                      className="h-12 w-full bg-brand-coral px-7 text-base font-medium text-brand-coral-foreground hover:bg-brand-coral/90"
-                    >
-                      Continuar con Mercado Pago
-                    </Button>
-                  </form>
-                  <p className="mt-5 text-center text-xs text-neutral-500">
-                    Te redirigimos a Mercado Pago para elegir el método de pago.
-                  </p>
+                  </div>
                 </>
               ) : (
                 <>

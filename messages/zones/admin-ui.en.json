@@ -148,6 +148,10 @@
     "sidebar": {
       "dashboard": "Dashboard",
       "admissions": "Admissions",
+      "churches": "Churches",
+      "simplifiedMode": "Simplified mode",
+      "arPayments": "AR Payments",
+      "arRemittances": "AR Remittances",
       "blocksCopy": "Blocks (copy)",
       "phasesModules": "Phases (modules)",
       "community": "Community",

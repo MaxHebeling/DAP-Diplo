@@ -1,6 +1,6 @@
-import { Download, FileText, FilePlus2 } from "lucide-react";
-import Link from "next/link";
+import { Download, FileText } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import { UploadTaskCard } from "@/components/module/upload-task-card";
 
 /**
  * Banner destacado al inicio de cada módulo con las dos acciones que
@@ -28,11 +28,13 @@ export async function ModuleQuickActions({
   phaseSlug,
   moduleSlug,
   alreadySubmitted,
+  openSubmissionId,
 }: {
   resources: Resource[];
   phaseSlug: string;
   moduleSlug: string;
   alreadySubmitted: boolean;
+  openSubmissionId?: string | null;
 }) {
   const t = await getTranslations("Module.quickActions");
   const mainPdf = resources.find((r) => r.kind === "pdf");
@@ -84,41 +86,15 @@ export async function ModuleQuickActions({
       )}
 
       {/* Subir tarea */}
-      <Link
-        href={`/fases/${phaseSlug}/modulos/${moduleSlug}?section=activation`}
-        className={`group flex items-start gap-3 rounded-xl border p-4 transition-all ${
-          alreadySubmitted
-            ? "border-emerald-400/30 bg-emerald-400/[0.06] hover:border-emerald-400/50"
-            : "border-brand-coral/30 bg-brand-coral/[0.08] hover:border-brand-coral/60 hover:bg-brand-coral/[0.12]"
-        }`}
-      >
-        <div
-          className={`flex size-10 shrink-0 items-center justify-center rounded-lg transition-transform group-hover:scale-110 ${
-            alreadySubmitted
-              ? "bg-emerald-400/20 text-emerald-400"
-              : "bg-brand-coral/20 text-brand-coral"
-          }`}
-        >
-          <FilePlus2 className="size-5" strokeWidth={2} />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p
-            className={`font-inter text-[10px] font-bold uppercase tracking-[0.28em] ${
-              alreadySubmitted ? "text-emerald-400" : "text-brand-coral"
-            }`}
-          >
-            {alreadySubmitted ? t("yourSubmissionLabel") : t("lessonTaskLabel")}
-          </p>
-          <p className="mt-1 font-grotesk text-sm font-bold text-text-primary sm:text-base">
-            {alreadySubmitted ? t("alreadySubmitted") : t("uploadAssignment")}
-          </p>
-          <p className="mt-0.5 font-inter text-xs text-text-secondary">
-            {alreadySubmitted
-              ? t("directorReviewing")
-              : t("goesToDirector")}
-          </p>
-        </div>
-      </Link>
+      <UploadTaskCard
+        phaseSlug={phaseSlug}
+        moduleSlug={moduleSlug}
+        alreadySubmitted={alreadySubmitted}
+        openSubmissionId={openSubmissionId ?? null}
+        taskTypeLabel={alreadySubmitted ? t("yourSubmissionLabel") : t("lessonTaskLabel")}
+        label={alreadySubmitted ? t("alreadySubmitted") : t("uploadAssignment")}
+        description={alreadySubmitted ? t("directorReviewing") : t("goesToDirector")}
+      />
     </section>
   );
 }

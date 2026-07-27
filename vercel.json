@@ -19,7 +19,19 @@
     },
     {
       "path": "/api/cron/grade-assignments",
-      "schedule": "0 * * * *"
+      "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/cron/honor-scholarship-notify",
+      "schedule": "0 12 22 * *"
+    },
+    {
+      "path": "/api/cron/ar-remittance-init",
+      "schedule": "0 9 1 * *"
+    },
+    {
+      "path": "/api/cron/ar-notifications",
+      "schedule": "0 12 * * *"
     },
     {
       "path": "/api/cron/pause-inactive-subs",

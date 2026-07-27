@@ -2,6 +2,7 @@ import { anthropic } from "@ai-sdk/anthropic";
 import { generateText } from "ai";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import type { AttachmentPayload } from "./attachment-loader";
 import {
   EXCORRECTOR_MODEL,
   EXCORRECTOR_VOICE_MANUAL,
@@ -41,6 +42,12 @@ type CorrectInput = {
   activationBodyMd: string | null;
   studentText: string;
   studentAttachmentNote?: string;
+  /**
+   * Si vino con archivo: PDF/imagen llegan como parts multimodales,
+   * Word/.txt/.rtf como texto extraído. El builder del prompt y el
+   * `messages` payload se ajustan según el `kind`.
+   */
+  attachment?: AttachmentPayload;
 };
 
 /**
@@ -59,10 +66,14 @@ export async function correctAssignment(
     return { ok: false, error: "ANTHROPIC_API_KEY no configurada" };
   }
 
-  // Validación mínima del texto del alumno — si vino vacío, evitamos
-  // gastar tokens en LLM y devolvemos un feedback "entrega vacía".
+  // Validación mínima del texto del alumno — si vino vacío Y NO hay
+  // attachment con contenido leíble, devolvemos un feedback "entrega vacía"
+  // sin gastar tokens. Si hay archivo (PDF/imagen/Word con texto), corregimos.
   const trimmed = input.studentText.trim();
-  if (trimmed.length < 20) {
+  const hasUsableAttachment =
+    input.attachment?.kind === "binary" ||
+    (input.attachment?.kind === "text" && input.attachment.extractedText.length > 20);
+  if (trimmed.length < 20 && !hasUsableAttachment) {
     return {
       ok: true,
       data: {
@@ -88,12 +99,25 @@ Hijo, el llamado se desarrolla en el detalle. No subestimes el peso de una entre
   const voiceManual = await loadVoiceManual();
 
   try {
-    const { text } = await generateText({
-      model: anthropic(EXCORRECTOR_MODEL),
-      system: voiceManual,
-      prompt,
-      temperature: 0.4,
-    });
+    // Si hay PDF/imagen adjunto, usamos Anthropic API DIRECTAMENTE (bypass
+    // AI SDK): el SDK envía el binario con formato incorrecto y Claude
+    // reporta "no puedo leerlo". La API directa con type=document /
+    // type=image + source.base64 funciona sin problema.
+    let text: string;
+    console.log("[excorrector] attachment.kind:", input.attachment?.kind, "· mediaType:", input.attachment?.kind === "binary" ? input.attachment.mediaType : "n/a");
+    if (input.attachment?.kind === "binary") {
+      console.log("[excorrector] → Anthropic API direct (media)");
+      text = await callAnthropicWithMedia(voiceManual, prompt, input.attachment);
+      console.log("[excorrector] ← got", text.length, "chars from Anthropic");
+    } else {
+      const result = await generateText({
+        model: anthropic(EXCORRECTOR_MODEL),
+        system: voiceManual,
+        messages: [{ role: "user", content: [{ type: "text", text: prompt }] }],
+        temperature: 0.4,
+      });
+      text = result.text;
+    }
 
     const parsed = tryParseJson(text);
     if (!parsed) {
@@ -141,10 +165,59 @@ Hijo, el llamado se desarrolla en el detalle. No subestimes el peso de una entre
 }
 
 /**
+ * Llama a la API de Anthropic directamente pasando PDF/imagen como
+ * type=document / type=image con source.base64. Este flujo evita el bug
+ * del AI SDK Vercel que envía el binario con formato incorrecto.
+ */
+async function callAnthropicWithMedia(
+  system: string,
+  prompt: string,
+  attachment: Extract<AttachmentPayload, { kind: "binary" }>,
+): Promise<string> {
+  const base64 = Buffer.from(attachment.data).toString("base64");
+  const isPdf = attachment.mediaType === "application/pdf";
+  const mediaBlock = isPdf
+    ? { type: "document", source: { type: "base64", media_type: "application/pdf", data: base64 } }
+    : { type: "image", source: { type: "base64", media_type: attachment.mediaType, data: base64 } };
+
+  const r = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "x-api-key": process.env.ANTHROPIC_API_KEY!,
+      "anthropic-version": "2023-06-01",
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      model: EXCORRECTOR_MODEL,
+      max_tokens: 4000,
+      temperature: 0.4,
+      system,
+      messages: [{ role: "user", content: [mediaBlock, { type: "text", text: prompt }] }],
+    }),
+  });
+  if (!r.ok) {
+    const body = await r.text();
+    throw new Error(`Anthropic API ${r.status}: ${body.slice(0, 300)}`);
+  }
+  const data = (await r.json()) as { content: Array<{ type: string; text?: string }> };
+  const text = data.content?.find((b) => b.type === "text")?.text ?? "";
+  return text;
+}
+
+/**
  * Extrae el primer bloque JSON del texto. Tolera que Claude ponga
  * ```json ... ``` o solo el objeto pelado.
+ *
+ * Si el JSON.parse falla (típico cuando el feedback markdown contiene
+ * comillas/backticks no escapados), cae a fallback: extrae cada campo
+ * con regex independientes. Robust pero menos preciso.
  */
 function tryParseJson(text: string): Record<string, unknown> | null {
+  const result = tryStrictJson(text) ?? tryRegexFallback(text);
+  return result;
+}
+
+function tryStrictJson(text: string): Record<string, unknown> | null {
   const fenced = text.match(/```json\s*([\s\S]*?)```/i);
   const candidate = fenced ? fenced[1].trim() : text.trim();
   // Buscar el primer { y el último } para tolerar contenido alrededor
@@ -161,4 +234,49 @@ function tryParseJson(text: string): Record<string, unknown> | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * Fallback: extrae score/passed/feedback con regex cuando el JSON
+ * parse falla por comillas mal escapadas en el feedback markdown.
+ * Menos preciso pero salva la submission para que el admin la edite.
+ */
+function tryRegexFallback(text: string): Record<string, unknown> | null {
+  // feedback_markdown: capture between "feedback_markdown": "..."
+  // Tolera comillas escapadas o no escapadas mezcladas.
+  const scoreMatch = text.match(/"score"\s*:\s*(\d+)/);
+  const passedMatch = text.match(/"passed"\s*:\s*(true|false)/);
+  // Para feedback intentamos extraer la sección entre la marca de inicio
+  // y el siguiente campo conocido o el final del JSON.
+  let feedback: string | null = null;
+  const fmStart = text.indexOf('"feedback_markdown"');
+  if (fmStart >= 0) {
+    // Busca la primera comilla del valor (después de :)
+    const colonIdx = text.indexOf(':', fmStart);
+    const valStart = text.indexOf('"', colonIdx + 1);
+    if (valStart > 0) {
+      // El feedback termina antes del próximo campo del JSON o }
+      const endMarkers = [
+        '","score"', '","passed"', '","notes_for_admin"', '"\n}',
+      ];
+      let valEnd = -1;
+      for (const m of endMarkers) {
+        const idx = text.indexOf(m, valStart + 1);
+        if (idx > 0 && (valEnd < 0 || idx < valEnd)) valEnd = idx;
+      }
+      if (valEnd < 0) valEnd = text.lastIndexOf('}');
+      if (valEnd > valStart) {
+        feedback = text.slice(valStart + 1, valEnd)
+          .replace(/\\n/g, '\n')
+          .replace(/\\"/g, '"')
+          .trim();
+      }
+    }
+  }
+  if (!scoreMatch || !passedMatch || !feedback) return null;
+  return {
+    feedback_markdown: feedback,
+    score: parseInt(scoreMatch[1], 10),
+    passed: passedMatch[1] === "true",
+  };
 }
