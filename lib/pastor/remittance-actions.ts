@@ -15,13 +15,35 @@ async function recomputeTotals(admin: ReturnType<typeof createAdminClient>, past
   individuals: number; marriages: number; peopleCovered: number; honor: number;
   expected: number; collected: number;
 }> {
-  // Bills asignadas a este pastor (individuales)
-  const { data: assignments } = await admin.from("pastor_assignments")
-    .select("student_user_id, spousal_pair_id")
+  // Iglesias a cargo del pastor (Ticket 2 · iglesia-first)
+  const { data: myChurches } = await admin.from("church_pastors")
+    .select("church_id")
     .eq("pastor_user_id", pastorUserId).eq("status", "active");
+  const churchIds = (myChurches ?? []).map((c) => c.church_id);
 
-  const studentIds = (assignments ?? []).filter((a) => a.student_user_id).map((a) => a.student_user_id!);
-  const pairIds = (assignments ?? []).filter((a) => a.spousal_pair_id).map((a) => a.spousal_pair_id!);
+  // Alumnos de esas iglesias
+  const { data: churchStudents } = churchIds.length > 0
+    ? await admin.from("profiles")
+        .select("id")
+        .in("church_id", churchIds)
+        .eq("admission_status", "approved")
+    : { data: [] };
+  const allStudentIds = (churchStudents ?? []).map((s) => s.id);
+
+  // Matrimonios que involucran alumnos de mis iglesias
+  const { data: pairsData } = allStudentIds.length > 0
+    ? await admin.from("spousal_pairs")
+        .select("id, spouse_1_user_id, spouse_2_user_id")
+        .or(`spouse_1_user_id.in.(${allStudentIds.join(",")}),spouse_2_user_id.in.(${allStudentIds.join(",")})`)
+    : { data: [] };
+  const marriedUserIds = new Set<string>();
+  const pairIds: string[] = [];
+  for (const p of pairsData ?? []) {
+    pairIds.push(p.id);
+    marriedUserIds.add(p.spouse_1_user_id);
+    marriedUserIds.add(p.spouse_2_user_id);
+  }
+  const studentIds = allStudentIds.filter((id) => !marriedUserIds.has(id));
 
   let individuals = 0, marriages = 0, expected = 0, collected = 0;
 

@@ -24,13 +24,37 @@ export default async function PastorHomePage({
   const defaultPeriod = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   const [year, month] = (params.period ?? defaultPeriod).split("-").map((n) => parseInt(n, 10));
 
-  // Buscar asignaciones activas del pastor
-  const { data: assignments } = await admin.from("pastor_assignments")
-    .select("student_user_id, spousal_pair_id")
+  // Iglesias a cargo de este pastor (Ticket 2 · iglesia-first)
+  const { data: myChurches } = await admin.from("church_pastors")
+    .select("church_id")
     .eq("pastor_user_id", user.id).eq("status", "active");
+  const churchIds = (myChurches ?? []).map((c) => c.church_id);
 
-  const individualUserIds = (assignments ?? []).filter((a) => a.student_user_id).map((a) => a.student_user_id!);
-  const pairIds = (assignments ?? []).filter((a) => a.spousal_pair_id).map((a) => a.spousal_pair_id!);
+  // Alumnos de esas iglesias (profile.church_id ∈ churchIds)
+  const { data: churchStudents } = churchIds.length > 0
+    ? await admin.from("profiles")
+        .select("id, full_name, marriage_group_id")
+        .in("church_id", churchIds)
+        .eq("admission_status", "approved")
+    : { data: [] };
+  const allStudentIds = (churchStudents ?? []).map((s) => s.id);
+
+  // Split individuales vs matrimonios: marriage_group_id lo dice.
+  // Los matrimonios se agrupan por spousal_pairs (ambos cónyuges deben
+  // pertenecer a la misma iglesia — si no, es caso a resolver por admin).
+  const { data: pairsData } = allStudentIds.length > 0
+    ? await admin.from("spousal_pairs")
+        .select("id, spouse_1_user_id, spouse_2_user_id")
+        .or(`spouse_1_user_id.in.(${allStudentIds.join(",")}),spouse_2_user_id.in.(${allStudentIds.join(",")})`)
+    : { data: [] };
+  const marriedUserIds = new Set<string>();
+  const pairIds: string[] = [];
+  for (const p of pairsData ?? []) {
+    pairIds.push(p.id);
+    marriedUserIds.add(p.spouse_1_user_id);
+    marriedUserIds.add(p.spouse_2_user_id);
+  }
+  const individualUserIds = allStudentIds.filter((id) => !marriedUserIds.has(id));
 
   // Bills del periodo asignadas a este pastor
   let indivBills: BillRow[] = [];
@@ -48,28 +72,16 @@ export default async function PastorHomePage({
     marriageBills = data ?? [];
   }
 
-  // Nombres
+  // Nombres — reutilizamos churchStudents (ya trae todos los profiles)
   const nameById = new Map<string, string>();
-  if (individualUserIds.length > 0) {
-    const { data: profs } = await admin.from("profiles").select("id, full_name").in("id", individualUserIds);
-    for (const p of profs ?? []) nameById.set(p.id, p.full_name);
-  }
+  for (const s of churchStudents ?? []) nameById.set(s.id, s.full_name);
 
   const pairInfoById = new Map<string, { s1: string; s2: string }>();
-  if (pairIds.length > 0) {
-    const { data: pairs } = await admin.from("spousal_pairs")
-      .select("id, spouse_1_user_id, spouse_2_user_id").in("id", pairIds);
-    const allIds = new Set<string>();
-    for (const p of pairs ?? []) { allIds.add(p.spouse_1_user_id); allIds.add(p.spouse_2_user_id); }
-    const { data: profs } = await admin.from("profiles").select("id, full_name")
-      .in("id", Array.from(allIds));
-    const pn = new Map<string, string>();
-    for (const p of profs ?? []) pn.set(p.id, p.full_name);
-    for (const p of pairs ?? []) {
-      pairInfoById.set(p.id, {
-        s1: pn.get(p.spouse_1_user_id) ?? "?", s2: pn.get(p.spouse_2_user_id) ?? "?",
-      });
-    }
+  for (const p of pairsData ?? []) {
+    pairInfoById.set(p.id, {
+      s1: nameById.get(p.spouse_1_user_id) ?? "?",
+      s2: nameById.get(p.spouse_2_user_id) ?? "?",
+    });
   }
 
   // Alumnos honor asignados (informativo)
@@ -177,10 +189,20 @@ export default async function PastorHomePage({
         </div>
       )}
 
-      {allBills.length === 0 && honorUserIds.size === 0 && (
+      {churchIds.length === 0 && (
         <div className="rounded-xl border border-dashed border-border bg-card/30 p-12 text-center">
           <p className="text-sm text-muted-foreground">
-            Aún no tenés alumnos asignados para este periodo.
+            Aún no tenés iglesias asignadas. Contactá a la administración de
+            DAP para que te asocien con las iglesias que estás pastoreando.
+          </p>
+        </div>
+      )}
+
+      {churchIds.length > 0 && allBills.length === 0 && honorUserIds.size === 0 && (
+        <div className="rounded-xl border border-dashed border-border bg-card/30 p-12 text-center">
+          <p className="text-sm text-muted-foreground">
+            No hay alumnos activos en tus iglesias para este periodo, o las
+            mensualidades del mes aún no fueron generadas.
           </p>
         </div>
       )}

@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/auth/require-admin";
 import { ChurchRow } from "./church-row";
 import { UnassignedRow } from "./unassigned-row";
 import { NewChurchForm } from "./new-church-form";
+import { PastorAssignRow } from "./pastor-assign-row";
 
 export const metadata = { title: "Iglesias · Admin DAP" };
 export const dynamic = "force-dynamic";
@@ -94,6 +95,34 @@ export default async function IglesiasPage() {
     .filter((c) => c.status === "active")
     .map((c) => ({ id: c.id, name: c.name, country: c.country, city: c.city }));
 
+  // Pastores existentes + sus iglesias asignadas
+  const { data: pastors = [] } = await service
+    .from("profiles")
+    .select("id, full_name")
+    .eq("role", "pastor")
+    .order("full_name", { ascending: true });
+
+  const { data: pastorChurches = [] } = await service
+    .from("church_pastors")
+    .select("id, church_id, pastor_user_id, pastoral_role, is_primary")
+    .eq("status", "active");
+
+  const churchesByPastor = new Map<
+    string,
+    Array<{ relationId: string; church_id: string; pastoral_role: string; is_primary: boolean }>
+  >();
+  for (const cp of pastorChurches ?? []) {
+    if (!churchesByPastor.has(cp.pastor_user_id)) churchesByPastor.set(cp.pastor_user_id, []);
+    churchesByPastor.get(cp.pastor_user_id)!.push({
+      relationId: cp.id,
+      church_id: cp.church_id,
+      pastoral_role: cp.pastoral_role,
+      is_primary: cp.is_primary,
+    });
+  }
+  const churchNameById = new Map<string, string>();
+  for (const c of churches as Church[]) churchNameById.set(c.id, c.name);
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
       <header className="mb-8">
@@ -131,6 +160,45 @@ export default async function IglesiasPage() {
                 key={s.id}
                 student={s}
                 churches={activeChurches}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Sección: pastores + iglesias */}
+      {(pastors ?? []).length > 0 && (
+        <section className="mb-10">
+          <div className="mb-3 flex items-baseline justify-between">
+            <h2 className="font-grotesk text-lg font-semibold">
+              Pastores y sus iglesias
+            </h2>
+            <span className="text-xs text-text-secondary">
+              {(pastors ?? []).length} pastor{(pastors ?? []).length !== 1 ? "es" : ""}
+            </span>
+          </div>
+          <div className="rounded-lg border border-white/[0.08] bg-white/[0.02]">
+            <div className="grid grid-cols-12 gap-3 border-b border-white/[0.06] px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
+              <div className="col-span-4">Pastor</div>
+              <div className="col-span-5">Iglesias asignadas</div>
+              <div className="col-span-3">Asignar iglesia</div>
+            </div>
+            {(pastors ?? []).map((p) => (
+              <PastorAssignRow
+                key={p.id}
+                pastor={p}
+                assignedChurches={(churchesByPastor.get(p.id) ?? []).map((a) => ({
+                  relationId: a.relationId,
+                  churchId: a.church_id,
+                  churchName: churchNameById.get(a.church_id) ?? "?",
+                  isPrimary: a.is_primary,
+                }))}
+                availableChurches={activeChurches.filter(
+                  (c) =>
+                    !(churchesByPastor.get(p.id) ?? []).some(
+                      (a) => a.church_id === c.id,
+                    ),
+                )}
               />
             ))}
           </div>
