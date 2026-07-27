@@ -30,12 +30,15 @@ export default async function PastorHomePage({
     .eq("pastor_user_id", user.id).eq("status", "active");
   const churchIds = (myChurches ?? []).map((c) => c.church_id);
 
-  // Alumnos de esas iglesias (profile.church_id ∈ churchIds)
+  // Alumnos de esas iglesias (profile.church_id ∈ churchIds).
+  // Excluimos al propio pastor: si él/ella también es alumno DAP de su
+  // iglesia (caso Yesica Paz), no debe verse a sí mismo en su portal.
   const { data: churchStudents } = churchIds.length > 0
     ? await admin.from("profiles")
         .select("id, full_name, marriage_group_id")
         .in("church_id", churchIds)
         .eq("admission_status", "approved")
+        .neq("id", user.id)
     : { data: [] };
   const allStudentIds = (churchStudents ?? []).map((s) => s.id);
 

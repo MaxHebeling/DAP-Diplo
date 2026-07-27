@@ -95,17 +95,35 @@ export default async function IglesiasPage() {
     .filter((c) => c.status === "active")
     .map((c) => ({ id: c.id, name: c.name, country: c.country, city: c.city }));
 
-  // Pastores existentes + sus iglesias asignadas
-  const { data: pastors = [] } = await service
-    .from("profiles")
-    .select("id, full_name")
-    .eq("role", "pastor")
-    .order("full_name", { ascending: true });
-
+  // Pastores del sistema — dos fuentes:
+  //   1. profiles.role = 'pastor' (rol dedicado)
+  //   2. profiles con al menos una fila activa en church_pastors
+  //      (dual-role alumno-que-pastorea, ej. Yesica Paz)
   const { data: pastorChurches = [] } = await service
     .from("church_pastors")
     .select("id, church_id, pastor_user_id, pastoral_role, is_primary")
     .eq("status", "active");
+
+  const pastorIdsFromChurchPastors = new Set(
+    (pastorChurches ?? []).map((cp) => cp.pastor_user_id),
+  );
+
+  const { data: dedicatedPastors = [] } = await service
+    .from("profiles")
+    .select("id, full_name")
+    .eq("role", "pastor");
+
+  // Union: profiles con role='pastor' + los que tengan church_pastors
+  const pastorIdsSet = new Set<string>(pastorIdsFromChurchPastors);
+  for (const p of dedicatedPastors ?? []) pastorIdsSet.add(p.id);
+
+  const { data: pastors = [] } = pastorIdsSet.size > 0
+    ? await service
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", Array.from(pastorIdsSet))
+        .order("full_name", { ascending: true })
+    : { data: [] };
 
   const churchesByPastor = new Map<
     string,
