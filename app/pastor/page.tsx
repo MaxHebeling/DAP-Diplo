@@ -31,24 +31,23 @@ export default async function PastorHomePage({
     .eq("pastor_user_id", user.id).eq("status", "active");
   const churchIds = (myChurches ?? []).map((c) => c.church_id);
 
-  // Alumnos de esas iglesias (profile.church_id ∈ churchIds).
-  // Excluimos al propio pastor: si él/ella también es alumno DAP de su
-  // iglesia (caso Yesica Paz), no debe verse a sí mismo en su portal.
+  // Alumnos de esas iglesias (profile.church_id ∈ churchIds). Incluye
+  // al propio pastor si también es alumno DAP (dual-role) — necesita
+  // ver su propio bill para registrar el pago cuando corresponda.
   const { data: churchStudents } = churchIds.length > 0
     ? await admin.from("profiles")
         .select("id, full_name, marriage_group_id")
         .in("church_id", churchIds)
         .eq("admission_status", "approved")
-        .neq("id", user.id)
     : { data: [] };
   const allStudentIds = (churchStudents ?? []).map((s) => s.id);
 
-  // Split individuales vs matrimonios: marriage_group_id lo dice.
-  // Los matrimonios se agrupan por spousal_pairs (ambos cónyuges deben
-  // pertenecer a la misma iglesia — si no, es caso a resolver por admin).
+  // Split individuales vs matrimonios. IMPORTANTE: filter status='active'
+  // — un spousal_pair 'dissolved' NO debe agrupar al alumno como casado.
   const { data: pairsData } = allStudentIds.length > 0
     ? await admin.from("spousal_pairs")
         .select("id, spouse_1_user_id, spouse_2_user_id")
+        .eq("status", "active")
         .or(`spouse_1_user_id.in.(${allStudentIds.join(",")}),spouse_2_user_id.in.(${allStudentIds.join(",")})`)
     : { data: [] };
   const marriedUserIds = new Set<string>();
