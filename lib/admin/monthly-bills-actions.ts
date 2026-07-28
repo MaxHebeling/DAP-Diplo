@@ -2,9 +2,75 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth/require-admin";
+import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 type Result = { ok: true; billId: string } | { ok: false; error: string };
+
+/**
+ * Autoriza a admin OR a un pastor de la iglesia del bill.
+ * Retorna { ok, userId, isAdmin } o { ok: false, error }.
+ */
+async function authorizeBillAction(billId: string): Promise<
+  | { ok: true; userId: string; isAdmin: boolean }
+  | { ok: false; error: string }
+> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "No autenticado" };
+
+  const admin = createAdminClient();
+  const { data: prof } = await admin
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle<{ role: string }>();
+  if (prof?.role === "admin") return { ok: true, userId: user.id, isAdmin: true };
+
+  // No es admin → chequear si es pastor de la iglesia del bill
+  const { data: bill } = await admin
+    .from("monthly_bills")
+    .select("user_id, spousal_pair_id")
+    .eq("id", billId)
+    .maybeSingle<{ user_id: string | null; spousal_pair_id: string | null }>();
+  if (!bill) return { ok: false, error: "bill no encontrada" };
+
+  const targetUserIds: string[] = [];
+  if (bill.user_id) targetUserIds.push(bill.user_id);
+  if (bill.spousal_pair_id) {
+    const { data: pair } = await admin
+      .from("spousal_pairs")
+      .select("spouse_1_user_id, spouse_2_user_id")
+      .eq("id", bill.spousal_pair_id)
+      .maybeSingle<{ spouse_1_user_id: string; spouse_2_user_id: string }>();
+    if (pair) {
+      targetUserIds.push(pair.spouse_1_user_id, pair.spouse_2_user_id);
+    }
+  }
+  if (targetUserIds.length === 0) return { ok: false, error: "bill sin usuarios asociados" };
+
+  const { data: targets } = await admin
+    .from("profiles")
+    .select("church_id")
+    .in("id", targetUserIds);
+  const targetChurches = new Set(
+    (targets ?? []).map((p) => p.church_id).filter((c): c is string => !!c),
+  );
+
+  const { data: myChurches } = await admin
+    .from("church_pastors")
+    .select("church_id")
+    .eq("pastor_user_id", user.id)
+    .eq("status", "active");
+  const myChurchIds = new Set((myChurches ?? []).map((c) => c.church_id));
+
+  const authorized = Array.from(targetChurches).some((c) => myChurchIds.has(c));
+  if (!authorized) return { ok: false, error: "No autorizado para este bill" };
+
+  return { ok: true, userId: user.id, isAdmin: false };
+}
 
 /**
  * Marcar un bill como pagado. Registra:
@@ -24,10 +90,17 @@ export async function markBillPaidAction(input: {
   receiptUrl?: string;
   observations?: string;
 }): Promise<Result> {
-  const { admin: isAdmin, userId } = await requireAdmin();
-  if (!isAdmin || !userId) return { ok: false, error: "Solo admin" };
   if (!input.billId) return { ok: false, error: "billId requerido" };
   if (input.receivedAmountArs < 0) return { ok: false, error: "monto inválido" };
+
+  // Autorización: admin O pastor de la iglesia del alumno del bill
+  const auth = await authorizeBillAction(input.billId);
+  if (!auth.ok) return { ok: false, error: auth.error };
+  const userId = auth.userId;
+  // Si el que registra el pago es un pastor (no admin), lo guardamos
+  // como pastor_receiver_user_id para trazabilidad de quién cobró.
+  const pastorReceiverUserId =
+    input.pastorReceiverUserId ?? (!auth.isAdmin ? userId : null);
 
   const admin = createAdminClient();
   const nowIso = new Date().toISOString();
@@ -57,7 +130,7 @@ export async function markBillPaidAction(input: {
       paid_at: nowIso,
       payment_method: input.paymentMethod,
       received_amount_ars: input.receivedAmountArs,
-      pastor_receiver_user_id: input.pastorReceiverUserId ?? null,
+      pastor_receiver_user_id: pastorReceiverUserId,
       payment_receipt_url: input.receiptUrl ?? null,
       observations: input.observations ?? null,
       confirmed_by: userId,
@@ -69,6 +142,7 @@ export async function markBillPaidAction(input: {
   if (error) return { ok: false, error: error.message };
 
   revalidatePath("/admin/pagos-ar");
+  revalidatePath("/pastor");
   return { ok: true, billId: input.billId };
 }
 
