@@ -86,13 +86,32 @@ export async function loadSubscription(
     .limit(1)
     .maybeSingle<SubscriptionRow>();
 
-  const hasActive =
+  const stripeActive =
     !!sub &&
     (sub.status === "active" || sub.status === "trialing") &&
     (sub.current_period_end === null ||
       new Date(sub.current_period_end) > new Date());
 
-  return { sub: sub ?? null, hasActive };
+  // Argentina: los alumnos pagan por el sistema pastoral (no Stripe/MP).
+  // Tener admisión aprobada + iglesia AR = acceso completo, independiente
+  // de subscriptions.status (que probablemente esté 'paused' o 'canceled'
+  // por MP retirado). Sin este check todos los AR ven "sin suscripción".
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("admission_status, church_id")
+    .eq("id", userId)
+    .maybeSingle<{ admission_status: string; church_id: string | null }>();
+  let pastoralActive = false;
+  if (profile?.admission_status === "approved" && profile.church_id) {
+    const { data: church } = await supabase
+      .from("churches")
+      .select("country")
+      .eq("id", profile.church_id)
+      .maybeSingle<{ country: string | null }>();
+    if (church?.country === "Argentina") pastoralActive = true;
+  }
+
+  return { sub: sub ?? null, hasActive: stripeActive || pastoralActive };
 }
 
 export type WeekDashboardData = {
