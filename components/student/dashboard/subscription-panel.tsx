@@ -19,10 +19,13 @@ export async function SubscriptionPanel({
   cancelDate,
   nextBillDate,
   isAdmin,
+  isPastoralAr = false,
 }: {
   cancelDate: string | null;
   nextBillDate: string | null;
   isAdmin: boolean;
+  /** true si el alumno es AR bajo sistema pastoral (paga a su pastor, no Stripe/MP). */
+  isPastoralAr?: boolean;
 }) {
   const t = await getTranslations("Student");
   return (
@@ -77,31 +80,48 @@ export async function SubscriptionPanel({
       </DapCard>
 
       <aside className="space-y-4">
-        <DapCard>
-          <h3 className="font-inter text-xs font-medium uppercase tracking-widest text-text-tertiary">
-            {t("dashboard.subscription.label")}
-          </h3>
-          <p className="mt-2 font-grotesk text-h4 font-semibold text-text-primary">
-            {t("dashboard.subscription.active")}
-          </p>
-          <p className="mt-1 font-inter text-xs text-text-secondary">
-            {cancelDate
-              ? t("dashboard.subscription.cancelsOn", { date: cancelDate })
-              : nextBillDate
-                ? t("dashboard.subscription.nextBill", { date: nextBillDate })
-                : "—"}
-          </p>
-          <form action="/api/billing/portal" method="POST" className="mt-4">
-            <DapButton
-              type="submit"
-              variant="secondary"
-              size="sm"
-              className="w-full"
-            >
-              {t("dashboard.subscription.manage")}
-            </DapButton>
-          </form>
-        </DapCard>
+        {isPastoralAr ? (
+          <DapCard>
+            <h3 className="font-inter text-[11px] font-medium uppercase tracking-widest text-brand-coral">
+              Pago pastoral · Argentina
+            </h3>
+            <p className="mt-2 font-grotesk text-h4 font-semibold text-text-primary">
+              Coordinado por tu iglesia
+            </p>
+            <p className="mt-2 font-inter text-xs leading-relaxed text-text-secondary">
+              Tu pago mensual lo entregás en efectivo o transferencia a los
+              pastores de tu iglesia entre el <strong>día 23</strong> y el
+              último del mes. Ellos lo consolidan y transfieren a DAP el
+              <strong> día 1</strong> del mes siguiente.
+            </p>
+          </DapCard>
+        ) : (
+          <DapCard>
+            <h3 className="font-inter text-xs font-medium uppercase tracking-widest text-text-tertiary">
+              {t("dashboard.subscription.label")}
+            </h3>
+            <p className="mt-2 font-grotesk text-h4 font-semibold text-text-primary">
+              {t("dashboard.subscription.active")}
+            </p>
+            <p className="mt-1 font-inter text-xs text-text-secondary">
+              {cancelDate
+                ? t("dashboard.subscription.cancelsOn", { date: cancelDate })
+                : nextBillDate
+                  ? t("dashboard.subscription.nextBill", { date: nextBillDate })
+                  : "—"}
+            </p>
+            <form action="/api/billing/portal" method="POST" className="mt-4">
+              <DapButton
+                type="submit"
+                variant="secondary"
+                size="sm"
+                className="w-full"
+              >
+                {t("dashboard.subscription.manage")}
+              </DapButton>
+            </form>
+          </DapCard>
+        )}
 
         <div className="relative overflow-hidden rounded-xl border border-brand-violet/20 bg-brand-violet/[0.04] p-5">
           <Sparkles

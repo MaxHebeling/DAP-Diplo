@@ -57,7 +57,7 @@ export default async function DashboardPage() {
 
   const profile = await loadProfile(supabase, user.id);
   const firstName = profile.full_name.split(" ")[0];
-  const { sub, hasActive } = await loadSubscription(supabase, user.id);
+  const { sub, hasActive, isPastoralAr } = await loadSubscription(supabase, user.id);
 
   // Fase 2: Beca de Honor vigente — banner en dashboard
   const { data: honorScholarship } = await supabase
@@ -110,6 +110,7 @@ export default async function DashboardPage() {
             }
             nextBillDate={formatBillingDate(sub?.current_period_end ?? null)}
             userId={user.id}
+            isPastoralAr={isPastoralAr}
           />
         )}
       </div>
@@ -125,6 +126,7 @@ async function WeekDashboard({
   cancelDate,
   nextBillDate,
   userId,
+  isPastoralAr,
 }: {
   firstName: string;
   isAdmin: boolean;
@@ -132,6 +134,7 @@ async function WeekDashboard({
   matricula: string | null;
   cancelDate: string | null;
   nextBillDate: string | null;
+  isPastoralAr: boolean;
   userId: string;
 }) {
   const supabase = await createClient();
@@ -222,6 +225,7 @@ async function WeekDashboard({
           cancelDate={cancelDate}
           nextBillDate={nextBillDate}
           isAdmin={isAdmin}
+          isPastoralAr={isPastoralAr}
         />
       </div>
 
