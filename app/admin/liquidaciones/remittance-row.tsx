@@ -22,6 +22,7 @@ type Remittance = {
   observations: string | null;
   submitted_at: string | null;
   confirmed_at: string | null;
+  updated_at?: string | null;
 };
 
 const STATUS_LABEL: Record<string, { text: string; cls: string }> = {
@@ -35,7 +36,15 @@ const STATUS_LABEL: Record<string, { text: string; cls: string }> = {
   canceled:            { text: "Cancelado",               cls: "text-slate-500" },
 };
 
-export function RemittanceRow({ remittance: r, pastorName }: { remittance: Remittance; pastorName: string }) {
+export function RemittanceRow({
+  remittance: r,
+  pastorName,
+  churchName,
+}: {
+  remittance: Remittance;
+  pastorName: string;
+  churchName?: string | null;
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -43,6 +52,10 @@ export function RemittanceRow({ remittance: r, pastorName }: { remittance: Remit
 
   const diff = (r.transferred_amount_ars ?? 0) - r.expected_amount_ars;
   const statusInfo = STATUS_LABEL[r.status] ?? { text: r.status, cls: "text-muted-foreground" };
+  const pct = r.expected_amount_ars > 0
+    ? Math.min(100, Math.round((r.collected_amount_ars / r.expected_amount_ars) * 100))
+    : 0;
+  const pctColor = pct === 100 ? "bg-emerald-500" : pct >= 50 ? "bg-amber-400" : pct > 0 ? "bg-brand-coral" : "bg-slate-500";
 
   function confirmReceived() {
     startTransition(async () => {
@@ -59,6 +72,11 @@ export function RemittanceRow({ remittance: r, pastorName }: { remittance: Remit
       <div className="rounded-xl border border-border bg-card p-5">
         <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
           <div>
+            {churchName && (
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-brand-coral">
+                {churchName}
+              </p>
+            )}
             <p className="font-grotesk text-lg font-semibold">{pastorName}</p>
             <p className={`text-xs font-semibold uppercase tracking-widest ${statusInfo.cls}`}>{statusInfo.text}</p>
           </div>
@@ -67,6 +85,22 @@ export function RemittanceRow({ remittance: r, pastorName }: { remittance: Remit
             {r.transfer_date_actual && (
               <p>Fecha transf. real: <strong>{new Date(r.transfer_date_actual).toLocaleDateString("es-AR")}</strong></p>
             )}
+            {r.updated_at && (
+              <p className="mt-0.5 text-[10px] text-muted-foreground/70">
+                Última actualización: {new Date(r.updated_at).toLocaleString("es-AR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Barra de progreso */}
+        <div className="mb-4">
+          <div className="mb-1 flex items-baseline justify-between text-xs">
+            <span className="text-muted-foreground">Recaudación</span>
+            <span className="font-mono font-bold">{pct}%</span>
+          </div>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-white/[0.05]">
+            <div className={`h-full ${pctColor} transition-all`} style={{ width: `${pct}%` }} />
           </div>
         </div>
 

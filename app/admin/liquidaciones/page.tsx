@@ -19,25 +19,53 @@ export default async function LiquidacionesPage({
   const admin = createAdminClient();
   const params = await searchParams;
   const now = new Date();
-  const prevMonth = now.getMonth() === 0 ? 12 : now.getMonth();
-  const prevYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
-  const defaultPeriod = `${prevYear}-${String(prevMonth).padStart(2, "0")}`;
+
+  // Default: mes actual (ciclo activo AR va del 23 al último día).
+  // Si no viene ?period=, elegimos el mes actual.
+  const defaultPeriod = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   const [year, month] = (params.period ?? defaultPeriod).split("-").map((n) => parseInt(n, 10));
 
+  // Ordenamos por menor % de avance (los más urgentes arriba) usando
+  // el % calculado. Fallback a created_at si expected=0.
   const { data: remittances } = await admin.from("pastor_remittances").select("*")
-    .eq("period_year", year).eq("period_month", month).order("created_at");
+    .eq("period_year", year).eq("period_month", month);
 
-  // Nombres de pastores
+  // Nombres de pastores + iglesias asignadas
   const pastorIds = (remittances ?? []).map((r) => r.pastor_user_id);
   const pastorNames = new Map<string, string>();
+  const pastorChurches = new Map<string, string>();
   if (pastorIds.length > 0) {
     const { data: profs } = await admin.from("profiles").select("id, full_name").in("id", pastorIds);
     for (const p of profs ?? []) pastorNames.set(p.id, p.full_name);
+    // Iglesias del pastor (tomamos la primary si hay varias)
+    const { data: cps } = await admin.from("church_pastors")
+      .select("pastor_user_id, church_id, is_primary")
+      .in("pastor_user_id", pastorIds).eq("status", "active");
+    const churchIds = Array.from(new Set((cps ?? []).map((c) => c.church_id)));
+    const { data: churches } = churchIds.length > 0
+      ? await admin.from("churches").select("id, name").in("id", churchIds)
+      : { data: [] };
+    const churchNameById = new Map((churches ?? []).map((c) => [c.id, c.name]));
+    // Priorizamos is_primary
+    for (const cp of (cps ?? []).sort((a, b) => Number(b.is_primary) - Number(a.is_primary))) {
+      if (!pastorChurches.has(cp.pastor_user_id)) {
+        pastorChurches.set(cp.pastor_user_id, churchNameById.get(cp.church_id) ?? "?");
+      }
+    }
   }
 
   const totalExpected = (remittances ?? []).reduce((s, r) => s + (r.expected_amount_ars ?? 0), 0);
   const totalCollected = (remittances ?? []).reduce((s, r) => s + (r.collected_amount_ars ?? 0), 0);
   const totalTransferred = (remittances ?? []).reduce((s, r) => s + (r.transferred_amount_ars ?? 0), 0);
+  const totalPending = Math.max(0, totalExpected - totalCollected);
+  const overallPct = totalExpected > 0 ? Math.round((totalCollected / totalExpected) * 100) : 0;
+
+  // Sort remittances: menos avance primero (los que necesitan atención)
+  const sortedRemittances = [...(remittances ?? [])].sort((a, b) => {
+    const pa = a.expected_amount_ars > 0 ? a.collected_amount_ars / a.expected_amount_ars : 0;
+    const pb = b.expected_amount_ars > 0 ? b.collected_amount_ars / b.expected_amount_ars : 0;
+    return pa - pb;
+  });
 
   const periods = [];
   for (let i = 0; i < 6; i++) {
@@ -57,6 +85,23 @@ export default async function LiquidacionesPage({
           Cada pastor consolida los pagos recibidos y transfiere a DAP el día 1 del mes siguiente.
         </p>
       </header>
+
+      {/* Barra de progreso general */}
+      <div className="mb-4 rounded-xl border border-border bg-card p-5">
+        <div className="mb-2 flex flex-wrap items-baseline justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-brand-coral">Avance general del periodo</p>
+            <p className="mt-1 font-grotesk text-3xl font-bold">{overallPct}%</p>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            <span className="font-mono">${totalCollected.toLocaleString("es-AR")}</span> / <span className="font-mono">${totalExpected.toLocaleString("es-AR")}</span> ARS
+            {totalPending > 0 && (<span className="ml-2 text-amber-400">· Pendiente: <span className="font-mono">${totalPending.toLocaleString("es-AR")}</span></span>)}
+          </p>
+        </div>
+        <div className="h-2 w-full overflow-hidden rounded-full bg-white/[0.05]">
+          <div className={`h-full transition-all ${overallPct === 100 ? "bg-emerald-500" : overallPct >= 50 ? "bg-amber-400" : overallPct > 0 ? "bg-brand-coral" : "bg-slate-500"}`} style={{ width: `${overallPct}%` }} />
+        </div>
+      </div>
 
       {/* Stats consolidadas */}
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -90,8 +135,13 @@ export default async function LiquidacionesPage({
         </div>
       ) : (
         <div className="space-y-3">
-          {(remittances ?? []).map((r) => (
-            <RemittanceRow key={r.id} remittance={r} pastorName={pastorNames.get(r.pastor_user_id) ?? "?"} />
+          {sortedRemittances.map((r) => (
+            <RemittanceRow
+              key={r.id}
+              remittance={r}
+              pastorName={pastorNames.get(r.pastor_user_id) ?? "?"}
+              churchName={pastorChurches.get(r.pastor_user_id) ?? null}
+            />
           ))}
         </div>
       )}
