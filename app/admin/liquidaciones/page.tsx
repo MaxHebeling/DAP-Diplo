@@ -67,9 +67,12 @@ export default async function LiquidacionesPage({
     return pa - pb;
   });
 
-  const periods = [];
-  for (let i = 0; i < 6; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+  // Periodos: 5 hacia atrás + actual + 3 hacia adelante (para acceder
+  // a agosto/septiembre desde julio). Ordenados de más reciente-futuro
+  // arriba a más viejo abajo.
+  const periods: Array<{ value: string; label: string }> = [];
+  for (let i = 3; i >= -5; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
     periods.push({
       value: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
       label: `${MONTHS[d.getMonth() + 1]} ${d.getFullYear()}`,
