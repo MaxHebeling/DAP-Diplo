@@ -75,7 +75,11 @@ export async function loadProfile(
 export async function loadSubscription(
   supabase: SupabaseClient,
   userId: string,
-): Promise<{ sub: SubscriptionRow | null; hasActive: boolean }> {
+): Promise<{
+  sub: SubscriptionRow | null;
+  hasActive: boolean;
+  isPastoralAr: boolean;
+}> {
   const { data: sub } = await supabase
     .from("subscriptions")
     .select(
@@ -101,17 +105,21 @@ export async function loadSubscription(
     .select("admission_status, church_id")
     .eq("id", userId)
     .maybeSingle<{ admission_status: string; church_id: string | null }>();
-  let pastoralActive = false;
+  let isPastoralAr = false;
   if (profile?.admission_status === "approved" && profile.church_id) {
     const { data: church } = await supabase
       .from("churches")
       .select("country")
       .eq("id", profile.church_id)
       .maybeSingle<{ country: string | null }>();
-    if (church?.country === "Argentina") pastoralActive = true;
+    if (church?.country === "Argentina") isPastoralAr = true;
   }
 
-  return { sub: sub ?? null, hasActive: stripeActive || pastoralActive };
+  return {
+    sub: sub ?? null,
+    hasActive: stripeActive || isPastoralAr,
+    isPastoralAr,
+  };
 }
 
 export type WeekDashboardData = {
