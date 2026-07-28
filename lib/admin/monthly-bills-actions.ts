@@ -4,6 +4,75 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { upsertPastorRemittance } from "@/lib/pastor/remittance-actions";
+
+/**
+ * Recalcula la remittance de los pastores de la iglesia asociada a un
+ * bill. Se llama después de cualquier acción que cambie el status del
+ * bill (paid, exempt, canceled, reverted) para que /admin/liquidaciones
+ * refleje el avance en tiempo real sin que el pastor tenga que abrir
+ * /pastor/liquidacion.
+ */
+async function recalcSettlementsForBill(billId: string): Promise<void> {
+  const service = createAdminClient();
+  const { data: bill } = await service
+    .from("monthly_bills")
+    .select("user_id, spousal_pair_id, period_year, period_month")
+    .eq("id", billId)
+    .maybeSingle<{
+      user_id: string | null;
+      spousal_pair_id: string | null;
+      period_year: number;
+      period_month: number;
+    }>();
+  if (!bill) return;
+
+  // Resolver el/los alumnos afectados por el bill
+  const targetIds: string[] = [];
+  if (bill.user_id) targetIds.push(bill.user_id);
+  if (bill.spousal_pair_id) {
+    const { data: pair } = await service
+      .from("spousal_pairs")
+      .select("spouse_1_user_id, spouse_2_user_id")
+      .eq("id", bill.spousal_pair_id)
+      .maybeSingle<{ spouse_1_user_id: string; spouse_2_user_id: string }>();
+    if (pair) targetIds.push(pair.spouse_1_user_id, pair.spouse_2_user_id);
+  }
+  if (targetIds.length === 0) return;
+
+  // Iglesias de los alumnos
+  const { data: profiles } = await service
+    .from("profiles")
+    .select("church_id")
+    .in("id", targetIds);
+  const churchIds = Array.from(
+    new Set((profiles ?? []).map((p) => p.church_id).filter((c): c is string => !!c)),
+  );
+  if (churchIds.length === 0) return;
+
+  // Pastores activos de esas iglesias
+  const { data: cps } = await service
+    .from("church_pastors")
+    .select("pastor_user_id")
+    .in("church_id", churchIds)
+    .eq("status", "active");
+  const pastorIds = Array.from(
+    new Set((cps ?? []).map((c) => c.pastor_user_id)),
+  );
+
+  // Recalcular remittance de cada pastor (fire-and-forget, fallar silencioso)
+  await Promise.all(
+    pastorIds.map((pid) =>
+      upsertPastorRemittance({
+        pastorUserId: pid,
+        year: bill.period_year,
+        month: bill.period_month,
+      }).catch((e) =>
+        console.error(`[recalcSettlements] pastor=${pid}:`, e),
+      ),
+    ),
+  );
+}
 
 type Result = { ok: true; billId: string } | { ok: false; error: string };
 
@@ -141,7 +210,12 @@ export async function markBillPaidAction(input: {
     .eq("id", input.billId);
   if (error) return { ok: false, error: error.message };
 
+  // Recalcular remittance de los pastores de la iglesia del bill —
+  // /admin/liquidaciones muestra los totales en tiempo real.
+  await recalcSettlementsForBill(input.billId);
+
   revalidatePath("/admin/pagos-ar");
+  revalidatePath("/admin/liquidaciones");
   revalidatePath("/pastor");
   return { ok: true, billId: input.billId };
 }
@@ -177,7 +251,10 @@ export async function markBillExemptAction(input: {
   }).eq("id", input.billId);
   if (error) return { ok: false, error: error.message };
 
+  await recalcSettlementsForBill(input.billId);
   revalidatePath("/admin/pagos-ar");
+  revalidatePath("/admin/liquidaciones");
+  revalidatePath("/pastor");
   return { ok: true, billId: input.billId };
 }
 
@@ -215,6 +292,9 @@ export async function revertBillToPendingAction(input: {
   }).eq("id", input.billId);
   if (error) return { ok: false, error: error.message };
 
+  await recalcSettlementsForBill(input.billId);
   revalidatePath("/admin/pagos-ar");
+  revalidatePath("/admin/liquidaciones");
+  revalidatePath("/pastor");
   return { ok: true, billId: input.billId };
 }
