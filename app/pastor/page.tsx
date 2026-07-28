@@ -133,13 +133,25 @@ export default async function PastorHomePage({
         <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-brand-coral">Transferencia a DAP · día 1 del mes</p>
         <p className="mb-3 text-sm text-foreground">Consolidá lo recolectado y transferí al siguiente destino:</p>
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-lg bg-card p-3">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Alias</p>
-            <p className="mt-1 font-mono text-sm">hebeling.440.cubo.mp</p>
+          <div className="rounded-lg bg-card p-3 sm:col-span-2">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Titular</p>
+            <p className="mt-1 font-mono text-sm">Maximiliano Ariel Hebeling</p>
           </div>
           <div className="rounded-lg bg-card p-3">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">CVU</p>
-            <p className="mt-1 font-mono text-sm">0000003100003181547524</p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Banco</p>
+            <p className="mt-1 font-mono text-sm">Brubank</p>
+          </div>
+          <div className="rounded-lg bg-card p-3">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Alias</p>
+            <p className="mt-1 font-mono text-sm">maximilianohebeling</p>
+          </div>
+          <div className="rounded-lg bg-card p-3">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">CBU</p>
+            <p className="mt-1 font-mono text-sm break-all">1430001713028093230012</p>
+          </div>
+          <div className="rounded-lg bg-card p-3">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">N° de cuenta</p>
+            <p className="mt-1 font-mono text-sm">1302809323001</p>
           </div>
         </div>
         <p className="mt-3 text-xs text-muted-foreground">

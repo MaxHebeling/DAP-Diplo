@@ -73,13 +73,25 @@ export default async function LiquidacionPage({
       <div className="mb-6 rounded-xl border border-brand-coral/30 bg-brand-coral/[0.06] p-5">
         <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-brand-coral">Cuenta destino DAP</p>
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-lg bg-card p-3">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Alias</p>
-            <p className="mt-1 font-mono">hebeling.440.cubo.mp</p>
+          <div className="rounded-lg bg-card p-3 sm:col-span-2">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Titular</p>
+            <p className="mt-1 font-mono">Maximiliano Ariel Hebeling</p>
           </div>
           <div className="rounded-lg bg-card p-3">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">CVU</p>
-            <p className="mt-1 font-mono">0000003100003181547524</p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Banco</p>
+            <p className="mt-1 font-mono">Brubank</p>
+          </div>
+          <div className="rounded-lg bg-card p-3">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Alias</p>
+            <p className="mt-1 font-mono">maximilianohebeling</p>
+          </div>
+          <div className="rounded-lg bg-card p-3">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">CBU</p>
+            <p className="mt-1 font-mono break-all">1430001713028093230012</p>
+          </div>
+          <div className="rounded-lg bg-card p-3">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">N° de cuenta</p>
+            <p className="mt-1 font-mono">1302809323001</p>
           </div>
         </div>
       </div>
