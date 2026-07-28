@@ -22,14 +22,42 @@ export default async function PastorHomePage({
   const admin = createAdminClient();
   const params = await searchParams;
   const now = new Date();
-  const defaultPeriod = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-  const [year, month] = (params.period ?? defaultPeriod).split("-").map((n) => parseInt(n, 10));
 
   // Iglesias a cargo de este pastor (Ticket 2 · iglesia-first)
   const { data: myChurches } = await admin.from("church_pastors")
     .select("church_id")
     .eq("pastor_user_id", user.id).eq("status", "active");
   const churchIds = (myChurches ?? []).map((c) => c.church_id);
+
+  // Default de periodo: si el usuario NO pasa ?period=, elegimos
+  // dinámicamente. Si hoy no hay bills pending para las iglesias del
+  // pastor, saltamos al próximo mes con bills. Esto evita que un pastor
+  // entrando el 15 de julio vea "pantalla vacía" cuando el ciclo activo
+  // es agosto.
+  let defaultPeriod = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  if (!params.period && churchIds.length > 0) {
+    // Buscar el mes con bills pending más próximo (this month first, then next 2)
+    const { data: studentsForDefault } = await admin.from("profiles").select("id")
+      .in("church_id", churchIds).eq("admission_status", "approved");
+    const sids = (studentsForDefault ?? []).map((s) => s.id);
+    if (sids.length > 0) {
+      const candidates: Array<{ y: number; m: number }> = [
+        { y: now.getFullYear(), m: now.getMonth() + 1 },
+        { y: now.getMonth() === 11 ? now.getFullYear() + 1 : now.getFullYear(), m: now.getMonth() === 11 ? 1 : now.getMonth() + 2 },
+      ];
+      for (const c of candidates) {
+        const { data: b } = await admin.from("monthly_bills")
+          .select("id").in("user_id", sids)
+          .eq("period_year", c.y).eq("period_month", c.m)
+          .eq("status", "pending").limit(1);
+        if ((b ?? []).length > 0) {
+          defaultPeriod = `${c.y}-${String(c.m).padStart(2, "0")}`;
+          break;
+        }
+      }
+    }
+  }
+  const [year, month] = (params.period ?? defaultPeriod).split("-").map((n) => parseInt(n, 10));
 
   // Alumnos de esas iglesias (profile.church_id ∈ churchIds). Incluye
   // al propio pastor si también es alumno DAP (dual-role) — necesita
