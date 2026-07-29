@@ -115,9 +115,22 @@ export async function loadSubscription(
     if (church?.country === "Argentina") isPastoralAr = true;
   }
 
+  // Beca de Honor vigente (cualquier país): acceso académico completo,
+  // liberado de pagos. Aplica a becados globales, cortesías, casos
+  // especiales aprobados por administración.
+  let hasHonorScholarship = false;
+  if (profile?.admission_status === "approved") {
+    const { count } = await supabase
+      .from("honor_scholarships")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .in("status", ["vigente", "proxima_vencer"]);
+    if ((count ?? 0) > 0) hasHonorScholarship = true;
+  }
+
   return {
     sub: sub ?? null,
-    hasActive: stripeActive || isPastoralAr,
+    hasActive: stripeActive || isPastoralAr || hasHonorScholarship,
     isPastoralAr,
   };
 }
