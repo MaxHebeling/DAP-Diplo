@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { Sparkles, CheckCircle2, AlertCircle, Clock } from "lucide-react";
+import { Sparkles, CheckCircle2, AlertCircle, Clock, RotateCcw, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CorrectionRow } from "./correction-row";
+import { CorrectionsFilters } from "./corrections-filters";
 
 export const metadata = { title: "Correcciones · Admin DAP" };
 export const dynamic = "force-dynamic";
@@ -71,10 +72,13 @@ function matches(p: Pending, filter: FilterKey): boolean {
 export default async function CorreccionesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string }>;
+  searchParams: Promise<{ filter?: string; q?: string; country?: string; week?: string }>;
 }) {
   const params = await searchParams;
   const filter = (FILTERS.find((f) => f.key === params.filter)?.key ?? "all") as FilterKey;
+  const q = (params.q ?? "").trim().toLowerCase();
+  const countryFilter = (params.country ?? "").trim();
+  const weekFilter = params.week ? parseInt(params.week, 10) : null;
   const supabase = await createClient();
   const admin = createAdminClient();
 
@@ -90,27 +94,60 @@ export default async function CorreccionesPage({
     .returns<Pending[]>();
 
   const allPending = pendingRaw ?? [];
-  const pending = allPending.filter((p) => matches(p, filter));
 
-  const moduleIds = Array.from(new Set(pending.map((p) => p.module_id)));
-  const userIds = Array.from(new Set(pending.map((p) => p.user_id)));
+  const moduleIdsAll = Array.from(new Set(allPending.map((p) => p.module_id)));
+  const userIdsAll = Array.from(new Set(allPending.map((p) => p.user_id)));
   const [modulesRes, profilesRes] = await Promise.all([
-    moduleIds.length > 0
+    moduleIdsAll.length > 0
       ? admin
           .from("modules")
           .select("id, title, slug, course_week, phase:phases(slug, title)")
-          .in("id", moduleIds)
+          .in("id", moduleIdsAll)
           .returns<ModuleMini[]>()
       : Promise.resolve({ data: [] as ModuleMini[] }),
-    userIds.length > 0
-      ? admin.from("profiles").select("id, full_name").in("id", userIds)
-      : Promise.resolve({ data: [] as { id: string; full_name: string }[] }),
+    userIdsAll.length > 0
+      ? admin.from("profiles").select("id, full_name, church_id").in("id", userIdsAll)
+      : Promise.resolve({ data: [] as { id: string; full_name: string; church_id: string | null }[] }),
   ]);
 
   const modulesById = new Map<string, ModuleMini>();
   for (const m of modulesRes.data ?? []) modulesById.set(m.id, m);
   const namesById = new Map<string, string>();
-  for (const p of profilesRes.data ?? []) namesById.set(p.id, p.full_name);
+  const countryByUser = new Map<string, string>();
+  const churchIds = new Set<string>();
+  for (const p of profilesRes.data ?? []) {
+    namesById.set(p.id, p.full_name);
+    if (p.church_id) churchIds.add(p.church_id);
+  }
+  // Resolver país via church.country (o "Sin país" fallback)
+  if (churchIds.size > 0) {
+    const { data: churches } = await admin.from("churches").select("id, country").in("id", Array.from(churchIds));
+    const countryByChurch = new Map((churches ?? []).map((c) => [c.id, c.country ?? "?"]));
+    for (const p of profilesRes.data ?? []) {
+      if (p.church_id) {
+        const c = countryByChurch.get(p.church_id);
+        if (c) countryByUser.set(p.id, c);
+      }
+    }
+  }
+
+  // Aplicar filtros
+  const pending = allPending.filter((p) => {
+    if (!matches(p, filter)) return false;
+    if (q) {
+      const name = (namesById.get(p.user_id) ?? "").toLowerCase();
+      if (!name.includes(q)) return false;
+    }
+    if (countryFilter) {
+      const country = countryByUser.get(p.user_id) ?? "";
+      if (country !== countryFilter) return false;
+    }
+    if (weekFilter !== null) {
+      const m = modulesById.get(p.module_id);
+      if (m?.course_week !== weekFilter) return false;
+    }
+    return true;
+  });
 
   // Stats: contar por filtro (sobre allPending, no filtered)
   const counts = FILTERS.reduce<Record<FilterKey, number>>((acc, f) => {
@@ -120,6 +157,7 @@ export default async function CorreccionesPage({
 
   const aprobados = pending.filter((p) => p.ai_passed).length;
   const reprobados = pending.filter((p) => p.corrected_at && !p.ai_passed).length;
+  const returnedCount = allPending.filter((p) => (p.revision_count ?? 0) > 0).length;
   const oldestHours = computeOldestHours(
     pending[0]?.corrected_at ?? pending[0]?.submitted_at ?? null,
   );
@@ -128,6 +166,16 @@ export default async function CorreccionesPage({
     .from("assignment_submissions")
     .select("id", { count: "exact", head: true })
     .not("results_sent_at", "is", null);
+
+  // Opciones de filtros dinámicas
+  const availableCountries = Array.from(new Set([...countryByUser.values()])).filter(Boolean).sort();
+  const availableWeeks = Array.from(
+    new Set(
+      allPending
+        .map((p) => modulesById.get(p.module_id)?.course_week)
+        .filter((w): w is number => typeof w === "number"),
+    ),
+  ).sort((a, b) => a - b);
 
   return (
     <main className="px-6 py-8 lg:px-10">
@@ -143,22 +191,40 @@ export default async function CorreccionesPage({
         </p>
       </header>
 
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
         <Kpi label="Pendientes filtradas" value={pending.length} accent="coral" icon={Clock} />
         <Kpi label="Sugeridas: aprobar" value={aprobados} accent="emerald" icon={CheckCircle2} />
         <Kpi label="Sugeridas: incomplete" value={reprobados} accent="amber" icon={AlertCircle} />
+        <Kpi label="Devueltas al alumno" value={returnedCount} accent="coral" icon={RotateCcw} />
         <Kpi label="Ya enviadas (total)" value={totalGraded ?? 0} accent="violet" icon={CheckCircle2} />
       </div>
 
-      {/* Filtros */}
+      {/* Buscador + Filtros por país/semana (client) */}
+      <CorrectionsFilters
+        currentQ={q}
+        currentCountry={countryFilter}
+        currentWeek={weekFilter}
+        currentFilter={filter}
+        availableCountries={availableCountries}
+        availableWeeks={availableWeeks}
+      />
+
+      {/* Filtros por tipo */}
       <div className="mb-6 flex flex-wrap gap-2">
         {FILTERS.map((f) => {
           const active = filter === f.key;
           const count = counts[f.key];
+          // Preservar q/country/week al cambiar de filtro
+          const qs = new URLSearchParams();
+          if (f.key !== "all") qs.set("filter", f.key);
+          if (q) qs.set("q", q);
+          if (countryFilter) qs.set("country", countryFilter);
+          if (weekFilter !== null) qs.set("week", String(weekFilter));
+          const href = qs.toString() ? `/admin/correcciones?${qs}` : "/admin/correcciones";
           return (
             <Link
               key={f.key}
-              href={f.key === "all" ? "/admin/correcciones" : `/admin/correcciones?filter=${f.key}`}
+              href={href}
               className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
                 active
                   ? "border-brand-violet bg-brand-violet/15 text-brand-violet"
@@ -204,6 +270,7 @@ export default async function CorreccionesPage({
                 key={sub.id}
                 submission={sub}
                 studentName={namesById.get(sub.user_id) ?? "Alumno"}
+                country={countryByUser.get(sub.user_id) ?? null}
                 module={
                   m
                     ? {
