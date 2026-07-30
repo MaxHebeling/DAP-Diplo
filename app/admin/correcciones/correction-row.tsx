@@ -41,10 +41,12 @@ function formatSubmittedAt(iso: string): string {
 export function CorrectionRow({
   submission,
   studentName,
+  country,
   module: mod,
 }: {
   submission: Submission;
   studentName: string;
+  country?: string | null;
   module: ModuleMini | null;
 }) {
   const passed = submission.ai_passed === true;
@@ -88,9 +90,16 @@ export function CorrectionRow({
             </span>
           </div>
 
-          {/* Row 2: timestamp */}
-          <div className="mb-2 flex items-center gap-1.5 font-inter text-xs text-muted-foreground">
-            <Clock className="size-3" /> {submittedLabel}
+          {/* Row 2: timestamp + país */}
+          <div className="mb-2 flex flex-wrap items-center gap-3 font-inter text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5">
+              <Clock className="size-3" /> {submittedLabel}
+            </span>
+            {country && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-0.5">
+                {country}
+              </span>
+            )}
           </div>
 
           {preview && (
