@@ -242,7 +242,7 @@ export function BriefDocument() {
               <Text style={styles.highlight}>personalmente</Text> con la
               voz pastoral del Dr. Max y devuelta en 48 horas con feedback
               estructurado: lo que se vio, lo que necesitas afinar, tu
-              próximo paso y una palabra de impartación.
+              próximo paso y una palabra de impartición.
             </Text>
           </View>
         </View>

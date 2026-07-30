@@ -76,7 +76,7 @@ Cada módulo tiene 5 secciones:
 4. **Evaluación** con quiz autocorregible (pasa con ≥70%).
 5. **Impartición** — palabra apostólica de cierre.
 
-Tu activación escrita es revisada **personalmente** con la voz pastoral del Dr. Max y devuelta en 48 horas con feedback estructurado: lo que se vio, lo que necesitas afinar, tu próximo paso y una palabra de impartación.
+Tu activación escrita es revisada **personalmente** con la voz pastoral del Dr. Max y devuelta en 48 horas con feedback estructurado: lo que se vio, lo que necesitas afinar, tu próximo paso y una palabra de impartición.
 
 \
 

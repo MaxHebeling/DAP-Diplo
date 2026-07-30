@@ -86,7 +86,7 @@ Vuelve a la consigna del módulo y dedícale unos minutos a desarrollar tu respu
 ### 3. Tu próximo paso
 Vuelve a mirar el video de la enseñanza y responde en tus palabras: ¿qué fue lo que más te marcó? Esa es la base para una buena activación.
 
-### 4. Palabra de impartación
+### 4. Palabra de impartición
 Hijo, el llamado se desarrolla en el detalle. No subestimes el peso de una entrega seria, aunque sea de pocas líneas.`,
         score: 0,
         passed: false,

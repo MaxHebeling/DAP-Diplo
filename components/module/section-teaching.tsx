@@ -54,7 +54,7 @@ type SectionTeachingProps = {
    */
   alreadyCompleted: boolean;
   resources: Resource[];
-  /** Cuando true, "Continuar" salta a impartación (no activación). */
+  /** Cuando true, "Continuar" salta a impartición (no activación). */
   simplifiedMode?: boolean;
 };
 
