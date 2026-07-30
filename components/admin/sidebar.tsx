@@ -39,6 +39,7 @@ const NAV = [
   { href: "/admin/correcciones", labelKey: "corrections", icon: CheckSquare, exact: false },
   { href: "/admin/brief-pastores", labelKey: "pastorsBrief", icon: FileText, exact: false },
   { href: "/admin/notificaciones", labelKey: "notifications", icon: Bell, exact: false },
+  { href: "/admin/push-test", labelKey: "pushTest", icon: Bell, exact: false },
 ] as const;
 
 export function AdminSidebar({ fullName }: { fullName: string | null }) {
