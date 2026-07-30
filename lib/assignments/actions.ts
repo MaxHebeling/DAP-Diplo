@@ -6,6 +6,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendAssignmentToDirector } from "@/lib/email/send-assignment-to-director";
+import { sendPushToUser } from "@/lib/push/send";
 
 export type SubmitAssignmentResult =
   | { ok: true; message?: string }
@@ -227,6 +228,15 @@ export async function submitAssignmentAction(
     );
   });
 
+  // Push a los admins (fire-and-forget). Distingue 1a entrega vs reenvío
+  // vía revision_count. Si push falla, el alumno igual ya entregó.
+  void notifyAdminsPushOnSubmit(sub.id).catch((err) => {
+    console.error(
+      `[submitAssignmentAction] push failed for submission=${sub.id}:`,
+      err,
+    );
+  });
+
   // Disparar IA correctora INSTANTÁNEAMENTE (fire-and-forget). El cron
   // sigue corriendo cada hora como red de seguridad. Esto hace que la
   // tarea aparezca corregida en /admin/correcciones en ~30-60s en vez
@@ -302,4 +312,58 @@ async function notifyDirectorOfSubmission(opts: {
     contentText: opts.contentText,
     reviewUrl: `${appUrl}/admin/correcciones/${opts.submissionId}`,
   });
+}
+
+/**
+ * Enviar push a todos los admins cuando un alumno entrega o reenvía
+ * una tarea. Distingue 1ª entrega vs reenvío mirando revision_count:
+ * si es 0 → primera entrega; si >0 → reenvío tras devolución.
+ *
+ * Fire-and-forget: falla silenciosa (log-only). La entrega del alumno
+ * ya persistió antes de esta llamada.
+ */
+async function notifyAdminsPushOnSubmit(submissionId: string): Promise<void> {
+  const admin = createAdminClient();
+
+  const { data: sub } = await admin
+    .from("assignment_submissions")
+    .select("id, user_id, module_id, revision_count")
+    .eq("id", submissionId)
+    .maybeSingle<{ id: string; user_id: string; module_id: string; revision_count: number | null }>();
+  if (!sub) return;
+
+  const [{ data: profile }, { data: mod }] = await Promise.all([
+    admin.from("profiles").select("full_name").eq("id", sub.user_id).maybeSingle<{ full_name: string }>(),
+    admin.from("modules").select("title, course_week").eq("id", sub.module_id).maybeSingle<{ title: string; course_week: number | null }>(),
+  ]);
+  if (!profile || !mod) return;
+
+  const isResubmit = (sub.revision_count ?? 0) > 0;
+  const weekLabel = mod.course_week ? `Sem ${mod.course_week}` : "Módulo";
+
+  const payload = isResubmit
+    ? {
+        title: "🔄 Corrección recibida",
+        body: `${profile.full_name} volvió a enviar la tarea: "${mod.title}" (${weekLabel}). Lista para revisión.`,
+        url: `/admin/correcciones/${submissionId}`,
+        tag: `resubmit-${submissionId}`,
+      }
+    : {
+        title: "📚 Nueva tarea recibida",
+        body: `${profile.full_name} envió la tarea: "${mod.title}" (${weekLabel}).`,
+        url: `/admin/correcciones/${submissionId}`,
+        tag: `submit-${submissionId}`,
+      };
+
+  const { data: admins } = await admin
+    .from("profiles")
+    .select("id")
+    .eq("role", "admin");
+  await Promise.all(
+    (admins ?? []).map((a) =>
+      sendPushToUser(a.id, payload).catch((err) =>
+        console.error(`[notifyAdminsPushOnSubmit] admin=${a.id}:`, err),
+      ),
+    ),
+  );
 }
