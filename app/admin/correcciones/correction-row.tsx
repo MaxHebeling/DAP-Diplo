@@ -41,11 +41,13 @@ function formatSubmittedAt(iso: string): string {
 export function CorrectionRow({
   submission,
   studentName,
+  studentId,
   country,
   module: mod,
 }: {
   submission: Submission;
   studentName: string;
+  studentId: string;
   country?: string | null;
   module: ModuleMini | null;
 }) {
@@ -57,10 +59,7 @@ export function CorrectionRow({
   const submittedLabel = formatSubmittedAt(submission.submitted_at);
 
   return (
-    <Link
-      href={`/admin/correcciones/${submission.id}`}
-      className="group block rounded-xl border border-border bg-card/60 p-5 transition hover:border-brand-violet/50 hover:bg-card"
-    >
+    <div className="group block rounded-xl border border-border bg-card/60 p-5 transition hover:border-brand-violet/50 hover:bg-card">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
           {/* Row 1: Badge de tipo + Nombre + Módulo */}
@@ -79,9 +78,13 @@ export function CorrectionRow({
                 <Sparkles className="size-2.5" /> IA pendiente
               </span>
             )}
-            <span className="font-grotesk text-base font-semibold text-foreground">
+            <Link
+              href={`/admin/correcciones/alumno/${studentId}`}
+              className="font-grotesk text-base font-semibold text-foreground hover:text-brand-coral hover:underline"
+              title="Ver expediente completo"
+            >
               {studentName}
-            </span>
+            </Link>
             <span className="text-muted-foreground">·</span>
             <span className="font-inter text-sm text-muted-foreground">
               {mod
@@ -124,9 +127,14 @@ export function CorrectionRow({
               <AlertCircle className="size-3.5" /> Incompleto {submission.ai_score}/100
             </div>
           )}
-          <ArrowRight className="size-4 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-foreground" />
+          <Link
+            href={`/admin/correcciones/${submission.id}`}
+            className="inline-flex items-center gap-1 rounded-md border border-brand-violet/30 bg-brand-violet/[0.08] px-3 py-1.5 text-xs font-semibold text-brand-violet hover:bg-brand-violet/[0.15]"
+          >
+            Abrir <ArrowRight className="size-3" />
+          </Link>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
