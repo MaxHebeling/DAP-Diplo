@@ -270,6 +270,7 @@ export default async function CorreccionesPage({
                 key={sub.id}
                 submission={sub}
                 studentName={namesById.get(sub.user_id) ?? "Alumno"}
+                studentId={sub.user_id}
                 country={countryByUser.get(sub.user_id) ?? null}
                 module={
                   m
