@@ -54,6 +54,9 @@ function formatLocal(iso: string): string {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    // Zona DAP oficial (Los Angeles = misma hora que Tijuana). Vercel
+    // corre en UTC por default; sin esto el admin veía UTC crudo.
+    timeZone: "America/Los_Angeles",
   });
 }
 

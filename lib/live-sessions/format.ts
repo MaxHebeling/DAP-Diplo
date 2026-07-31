@@ -16,6 +16,11 @@ export function liveStatus(
   return "ended";
 }
 
+// Zona horaria oficial del programa DAP (Los Angeles = misma hora que
+// Tijuana / San Diego). Vercel corre en UTC por default; forzar timeZone
+// evita que server components muestren UTC crudo.
+const DAP_TZ = "America/Los_Angeles";
+
 export function formatLocalDateTime(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleString("es", {
@@ -24,6 +29,7 @@ export function formatLocalDateTime(iso: string): string {
     month: "long",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: DAP_TZ,
   });
 }
 
@@ -33,5 +39,6 @@ export function formatLocalDateShort(iso: string): string {
     day: "2-digit",
     month: "short",
     year: "numeric",
+    timeZone: DAP_TZ,
   });
 }
