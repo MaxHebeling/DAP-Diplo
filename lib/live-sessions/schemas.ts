@@ -52,6 +52,16 @@ export const liveSessionCreateSchema = z.object({
     .uuid()
     .nullable()
     .or(z.literal("").transform(() => null)),
+  image_url: z
+    .string()
+    .trim()
+    .max(500)
+    .nullable()
+    .or(z.literal("").transform(() => null))
+    .refine(
+      (v) => v === null || /^https?:\/\//.test(v),
+      "URL de imagen debe empezar por http:// o https://",
+    ),
 });
 
 export const liveSessionUpdateSchema = liveSessionCreateSchema.extend({

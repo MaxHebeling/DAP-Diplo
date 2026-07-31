@@ -46,6 +46,7 @@ const formSchema = z.object({
   meeting_url: z.string().trim().url("urlInvalid").max(500),
   host_name: z.string().trim().max(120),
   phase_id: z.string().optional().nullable(),
+  image_url: z.string().trim().max(500).optional(),
   // Solo en edición:
   recording_url: z.string().trim().max(500).optional(),
   recording_mux_playback_id: z.string().trim().max(80).optional(),
@@ -75,6 +76,7 @@ export type LiveSessionFormSession = {
   meeting_url: string;
   host_name: string | null;
   phase_id: string | null;
+  image_url: string | null;
   recording_url: string | null;
   recording_mux_playback_id: string | null;
 };
@@ -111,6 +113,7 @@ export function LiveSessionForm({ phases, session }: Props) {
       meeting_url: session?.meeting_url ?? "",
       host_name: session?.host_name ?? "",
       phase_id: session?.phase_id ?? NONE,
+      image_url: session?.image_url ?? "",
       recording_url: session?.recording_url ?? "",
       recording_mux_playback_id: session?.recording_mux_playback_id ?? "",
     },
@@ -135,6 +138,7 @@ export function LiveSessionForm({ phases, session }: Props) {
       "phase_id",
       values.phase_id && values.phase_id !== NONE ? values.phase_id : "",
     );
+    fd.set("image_url", values.image_url ?? "");
     if (isEdit) {
       fd.set("id", session!.id);
       fd.set("recording_url", values.recording_url ?? "");
@@ -328,6 +332,19 @@ export function LiveSessionForm({ phases, session }: Props) {
               {...register("host_name")}
               placeholder={t("liveSession.hostPlaceholder")}
             />
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="image_url">Imagen de portada (URL)</FieldLabel>
+            <Input
+              id="image_url"
+              type="url"
+              placeholder="https://…/imagen.jpg (recomendado 1200×630)"
+              {...register("image_url")}
+            />
+            {errors.image_url && (
+              <FieldError>{errors.image_url.message}</FieldError>
+            )}
           </Field>
         </FieldGroup>
       </section>

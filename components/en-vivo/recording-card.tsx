@@ -33,6 +33,14 @@ export function RecordingCard({ session }: { session: StudentSession }) {
   return (
     <>
       <article className="flex h-full flex-col overflow-hidden rounded-2xl border bg-card">
+        {session.image_url && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={session.image_url}
+            alt=""
+            className="h-40 w-full object-cover"
+          />
+        )}
         <div className="flex flex-wrap items-center gap-2 border-b bg-muted/10 px-5 py-2.5 text-xs text-muted-foreground">
           <CalendarClock className="size-3.5" />
           <span>{formatLocalDateShort(session.scheduled_at)}</span>

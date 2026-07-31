@@ -11,5 +11,6 @@ export type StudentSession = {
   host_name: string | null;
   recording_url: string | null;
   recording_mux_playback_id: string | null;
+  image_url: string | null;
   phase: { order_index: number; title: string } | null;
 };
