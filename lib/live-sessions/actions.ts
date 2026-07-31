@@ -24,6 +24,7 @@ function rawFromFormData(formData: FormData) {
     meeting_url: formData.get("meeting_url"),
     host_name: formData.get("host_name"),
     phase_id: formData.get("phase_id") || null,
+    image_url: formData.get("image_url"),
   };
 }
 

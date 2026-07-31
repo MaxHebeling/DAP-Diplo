@@ -43,7 +43,7 @@ export default async function StudentEnVivoPage({ searchParams }: PageProps) {
   const upcomingPromise = supabase
     .from("live_sessions")
     .select(
-      `id, kind, title, description, scheduled_at, duration_minutes,
+      `id, kind, title, description, scheduled_at, duration_minutes, image_url,
        meeting_url, host_name, recording_url, recording_mux_playback_id,
        phase:phases!live_sessions_phase_id_fkey(order_index, title, title_en)`,
     )
@@ -55,7 +55,7 @@ export default async function StudentEnVivoPage({ searchParams }: PageProps) {
   const recordingsPromise = supabase
     .from("live_sessions")
     .select(
-      `id, kind, title, description, scheduled_at, duration_minutes,
+      `id, kind, title, description, scheduled_at, duration_minutes, image_url,
        meeting_url, host_name, recording_url, recording_mux_playback_id,
        phase:phases!live_sessions_phase_id_fkey(order_index, title, title_en)`,
     )

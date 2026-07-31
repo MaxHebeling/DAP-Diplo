@@ -24,7 +24,7 @@ export default async function EditarSesionPage({ params }: PageProps) {
   const { data: session } = await supabase
     .from("live_sessions")
     .select(
-      "id, kind, title, description, scheduled_at, duration_minutes, meeting_url, host_name, phase_id, recording_url, recording_mux_playback_id",
+      "id, kind, title, description, scheduled_at, duration_minutes, meeting_url, host_name, phase_id, image_url, recording_url, recording_mux_playback_id",
     )
     .eq("id", id)
     .maybeSingle();
@@ -45,6 +45,7 @@ export default async function EditarSesionPage({ params }: PageProps) {
     meeting_url: session.meeting_url,
     host_name: session.host_name,
     phase_id: session.phase_id,
+    image_url: session.image_url,
     recording_url: session.recording_url,
     recording_mux_playback_id: session.recording_mux_playback_id,
   };

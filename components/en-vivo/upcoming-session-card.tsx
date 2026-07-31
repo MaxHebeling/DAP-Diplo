@@ -21,6 +21,14 @@ export async function UpcomingSessionCard({ session }: { session: StudentSession
 
   return (
     <article className="overflow-hidden rounded-2xl border bg-card">
+      {session.image_url && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={session.image_url}
+          alt=""
+          className="h-48 w-full object-cover sm:h-56"
+        />
+      )}
       <div className="border-b bg-muted/10 px-6 py-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <CalendarClock className="size-3.5" />
