@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Controller, useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { z } from "zod";
-import { Save, Trash2 } from "lucide-react";
+import { Loader2, Save, Trash2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -97,7 +97,35 @@ export function LiveSessionForm({ phases, session }: Props) {
   const t = useTranslations("AdminUI");
   const [pending, startTransition] = useTransition();
   const [pendingDelete, startDelete] = useTransition();
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
   const isEdit = !!session;
+
+  async function uploadImage(file: File, setter: (url: string) => void) {
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.set("file", file);
+      if (session?.id) fd.set("sessionId", session.id);
+      const res = await fetch("/api/admin/upload-live-session-image", {
+        method: "POST",
+        body: fd,
+      });
+      const j = await res.json();
+      if (!res.ok || !j.ok) {
+        toast.error(j.error ?? "Error subiendo la imagen");
+        return;
+      }
+      setter(j.url);
+      toast.success("Imagen subida");
+    } catch (err) {
+      toast.error("Error subiendo la imagen");
+      console.error(err);
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
 
   const fieldError = (msg: string | undefined): string | undefined =>
     msg && LIVE_FORM_ERROR_KEYS.has(msg) ? t(`liveSession.${msg}`) : msg;
@@ -334,18 +362,72 @@ export function LiveSessionForm({ phases, session }: Props) {
             />
           </Field>
 
-          <Field>
-            <FieldLabel htmlFor="image_url">Imagen de portada (URL)</FieldLabel>
-            <Input
-              id="image_url"
-              type="url"
-              placeholder="https://…/imagen.jpg (recomendado 1200×630)"
-              {...register("image_url")}
-            />
-            {errors.image_url && (
-              <FieldError>{errors.image_url.message}</FieldError>
+          <Controller
+            name="image_url"
+            control={control}
+            render={({ field: imgField }) => (
+              <Field>
+                <FieldLabel htmlFor="image_url">Imagen de portada</FieldLabel>
+                {imgField.value ? (
+                  <div className="mb-2 flex items-start gap-3 rounded-lg border border-border bg-card/40 p-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={imgField.value}
+                      alt="preview"
+                      className="h-24 w-40 rounded-md object-cover"
+                    />
+                    <div className="flex-1 min-w-0 text-xs text-muted-foreground">
+                      <p className="truncate font-mono">{imgField.value}</p>
+                      <button
+                        type="button"
+                        onClick={() => imgField.onChange("")}
+                        className="mt-2 inline-flex items-center gap-1 text-red-500 hover:text-red-400"
+                      >
+                        <X className="size-3" /> Quitar
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) void uploadImage(f, imgField.onChange);
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={uploading}
+                    onClick={() => fileRef.current?.click()}
+                  >
+                    {uploading ? (
+                      <><Loader2 className="size-3.5 animate-spin" /> Subiendo…</>
+                    ) : (
+                      <><Upload className="size-3.5" /> Subir imagen</>
+                    )}
+                  </Button>
+                  <span className="text-xs text-muted-foreground">o pega URL abajo</span>
+                </div>
+                <Input
+                  id="image_url"
+                  type="url"
+                  placeholder="https://…/imagen.jpg (recomendado 1200×630)"
+                  value={imgField.value ?? ""}
+                  onChange={(e) => imgField.onChange(e.target.value)}
+                  className="mt-2"
+                />
+                {errors.image_url && (
+                  <FieldError>{errors.image_url.message}</FieldError>
+                )}
+              </Field>
             )}
-          </Field>
+          />
         </FieldGroup>
       </section>
 
