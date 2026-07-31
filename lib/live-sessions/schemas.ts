@@ -83,7 +83,7 @@ export const liveSessionCreateSchema = z.object({
     .trim()
     .max(500)
     .nullable()
-    .or(z.literal("").transform(() => null))
+    .transform((v) => (v === null || v.length === 0 ? null : v))
     .refine(
       (v) => v === null || /^https?:\/\//.test(v),
       "URL de imagen debe empezar por http:// o https://",
@@ -97,10 +97,10 @@ export const liveSessionUpdateSchema = liveSessionCreateSchema.extend({
     .trim()
     .max(500)
     .nullable()
-    .or(z.literal("").transform(() => null))
+    .transform((v) => (v === null || v.length === 0 ? null : v))
     .refine(
       (v) => v === null || /^https?:\/\//.test(v),
-      "Debe empezar por http:// o https://",
+      "URL debe empezar por http:// o https://",
     ),
   recording_mux_playback_id: z
     .string()
