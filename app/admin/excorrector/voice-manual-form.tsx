@@ -72,7 +72,7 @@ export function VoiceManualForm({
         value={value}
         onChange={(e) => setValue(e.target.value)}
         rows={28}
-        className="w-full resize-y rounded-md border border-white/[0.08] bg-black/40 p-4 font-mono text-[12px] leading-relaxed text-foreground outline-none focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20"
+        className="w-full resize-y rounded-md border border-slate-300 bg-white p-4 font-mono text-[13px] leading-relaxed text-slate-900 outline-none focus:border-brand-violet focus:ring-2 focus:ring-brand-violet/20"
         placeholder={t("placeholder")}
         spellCheck={false}
       />
