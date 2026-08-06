@@ -80,10 +80,14 @@ export async function GET(request: NextRequest) {
 
   // 3. Notificar becas vigentes o próximas a vencer que no fueron notificadas
   //    en los últimos NOTIFY_INTERVAL_DAYS días.
+  //    Solo type='honor' (becas reales). Otros types en la misma tabla —
+  //    ej. 'pastoral_mx' — son mecanismos de acceso sin cobro Stripe pero
+  //    NO son becas; mandarles el email "Tu beca sigue activa" sería falso.
   const cutoff = new Date(now.getTime() - NOTIFY_INTERVAL_DAYS * 86_400_000).toISOString();
   const { data: pending } = await admin
     .from("honor_scholarships")
     .select("id, user_id, status, start_date, end_date, last_notified_at")
+    .eq("scholarship_type", "honor")
     .in("status", ["vigente", "proxima_vencer"])
     .or(`last_notified_at.is.null,last_notified_at.lt.${cutoff}`)
     .returns<Scholarship[]>();
