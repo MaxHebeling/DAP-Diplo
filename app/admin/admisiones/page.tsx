@@ -78,10 +78,32 @@ function networkLabel(row: AdmissionRow, t: T): string {
 
 const PAGE_SIZE = 25;
 
-// Escape para Supabase .or() — `,` y `)` rompen el parser del filtro
-// string. Reemplazos defensivos antes de inyectar el query del usuario.
-function escapeOrValue(s: string): string {
-  return s.replace(/,/g, "\\,").replace(/\)/g, "\\)");
+/**
+ * Normaliza texto para búsqueda:
+ * - lowercase
+ * - remueve acentos (NFD + strip combining marks)
+ * - colapsa espacios múltiples
+ * - trim
+ *
+ * Debe producir la misma forma que la columna generada `admissions.search_key`
+ * (lower + unaccent). Así el ILIKE case-insensitive del cliente matchea
+ * fila por fila sin importar acentos/mayúsculas.
+ */
+function normalizeForSearch(s: string): string {
+  return s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Escapa los metacaracteres de LIKE (`%`, `_`, `\`) para que un usuario
+ * escribiendo "50%" o "foo_bar" no obtenga wildcards accidentales.
+ */
+function escapeLikePattern(s: string): string {
+  return s.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
 }
 
 function buildHref(
@@ -130,11 +152,18 @@ export default async function AdminAdmisionesPage({
     query = query.eq("status", statusFilter);
   }
   if (q) {
-    // ILIKE en full_name, email, church_name (índices GIN trgm en migración 0022)
-    const safeQ = escapeOrValue(q);
-    query = query.or(
-      `full_name.ilike.%${safeQ}%,email.ilike.%${safeQ}%,church_name.ilike.%${safeQ}%`,
-    );
+    // Búsqueda tolerante: normalizamos el input (lower + sin acentos +
+    // colapso de espacios) y matcheamos cada palabra por separado en
+    // AND sobre `admissions.search_key` (columna generada equivalente
+    // a lower(unaccent(full_name || ' ' || email || ' ' || church_name))).
+    // Esto permite: "dulce fernandez" == "Dulce Fernández", "fernandez dulce"
+    // == "Dulce Fernández", etc. Cubierto por índice GIN trgm.
+    const terms = normalizeForSearch(q)
+      .split(" ")
+      .filter((w) => w.length > 0);
+    for (const term of terms) {
+      query = query.ilike("search_key", `%${escapeLikePattern(term)}%`);
+    }
   }
 
   const { data, error, count } = await query.returns<AdmissionRow[]>();
@@ -219,7 +248,7 @@ export default async function AdminAdmisionesPage({
               {rows.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="py-16 text-center text-sm text-muted-foreground">
-                    {t("admissions.emptyState")}
+                    {q ? t("admissions.emptySearch") : t("admissions.emptyState")}
                   </TableCell>
                 </TableRow>
               ) : (
