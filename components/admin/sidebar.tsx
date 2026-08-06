@@ -30,6 +30,8 @@ const NAV = [
   { href: "/admin/simplificados", labelKey: "simplifiedMode", icon: Accessibility, exact: false },
   { href: "/admin/pagos-ar", labelKey: "arPayments", icon: Layers, exact: false },
   { href: "/admin/liquidaciones", labelKey: "arRemittances", icon: Layers, exact: false },
+  { href: "/admin/pagos-mx", labelKey: "mxPayments", icon: Layers, exact: false },
+  { href: "/admin/liquidaciones-mx", labelKey: "mxRemittances", icon: Layers, exact: false },
   { href: "/admin/bloques", labelKey: "blocksCopy", icon: Layers, exact: false },
   { href: "/admin/fases", labelKey: "phasesModules", icon: Layers, exact: false },
   { href: "/admin/comunidad", labelKey: "community", icon: MessagesSquare, exact: false },

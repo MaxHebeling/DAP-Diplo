@@ -1,15 +1,15 @@
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { RemittanceRow } from "./remittance-row";
+import { RemittanceRow } from "../liquidaciones/remittance-row";
 import { pastorIdsInCountry } from "@/lib/pastor/country-filters";
 
-export const metadata = { title: "Liquidaciones pastorales · Admin DAP" };
+export const metadata = { title: "Liquidaciones MX · Admin DAP" };
 export const dynamic = "force-dynamic";
 
 const MONTHS = ["","Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
-export default async function LiquidacionesPage({
+export default async function LiquidacionesMexicoPage({
   searchParams,
 }: {
   searchParams: Promise<{ period?: string }>;
@@ -21,28 +21,25 @@ export default async function LiquidacionesPage({
   const params = await searchParams;
   const now = new Date();
 
-  // Default: mes actual (ciclo activo AR va del 23 al último día).
-  // Si no viene ?period=, elegimos el mes actual.
   const defaultPeriod = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   const [year, month] = (params.period ?? defaultPeriod).split("-").map((n) => parseInt(n, 10));
 
-  // Restringir a pastores AR — vista México en /admin/liquidaciones-mx.
-  const arPastorIds = await pastorIdsInCountry(admin, "Argentina");
+  // Restringir a pastores MX (los que tienen iglesia primaria en México)
+  const mxPastorIds = await pastorIdsInCountry(admin, "México");
 
-  const { data: remittances } = arPastorIds.length > 0
+  const { data: remittances } = mxPastorIds.length > 0
     ? await admin.from("pastor_remittances").select("*")
         .eq("period_year", year).eq("period_month", month)
-        .in("pastor_user_id", arPastorIds)
+        .in("pastor_user_id", mxPastorIds)
     : { data: [] };
 
-  // Nombres de pastores + iglesias asignadas
+  // Nombres de pastores + iglesias
   const pastorIds = (remittances ?? []).map((r) => r.pastor_user_id);
   const pastorNames = new Map<string, string>();
   const pastorChurches = new Map<string, string>();
   if (pastorIds.length > 0) {
     const { data: profs } = await admin.from("profiles").select("id, full_name").in("id", pastorIds);
     for (const p of profs ?? []) pastorNames.set(p.id, p.full_name);
-    // Iglesias del pastor (tomamos la primary si hay varias)
     const { data: cps } = await admin.from("church_pastors")
       .select("pastor_user_id, church_id, is_primary")
       .in("pastor_user_id", pastorIds).eq("status", "active");
@@ -51,7 +48,6 @@ export default async function LiquidacionesPage({
       ? await admin.from("churches").select("id, name").in("id", churchIds)
       : { data: [] };
     const churchNameById = new Map((churches ?? []).map((c) => [c.id, c.name]));
-    // Priorizamos is_primary
     for (const cp of (cps ?? []).sort((a, b) => Number(b.is_primary) - Number(a.is_primary))) {
       if (!pastorChurches.has(cp.pastor_user_id)) {
         pastorChurches.set(cp.pastor_user_id, churchNameById.get(cp.church_id) ?? "?");
@@ -65,16 +61,12 @@ export default async function LiquidacionesPage({
   const totalPending = Math.max(0, totalExpected - totalCollected);
   const overallPct = totalExpected > 0 ? Math.round((totalCollected / totalExpected) * 100) : 0;
 
-  // Sort remittances: menos avance primero (los que necesitan atención)
   const sortedRemittances = [...(remittances ?? [])].sort((a, b) => {
     const pa = a.expected_amount_ars > 0 ? a.collected_amount_ars / a.expected_amount_ars : 0;
     const pb = b.expected_amount_ars > 0 ? b.collected_amount_ars / b.expected_amount_ars : 0;
     return pa - pb;
   });
 
-  // Periodos: 5 hacia atrás + actual + 3 hacia adelante (para acceder
-  // a agosto/septiembre desde julio). Ordenados de más reciente-futuro
-  // arriba a más viejo abajo.
   const periods: Array<{ value: string; label: string }> = [];
   for (let i = 3; i >= -5; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
@@ -87,12 +79,19 @@ export default async function LiquidacionesPage({
   return (
     <main className="px-6 py-8 lg:px-10">
       <header className="mb-8">
-        <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-brand-coral">Liquidaciones pastorales AR</p>
+        <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-brand-coral">Liquidaciones pastorales MX</p>
         <h1 className="font-grotesk text-3xl font-bold">{MONTHS[month]} {year}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Cada pastor consolida los pagos recibidos y transfiere a DAP el día 1 del mes siguiente.
+          Cada pastor MX consolida lo recolectado y transfiere a la cuenta Mercado Pago
+          de DAP el día 1 del mes siguiente.
         </p>
       </header>
+
+      {mxPastorIds.length === 0 && (
+        <div className="mb-6 rounded-xl border border-dashed border-border bg-card/30 p-8 text-center text-sm text-muted-foreground">
+          Aún no hay pastores MX asignados a una iglesia mexicana con status activo.
+        </div>
+      )}
 
       {/* Barra de progreso general */}
       <div className="mb-4 rounded-xl border border-border bg-card p-5">
@@ -102,8 +101,8 @@ export default async function LiquidacionesPage({
             <p className="mt-1 font-grotesk text-3xl font-bold">{overallPct}%</p>
           </div>
           <p className="text-sm text-muted-foreground">
-            <span className="font-mono">${totalCollected.toLocaleString("es-AR")}</span> / <span className="font-mono">${totalExpected.toLocaleString("es-AR")}</span> ARS
-            {totalPending > 0 && (<span className="ml-2 text-amber-400">· Pendiente: <span className="font-mono">${totalPending.toLocaleString("es-AR")}</span></span>)}
+            <span className="font-mono">${totalCollected.toLocaleString("es-MX")}</span> / <span className="font-mono">${totalExpected.toLocaleString("es-MX")}</span> MXN
+            {totalPending > 0 && (<span className="ml-2 text-amber-400">· Pendiente: <span className="font-mono">${totalPending.toLocaleString("es-MX")}</span></span>)}
           </p>
         </div>
         <div className="h-2 w-full overflow-hidden rounded-full bg-white/[0.05]">
@@ -124,7 +123,7 @@ export default async function LiquidacionesPage({
         <label className="text-xs uppercase tracking-widest text-muted-foreground">Periodo:</label>
         <div className="mt-2 flex flex-wrap gap-2">
           {periods.map((p) => (
-            <a key={p.value} href={`/admin/liquidaciones?period=${p.value}`}
+            <a key={p.value} href={`/admin/liquidaciones-mx?period=${p.value}`}
               className={`rounded-md border px-3 py-1.5 text-xs font-medium ${
                 (params.period ?? defaultPeriod) === p.value
                   ? "border-brand-violet bg-brand-violet/15 text-brand-violet"
@@ -138,7 +137,8 @@ export default async function LiquidacionesPage({
       {(remittances?.length ?? 0) === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-card/30 p-12 text-center">
           <p className="text-sm text-muted-foreground">
-            No hay liquidaciones para este periodo. El cron día 1 las crea automáticamente.
+            No hay liquidaciones MX para este periodo todavía. Se crean al entrar el pastor
+            a su portal, o cuando el cron día 1 esté habilitado para MX.
           </p>
         </div>
       ) : (

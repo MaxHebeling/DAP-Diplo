@@ -152,6 +152,8 @@
       "simplifiedMode": "Modo simplificado",
       "arPayments": "Pagos Argentina",
       "arRemittances": "Liquidaciones AR",
+      "mxPayments": "Pagos México",
+      "mxRemittances": "Liquidaciones MX",
       "blocksCopy": "Bloques (copy)",
       "phasesModules": "Fases (módulos)",
       "community": "Comunidad",
