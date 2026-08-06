@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CheckCircle2, Users, Clock } from "lucide-react";
 import { getPastorBankAccount } from "@/lib/pastor/bank-accounts";
+import { formatMoney } from "@/lib/format/money";
 import { PastorBillRow } from "./pastor-bill-row";
 import { PeriodSelector } from "./period-selector";
 
@@ -185,7 +186,11 @@ export default async function PastorHomePage({
           ))}
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
-          El monto total esperado del mes es <strong>${totalEsperado.toLocaleString("es-AR")} ARS</strong> (sin contar becas).
+          El monto total esperado del mes es{" "}
+          <strong>
+            {formatMoney(totalEsperado, allBills[0]?.currency ?? (pastorCountry === "México" ? "MXN" : "ARS"))}
+          </strong>{" "}
+          (sin contar becas).
         </p>
       </div>
 
@@ -292,6 +297,7 @@ type BillRow = {
   observations: string | null;
   collection_start: string;
   collection_end: string;
+  currency: string;
 };
 
 function Kpi({ label, value, icon, tone }: { label: string; value: string; icon: React.ReactNode; tone?: "emerald" | "amber" }) {

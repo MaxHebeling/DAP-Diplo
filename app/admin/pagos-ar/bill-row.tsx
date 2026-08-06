@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { CheckCircle2, Clock, AlertCircle, X, Loader2, User, Users, Star } from "lucide-react";
 import { markBillPaidAction, markBillExemptAction, revertBillToPendingAction } from "@/lib/admin/monthly-bills-actions";
 import { assignPastorAction } from "@/lib/admin/pastor-assignment-actions";
+import { formatMoney, formatMoneyBare } from "@/lib/format/money";
 
 type Bill = {
   id: string;
@@ -16,6 +17,7 @@ type Bill = {
   payment_method: string | null;
   received_amount_ars: number | null;
   observations: string | null;
+  currency: string;
 };
 
 type Pastor = { id: string; full_name: string };
@@ -98,7 +100,7 @@ export function BillRow({ bill, label, pastors, currentPastorId, targetKind, tar
           {bill.paid_at && (
             <p className="mt-0.5 text-xs text-muted-foreground">
               Pagó {new Date(bill.paid_at).toLocaleDateString("es-AR")} · {bill.payment_method}
-              {bill.received_amount_ars && ` · $${bill.received_amount_ars.toLocaleString("es-AR")}`}
+              {bill.received_amount_ars && ` · ${formatMoneyBare(bill.received_amount_ars, bill.currency)}`}
             </p>
           )}
         </div>
@@ -114,7 +116,7 @@ export function BillRow({ bill, label, pastors, currentPastorId, targetKind, tar
           ))}
         </select>
         <div className="text-right">
-          <p className="font-mono text-sm">${bill.amount_ars.toLocaleString("es-AR")} ARS</p>
+          <p className="font-mono text-sm">{formatMoney(bill.amount_ars, bill.currency)}</p>
           <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-widest">{statusLabel}</p>
         </div>
         <div className="flex gap-2">
@@ -166,7 +168,9 @@ export function BillRow({ bill, label, pastors, currentPastorId, targetKind, tar
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Monto recibido (ARS)</label>
+                  <label className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                    Monto recibido ({bill.currency})
+                  </label>
                   <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)}
                     className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
                 </div>

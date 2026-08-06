@@ -5,15 +5,18 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { submitPastorRemittanceAction } from "@/lib/pastor/remittance-actions";
+import { formatMoneyBare } from "@/lib/format/money";
 
 export function RemittanceForm({
   remittanceId, expectedAmount, collectedAmount, submittedAt, transferredAmount,
+  currency,
 }: {
   remittanceId: string;
   expectedAmount: number;
   collectedAmount: number;
   submittedAt: string | null;
   transferredAmount: number | null;
+  currency: string;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -48,12 +51,12 @@ export function RemittanceForm({
       <div className="space-y-4">
         <div>
           <label className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            Monto que transferiste (ARS)
+            Monto que transferiste ({currency})
           </label>
           <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)}
             className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-lg font-mono" />
           <p className="mt-1 text-xs text-muted-foreground">
-            Esperado: ${expectedAmount.toLocaleString("es-AR")} · Recolectado: ${collectedAmount.toLocaleString("es-AR")}
+            Esperado: {formatMoneyBare(expectedAmount, currency)} · Recolectado: {formatMoneyBare(collectedAmount, currency)}
           </p>
         </div>
 

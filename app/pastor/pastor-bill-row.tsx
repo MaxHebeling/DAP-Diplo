@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CheckCircle2, X, Loader2, User, Users, Star } from "lucide-react";
 import { markBillPaidAction } from "@/lib/admin/monthly-bills-actions";
+import { formatMoney, formatMoneyBare } from "@/lib/format/money";
 
 type Bill = {
   id: string;
@@ -13,6 +14,7 @@ type Bill = {
   status: "pending" | "paid" | "overdue" | "exempt" | "canceled" | "suspended";
   paid_at: string | null;
   payment_method: string | null;
+  currency: string;
 };
 
 type Modality = "individual" | "marriage" | "honor";
@@ -76,7 +78,8 @@ export function PastorBillRow({
           {isPaid && bill && (
             <p className="mt-1 text-xs text-emerald-400">
               ✓ Pagó {new Date(bill.paid_at!).toLocaleDateString("es-AR")} · {bill.payment_method}
-              {bill.received_amount_ars && ` · $${bill.received_amount_ars.toLocaleString("es-AR")}`}
+              {bill.received_amount_ars &&
+                ` · ${formatMoneyBare(bill.received_amount_ars, bill.currency)}`}
             </p>
           )}
           {isHonor && (
@@ -87,7 +90,7 @@ export function PastorBillRow({
         </div>
 
         {!isHonor && bill && (
-          <p className="font-mono text-sm">${bill.amount_ars.toLocaleString("es-AR")}</p>
+          <p className="font-mono text-sm">{formatMoney(bill.amount_ars, bill.currency)}</p>
         )}
 
         {!isHonor && !isPaid && bill && (
@@ -123,7 +126,7 @@ export function PastorBillRow({
             </div>
             <p className="mb-1 text-sm font-medium">{label}</p>
             <p className="mb-4 text-xs text-muted-foreground">
-              Modalidad: {modalityLabel(modality)} · Monto esperado: ${bill.amount_ars.toLocaleString("es-AR")}
+              Modalidad: {modalityLabel(modality)} · Monto esperado: {formatMoney(bill.amount_ars, bill.currency)}
             </p>
             <div className="space-y-3">
               <div>
@@ -139,7 +142,9 @@ export function PastorBillRow({
                 </select>
               </div>
               <div>
-                <label className="text-xs uppercase tracking-widest text-muted-foreground">Monto recibido (ARS)</label>
+                <label className="text-xs uppercase tracking-widest text-muted-foreground">
+                  Monto recibido ({bill.currency})
+                </label>
                 <input
                   type="number"
                   value={amount}
