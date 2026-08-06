@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CheckCircle2, Users, Clock } from "lucide-react";
+import { getPastorBankAccount } from "@/lib/pastor/bank-accounts";
 import { PastorBillRow } from "./pastor-bill-row";
 import { PeriodSelector } from "./period-selector";
 
@@ -115,12 +116,20 @@ export default async function PastorHomePage({
     });
   }
 
-  // Alumnos honor asignados (informativo)
+  // Alumnos honor asignados (informativo) — solo type='honor', no pastoral_mx
   const { data: honors } = individualUserIds.length > 0
     ? await admin.from("honor_scholarships").select("user_id, status")
-        .in("user_id", individualUserIds).in("status", ["vigente", "proxima_vencer"])
+        .in("user_id", individualUserIds)
+        .eq("scholarship_type", "honor")
+        .in("status", ["vigente", "proxima_vencer"])
     : { data: [] };
   const honorUserIds = new Set((honors ?? []).map((h) => h.user_id));
+
+  // Cuenta bancaria de destino según país del pastor (AR=Brubank, MX=MP)
+  const { country: pastorCountry, account: bank } = await getPastorBankAccount(
+    admin,
+    user.id,
+  );
 
   // Cálculos
   const allBills = [...indivBills, ...marriageBills];
@@ -156,31 +165,24 @@ export default async function PastorHomePage({
         <Kpi label="Total a transferir" value={`$${(totalRecaudado/1000).toFixed(0)}k / ${(totalEsperado/1000).toFixed(0)}k`} icon={null} />
       </div>
 
-      {/* Datos de transferencia a DAP */}
+      {/* Datos de transferencia a DAP (según país del pastor) */}
       <div className="mb-8 rounded-xl border border-brand-coral/30 bg-brand-coral/[0.06] p-5">
-        <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-brand-coral">Transferencia a DAP · día 1 del mes</p>
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-brand-coral">
+          Transferencia a DAP · {pastorCountry} · día 1 del mes
+        </p>
         <p className="mb-3 text-sm text-foreground">Consolidá lo recolectado y transferí al siguiente destino:</p>
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-lg bg-card p-3 sm:col-span-2">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Titular</p>
-            <p className="mt-1 font-mono text-sm">Maximiliano Ariel Hebeling</p>
-          </div>
-          <div className="rounded-lg bg-card p-3">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Banco</p>
-            <p className="mt-1 font-mono text-sm">Brubank</p>
-          </div>
-          <div className="rounded-lg bg-card p-3">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Alias</p>
-            <p className="mt-1 font-mono text-sm">maximilianohebeling</p>
-          </div>
-          <div className="rounded-lg bg-card p-3">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">CBU</p>
-            <p className="mt-1 font-mono text-sm break-all">1430001713028093230012</p>
-          </div>
-          <div className="rounded-lg bg-card p-3">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">N° de cuenta</p>
-            <p className="mt-1 font-mono text-sm">1302809323001</p>
-          </div>
+          {bank.fields.map((f) => (
+            <div
+              key={f.label}
+              className={`rounded-lg bg-card p-3 ${f.wide ? "sm:col-span-2" : ""}`}
+            >
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                {f.label}
+              </p>
+              <p className="mt-1 font-mono text-sm break-all">{f.value}</p>
+            </div>
+          ))}
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
           El monto total esperado del mes es <strong>${totalEsperado.toLocaleString("es-AR")} ARS</strong> (sin contar becas).
