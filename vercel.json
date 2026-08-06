@@ -26,6 +26,10 @@
       "schedule": "0 9 1 * *"
     },
     {
+      "path": "/api/cron/mx-bills-generate",
+      "schedule": "0 8 1 * *"
+    },
+    {
       "path": "/api/cron/ar-notifications",
       "schedule": "0 12 * * *"
     },

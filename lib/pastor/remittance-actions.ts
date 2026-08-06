@@ -69,12 +69,16 @@ async function recomputeTotals(admin: ReturnType<typeof createAdminClient>, past
     }
   }
 
-  // Contar becados asignados (informativo)
+  // Contar becados asignados (informativo). Solo scholarship_type='honor'.
+  // Los otros types (ej. 'pastoral_mx') están en la misma tabla como
+  // mecanismo de acceso pero NO son becados — inflaban el KPI antes.
   let honor = 0;
   if (studentIds.length > 0) {
     const { count } = await admin.from("honor_scholarships")
       .select("id", { count: "exact", head: true })
-      .in("user_id", studentIds).in("status", ["vigente", "proxima_vencer"]);
+      .in("user_id", studentIds)
+      .eq("scholarship_type", "honor")
+      .in("status", ["vigente", "proxima_vencer"]);
     honor = count ?? 0;
   }
 
