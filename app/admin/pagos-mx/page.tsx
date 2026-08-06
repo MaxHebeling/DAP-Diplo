@@ -1,12 +1,12 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { redirect } from "next/navigation";
-import { BillRow } from "./bill-row";
+import { BillRow } from "../pagos-ar/bill-row";
 import { studentIdsInCountry } from "@/lib/pastor/country-filters";
 
 type Pastor = { id: string; full_name: string };
 
-export const metadata = { title: "Pagos Argentina · Admin DAP" };
+export const metadata = { title: "Pagos México · Admin DAP" };
 export const dynamic = "force-dynamic";
 
 type Bill = {
@@ -31,7 +31,7 @@ type PairInfo = { id: string; s1: string; s2: string };
 
 const MONTHS = ["","Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
-export default async function PagosArgentinaPage({
+export default async function PagosMexicoPage({
   searchParams,
 }: {
   searchParams: Promise<{ period?: string; status?: string; modality?: string }>;
@@ -45,17 +45,14 @@ export default async function PagosArgentinaPage({
   const defaultPeriod = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   const [year, month] = (params.period ?? defaultPeriod).split("-").map((n) => parseInt(n, 10));
 
-  // Restringir a alumnos AR (iglesia primaria en Argentina) — evita
-  // que si eventualmente hay bills MX en la misma tabla se mezclen aquí.
-  // Ver /admin/pagos-mx para la vista México.
-  const arStudentIds = await studentIdsInCountry(admin, "Argentina");
+  // Restringir a alumnos MX (iglesia primaria en México)
+  const allowedUserIds = await studentIdsInCountry(admin, "México");
 
-  // Cargar bills del periodo
   let bills: Bill[] = [];
-  if (arStudentIds.length > 0) {
+  if (allowedUserIds.length > 0) {
     let query = admin.from("monthly_bills").select("*")
       .eq("period_year", year).eq("period_month", month)
-      .in("user_id", arStudentIds)
+      .in("user_id", allowedUserIds)
       .order("modality", { ascending: false })
       .order("status", { ascending: true });
     if (params.status) query = query.eq("status", params.status);
@@ -64,9 +61,9 @@ export default async function PagosArgentinaPage({
     bills = data ?? [];
   }
 
-  // Enriquecer con nombres
-  const individualUserIds = (bills ?? []).filter((b) => b.user_id).map((b) => b.user_id!);
-  const pairIds = (bills ?? []).filter((b) => b.spousal_pair_id).map((b) => b.spousal_pair_id!);
+  // Nombres
+  const individualUserIds = bills.filter((b) => b.user_id).map((b) => b.user_id!);
+  const pairIds = bills.filter((b) => b.spousal_pair_id).map((b) => b.spousal_pair_id!);
 
   const nameById = new Map<string, string>();
   if (individualUserIds.length > 0) {
@@ -74,12 +71,21 @@ export default async function PagosArgentinaPage({
     for (const p of profs ?? []) nameById.set(p.id, p.full_name);
   }
 
-  // Cargar todos los pastores para el selector
-  const { data: pastorsList } = await admin.from("profiles").select("id, full_name")
-    .eq("role", "pastor").order("full_name");
+  // Pastores MX para el selector (los que tengan al menos una iglesia MX)
+  const { data: mxChurches } = await admin.from("churches").select("id").eq("country", "México");
+  const mxChurchIds = (mxChurches ?? []).map((c) => c.id);
+  const mxPastorIds = new Set<string>();
+  if (mxChurchIds.length > 0) {
+    const { data: cps } = await admin.from("church_pastors")
+      .select("pastor_user_id").in("church_id", mxChurchIds).eq("status", "active");
+    for (const cp of cps ?? []) mxPastorIds.add(cp.pastor_user_id);
+  }
+  const { data: pastorsList } = mxPastorIds.size > 0
+    ? await admin.from("profiles").select("id, full_name").in("id", Array.from(mxPastorIds)).order("full_name")
+    : { data: [] };
   const pastors: Pastor[] = pastorsList ?? [];
 
-  // Cargar asignaciones actuales
+  // Asignaciones actuales (mismo mecanismo que AR — pastor_assignments)
   const { data: currentAssignments } = await admin.from("pastor_assignments")
     .select("student_user_id, spousal_pair_id, pastor_user_id").eq("status", "active");
   const pastorByStudent = new Map<string, string>();
@@ -109,19 +115,19 @@ export default async function PagosArgentinaPage({
   }
 
   // Stats
-  const totalEsperado = (bills ?? []).filter((b) => b.status !== "exempt" && b.status !== "canceled").reduce((s, b) => s + b.amount_ars, 0);
-  const totalRecaudado = (bills ?? []).filter((b) => b.status === "paid").reduce((s, b) => s + (b.received_amount_ars ?? b.amount_ars), 0);
-  const paidCount = (bills ?? []).filter((b) => b.status === "paid").length;
-  const pendingCount = (bills ?? []).filter((b) => b.status === "pending").length;
+  const totalEsperado = bills.filter((b) => b.status !== "exempt" && b.status !== "canceled").reduce((s, b) => s + b.amount_ars, 0);
+  const totalRecaudado = bills.filter((b) => b.status === "paid").reduce((s, b) => s + (b.received_amount_ars ?? b.amount_ars), 0);
+  const paidCount = bills.filter((b) => b.status === "paid").length;
+  const pendingCount = bills.filter((b) => b.status === "pending").length;
 
-  // Alumnos con beca — para mostrar aparte.
-  // Solo scholarship_type='honor' (becados reales). Otros types en la
-  // misma tabla — ej. 'pastoral_mx' — no son becas y no deben aparecer
-  // como tal en la vista admin de pagos AR.
-  const { data: honors } = await admin.from("honor_scholarships")
-    .select("user_id, status, start_date")
-    .eq("scholarship_type", "honor")
-    .in("status", ["vigente", "proxima_vencer"]);
+  // Alumnos con beca MX — solo type='honor' (no 'pastoral_mx' que es cobro, no beca)
+  const { data: honors } = allowedUserIds.length > 0
+    ? await admin.from("honor_scholarships")
+        .select("user_id, status, start_date")
+        .in("user_id", allowedUserIds)
+        .eq("scholarship_type", "honor")
+        .in("status", ["vigente", "proxima_vencer"])
+    : { data: [] };
   const honorIds = (honors ?? []).map((h) => h.user_id);
   const { data: honorProfs } = honorIds.length > 0
     ? await admin.from("profiles").select("id, full_name").in("id", honorIds)
@@ -136,24 +142,28 @@ export default async function PagosArgentinaPage({
   return (
     <main className="px-6 py-8 lg:px-10">
       <header className="mb-8">
-        <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-brand-coral">Pagos Argentina · Pastoral</p>
+        <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-brand-coral">Pagos México · Pastoral</p>
         <h1 className="font-grotesk text-3xl font-bold text-foreground">
           {MONTHS[month]} {year}
         </h1>
         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          Periodo de recolección: <strong>{new Date(bills?.[0]?.collection_start ?? "").getDate()}</strong>
-          {" "}al{" "}
-          <strong>{new Date(bills?.[0]?.collection_end ?? "").getDate()}</strong>
-          {" "}de {MONTHS[month]}.
-          Los pastores transfieren consolidado a DAP el día 1 de {MONTHS[month + 1] ?? "próximo mes"}.
+          Alumnos MX bajo modalidad pastoral. Los pastores locales cobran mensualmente
+          y transfieren consolidado a DAP el día 1 de {MONTHS[month + 1] ?? "próximo mes"}.
         </p>
       </header>
+
+      {/* Estado vacío si aún no hay bills MX generados */}
+      {allowedUserIds.length === 0 && (
+        <div className="mb-6 rounded-xl border border-dashed border-border bg-card/30 p-8 text-center text-sm text-muted-foreground">
+          Aún no hay alumnos MX registrados a una iglesia mexicana con admisión aprobada.
+        </div>
+      )}
 
       {/* Stats */}
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="rounded-xl border border-brand-coral/30 bg-brand-coral/[0.06] p-4">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-brand-coral">Bills</p>
-          <p className="mt-1 font-grotesk text-2xl font-bold">{bills?.length ?? 0}</p>
+          <p className="mt-1 font-grotesk text-2xl font-bold">{bills.length}</p>
         </div>
         <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/[0.06] p-4">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-emerald-400">Pagadas</p>
@@ -166,7 +176,7 @@ export default async function PagosArgentinaPage({
         <div className="rounded-xl border bg-card p-4">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Recaudado / Esperado</p>
           <p className="mt-1 font-grotesk text-lg font-bold">
-            {(totalRecaudado / 1000).toFixed(0)}k / {(totalEsperado / 1000).toFixed(0)}k ARS
+            {(totalRecaudado / 1000).toFixed(0)}k / {(totalEsperado / 1000).toFixed(0)}k MXN
           </p>
         </div>
       </div>
@@ -187,7 +197,7 @@ export default async function PagosArgentinaPage({
           {periodsAvailable.map((p) => (
             <a
               key={p.value}
-              href={`/admin/pagos-ar?period=${p.value}`}
+              href={`/admin/pagos-mx?period=${p.value}`}
               className={`rounded-md border px-3 py-1.5 text-xs font-medium ${
                 (params.period ?? defaultPeriod) === p.value
                   ? "border-brand-violet bg-brand-violet/15 text-brand-violet"
@@ -201,32 +211,41 @@ export default async function PagosArgentinaPage({
       </div>
 
       {/* Lista de bills */}
-      <div className="space-y-3">
-        {(bills ?? []).map((bill) => {
-          const label = bill.user_id
-            ? nameById.get(bill.user_id) ?? "Alumno"
-            : (() => {
-                const p = pairInfoById.get(bill.spousal_pair_id!);
-                return p ? `${p.s1} + ${p.s2}` : "Matrimonio";
-              })();
-          const currentPastor = bill.user_id
-            ? pastorByStudent.get(bill.user_id)
-            : bill.spousal_pair_id ? pastorByPair.get(bill.spousal_pair_id) : undefined;
-          return (
-            <BillRow
-              key={bill.id}
-              bill={bill}
-              label={label}
-              pastors={pastors}
-              currentPastorId={currentPastor}
-              targetKind={bill.user_id ? "student" : "pair"}
-              targetId={bill.user_id ?? bill.spousal_pair_id!}
-            />
-          );
-        })}
-      </div>
+      {bills.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-border bg-card/30 p-12 text-center">
+          <p className="text-sm text-muted-foreground">
+            Aún no hay bills generadas para este periodo. Se crearán automáticamente cuando
+            arranque la generación mensual de MX.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {bills.map((bill) => {
+            const label = bill.user_id
+              ? nameById.get(bill.user_id) ?? "Alumno"
+              : (() => {
+                  const p = pairInfoById.get(bill.spousal_pair_id!);
+                  return p ? `${p.s1} + ${p.s2}` : "Matrimonio";
+                })();
+            const currentPastor = bill.user_id
+              ? pastorByStudent.get(bill.user_id)
+              : bill.spousal_pair_id ? pastorByPair.get(bill.spousal_pair_id) : undefined;
+            return (
+              <BillRow
+                key={bill.id}
+                bill={bill}
+                label={label}
+                pastors={pastors}
+                currentPastorId={currentPastor}
+                targetKind={bill.user_id ? "student" : "pair"}
+                targetId={bill.user_id ?? bill.spousal_pair_id!}
+              />
+            );
+          })}
+        </div>
+      )}
 
-      {/* Alumnos becados (visualmente separado, sin bills) */}
+      {/* Alumnos becados MX */}
       {honorProfs && honorProfs.length > 0 && (
         <div className="mt-10">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-widest text-amber-400">
@@ -249,7 +268,7 @@ export default async function PagosArgentinaPage({
 function FilterChip({ label, active, query }: { label: string; active: boolean; query: Record<string, string | undefined> }) {
   const params = new URLSearchParams();
   for (const [k, v] of Object.entries(query)) if (v) params.set(k, v);
-  const href = params.toString() ? `/admin/pagos-ar?${params}` : "/admin/pagos-ar";
+  const href = params.toString() ? `/admin/pagos-mx?${params}` : "/admin/pagos-mx";
   return (
     <a
       href={href}

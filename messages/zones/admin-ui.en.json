@@ -152,6 +152,8 @@
       "simplifiedMode": "Simplified mode",
       "arPayments": "AR Payments",
       "arRemittances": "AR Remittances",
+      "mxPayments": "MX Payments",
+      "mxRemittances": "MX Remittances",
       "blocksCopy": "Blocks (copy)",
       "phasesModules": "Phases (modules)",
       "community": "Community",
