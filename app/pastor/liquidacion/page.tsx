@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { upsertPastorRemittance } from "@/lib/pastor/remittance-actions";
+import { getPastorBankAccount } from "@/lib/pastor/bank-accounts";
 import { RemittanceForm } from "./remittance-form";
 import { PeriodSelector } from "../period-selector";
 
@@ -9,31 +10,6 @@ export const metadata = { title: "Liquidación · Portal Pastor" };
 export const dynamic = "force-dynamic";
 
 const MONTHS = ["","Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-
-// Datos bancarios de destino por país del pastor. Cada pastor ve solo la
-// cuenta correspondiente a su país (derivado de churches.country).
-type BankField = { label: string; value: string; wide?: boolean };
-type BankAccount = { fields: BankField[] };
-
-const BANK_ACCOUNTS: Record<string, BankAccount> = {
-  Argentina: {
-    fields: [
-      { label: "Titular", value: "Maximiliano Ariel Hebeling", wide: true },
-      { label: "Banco", value: "Brubank" },
-      { label: "Alias", value: "maximilianohebeling" },
-      { label: "CBU", value: "1430001713028093230012" },
-      { label: "N° de cuenta", value: "1302809323001" },
-    ],
-  },
-  México: {
-    fields: [
-      { label: "Titular", value: "Maximiliano Ariel Hebeling", wide: true },
-      { label: "Banco", value: "Mercado Pago" },
-      { label: "CLABE", value: "722969015719372828" },
-      { label: "N° de tarjeta", value: "5428 7809 4284 1222" },
-    ],
-  },
-};
 
 export default async function LiquidacionPage({
   searchParams,
@@ -61,17 +37,10 @@ export default async function LiquidacionPage({
 
   if (!rem) return <p>Error cargando liquidación</p>;
 
-  // País del pastor (derivado de su iglesia primaria) para elegir la
-  // cuenta bancaria de destino correcta.
-  const { data: cpRow } = await admin
-    .from("church_pastors")
-    .select("church:churches!inner(country)")
-    .eq("pastor_user_id", user.id)
-    .eq("is_primary", true)
-    .eq("status", "active")
-    .maybeSingle<{ church: { country: string } }>();
-  const pastorCountry = cpRow?.church?.country ?? "Argentina";
-  const bank = BANK_ACCOUNTS[pastorCountry] ?? BANK_ACCOUNTS.Argentina;
+  const { country: pastorCountry, account: bank } = await getPastorBankAccount(
+    admin,
+    user.id,
+  );
 
   const canSubmit = ["pending_collection","collecting","collection_ended","pending_transfer","partial","needs_review"].includes(rem.status);
   const alreadyConfirmed = !!rem.confirmed_at;
