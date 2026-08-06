@@ -103,7 +103,7 @@ export default async function LiquidacionesPage({
           </div>
           <p className="text-sm text-muted-foreground">
             <span className="font-mono">${totalCollected.toLocaleString("es-AR")}</span> / <span className="font-mono">${totalExpected.toLocaleString("es-AR")}</span> ARS
-            {totalPending > 0 && (<span className="ml-2 text-amber-400">· Pendiente: <span className="font-mono">${totalPending.toLocaleString("es-AR")}</span></span>)}
+            {totalPending > 0 && (<span className="ml-2 text-amber-400">· Pendiente: <span className="font-mono">${totalPending.toLocaleString("es-AR")} ARS</span></span>)}
           </p>
         </div>
         <div className="h-2 w-full overflow-hidden rounded-full bg-white/[0.05]">

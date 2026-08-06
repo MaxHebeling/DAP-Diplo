@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { upsertPastorRemittance } from "@/lib/pastor/remittance-actions";
 import { getPastorBankAccount } from "@/lib/pastor/bank-accounts";
+import { formatMoneyBare } from "@/lib/format/money";
 import { RemittanceForm } from "./remittance-form";
 import { PeriodSelector } from "../period-selector";
 
@@ -68,10 +69,10 @@ export default async function LiquidacionPage({
       </div>
 
       <div className="mb-6 grid grid-cols-3 gap-3">
-        <Money label="Esperado" value={rem.expected_amount_ars} />
-        <Money label="Recolectado" value={rem.collected_amount_ars}
+        <Money label="Esperado" value={rem.expected_amount_ars} currency={rem.currency} />
+        <Money label="Recolectado" value={rem.collected_amount_ars} currency={rem.currency}
           tone={rem.collected_amount_ars >= rem.expected_amount_ars ? "emerald" : "amber"} />
-        <Money label="Ya transferido" value={rem.transferred_amount_ars ?? 0}
+        <Money label="Ya transferido" value={rem.transferred_amount_ars ?? 0} currency={rem.currency}
           tone={rem.transferred_amount_ars ? "emerald" : "amber"} />
       </div>
 
@@ -110,6 +111,7 @@ export default async function LiquidacionPage({
           collectedAmount={rem.collected_amount_ars}
           submittedAt={rem.submitted_at}
           transferredAmount={rem.transferred_amount_ars}
+          currency={rem.currency}
         />
       ) : null}
     </>
@@ -125,14 +127,26 @@ function Kpi({ label, value, tone }: { label: string; value: string; tone?: "amb
     </div>
   );
 }
-function Money({ label, value, tone }: { label: string; value: number; tone?: "emerald" | "amber" }) {
+function Money({
+  label,
+  value,
+  currency,
+  tone,
+}: {
+  label: string;
+  value: number;
+  currency: string;
+  tone?: "emerald" | "amber";
+}) {
   const cls = tone === "emerald" ? "border-emerald-500/30 bg-emerald-500/[0.06] text-emerald-400"
     : tone === "amber" ? "border-amber-500/30 bg-amber-500/[0.06] text-amber-400"
     : "border-border bg-card";
   return (
     <div className={`rounded-xl border p-4 ${cls}`}>
-      <p className="text-[10px] uppercase tracking-widest opacity-80">{label}</p>
-      <p className="mt-1 font-mono text-xl font-bold">${value.toLocaleString("es-AR")}</p>
+      <p className="text-[10px] uppercase tracking-widest opacity-80">
+        {label} <span className="opacity-70">({currency})</span>
+      </p>
+      <p className="mt-1 font-mono text-xl font-bold">{formatMoneyBare(value, currency)}</p>
     </div>
   );
 }

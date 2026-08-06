@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CheckCircle2, AlertCircle, Loader2, X } from "lucide-react";
 import { confirmRemittanceReceivedAction } from "@/lib/pastor/remittance-actions";
+import { formatMoney, formatMoneyBare } from "@/lib/format/money";
 
 type Remittance = {
   id: string;
@@ -23,6 +24,7 @@ type Remittance = {
   submitted_at: string | null;
   confirmed_at: string | null;
   updated_at?: string | null;
+  currency: string;
 };
 
 const STATUS_LABEL: Record<string, { text: string; cls: string }> = {
@@ -114,9 +116,10 @@ export function RemittanceRow({
 
         {/* Montos */}
         <div className="grid grid-cols-3 gap-2 rounded-lg border border-border bg-background/50 p-3 text-xs">
-          <Money label="Esperado" value={r.expected_amount_ars} />
-          <Money label="Recolectado" value={r.collected_amount_ars} tone={r.collected_amount_ars < r.expected_amount_ars ? "amber" : "emerald"} />
-          <Money label="Transferido" value={r.transferred_amount_ars ?? 0}
+          <Money label={`Esperado (${r.currency})`} value={r.expected_amount_ars} currency={r.currency} />
+          <Money label={`Recolectado (${r.currency})`} value={r.collected_amount_ars} currency={r.currency}
+            tone={r.collected_amount_ars < r.expected_amount_ars ? "amber" : "emerald"} />
+          <Money label={`Transferido (${r.currency})`} value={r.transferred_amount_ars ?? 0} currency={r.currency}
             tone={r.transferred_amount_ars ? (Math.abs(diff) < 100 ? "emerald" : "amber") : undefined} />
         </div>
 
@@ -124,7 +127,7 @@ export function RemittanceRow({
         {r.transferred_amount_ars !== null && Math.abs(diff) > 100 && (
           <div className="mt-3 flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/[0.06] p-2 text-xs text-amber-400">
             <AlertCircle className="size-3.5" />
-            <span>Diferencia esperado vs transferido: <strong>${diff.toLocaleString("es-AR")}</strong></span>
+            <span>Diferencia esperado vs transferido: <strong>{formatMoneyBare(diff, r.currency)}</strong></span>
           </div>
         )}
 
@@ -162,7 +165,7 @@ export function RemittanceRow({
               <button onClick={() => setConfirmOpen(false)}><X className="size-5" /></button>
             </div>
             <p className="mb-4 text-sm text-muted-foreground">
-              Pastor <strong>{pastorName}</strong> · monto: <strong>${(r.transferred_amount_ars ?? 0).toLocaleString("es-AR")} ARS</strong>
+              Pastor <strong>{pastorName}</strong> · monto: <strong>{formatMoney(r.transferred_amount_ars ?? 0, r.currency)}</strong>
             </p>
             <textarea value={obs} onChange={(e) => setObs(e.target.value)} rows={3}
               placeholder="Observaciones (opcional)"
@@ -192,12 +195,12 @@ function Metric({ label, value, tone }: { label: string; value: number; tone?: "
     </div>
   );
 }
-function Money({ label, value, tone }: { label: string; value: number; tone?: "emerald" | "amber" }) {
+function Money({ label, value, currency, tone }: { label: string; value: number; currency: string; tone?: "emerald" | "amber" }) {
   const cls = tone === "emerald" ? "text-emerald-400" : tone === "amber" ? "text-amber-400" : "text-foreground";
   return (
     <div>
       <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</p>
-      <p className={`mt-0.5 font-mono text-sm font-bold ${cls}`}>${value.toLocaleString("es-AR")}</p>
+      <p className={`mt-0.5 font-mono text-sm font-bold ${cls}`}>{formatMoneyBare(value, currency)}</p>
     </div>
   );
 }
