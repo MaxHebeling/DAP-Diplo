@@ -18,13 +18,19 @@ const DISMISS_DAYS = 14;
  * - El usuario no la dimió en los últimos 14 días
  * - No está ya instalada (display-mode: standalone)
  *
- * Para iOS Safari NO existe beforeinstallprompt — agregamos un hint
- * separado si se detecta iOS Safari (no agregado por ahora; opcional).
+ * Modo forzado con `?install=1` (o `#install`): salta timers, dismissed
+ * checks y muestra el prompt de inmediato. Si el browser aún no disparó
+ * beforeinstallprompt (típico en Chrome cuando el user no cumple todavía
+ * los engagement heuristics), cae a instrucciones manuales del menú.
+ *
+ * Para iOS Safari NO existe beforeinstallprompt — el modo forzado también
+ * les sirve porque muestra las instrucciones manuales.
  */
 export function InstallPrompt() {
   const t = useTranslations("Pwa");
   const [event, setEvent] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
+  const [forced, setForced] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -38,22 +44,36 @@ export function InstallPrompt() {
       return;
     }
 
-    // Dimida recientemente?
-    try {
-      const dismissedAt = localStorage.getItem(DISMISSED_KEY);
-      if (dismissedAt) {
-        const days = (Date.now() - Number(dismissedAt)) / 86_400_000;
-        if (days < DISMISS_DAYS) return;
+    const params = new URLSearchParams(window.location.search);
+    const isForced =
+      params.get("install") === "1" ||
+      window.location.hash === "#install";
+
+    if (isForced) {
+      // Modo forzado: mostrar YA sin checks. Si el evento nativo aparece
+      // después, lo capturamos igual para poder disparar `.prompt()`.
+      setForced(true);
+      setVisible(true);
+    } else {
+      // Dimida recientemente?
+      try {
+        const dismissedAt = localStorage.getItem(DISMISSED_KEY);
+        if (dismissedAt) {
+          const days = (Date.now() - Number(dismissedAt)) / 86_400_000;
+          if (days < DISMISS_DAYS) return;
+        }
+      } catch {
+        // localStorage bloqueado — ignoramos
       }
-    } catch {
-      // localStorage bloqueado — ignoramos
     }
 
     const handler = (e: Event) => {
       e.preventDefault();
       setEvent(e as BeforeInstallPromptEvent);
-      // Esperar 30s antes de mostrar para no interrumpir
-      setTimeout(() => setVisible(true), 30_000);
+      if (!isForced) {
+        // Esperar 30s antes de mostrar para no interrumpir
+        setTimeout(() => setVisible(true), 30_000);
+      }
     };
 
     window.addEventListener("beforeinstallprompt", handler);
@@ -80,13 +100,23 @@ export function InstallPrompt() {
     }
   }
 
-  if (!visible || !event) return null;
+  // Modo normal: solo mostrar si el browser está listo con el evento nativo.
+  // Modo forzado (?install=1): mostrar aunque no haya evento — caemos a
+  // instrucciones manuales del menú del browser.
+  if (!visible) return null;
+  if (!forced && !event) return null;
+
+  const showManual = forced && !event;
 
   return (
     <div
       role="dialog"
       aria-label={t("install.dialogLabel")}
-      className="fixed inset-x-3 bottom-3 z-50 mx-auto max-w-md rounded-xl border border-brand-violet/30 bg-surface-elevated/95 p-4 shadow-2xl backdrop-blur-xl sm:bottom-6 lg:left-auto lg:right-6 lg:mx-0"
+      className={
+        forced
+          ? "fixed inset-x-3 bottom-3 z-50 mx-auto max-w-md rounded-xl border-2 border-brand-coral/60 bg-surface-elevated/98 p-5 shadow-2xl backdrop-blur-xl sm:bottom-6 lg:left-auto lg:right-6 lg:mx-0"
+          : "fixed inset-x-3 bottom-3 z-50 mx-auto max-w-md rounded-xl border border-brand-violet/30 bg-surface-elevated/95 p-4 shadow-2xl backdrop-blur-xl sm:bottom-6 lg:left-auto lg:right-6 lg:mx-0"
+      }
     >
       <button
         type="button"
@@ -107,22 +137,46 @@ export function InstallPrompt() {
           <p className="mt-0.5 font-inter text-xs leading-relaxed text-text-secondary">
             {t("install.description")}
           </p>
-          <div className="mt-3 flex gap-2">
-            <button
-              type="button"
-              onClick={install}
-              className="inline-flex items-center gap-1.5 rounded-md bg-brand-coral px-3 py-1.5 font-inter text-xs font-semibold text-white hover:bg-brand-coral/90"
-            >
-              {t("install.installButton")}
-            </button>
+
+          {showManual ? (
+            <div className="mt-3 space-y-2 rounded-md bg-black/20 p-3 font-inter text-xs leading-relaxed text-text-secondary">
+              <p className="font-semibold text-text-primary">
+                {t("install.manualTitle")}
+              </p>
+              <ol className="list-decimal space-y-1 pl-4">
+                <li>{t("install.manualStep1")}</li>
+                <li>{t("install.manualStep2")}</li>
+                <li>{t("install.manualStep3")}</li>
+              </ol>
+            </div>
+          ) : (
+            <div className="mt-3 flex gap-2">
+              <button
+                type="button"
+                onClick={install}
+                className="inline-flex items-center gap-1.5 rounded-md bg-brand-coral px-3 py-1.5 font-inter text-xs font-semibold text-white hover:bg-brand-coral/90"
+              >
+                {t("install.installButton")}
+              </button>
+              <button
+                type="button"
+                onClick={dismiss}
+                className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 font-inter text-xs text-text-tertiary hover:text-text-primary"
+              >
+                {t("install.dismissButton")}
+              </button>
+            </div>
+          )}
+
+          {showManual && (
             <button
               type="button"
               onClick={dismiss}
-              className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 font-inter text-xs text-text-tertiary hover:text-text-primary"
+              className="mt-3 inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 font-inter text-xs text-text-tertiary hover:text-text-primary"
             >
               {t("install.dismissButton")}
             </button>
-          </div>
+          )}
         </div>
       </div>
     </div>
