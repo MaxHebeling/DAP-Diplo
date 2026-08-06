@@ -121,11 +121,15 @@ export default async function AdmissionDetailPage({
     .eq("id", admission.user_id)
     .maybeSingle<ProfileMini>();
 
-  // Fase 2: chequeo Beca de Honor vigente
+  // Fase 2: chequeo Beca de Honor vigente.
+  // Solo scholarship_type='honor' — otros types (pastoral_mx, etc.) usan
+  // esta tabla como mecanismo de acceso sin cobro Stripe pero no son
+  // becas; mostrarlos aquí sería incorrecto.
   const { data: honorScholarship } = await supabase
     .from("honor_scholarships")
     .select("id, status, start_date, end_date, reason")
     .eq("user_id", admission.user_id)
+    .eq("scholarship_type", "honor")
     .in("status", ["vigente", "proxima_vencer"])
     .order("created_at", { ascending: false })
     .limit(1)
