@@ -103,9 +103,14 @@ export default async function PagosArgentinaPage({
   const paidCount = (bills ?? []).filter((b) => b.status === "paid").length;
   const pendingCount = (bills ?? []).filter((b) => b.status === "pending").length;
 
-  // Alumnos con beca — para mostrar aparte
+  // Alumnos con beca — para mostrar aparte.
+  // Solo scholarship_type='honor' (becados reales). Otros types en la
+  // misma tabla — ej. 'pastoral_mx' — no son becas y no deben aparecer
+  // como tal en la vista admin de pagos AR.
   const { data: honors } = await admin.from("honor_scholarships")
-    .select("user_id, status, start_date").in("status", ["vigente", "proxima_vencer"]);
+    .select("user_id, status, start_date")
+    .eq("scholarship_type", "honor")
+    .in("status", ["vigente", "proxima_vencer"]);
   const honorIds = (honors ?? []).map((h) => h.user_id);
   const { data: honorProfs } = honorIds.length > 0
     ? await admin.from("profiles").select("id, full_name").in("id", honorIds)
