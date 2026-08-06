@@ -59,11 +59,15 @@ export default async function DashboardPage() {
   const firstName = profile.full_name.split(" ")[0];
   const { sub, hasActive, isPastoralAr } = await loadSubscription(supabase, user.id);
 
-  // Fase 2: Beca de Honor vigente — banner en dashboard
+  // Fase 2: Beca de Honor vigente — banner en dashboard.
+  // Solo mostrar para type='honor' (becados reales). Otros types como
+  // 'pastoral_mx' viven en la misma tabla pero representan cobro pastoral
+  // off-system, NO una beca — mostrarles "Beca vigente" sería incorrecto.
   const { data: honorScholarship } = await supabase
     .from("honor_scholarships")
     .select("status, start_date, end_date")
     .eq("user_id", user.id)
+    .eq("scholarship_type", "honor")
     .in("status", ["vigente", "proxima_vencer"])
     .limit(1)
     .maybeSingle<{ status: string; start_date: string; end_date: string | null }>();

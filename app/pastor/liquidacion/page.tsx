@@ -10,6 +10,31 @@ export const dynamic = "force-dynamic";
 
 const MONTHS = ["","Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
+// Datos bancarios de destino por país del pastor. Cada pastor ve solo la
+// cuenta correspondiente a su país (derivado de churches.country).
+type BankField = { label: string; value: string; wide?: boolean };
+type BankAccount = { fields: BankField[] };
+
+const BANK_ACCOUNTS: Record<string, BankAccount> = {
+  Argentina: {
+    fields: [
+      { label: "Titular", value: "Maximiliano Ariel Hebeling", wide: true },
+      { label: "Banco", value: "Brubank" },
+      { label: "Alias", value: "maximilianohebeling" },
+      { label: "CBU", value: "1430001713028093230012" },
+      { label: "N° de cuenta", value: "1302809323001" },
+    ],
+  },
+  México: {
+    fields: [
+      { label: "Titular", value: "Maximiliano Ariel Hebeling", wide: true },
+      { label: "Banco", value: "Mercado Pago" },
+      { label: "CLABE", value: "722969015719372828" },
+      { label: "N° de tarjeta", value: "5428 7809 4284 1222" },
+    ],
+  },
+};
+
 export default async function LiquidacionPage({
   searchParams,
 }: {
@@ -35,6 +60,18 @@ export default async function LiquidacionPage({
     .single();
 
   if (!rem) return <p>Error cargando liquidación</p>;
+
+  // País del pastor (derivado de su iglesia primaria) para elegir la
+  // cuenta bancaria de destino correcta.
+  const { data: cpRow } = await admin
+    .from("church_pastors")
+    .select("church:churches!inner(country)")
+    .eq("pastor_user_id", user.id)
+    .eq("is_primary", true)
+    .eq("status", "active")
+    .maybeSingle<{ church: { country: string } }>();
+  const pastorCountry = cpRow?.church?.country ?? "Argentina";
+  const bank = BANK_ACCOUNTS[pastorCountry] ?? BANK_ACCOUNTS.Argentina;
 
   const canSubmit = ["pending_collection","collecting","collection_ended","pending_transfer","partial","needs_review"].includes(rem.status);
   const alreadyConfirmed = !!rem.confirmed_at;
@@ -69,30 +106,23 @@ export default async function LiquidacionPage({
           tone={rem.transferred_amount_ars ? "emerald" : "amber"} />
       </div>
 
-      {/* Datos bancarios */}
+      {/* Datos bancarios (según país del pastor) */}
       <div className="mb-6 rounded-xl border border-brand-coral/30 bg-brand-coral/[0.06] p-5">
-        <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-brand-coral">Cuenta destino DAP</p>
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-brand-coral">
+          Cuenta destino DAP · {pastorCountry}
+        </p>
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-lg bg-card p-3 sm:col-span-2">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Titular</p>
-            <p className="mt-1 font-mono">Maximiliano Ariel Hebeling</p>
-          </div>
-          <div className="rounded-lg bg-card p-3">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Banco</p>
-            <p className="mt-1 font-mono">Brubank</p>
-          </div>
-          <div className="rounded-lg bg-card p-3">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Alias</p>
-            <p className="mt-1 font-mono">maximilianohebeling</p>
-          </div>
-          <div className="rounded-lg bg-card p-3">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">CBU</p>
-            <p className="mt-1 font-mono break-all">1430001713028093230012</p>
-          </div>
-          <div className="rounded-lg bg-card p-3">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">N° de cuenta</p>
-            <p className="mt-1 font-mono">1302809323001</p>
-          </div>
+          {bank.fields.map((f) => (
+            <div
+              key={f.label}
+              className={`rounded-lg bg-card p-3 ${f.wide ? "sm:col-span-2" : ""}`}
+            >
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                {f.label}
+              </p>
+              <p className="mt-1 font-mono break-all">{f.value}</p>
+            </div>
+          ))}
         </div>
       </div>
 
