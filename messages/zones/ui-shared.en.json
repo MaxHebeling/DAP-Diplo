@@ -17,7 +17,11 @@
       "title": "Install DAP on your phone",
       "description": "Quick access to your dashboard, reminders when your weekly module opens, no need to go through the browser.",
       "installButton": "Install",
-      "dismissButton": "Not now"
+      "dismissButton": "Not now",
+      "manualTitle": "To install from Chrome:",
+      "manualStep1": "Tap the three-dot menu (⋮) at the top right.",
+      "manualStep2": "Choose \"Install app\" or \"Add to home screen\".",
+      "manualStep3": "Confirm. The DAP icon appears like any other app."
     },
     "push": {
       "notSupported": "Your browser does not support push notifications.",

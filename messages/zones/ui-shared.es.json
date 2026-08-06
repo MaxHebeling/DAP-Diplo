@@ -17,7 +17,11 @@
       "title": "Instalá DAP en tu celular",
       "description": "Acceso directo al dashboard, recordatorios cuando abre tu módulo semanal, sin pasar por el browser.",
       "installButton": "Instalar",
-      "dismissButton": "Ahora no"
+      "dismissButton": "Ahora no",
+      "manualTitle": "Para instalar desde Chrome:",
+      "manualStep1": "Toca el menú de tres puntos (⋮) arriba a la derecha.",
+      "manualStep2": "Elige \"Instalar aplicación\" o \"Añadir a pantalla de inicio\".",
+      "manualStep3": "Confirma. El ícono de DAP aparece como una app más."
     },
     "push": {
       "notSupported": "Tu navegador no soporta notificaciones push.",
